@@ -844,6 +844,8 @@ describe('findProjectRoot 环境检测', () => {
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
     delete process.env.AGENT_WORK_ROOT;
+    delete process.env.MULERUN_CHAT_ID;
+    delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
     delete process.env.VSCODE_GIT_ASKPASS_NODE;
   });
@@ -1003,6 +1005,8 @@ describe('detectActiveTool', () => {
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
     delete process.env.AGENT_WORK_ROOT;
+    delete process.env.MULERUN_CHAT_ID;
+    delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
     delete process.env.VSCODE_GIT_ASKPASS_NODE;
   });
@@ -1091,6 +1095,8 @@ describe('detectActiveTool', () => {
     delete process.env.AGENT_WORK_ROOT;
     delete process.env.OPENCODE;
     delete process.env.OPENCODE_CLIENT;
+    delete process.env.MULERUN_CHAT_ID;
+    delete process.env.MULE_DATA_DIR;
     delete process.env.CURSOR_TRACE_ID;
     delete process.env.TERM_PROGRAM;
 
