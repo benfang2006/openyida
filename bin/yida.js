@@ -27,6 +27,8 @@ function isAgentEnvironment(env) {
     env.CODEX_HOME ||
     env.CLAUDE_CODE ||
     env.CLAUDE_CODE_ENTRYPOINT ||
+    env.MULERUN_CHAT_ID ||
+    env.MULE_DATA_DIR ||
     env.OPENCODE ||
     env.OPENCODE_CLIENT ||
     env.QODER_IDE ||

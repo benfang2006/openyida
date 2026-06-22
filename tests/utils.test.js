@@ -433,6 +433,8 @@ describe('detectActiveTool', () => {
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
     delete process.env.AGENT_WORK_ROOT;
+    delete process.env.MULERUN_CHAT_ID;
+    delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
     delete process.env.VSCODE_GIT_ASKPASS_NODE;
   });
@@ -451,6 +453,23 @@ describe('detectActiveTool', () => {
     expect(result).not.toBeNull();
     expect(result.tool).toBe('claude-code');
     expect(result.displayName).toBe('Claude Code');
+  });
+
+  test('MULERUN_CHAT_ID 环境变量时检测为 MuleRun', () => {
+    process.env.MULERUN_CHAT_ID = 'test-chat-id';
+    const result = detectActiveTool();
+    expect(result).not.toBeNull();
+    expect(result.tool).toBe('mulerun');
+    expect(result.displayName).toBe('MuleRun');
+    expect(result.dirName).toBe('.mulerun');
+  });
+
+  test('MuleRun 优先级高于 Claude Code（MuleRun 设置了 CLAUDE_CODE 变量）', () => {
+    process.env.MULERUN_CHAT_ID = 'test-chat-id';
+    process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk-ts';
+    process.env.CLAUDE_CODE = '1';
+    const result = detectActiveTool();
+    expect(result.tool).toBe('mulerun');
   });
 
   test('OPENCODE 环境变量时检测为 OpenCode', () => {
@@ -559,6 +578,8 @@ describe('detectActiveTool', () => {
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
     delete process.env.AGENT_WORK_ROOT;
+    delete process.env.MULERUN_CHAT_ID;
+    delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
 
     // 确保 .aone_copilot 目录不存在（避免干扰）
