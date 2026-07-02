@@ -1,6 +1,6 @@
 ---
 name: yida-get-schema
-description: 获取表单的完整 Schema 结构，用于确认字段 ID（fieldId）和组件配置。不适用于：查询表单数据记录（应使用 yida-data-management），或修改表单字段结构（应使用 yida-create-form-page）。
+description: 获取表单的完整 Schema 结构，用于确认字段 ID（fieldId）和组件配置。适用于开发前查看表单字段定义和结构。
 ---
 
 # 获取表单 Schema
@@ -37,10 +37,6 @@ description: 获取表单的完整 Schema 结构，用于确认字段 ID（field
 - "查看表单结构"、"获取字段 ID"、"查看 Schema"
 - 其他技能（yida-data-management、yida-process-rule、yida-custom-page）执行前的前置步骤
 - "批量获取所有表单 Schema"、"导出应用下所有字段 ID"、"不知道 formUuid 先全量看一遍"
-
-**不适用场景（不要触发）**：
-- 查询表单数据记录 → `yida-data-management`
-- 修改表单字段结构 → `yida-create-form-page`
 
 ---
 

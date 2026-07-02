@@ -1,9 +1,8 @@
 ---
 name: yida-corp-efficiency
 description: >
-  宜搭平台管理企业效能技能。用于查询 https://www.aliwork.com/platformManage/corpEfficiency
-  对应的企业效能概览、节省预算/时间、低代码学习与认证成果、效能指标、明细报表链接，以及搜索通知群并在明确确认后发送学习/认证通知。
-  当用户提到"企业效能"、"corpEfficiency"、"效能数据"、"低代码学习成果"、"效能分析明细"时使用。
+  企业效能数据查询（效能概览、节省预算/时间、低代码学习与认证成果、明细报表、通知群）。
+  触发词：「企业效能」「corpEfficiency」「效能数据」「低代码学习成果」「效能分析明细」。
 ---
 
 # 宜搭企业效能

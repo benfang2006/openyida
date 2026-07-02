@@ -264,6 +264,59 @@ Useful options:
 
 Use `npm run test:e2e:real:cleanup` to list recorded disposable resources. OpenYida does not yet expose a safe app/form deletion command, so cleanup is intentionally a registry-backed audit step rather than an automatic destructive action.
 
+### Skill Evaluation Harness
+
+The E2E paths above prove the *CLI* works. The eval harness under `scripts/eval/` measures whether the *agent* still routes natural-language requests to the right sub-skill and produces good output after you edit `yida-skills/SKILL.md`. It is the feedback loop for harness engineering.
+
+```bash
+# Routing eval — "did it pick the right sub-skill?" No real resources, no login.
+# Drives a headless `claude -p` agent with each scenario prompt and checks
+# the selected sub-skill against the golden set.
+npm run eval:routing
+
+# Tool-pipeline baseline (end-to-end) — wraps the real-environment runner for one
+# sub-skill, adds guardrail assertions, screenshots the published page, and writes a
+# human scoring template. Runs deterministic CLI commands (no agent) so it serves as
+# a control that proves the build→publish→screenshot→score plumbing itself works.
+# Requires OPENYIDA_E2E=1 and a valid cookie cache.
+OPENYIDA_E2E=1 npm run eval:e2e -- --skill yida-dashboard --screenshot
+
+# Same, plus automatic screenshot scoring via the local multimodal `claude -p`.
+OPENYIDA_E2E=1 npm run eval:e2e -- --skill yida-dashboard --screenshot --auto-score
+
+# Real-generation eval — "can one sentence really build a usable app?" Feeds a
+# natural-language request ("帮我创建一个订单管理系统") to a headless `claude -p`
+# that actually reads the openyida skill and runs the CLI to build a real app, then
+# reuses the screenshot + scoring + report pipeline. Creates real 宜搭 resources, so
+# it needs OPENYIDA_E2E=1 + an authenticated agent. Unlike the deterministic baseline
+# above, here the agent self-orchestrates.
+OPENYIDA_E2E=1 npm run eval:generate -- --screenshot
+
+# Run all three in one pass (routing + tool-pipeline baseline + real generation).
+OPENYIDA_E2E=1 npm run eval:all -- --skill yida-dashboard --screenshot
+
+# Optional: a zero-dependency local web console (buttons + live streamed output)
+# that runs the tasks above on click. Binds to 127.0.0.1 only; tasks are a fixed
+# whitelist. Use the Node version you start it with, so run `nvm use 20` first.
+npm run eval:dashboard          # http://127.0.0.1:4500
+```
+
+Configuration precedence is `CLI flag > env (OPENYIDA_EVAL_*) > scripts/eval/eval.config.json > defaults`.
+
+| Flag | Purpose |
+|------|---------|
+| `--mode e2e\|routing\|generate\|all` | Which evals to run (default `e2e`; `all` = routing + tool-pipeline baseline + real generation) |
+| `--skill <name>` | Restrict the e2e run to one sub-skill; stages are reverse-looked-up from the `SKILL_COVERAGE` matrix |
+| `--stages a,b` | Explicit stage list, overriding the skill reverse-lookup |
+| `--screenshot` / `--no-screenshot` | Capture the published page (default on; skipped gracefully if Playwright is absent) |
+| `--auto-score` / `--no-auto-score` | Score screenshots with the local `claude -p` agent (default off → human template only) |
+| `--scenarios <dir>` | Routing golden-set directory (default `scripts/eval/scenarios`) |
+| `--gen-scenarios <dir>` | Real-generation golden-set directory (default `scripts/eval/scenarios/generation`) |
+
+Results are written back into the existing `acceptance-manifest.json` under a new `eval` section (guardrails, screenshots, scores) plus two sibling artifacts: a `scoring.md` human-scoring template and a self-contained `eval-report.html` visual report (screenshots inlined as base64, so the single file opens anywhere). Routing results land in `project/.cache/eval/routing-report.json`; generation results (with their own `scoring.md` + `eval-report.html`) land in `project/.cache/eval/generate/gen-<timestamp>/`. The harness degrades gracefully: a missing Playwright skips screenshots (enable with `npm install --no-save playwright && npx playwright install chromium`), and a missing `claude` CLI skips auto-scoring while keeping the human template. A guardrail failure (for example a resource-creating command issued before a successful `login --check-only`) fails the run.
+
+A zero-dependency local dashboard (`npm run eval:dashboard`, then open `http://127.0.0.1:4500`) drives these runs from buttons and streams output live; its "📊 查看最新报告" button opens the most recent `eval-report.html`.
+
 ### Connectors, Integrations, and Reports
 
 ```bash

@@ -146,7 +146,7 @@ openyida copy
               ↓
 [Step 4]（按需）创建/更新表单 → openyida create-form → 获得 formUuid（表单）
               ↓
-[Step 5] 编写自定义页面代码 → yida-custom-page 规范 → pages/src/<项目名>.js
+[Step 5] 编写自定义页面代码 → yida-custom-page 规范 → pages/src/<项目名>.oyd.jsx
               ↓
 [Step 6] 发布页面 → openyida publish
               ↓
@@ -159,56 +159,140 @@ openyida copy
 
 ## 子技能速查
 
-> 每个子技能均有独立的 SKILL.md。执行时先选定一个最匹配的子技能，只读取该子技能文档；references 按文档提示按需读取，避免一次性加载全量文档。
+> 每个子技能均有独立的 SKILL.md（路径规则：`skills/<技能名>/SKILL.md`）。执行时先选定一个最匹配的子技能，只读取该子技能文档；references 按文档提示按需读取。
 
-| 技能 | SKILL.md 路径 | 用途 | 典型命令 |
-|------|--------------|------|---------|
-| `yida-app` | `skills/yida-app/SKILL.md` | 完整应用开发编排 | 详见 SKILL.md |
-| `yida-login` | `skills/yida-login/SKILL.md` | 登录态管理（通常自动触发） | `openyida login` |
-| `yida-logout` | `skills/yida-logout/SKILL.md` | 退出登录 / 切换账号 | `openyida logout` |
-| `yida-create-app` | `skills/yida-create-app/SKILL.md` | 创建应用，获取 appType | `openyida create-app "<名称>"` |
-| `yida-create-page` | `skills/yida-create-page/SKILL.md` | 创建自定义页面，获取 formUuid | `openyida create-page <appType> "<页面名>" [--mode dashboard]` |
-| `yida-create-form-page` | `skills/yida-create-form-page/SKILL.md` | 创建/更新表单页面、追加选项、绑定数据源、字段联动规则 | `openyida create-form <create\|update\|bind-datasource\|rule\|patch\|add-option> ...` |
-| `yida-create-process` | `skills/yida-create-process/SKILL.md` | 创建流程表单并配置流程 | `openyida create-process <appType> "<表单名>" <字段JSON> <流程JSON>` |
-| `yida-aggregate-table` | — | 聚合表（virtualView）列表、创建空白页、读取配置、预览、保存草稿和发布 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> ...` |
-| `yida-get-schema` | `skills/yida-get-schema/SKILL.md` | 获取单个/全部表单 Schema，确认字段 ID | `openyida get-schema <appType> <formUuid>` |
-| `yida-custom-page` | `skills/yida-custom-page/SKILL.md` | 编写自定义页面 JSX 代码规范 | 详见 SKILL.md |
-| `yida-publish-page` | `skills/yida-publish-page/SKILL.md` | 编译并发布自定义页面 | `openyida publish <源文件路径> <appType> <formUuid> [--health-check]` |
-| `yida-page-config` | `skills/yida-page-config/SKILL.md` | 页面公开访问/组织内分享配置 | `openyida verify-short-url <appType> <formUuid> <url>` |
-| `yida-basic-info` | `skills/yida-basic-info/SKILL.md` | 组织基本信息、资源容量、额度和域名设置查询 | `openyida basic-info overview` |
-| `yida-nav-group` | `skills/yida-nav-group/SKILL.md` | 应用左侧导航分组管理（查询/创建/重命名/删除/移动/显隐） | `openyida nav-group list <appType>` |
-| `yida-form-permission` | `skills/yida-form-permission/SKILL.md` | 表单权限查询与保存 | `openyida get-permission <appType> <formUuid>` |
-| `yida-app-permission` | `skills/yida-app-permission/SKILL.md` | 应用级管理员设置（主管理员/数据管理员/开发成员） | `openyida app-permission get <appType>` |
-| `yida-i18n` | `skills/yida-i18n/SKILL.md` | 应用多语言管理（语言配置、词条、翻译、升级） | `openyida i18n overview <appType>` |
-| `yida-corp-manager` | `skills/yida-corp-manager/SKILL.md` | 平台管理员、应用管理员、子管理员与通讯录权限 | `openyida corp-manager <子命令>` |
-| `yida-agent-center` | `skills/yida-agent-center/SKILL.md` | 代理中心：在职流程代理、离职代理、撤销和部分流程范围 | `openyida agent-center <子命令>` |
-| `yida-form-detail` | `skills/yida-form-detail/SKILL.md` | 表单详情页 formDetail 样式优化 | 详见 SKILL.md |
-| `yida-data-management` | `skills/yida-data-management/SKILL.md` | 表单/子表/流程/任务数据查询与变更 | `openyida data query form <appType> <formUuid>` |
-| `yida-corp-efficiency` | `skills/yida-corp-efficiency/SKILL.md` | 平台管理企业效能概览、查看明细报表、报表接口模板、学习成果和通知群动作 | `openyida corp-efficiency` |
-| `yida-table-form` | `skills/yida-table-form/SKILL.md` | 表格形态批量录入页面 | 详见 SKILL.md |
-| `yida-process-rule` | `skills/yida-process-rule/SKILL.md` | 配置流程规则、审批/办理/抄送、条件/并行分支、字段权限、跳转规则和官方组件节点配置适配 | `openyida configure-process <appType> <formUuid> <流程JSON>` |
-| `yida-ai-form-setting` | — | 管理流程表单「AI审批提示」配置：查询字段/模型、开启关闭、保存文本/图文/附件提示词 | `openyida ai-form-setting <get\|fields\|models\|enable\|disable\|save> ...` |
-| `yida-integration` | `skills/yida-integration/SKILL.md` | 集成自动化逻辑流（创建/列表/启停） | `openyida integration <create\|list\|enable\|disable> ...` |
-| `yida-business-rule` | `skills/yida-business-rule/SKILL.md` | 表单业务关联规则高级函数（INSERT/UPDATE/DELETE/UPSERT） | 详见 SKILL.md |
-| `yida-connector` | `skills/yida-connector/SKILL.md` | HTTP 连接器创建、测试与动作管理 | `openyida connector smart-create <配置>` |
-| `yida-connector-safe-actions` | `skills/yida-connector-safe-actions/SKILL.md` | 从前后端接口安全生成 HTTP 连接器执行动作，并修复测试后动作消失问题 | `openyida connector add-action --operations <动作JSON> --connector-id <id> --confirm` |
-| `yida-data-source-connectors` | `skills/yida-data-source-connectors/SKILL.md` | 自定义页面调用连接器/远程 API 时，必须通过设计器“数据源”创建并使用 `this.dataSourceMap` 调用 | 详见 SKILL.md |
-| `sls-log-workbench` | `skills/sls-log-workbench/SKILL.md` | SLS 日志查询工作台排查（内部技术支持） | 详见 SKILL.md |
-| `yida-dashboard` | `skills/yida-dashboard/SKILL.md` | 经营看板/驾驶舱/数据大屏完整产品化交付（单屏控制塔+宜搭待办连接器真实钉钉待办闭环+卡片截图+组织内短链） | 详见 SKILL.md |
-| `yida-chart` | `skills/yida-chart/SKILL.md` | 报表可视化（ECharts 图表 + 数据聚合） | 详见 SKILL.md |
-| `yida-report` | `skills/yida-report/SKILL.md` | 宜搭原生报表创建（标准报表） | `openyida create-report <appType> "<名称>" <配置>` |
-| `yida-density` | `skills/yida-density/SKILL.md` | 列表/表格页面信息密度选择 | 详见 SKILL.md |
-| `yida-formula` | `skills/yida-formula/SKILL.md` | 公式字段和赋值规则配置 | 详见 SKILL.md |
-| `yida-formula-evaluate` | `skills/yida-formula-evaluate/SKILL.md` | 静态检查公式语法和字段引用 | `openyida formula evaluate <公式或文件>` |
-| `yida-voc` | `skills/yida-voc/SKILL.md` | 需求/故障/性能反馈 VOC 信息整理 | 详见 SKILL.md |
-| `yida-db-seq-fix` | `skills/yida-db-seq-fix/SKILL.md` | PostgreSQL sequence 漂移修复 | `openyida db-seq-fix <配置>` |
-| `yida-export-conversation` | `skills/yida-export-conversation/SKILL.md` | 导出 AI 对话记录 | `openyida export-conversation` |
-| `yida-flash-note-to-prd` | `skills/yida-flash-note-to-prd/SKILL.md` | 闪记/会议纪要转 PRD prompt | `openyida flash-to-prd <文件>` |
-| `yida-ai` | — | 宜搭 AI 文生文与识图接口调用 | `openyida ai text --prompt "..."` / `openyida ai image --file <图片> --app-type APP_XXX` |
-| `yida-ppt-slider` | `skills/yida-ppt-slider/SKILL.md` | 宜搭全屏幻灯片页面 | 详见 SKILL.md |
-| `yida-ppt` | `skills/yida-ppt/SKILL.md` | 已废弃，改用 `yida-ppt-slider` | 详见 SKILL.md |
-| `yida-batch` | — | 批量命令编排（一次登录，多命令顺序执行） | `openyida batch <file> --json` 或 `openyida batch --commands "cmd1;cmd2"` |
-| `large-file-write` | `skills/large-file-write/SKILL.md` | 大文件可靠写入辅助技能 | 详见 SKILL.md |
+### 应用与登录
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-app` | 完整应用开发编排 | 从零搭建整个应用（多步骤全流程） |
+| `yida-create-app` | 创建应用，获取 appType | 只需第一步创建应用 |
+| `yida-login` | 登录态管理 | 手动触发登录（通常自动触发） |
+| `yida-logout` | 退出登录 | 切换账号或组织 |
+
+### 页面与表单创建
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-create-page` | 创建空白自定义页面 | 需要 formUuid，后续写 JSX |
+| `yida-create-form-page` | 创建/更新表单页面 | 需要数据收集（字段定义、联动） |
+| `yida-create-process` | 创建流程表单 | 需要审批流程（一步到位） |
+| `yida-custom-page` | 编写自定义页面 JSX 代码 | 写页面逻辑和 UI |
+| `yida-publish-page` | 编译并发布页面 | JSX 代码写完后部署 |
+| `yida-table-form` | 表格形态批量录入页面 | Excel 式多行编辑提交 |
+| `yida-ppt-slider` | 全屏幻灯片页面 | 技术分享/路演/培训/演示 |
+| `yida-aggregate-table`* | 聚合表管理 | 虚拟视图创建/预览/发布 |
+
+### 数据可视化
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-report` | 原生报表（16 种组件） | 普通报表/统计，开箱即用 |
+| `yida-chart` | ECharts 高级图表 | 更美观/定制化/数据大屏 |
+| `yida-dashboard` | 经营看板/驾驶舱 | 完整看板产品化交付 |
+
+### 连接器（工作流：创建 → 加动作 → 接入页面）
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-connector` | 创建/管理连接器、配鉴权 | 连接器还不存在，或需要管理 |
+| `yida-connector-safe-actions` | 从代码生成执行动作 | 连接器已有，需从 API 代码生成 action |
+| `yida-data-source-connectors` | 页面中接入连接器数据 | 自定义页面中通过数据源调用 |
+
+### 数据操作与公式
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-data-management` | 数据增删改查 | 操作表单/流程/任务数据记录 |
+| `yida-get-schema` | 获取 Schema / 字段 ID | 只读查询表单结构 |
+| `yida-formula` | 公式编写规范 | 字段计算/默认值/校验 |
+| `yida-formula-evaluate` | 公式静态检查 | 检查公式语法和字段引用是否正确 |
+| `yida-business-rule` | 业务关联规则 | 跨表高级函数 INSERT/UPDATE/DELETE |
+
+### 流程与自动化
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-process-rule` | 配置已有流程的审批规则 | 表单已存在，修改流程节点/分支 |
+| `yida-integration` | 集成自动化逻辑流 | 提交后触发逻辑编排 |
+| `yida-agent-center` | 流程代理管理 | 设置在职/离职代理人 |
+| `yida-ai-form-setting`* | AI 审批提示配置 | 流程表单 AI 辅助审批 |
+
+### 权限与访问控制
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-corp-manager` | 平台管理员/子管理员 | 平台级权限（影响整个组织） |
+| `yida-app-permission` | 应用管理员/开发成员 | 单应用级权限 |
+| `yida-form-permission` | 表单权限组/数据范围 | 单表单级权限 |
+| `yida-page-config` | 页面公开访问/组织内分享 | 页面 URL 分享设置 |
+
+### 应用配置与平台管理
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-nav-group` | 导航分组管理 | 应用左侧菜单分组/排序 |
+| `yida-form-detail` | 表单详情页样式 | 美化 formDetail 视觉 |
+| `yida-density` | 信息密度设计 | 列表/表格页面密度选择 |
+| `yida-i18n` | 多语言管理 | 应用国际化配置 |
+| `yida-basic-info` | 组织基本信息 | 版本/容量/域名/额度查询 |
+| `yida-corp-efficiency` | 企业效能 | 效能数据/低代码学习成果 |
+
+### 辅助工具
+
+| 技能 | 用途 | 何时选择 |
+|------|------|---------|
+| `yida-flash-note-to-prd` | 闪记转 PRD | 会议纪要/闪记转需求文档 |
+| `yida-export-conversation` | 导出 AI 对话 | 保存当前对话为 Markdown |
+| `yida-voc` | VOC 反馈整理 | 整理故障/需求反馈材料 |
+| `sls-log-workbench` | SLS 日志排查 | 平台问题日志查询 |
+| `yida-db-seq-fix` | Sequence 修复 | PostgreSQL 主键冲突 |
+| `yida-ai`* | AI 文生文/识图 | 调用宜搭 AI 接口 |
+| `yida-batch`* | 批量命令编排 | 多命令顺序执行 |
+| `large-file-write` | 大文件写入 | 可靠写入 100+ 行文件 |
+
+> 标 `*` 的技能无独立 SKILL.md，直接使用对应 CLI 命令。
+
+---
+
+## 易混淆技能路由（跨组消歧）
+
+> 以下场景涉及多个分组的技能，仅靠分组标题不易区分，按「判断依据」快速选定。
+
+### 表单结构 vs 数据操作
+
+| 用户意图 | 正确技能 | 判断依据 |
+|---------|---------|---------|
+| 增加/修改/删除字段 | `yida-create-form-page` | 改变表单结构（字段增删改） |
+| 查看字段 ID、获取 Schema | `yida-get-schema` | 只读查询表单结构 |
+| 增删改查数据记录 | `yida-data-management` | 操作已有数据，不改字段结构 |
+| 优化表单详情页视觉样式 | `yida-form-detail` | 注入 CSS 美化详情页，不改字段 |
+
+### 公式 vs 业务规则 vs 集成自动化
+
+| 用户意图 | 正确技能 | 判断依据 |
+|---------|---------|---------|
+| 字段自动计算、默认值、校验 | `yida-formula` | 配在字段属性上的实时计算/校验 |
+| 提交后跨表增删改（用户明确要求高级函数） | `yida-business-rule` | INSERT/UPDATE/DELETE/UPSERT |
+| 提交后逻辑编排（推荐方案） | `yida-integration` | 图形化集成自动化流 |
+
+### 流程创建 vs 流程规则
+
+| 用户意图 | 正确技能 | 判断依据 |
+|---------|---------|---------|
+| 从零创建流程表单 | `yida-create-process` | 表单还不存在，一步到位 |
+| 修改已有流程的审批规则 | `yida-process-rule` | 表单已存在，只改流程节点/分支 |
+| 只需创建普通表单（无审批） | `yida-create-form-page` | 不涉及审批流程 |
+
+### 权限体系（四层 + 流程字段权限）
+
+| 用户意图 | 正确技能 | 判断依据 |
+|---------|---------|---------|
+| 平台管理员、子管理员、通讯录 | `yida-corp-manager` | 平台级，影响整个组织 |
+| 应用主管理员、数据管理员、开发成员 | `yida-app-permission` | 单个应用级别 |
+| 表单权限组、数据范围、操作权限 | `yida-form-permission` | 单个表单级别 |
+| 流程节点字段权限（可见/只读/隐藏） | `yida-process-rule` | 审批节点内字段可见性 |
+| 页面公开访问 / 组织内分享 | `yida-page-config` | 页面 URL 分享设置 |
 
 ---
 

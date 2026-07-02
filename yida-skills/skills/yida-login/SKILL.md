@@ -1,6 +1,6 @@
 ---
 name: yida-login
-description: 宜搭登录态管理。扫码登录，Cookie 持久化到 .cache/cookies.json。不适用于：已有有效登录态时（先用 openyida env 确认），或切换组织时（应先 logout 再重新登录）。
+description: 宜搭登录态管理。扫码登录，Cookie 持久化到 .cache/cookies.json。适用于首次登录或登录态失效时获取有效 Cookie。
 ---
 
 # 宜搭登录态管理

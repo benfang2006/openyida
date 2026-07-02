@@ -1,6 +1,6 @@
 ---
 name: yida-data-source-connectors
-description: 宜搭自定义页面连接器/远程 API 数据源接入规范。适用于在应用页面、自定义页面、看板或数据大屏中调用 HTTP 连接器动作、远程 API、第三方接口或外部系统数据时，要求通过设计器“数据源”创建连接器数据源，并在代码中使用 this.dataSourceMap.<name>.load() 调用。不适用于创建连接器本体或生成连接器执行动作（应使用 yida-connector 或 yida-connector-safe-actions）。
+description: 自定义页面接入连接器或远程 API 的数据源规范。通过设计器"数据源"面板创建数据源，在页面代码中使用 this.dataSourceMap.<name>.load() 调用。适用于自定义页面、Dashboard、大屏需要读取外部接口数据时。
 ---
 
 # 宜搭连接器数据源接入规范
@@ -20,11 +20,7 @@ description: 宜搭自定义页面连接器/远程 API 数据源接入规范。�
 - 用户要求“把连接器操作添加到页面数据源”“左侧数据源里要能看到连接器”“远程 API 不要写死在 JSX 里”。
 - 修复页面一直卡在“加载中”，且原因是代码绕过数据源直接请求连接器或外部域名。
 
-## 不适用场景
-
-- 读取宜搭表单、流程、任务或子表数据 → 使用 `yida-data-management`。
-- 子表内嵌明细只返回 50 行 → 使用 `openyida data query subform` / `listTableDataByFormInstIdAndTableId` 按 `formInstId + tableFieldId` 分页查询，不要为此新建连接器数据源。
-- 修改表单或页面结构 → 使用 `yida-create-form-page` / `yida-custom-page`。
+> ⚠️ 子表内嵌明细只返回 50 行，应使用 `openyida data query subform` 按 `formInstId + tableFieldId` 分页查询，不要为此新建连接器数据源。
 
 ## 与其他技能的分工
 

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "order-management",
+    "prompt": "帮我创建一个订单管理系统，能录入订单、客户、金额和状态",
+    "expectedFeatures": {
+      "minTargets": 1,
+      "targetTypes": ["page"],
+      "keywords": ["订单"]
+    },
+    "note": "最常见的表单/数据录入类需求，应产出可用的录入页面"
+  },
+  {
+    "id": "leave-approval-process",
+    "prompt": "帮我创建一个带审批流程的请假申请，员工提交后由主管审批",
+    "expectedFeatures": {
+      "appType": "流程",
+      "minTargets": 1,
+      "keywords": ["请假", "审批"]
+    },
+    "note": "流程类需求，应走 create-process / configure-process"
+  },
+  {
+    "id": "sales-dashboard",
+    "prompt": "帮我做一个销售经营数据看板，展示销售额、订单量和趋势",
+    "expectedFeatures": {
+      "minTargets": 1,
+      "targetTypes": ["dashboard"],
+      "keywords": ["销售"]
+    },
+    "note": "数据看板类需求，应产出 dashboard 页面"
+  }
+]

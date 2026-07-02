@@ -1,6 +1,6 @@
 ---
 name: yida-formula
-description: 宜搭表单公式编写规范，包含函数速查、语法规则、常见场景示例。不适用于：配置业务关联规则/高级函数（应使用 yida-business-rule），或创建表单字段结构（应使用 yida-create-form-page）。
+description: 宜搭表单公式编写规范，包含 60+ 内置函数速查、语法规则和常见场景示例。适用于编写表单字段公式、校验规则和计算逻辑时。
 ---
 
 # 宜搭表单公式编写规范
@@ -13,13 +13,6 @@ description: 宜搭表单公式编写规范，包含函数速查、语法规则�
 - 用户需要在表单字段上配置默认值公式、计算公式
 - 用户需要配置字段的自定义校验规则
 - 用户需要了解宜搭公式函数的用法和语法
-
-**不适用场景（不要触发）**：
-- 配置业务关联规则、高级函数、`INSERT`/`UPDATE`/`DELETE`/`UPSERT` → `yida-business-rule`
-- 配置复杂或长期维护的提交后跨表联动，且用户未明确要求高级函数 → `yida-integration`（集成自动化）
-- 创建/修改表单字段结构 → `yida-create-form-page`
-- 查询表单数据记录 → `yida-data-management`
-- 配置审批流程条件 → `yida-process-rule`
 
 **与相邻技能的边界**：
 | 场景 | 使用技能 |
@@ -131,17 +124,6 @@ Step 2: openyida get-schema 获取各字段的真实 fieldId
          ↓
 Step 3: create 或 update 模式添加/更新带公式的字段，引用真实 #{fieldId}
 ```
-
-### 赋值类型限制
-
-公式结果只能赋值给**同类型**的组件：
-
-| 公式结果类型 | 可配置的字段类型 |
-|------------|----------------|
-| 数值计算结果 | `NumberField` |
-| 文本函数结果 | `TextField`、`TextareaField` |
-| 日期函数结果 | `DateField` |
-| 人员函数结果 | `EmployeeField` |
 
 ---
 

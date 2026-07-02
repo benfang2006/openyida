@@ -1,6 +1,6 @@
 ---
 name: yida-table-form
-description: 宜搭自定义页面表格形式批量表单提交技能。支持动态增删行、行内多字段编辑、行内验证、Excel 粘贴导入、草稿暂存（localStorage）、批量调用 saveFormData 提交。不适用于：单条表单提交（应使用 yida-custom-page 普通表单），或查询/展示已有数据（应使用 yida-data-management）。
+description: 表格形态批量表单提交页面开发。支持动态增删行、行内编辑验证、Excel 粘贴导入、草稿暂存、批量 saveFormData 提交。适用于需要一次性录入多条表单数据的场景。
 ---
 
 # 宜搭自定义页面表格表单提交技能
@@ -36,11 +36,7 @@ description: 宜搭自定义页面表格形式批量表单提交技能。支持�
 - "表格形式填写"、"多行同时编辑"
 - "从 Excel 粘贴"、"复制粘贴数据"
 
-**不适用场景（不要触发）**：
-- 单条表单提交 → `yida-custom-page` 普通表单
-- 查询/展示已有数据 → `yida-data-management`
-- 批量更新已有记录 → `yida-data-management` 的 update 接口
-- 移动端页面 → 表格表单在移动端体验差，建议使用标准表单
+> ⚠️ 表格表单在移动端体验差，移动端场景建议使用标准表单。
 
 **与相邻技能的边界**：
 | 场景 | 使用技能 |

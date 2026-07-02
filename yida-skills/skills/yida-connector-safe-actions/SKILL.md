@@ -1,6 +1,6 @@
 ---
 name: yida-connector-safe-actions
-description: 宜搭 HTTP 连接器执行动作安全生成与修复。适用于从前端 API 文件、后端 Controller/接口定义生成 OpenYida 连接器操作，或修复“点击测试后报错、所有操作消失”的连接器动作配置问题。不适用于创建连接器本体（应使用 yida-connector），也不适用于配置集成自动化逻辑流（应使用 yida-integration）。
+description: 从前端 API 文件或后端 Controller 代码中提取接口定义，为已有宜搭连接器生成执行动作配置；修复"测试后动作消失"问题。适用于连接器已创建、需要添加可调用的 API 操作时。
 ---
 
 # 宜搭 HTTP 连接器执行动作安全生成

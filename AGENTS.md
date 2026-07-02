@@ -154,9 +154,28 @@ openyida/
 └── scripts/
     ├── build-skills-package.js # 生成悟空可上传的 dist/skills/openyida 技能目录和 openyida-skills.zip
     ├── postinstall.js       # 安装后脚本（环境检测 + 配置注入）
+    ├── e2e-real/            # 真实环境确定性 CLI 链路测试（runner/full-runner/skill-coverage/cleanup）
+    ├── eval/               # Skill 测评 harness（路由测评 + 端到端截图打分），见下文
     ├── validate-ci.sh       # CI 校验脚本
     └── validate-structure.js # 项目结构校验
 ```
+
+### Skill 测评 Harness（scripts/eval/）
+
+`e2e-real/` 验证 CLI 链路是否跑通；`eval/` 验证**改动 `yida-skills/SKILL.md` 后 agent 的路由与产出是否变好**，是 harness engineering 的反馈闭环。
+
+- `config.js`：解析配置，优先级 `CLI flag > env(OPENYIDA_EVAL_*) > eval.config.json > 默认`；`--skill` 经 `SKILL_COVERAGE` 矩阵反查 stages。
+- `agent.js`：唯一的 headless agent 封装（`claude -p --output-format json`），路由测评与截图打分共用；CLI 缺失时返回 `available:false` 优雅降级。
+- `routing.js` + `scenarios/`：**路由测评（选对子技能吗）**——把自然语言 prompt 跑一遍，比对选中的子技能与 golden 集，算命中率/混淆对。无副作用、不建资源。
+- `generate.js` + `scenarios/generation/`：**真实生成（自然语言建应用）**——把「帮我创建一个订单管理系统」这类自然语言喂给 `claude -p`，让它**自主读技能 + 真的执行 CLI** 产出真实应用，再复用截图 + 打分 + 报告链路。测「端到端：一句话能否真生成可用应用」。与「工具管道基线」（确定性 CLI、固定命名、不经过 agent）的区别是 agent 自主编排。agent 运行器可注入，单测永不碰真实 CLI/不建资源。
+- `guardrail.js`：纯函数护栏——任何资源变更命令出现前必须先有成功的 `login --check-only`，否则红线 fail。
+- `screenshot.js`：动态解析 Playwright（软依赖），注入 cookie 缓存截发布页；缺失则跳过。
+- `score.js`：调本地多模态 `claude -p` 对截图按 rubric 打分；不开自动分则只生成 `scoring.md` 人工模板。
+- `report.js`：把护栏 + 截图 + 打分渲染成自包含 `eval-report.html`（截图 base64 内联，单文件可分享），与 `scoring.md` 并列产出。
+- `manifest.js` + `runner.js`：把 eval 结果**增量回写**进现有 `acceptance-manifest.json` 的 `eval` 段，不另起产物；真实生成产物落 `project/.cache/eval/generate/gen-<时间戳>/`。其中 `runner.js` 的「工具管道基线（端到端）」用固定命令验证「建应用→截图→打分」管道本身健康，是排查 agent vs 工具问题的对照基线。
+- `dashboard/`：零依赖本地控制台（`npm run eval:dashboard` → `http://127.0.0.1:4500`），按钮触发 + SSE 实时流式输出，首页「ℹ︎ 测评思路」概览讲清各任务目的，「📊 查看最新报告」打开最新 `eval-report.html`。
+
+命令：`npm run eval:routing`、`npm run eval:e2e`、`npm run eval:generate`、`npm run eval:all`、`npm run eval:dashboard`（端到端 / 生成需 `OPENYIDA_E2E=1` + cookie 缓存 + 已认证 agent）。`all` = 路由测评 + 工具管道基线 + 真实生成。纯函数逻辑由 `tests/eval-*.test.js` 覆盖，进 CI。
 
 ## 关键约定
 

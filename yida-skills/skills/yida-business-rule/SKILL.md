@@ -1,6 +1,6 @@
 ---
 name: yida-business-rule
-description: 宜搭表单业务关联规则/高级函数配置技能。用于用户明确要求在表单设置中配置业务关联规则，或使用 INSERT、UPDATE、DELETE、UPSERT 高级函数做跨表增删改。不适用于：常规推荐的集成自动化逻辑流（应使用 yida-integration），或普通字段默认值/校验公式（应使用 yida-formula）。
+description: 宜搭表单业务关联规则与高级函数配置。用于在表单设置中配置业务关联规则，或使用 INSERT、UPDATE、DELETE、UPSERT 高级函数实现跨表增删改。适用于需要表单间数据联动的场景。
 ---
 
 # yida-business-rule — 业务关联规则高级函数

@@ -1,6 +1,6 @@
 ---
 name: yida-form-permission
-description: 宜搭表单权限组管理。查询、新增权限组，配置成员/数据权限/操作权限/字段权限。不适用于：配置页面公开访问分享（应使用 yida-page-config），或配置流程审批节点的字段权限（应使用 yida-process-rule）。
+description: 宜搭表单权限组管理。查询、新增权限组，配置成员权限、数据权限、操作权限和字段权限。适用于控制表单数据的访问范围和操作权限。
 ---
 # 表单权限配置
 
@@ -26,11 +26,6 @@ description: 宜搭表单权限组管理。查询、新增权限组，配置成�
 - "配置权限"、"设置数据权限"
 - "添加权限组"、"控制谁能看/改/删数据"
 - "设置成员权限"、"配置操作权限"、"配置字段权限"
-
-**不适用场景（不要触发）**：
-- 配置流程节点的字段权限（NORMAL/READONLY/HIDDEN）→ `yida-process-rule` 的 `formConfig`
-- 修改表单字段结构 → `yida-create-form-page`
-- 流程节点中的字段权限（NORMAL/READONLY/HIDDEN）→ `yida-process-rule` 的 `formConfig`
 
 ## 危险操作确认
 

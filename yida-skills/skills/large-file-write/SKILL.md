@@ -1,6 +1,6 @@
 ---
 name: large-file-write
-description: 解决 heredoc 或 shell 命令写入大文件内容被截断的问题。当需要可靠地写入超过 100 行的大块内容时使用，通过 Node.js 脚本将内容作为模板字符串写入，绕过 shell 截断限制。不适用于：文件内容少于 100 行（直接使用 create_file 工具），或二进制文件写入。
+description: 解决 heredoc 或 shell 命令写入大文件内容被截断的问题。通过 Node.js 脚本将内容作为模板字符串写入，绕过 shell 截断限制。适用于需要可靠写入超过 100 行文本文件时。
 ---
 
 # Large File Write Skill

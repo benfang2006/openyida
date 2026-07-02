@@ -1,6 +1,6 @@
 ---
 name: yida-publish-page
-description: 将 JSX 源码编译发布到宜搭自定义页面。Babel 转 ES5 + UglifyJS 压缩 + Schema 构建 + saveFormSchema 接口部署。不适用于：发布原生表单页面（无需此命令），或代码尚未编写完成时（必须先完成 yida-custom-page 规范的代码编写）。
+description: 将 JSX 源码编译发布到宜搭自定义页面。Babel 转 ES5 + UglifyJS 压缩 + Schema 构建 + saveFormSchema 接口部署。适用于自定义页面代码编写完成后的编译和发布。
 ---
 
 # 发布自定义页面
@@ -35,9 +35,7 @@ description: 将 JSX 源码编译发布到宜搭自定义页面。Babel 转 ES5 
 - `yida-custom-page` 代码编写完成后的下一步
 - "编译发布"、"把代码发布到宜搭"
 
-**不适用场景（不要触发）**：
-- 发布原生表单页面（无需此命令，表单创建即生效）
-- 代码尚未编写完成（必须先完成 `yida-custom-page` 规范的代码编写）
+> ⚠️ 代码必须先完成 `yida-custom-page` 规范的编写，再执行发布。原生表单页面无需此命令，创建即生效。
 
 ---
 
