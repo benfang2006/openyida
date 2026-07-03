@@ -21,7 +21,8 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
 - 每个关键 ID 创建后立即记录到 `.cache/<项目名>-schema.json`
 - 业务需求记录到 `prd/<项目名>.md`
 - 临时字段配置、流程配置、报表配置、导入数据和一次性执行脚本统一写入 `.cache/openyida/`，不要写到仓库根目录
-- 首次生成完整应用后，必须基于业务信息架构整理导航顺序；多个看板和表单并存时，不要简单把所有自定义页面放在表单前面
+- 首次生成完整应用后，必须基于业务信息架构整理导航顺序：面向决策者的总览/驾驶舱看板作为门面靠前，数据录入/明细表单在后；同级多个专题看板按业务优先级排，不要把所有自定义页面无脑堆最前
+- 导航整理完成后，若应用含表单，默认向核心表单灌入 2-3 条覆盖关键维度的示例数据，让看板首屏有真实聚合效果；`DateField`/`CascadeDateField` 用 13 位毫秒时间戳，灌后 `openyida data query` 抽查至少 1 条确认字段值非空（用户明确说"不要示例数据"时才跳过）
 - **本技能不读写 memory**：所有关键 ID（appType、formUuid 等）通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景
@@ -59,9 +60,13 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
               ↓
 [Step 7] 发布页面 → openyida publish <源文件路径> <appType> <formUuid> [--health-check]
               ↓
-[Step 8] 整理导航 → openyida nav-group order <appType> <首页/核心表单/专题看板...>
+[Step 8] 整理导航 → openyida nav-group order <appType> <总览看板/专题看板/核心表单...>
+              ↓      （总览/驾驶舱看板作为门面靠前，数据录入/明细表单在后）
               ↓
-[Step 9] 输出访问链接，用系统浏览器打开
+[Step 9]（有表单时默认执行）灌入示例数据 → openyida data create form <appType> <formUuid> --data-json '...'
+              ↓      （2-3 条覆盖关键维度的记录，让看板首屏有真实数据；DateField 用 13 位毫秒时间戳，灌后 query 抽查非空）
+              ↓
+[Step 10] 输出访问链接，用系统浏览器打开
 ```
 
 ### 编写自定义页面代码前必须完整学习 `skills/yida-custom-page/SKILL.md`
@@ -372,7 +377,39 @@ openyida publish <源文件路径> <appType> <formUuid> [--health-check]
 
 ---
 
-### Step 8：输出访问链接并用系统浏览器打开
+### Step 8：整理导航顺序（含看板/多页面时必做）
+
+首次生成完整应用后，导航是创建时的默认顺序（通常表单在前、看板在后），必须基于业务信息架构重排。调用 `yida-nav-group` 技能：
+
+```bash
+openyida nav-group order <appType> <总览看板> <专题看板...> <核心表单...>
+```
+
+**默认原则**：面向决策者的**总览/驾驶舱看板作为应用门面靠前**，数据录入/明细表单在其后；同级多个专题看板按业务优先级排，不要把所有页面无脑堆最前。
+
+> 📖 详见 [`skills/yida-nav-group/SKILL.md`](../yida-nav-group/SKILL.md)
+
+---
+
+### Step 9：灌入示例数据（有表单时默认执行）
+
+新建应用的表单默认无数据，看板首屏会空。导航整理完成后，默认向核心表单灌入 **2-3 条**覆盖关键维度（不同活动/渠道/日期等）的示例记录，调用 `yida-data-management` 技能：
+
+```bash
+openyida data create form <appType> <formUuid> --data-json '{"selectField_xxx":"双11","dateField_xxx":1730995200000,"numberField_xxx":1200000}'
+```
+
+**要点**：
+- `DateField`/`CascadeDateField` 必须用 13 位毫秒时间戳，不要传 `YYYY-MM-DD`。
+- 字段 ID 从 `.cache/<项目名>-schema.json` 或 `openyida get-schema` 获取，不能猜。
+- 灌完执行 `openyida data query form <appType> <formUuid>` 抽查至少 1 条，确认 `formData` 字段有实际值。
+- 用户明确说"不要示例数据 / 不要 mock 数据"时才跳过。
+
+> 📖 详见 [`skills/yida-data-management/SKILL.md`](../yida-data-management/SKILL.md)
+
+---
+
+### Step 10：输出访问链接并用系统浏览器打开
 
 访问地址格式参考文档末尾 [「宜搭应用 URL 规则」](#宜搭应用-url-规则) 章节。
 
@@ -410,6 +447,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--health-check]
 5. yida-custom-page → 编写游戏页面代码
 6. yida-publish-page → 发布，输出访问链接
 7. yida-nav-group → 按“游戏首页 → 祝福记录表”整理导航
+8. yida-data-management → 向祝福记录表灌 2-3 条示例数据
 ```
 
 ### 场景 2：带审批的 CRM 系统
@@ -423,7 +461,8 @@ openyida publish <源文件路径> <appType> <formUuid> [--health-check]
 6. yida-create-page → 创建 CRM 首页
 7. yida-custom-page → 编写首页代码（集成表单 + 报表）
 8. yida-publish-page → 发布
-9. yida-nav-group → 按“CRM 首页 → 客户信息表 → 跟进记录表 → 审批流程/报表”整理导航
+9. yida-nav-group → 按“CRM 首页/看板 → 客户信息表 → 跟进记录表 → 审批流程/报表”整理导航
+10. yida-data-management → 向客户信息表、跟进记录表灌 2-3 条示例数据
 ```
 
 ### 场景 3：数据大屏（ECharts 可视化）

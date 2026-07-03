@@ -58,10 +58,20 @@ description: >
               ↓
 [Step 6] 发布页面 → openyida publish
               ↓
-[Step 7]（按需）配置公开访问 → openyida verify-short-url / save-share-config
+[Step 7]（含看板/多页面时必做）整理导航顺序 → openyida nav-group order
+              ↓      （总览/驾驶舱看板作为门面靠前，数据录入/明细表单在后）
               ↓
-[Step 8] 输出访问链接，用系统浏览器打开
+[Step 8]（有表单时默认执行）灌入示例数据 → openyida data create form
+              ↓      （2-3 条覆盖关键维度的记录，让看板首屏有真实数据；DateField 用 13 位毫秒时间戳，灌后 query 抽查非空）
+              ↓
+[Step 9]（按需）配置公开访问 → openyida verify-short-url / save-share-config
+              ↓
+[Step 10] 输出访问链接，用系统浏览器打开
 ```
+
+> **Step 7 导航整理（含看板/多页面时必做）**：首次生成完整应用后，必须基于业务信息架构重排导航，不能保留创建时的默认顺序。默认原则：面向决策者的**总览/驾驶舱看板作为应用门面靠前**，数据录入/明细表单在其后；同级多个专题看板按业务优先级排，不要把所有页面无脑堆最前。详见 `skills/yida-nav-group/SKILL.md`。
+>
+> **Step 8 灌入示例数据（有表单时默认执行）**：新建应用的表单默认无数据，看板会空。导航整理完成后，默认向核心表单灌入 **2-3 条**覆盖关键维度（如不同活动/渠道/日期）的示例记录，让看板首屏可展示真实聚合效果。`DateField`/`CascadeDateField` 必须用 13 位毫秒时间戳；灌后执行 `openyida data query` 抽查至少 1 条，确认字段值非空。详见 `skills/yida-data-management/SKILL.md`。
 
 ---
 
