@@ -6,6 +6,7 @@ const {
   flattenTreeIds,
   moveNodeInTree,
   parseArgs,
+  reorderRootNodes,
   resolveNode,
 } = require('../lib/app/nav-group');
 
@@ -62,6 +63,27 @@ describe('nav-group helpers', () => {
     expect(flatNodes).toContainEqual(['FORM-A', 'NAV-GROUP-2']);
     expect(flattenTreeIds(moved.roots)).toEqual([1, 3, 4, 5, 2]);
     expect(moved.ids).toEqual([1, 3, 4, 5, 2]);
+  });
+
+  test('reorderRootNodes places selected dashboards and forms before the remaining root items', () => {
+    const withDashboards = fixture.concat([
+      { id: 6, navUuid: 'PAGE-HOME', formUuid: 'PAGE-HOME', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', title: { zh_CN: '首页看板' }, listOrder: 5 },
+      { id: 7, navUuid: 'PAGE-618', formUuid: 'PAGE-618', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', title: { zh_CN: '618看板' }, listOrder: 6 },
+      { id: 8, navUuid: 'FORM-ORDER', formUuid: 'FORM-ORDER', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', title: { zh_CN: '订单表' }, listOrder: 7 },
+    ]);
+    const moved = reorderRootNodes(withDashboards, ['PAGE-HOME', 'FORM-ORDER', 'PAGE-618']);
+    const visibleRootOrder = moved.roots
+      .filter((node) => node.parentNavUuid === ROOT_NAV_UUID && node.navType !== 'SYSTEM')
+      .map((node) => node.navUuid);
+
+    expect(visibleRootOrder).toEqual(['PAGE-HOME', 'FORM-ORDER', 'PAGE-618', 'FORM-A', 'NAV-GROUP-1', 'NAV-GROUP-2']);
+    expect(moved.orderedNavUuids).toEqual(['PAGE-HOME', 'FORM-ORDER', 'PAGE-618']);
+    expect(moved.ids).toEqual([1, 6, 8, 7, 2, 3, 4, 5]);
+  });
+
+  test('reorderRootNodes rejects duplicate items', () => {
+    expect(() => reorderRootNodes(fixture, ['FORM-A', 'FORM-A']))
+      .toThrow('Duplicate navigation item: FORM-A');
   });
 
   test('moveNodeInTree rejects moving a system node', () => {

@@ -21,6 +21,7 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
 - 每个关键 ID 创建后立即记录到 `.cache/<项目名>-schema.json`
 - 业务需求记录到 `prd/<项目名>.md`
 - 临时字段配置、流程配置、报表配置、导入数据和一次性执行脚本统一写入 `.cache/openyida/`，不要写到仓库根目录
+- 首次生成完整应用后，必须基于业务信息架构整理导航顺序；多个看板和表单并存时，不要简单把所有自定义页面放在表单前面
 - **本技能不读写 memory**：所有关键 ID（appType、formUuid 等）通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景
@@ -58,7 +59,9 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
               ↓
 [Step 7] 发布页面 → openyida publish <源文件路径> <appType> <formUuid> [--health-check]
               ↓
-[Step 8] 输出访问链接，用系统浏览器打开
+[Step 8] 整理导航 → openyida nav-group order <appType> <首页/核心表单/专题看板...>
+              ↓
+[Step 9] 输出访问链接，用系统浏览器打开
 ```
 
 ### 编写自定义页面代码前必须完整学习 `skills/yida-custom-page/SKILL.md`
@@ -406,6 +409,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--health-check]
 4. yida-create-form-page → 创建祝福记录表单，获取 formUuid + fieldId
 5. yida-custom-page → 编写游戏页面代码
 6. yida-publish-page → 发布，输出访问链接
+7. yida-nav-group → 按“游戏首页 → 祝福记录表”整理导航
 ```
 
 ### 场景 2：带审批的 CRM 系统
@@ -419,6 +423,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--health-check]
 6. yida-create-page → 创建 CRM 首页
 7. yida-custom-page → 编写首页代码（集成表单 + 报表）
 8. yida-publish-page → 发布
+9. yida-nav-group → 按“CRM 首页 → 客户信息表 → 跟进记录表 → 审批流程/报表”整理导航
 ```
 
 ### 场景 3：数据大屏（ECharts 可视化）

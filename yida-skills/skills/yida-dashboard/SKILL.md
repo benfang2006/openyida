@@ -110,6 +110,10 @@ metadata:
 [Step 8] 组织内短链 + 隐藏导航 + 卡片截图验证
    openyida verify-short-url <appType> <formUuid> <url>
    openyida save-share-config ... --hide-nav
+           ↓
+[Step 9] 如果属于完整应用，回到 yida-app 编排层统一整理导航
+   openyida nav-group order <appType> <首页/总览> <核心业务表单...> <专题看板...>
+   多个看板并存时，不要把所有看板无脑置顶。
 ```
 
 ---

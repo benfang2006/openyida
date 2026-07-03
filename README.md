@@ -355,7 +355,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | Query enterprise efficiency overview and detail reports |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a Yida app |
 | `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` | Update app info |
-| `openyida nav-group <list\|create\|rename\|delete\|move\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
+| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
 | `openyida app-permission <get\|set\|add\|remove\|search-user> ...` | Manage app primary, data, and developer admins |
 | `openyida i18n <overview\|config\|languages\|list\|upsert\|delete\|translate\|translate-all\|upgrade> <appType> ...` | Manage app multilingual copy and language config |
 | `openyida export <appType> [output]` | Export app (generate migration package) |
