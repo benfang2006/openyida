@@ -8,139 +8,47 @@ description: >
 
 # 宜搭 AI 应用开发指南
 
-## 概述
-
-本技能通过有 AI Coding 能力的智能体（悟空/Claude/Open Code 等） + 宜搭低代码平台，实现一句话生成完整应用。涵盖从应用创建、表单设计、自定义页面开发到页面发布的完整链路。
-
-所有操作通过 **`openyida`** 命令行工具统一执行，无需关心脚本路径或运行环境差异。
-
-**登录态说明**：所有命令自动读取 `.cache/cookies.json`，首次运行或 Cookie 失效时自动触发登录流程，无需手动执行登录命令。
+通过有 AI Coding 能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话生成完整应用。所有操作通过 **`openyida`** CLI 统一执行，命令自动读取 `.cache/cookies.json`，Cookie 失效时自动触发登录，无需手动登录。
 
 ---
 
-## 环境依赖
+## 第一步：环境与登录态检测（必做必读，先于一切操作）
 
-| 依赖 | 版本 | 用途 |
-|------|------|------|
-| Node.js | ≥ 16 | 运行 openyida |
+> ⚡ **前置门槛**：确认 openyida 已安装、Node/npm 依赖达标、登录态就绪。**未通过只读验证前，禁止创建应用/页面/表单或发布等任何真实资源操作。**
 
-```bash
-# 安装 openyida（首次使用前执行）
-npm install -g openyida
+**怎么做**：跑 `openyida env --json`（能跑 = 已安装，输出含 AI 工具 / project / 登录态）和 `openyida login --check-only --json`（只读登录态），再据结果对症处理：
 
-# 更新 openyida 到最新版本
-npm install -g openyida@latest
-```
+| 检测结果 | 处理 |
+|---------|------|
+| 命令跑不了（`command not found`） | openyida 未安装 → `npm install -g openyida` |
+| Node/npm 版本不达标 | 先升级 Node（≥16）再装/升级 openyida |
+| `login.loggedIn` 为 false | 未登录 → `openyida login`（指定入口带 URL 或 flag） |
+| `active.projectRootExists` 为 false | 无工作目录 → `openyida copy` 初始化 |
 
----
-
-## 更新 openyida
-
-**手动更新**：
-```bash
-npm install -g openyida@latest
-```
-
-**让 AI 帮你更新**：
-
-执行 `openyida` 命令出现报错时，直接告诉 AI：
-
-> "openyida 命令出错了，请帮我更新 openyida"
-
-AI 会自动执行以下命令完成更新：
-```bash
-npm install -g openyida@latest
-```
-
-更新完成后重新执行出错的命令即可。
+**👉 完整命令解读、悟空降级、Codex handoff 等特殊分支 → [references/setup-and-env.md](references/setup-and-env.md)（必读）。**
 
 ---
 
-## ⚡ 首要步骤：检测运行环境（必须先执行）
+## 第二步：意图路由（先判断「全量搭建」还是「单一任务」）
 
-**在执行任何宜搭操作前，必须先运行环境检测命令**，确认当前 AI 工具环境和登录态：
+> ⚡ **环境就绪后，先判断用户诉求属于哪一类，再走对应路线**：从零搭一个完整应用，还是对已有资源做单点改动。选错会导致多余步骤或回退；歧义时简短确认一次即可。
 
-```bash
-openyida env --json
-openyida login --check-only --json
-```
-
-`openyida env --json` 用于确认当前 AI 工具、项目根目录、配置文件和登录态拆解项；`openyida login --check-only --json` 只读取本地登录缓存，不触发登录、不打开浏览器、不创建任何资源。
-
-若用户明确要求登录某个宜搭入口 URL，登录命令必须携带该 URL 或对应环境 flag。例如 `https://yida-group.alibaba-inc.com/` 是阿里内网宜搭，应执行 `openyida login https://yida-group.alibaba-inc.com/` 或 `openyida login --alibaba`，不要退化成裸 `openyida login`，否则会落到默认公有云 `www.aliwork.com` / `cookies-public.json`。
-
-**悟空（Wukong）降级规则**：如果在悟空环境中本地命令执行入口连续失败，不要继续重试，也不要判断为 OpenYida 登录失败。进入人工协同诊断模式，请用户在可用终端执行以下低风险命令并贴回输出：
-
-```bash
-openyida -v
-openyida env --json
-openyida login --check-only --json
-```
-
-在拿到上述输出并确认 `loggedIn/can_auto_use`、`csrf_token_found`、`corp_id_found`、`base_url_found` 等关键项前，禁止创建应用、页面、表单或发布页面等会产生真实宜搭资源的操作。
-
-**输出解读**：
-
-| 字段 | 说明 |
-|------|------|
-| AI 工具检测 | 显示当前活跃的 AI 工具（悟空/OpenCode/Aone Copilot 等） |
-| 当前生效环境 | 显示项目根目录路径 |
-| 登录态检测 | 显示是否已登录、域名、组织 ID |
-
-> **若显示"未登录"，先执行 `openyida login`。Codex 中默认返回内置浏览器 handoff：用 Browser Use 打开 `login_url`，让钉钉/宜搭页面承接扫码和组织选择。若 Browser Use 不能直接打开外部 URL，先打开临时本地 redirect 页面再跳转到 `login_url`。页面登录完成后必须再次执行 `openyida login --check-only --json` 验证缓存写入。不要在只读验证通过前执行真实资源创建。**
+| 用户诉求信号 | 判定 | 走哪条路线 |
+|------------|------|-----------|
+| 创建/搭建/做一个 + 应用/系统/管理系统；或明确表达从零开始 | **全量搭建** | 走 [完整开发流程](#完整开发流程全量搭建)，从 Step 1 顺序执行 |
+| 对已有应用/表单/页面的单点操作（加字段、查改数据、配公式、建报表、改权限、发布、美化…） | **单一 / 增量任务** | 到 [技能路由](#技能路由单一--增量任务) 选定 **1 个**，只读其 SKILL.md 执行，不回退流程 |
 
 ---
 
-## 🔧 初始化 project 工作目录
+## 完整开发流程（全量搭建）
 
-**如果当前工程目录下没有 `project/` 目录**（例如切换了 AI 工具、或在新工程中首次使用），需要手动执行初始化：
-
-```bash
-openyida copy
-```
-
-### 复制目标说明
-
-| AI 工具 | project 目录位置 | 说明 |
-|---------|-----------------|------|
-| **悟空（Wukong）** | `~/.real/workspace/project` | 悟空有专属 workspace，与工程目录无关 |
-| **其他工具**（Aone Copilot、Cursor、Claude Code、OpenCode 等） | `<当前工程目录>/project` | 以项目为单位，需在工程根目录下执行 |
-
-### AI 执行规则
-
-**在执行任何宜搭操作前，先检查 project 目录是否存在**：
-
-- **悟空**：检查 `~/.real/workspace/project` 是否存在
-- **其他工具**：检查当前工程目录下的 `project/` 是否存在
-
-若不存在，执行初始化：
-```bash
-openyida copy
-```
-
-> ⚠️ 对于非悟空工具，必须先 `cd` 到工程根目录再执行 `openyida copy`。
-
----
-
-## 何时使用
-
-当用户提出以下需求时，使用本技能并按照完整开发流程执行：
-- 创建宜搭应用、表单、自定义页面
-- 创建、查看或发布宜搭聚合表（virtualView）
-- 发布或更新宜搭页面
-- 配置页面公开访问/组织内分享
-- 查询表单 Schema 或字段 ID
-- 管理宜搭登录态（登录/退出）
-
----
-
-## 完整开发流程
+> 📌 仅当第二步判定为「全量搭建」时进入；单一/增量任务请跳「技能路由」。
 
 ```
 [Step 1] 创建应用 → openyida create-app          → 获得 appType
               ↓
 [Step 2] 需求分析 → 写入 prd/<项目名>.md
-              ↓      （必须包含 MVP 边界、角色权限、核心旅程、状态机、数据约束、验收标准）
+              ↓      （必须含 MVP 边界、角色权限、核心旅程、状态机、数据约束、验收标准）
               ↓
 [Step 3] 创建自定义页面 → openyida create-page    → 获得 formUuid（看板用 --mode dashboard）
               ↓
@@ -157,297 +65,103 @@ openyida copy
 
 ---
 
-## 子技能速查
+## 技能路由（单一 / 增量任务）
 
-> 每个子技能均有独立的 SKILL.md（路径规则：`skills/<技能名>/SKILL.md`）。执行时先选定一个最匹配的子技能，只读取该子技能文档；references 按文档提示按需读取。
-
-### 应用与登录
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-app` | 完整应用开发编排 | 从零搭建整个应用（多步骤全流程） |
-| `yida-create-app` | 创建应用，获取 appType | 只需第一步创建应用 |
-| `yida-login` | 登录态管理 | 手动触发登录（通常自动触发） |
-| `yida-logout` | 退出登录 | 切换账号或组织 |
-
-### 页面与表单创建
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-create-page` | 创建空白自定义页面 | 需要 formUuid，后续写 JSX |
-| `yida-create-form-page` | 创建/更新表单页面 | 需要数据收集（字段定义、联动） |
-| `yida-create-process` | 创建流程表单 | 需要审批流程（一步到位） |
-| `yida-custom-page` | 编写自定义页面 JSX 代码 | 写页面逻辑和 UI |
-| `yida-publish-page` | 编译并发布页面 | JSX 代码写完后部署 |
-| `yida-table-form` | 表格形态批量录入页面 | Excel 式多行编辑提交 |
-| `yida-ppt-slider` | 全屏幻灯片页面 | 技术分享/路演/培训/演示 |
-| `yida-aggregate-table`* | 聚合表管理 | 虚拟视图创建/预览/发布 |
-
-### 数据可视化
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-report` | 原生报表（16 种组件） | 普通报表/统计，开箱即用 |
-| `yida-chart` | ECharts 高级图表 | 更美观/定制化/数据大屏 |
-| `yida-dashboard` | 经营看板/驾驶舱 | 完整看板产品化交付 |
-
-### 连接器（工作流：创建 → 加动作 → 接入页面）
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-connector` | 创建/管理连接器、配鉴权 | 连接器还不存在，或需要管理 |
-| `yida-connector-safe-actions` | 从代码生成执行动作 | 连接器已有，需从 API 代码生成 action |
-| `yida-data-source-connectors` | 页面中接入连接器数据 | 自定义页面中通过数据源调用 |
-
-### 数据操作与公式
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-data-management` | 数据增删改查 | 操作表单/流程/任务数据记录 |
-| `yida-get-schema` | 获取 Schema / 字段 ID | 只读查询表单结构 |
-| `yida-formula` | 公式编写规范 | 字段计算/默认值/校验 |
-| `yida-formula-evaluate` | 公式静态检查 | 检查公式语法和字段引用是否正确 |
-| `yida-business-rule` | 业务关联规则 | 跨表高级函数 INSERT/UPDATE/DELETE |
-
-### 流程与自动化
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-process-rule` | 配置已有流程的审批规则 | 表单已存在，修改流程节点/分支 |
-| `yida-integration` | 集成自动化逻辑流 | 提交后触发逻辑编排 |
-| `yida-agent-center` | 流程代理管理 | 设置在职/离职代理人 |
-| `yida-ai-form-setting`* | AI 审批提示配置 | 流程表单 AI 辅助审批 |
-
-### 权限与访问控制
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-corp-manager` | 平台管理员/子管理员 | 平台级权限（影响整个组织） |
-| `yida-app-permission` | 应用管理员/开发成员 | 单应用级权限 |
-| `yida-form-permission` | 表单权限组/数据范围 | 单表单级权限 |
-| `yida-page-config` | 页面公开访问/组织内分享 | 页面 URL 分享设置 |
-
-### 应用配置与平台管理
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-nav-group` | 导航分组管理 | 应用左侧菜单分组/排序 |
-| `yida-form-detail` | 表单详情页样式 | 美化 formDetail 视觉 |
-| `yida-density` | 信息密度设计 | 列表/表格页面密度选择 |
-| `yida-i18n` | 多语言管理 | 应用国际化配置 |
-| `yida-basic-info` | 组织基本信息 | 版本/容量/域名/额度查询 |
-| `yida-corp-efficiency` | 企业效能 | 效能数据/低代码学习成果 |
-
-### 辅助工具
-
-| 技能 | 用途 | 何时选择 |
-|------|------|---------|
-| `yida-flash-note-to-prd` | 闪记转 PRD | 会议纪要/闪记转需求文档 |
-| `yida-export-conversation` | 导出 AI 对话 | 保存当前对话为 Markdown |
-| `yida-voc` | VOC 反馈整理 | 整理故障/需求反馈材料 |
-| `sls-log-workbench` | SLS 日志排查 | 平台问题日志查询 |
-| `yida-db-seq-fix` | Sequence 修复 | PostgreSQL 主键冲突 |
-| `yida-ai`* | AI 文生文/识图 | 调用宜搭 AI 接口 |
-| `yida-batch`* | 批量命令编排 | 多命令顺序执行 |
-| `large-file-write` | 大文件写入 | 可靠写入 100+ 行文件 |
-
-> 标 `*` 的技能无独立 SKILL.md，直接使用对应 CLI 命令。
-
----
-
-## 易混淆技能路由（跨组消歧）
-
-> 以下场景涉及多个分组的技能，仅靠分组标题不易区分，按「判断依据」快速选定。
-
-### 表单结构 vs 数据操作
-
-| 用户意图 | 正确技能 | 判断依据 |
-|---------|---------|---------|
-| 增加/修改/删除字段 | `yida-create-form-page` | 改变表单结构（字段增删改） |
-| 查看字段 ID、获取 Schema | `yida-get-schema` | 只读查询表单结构 |
-| 增删改查数据记录 | `yida-data-management` | 操作已有数据，不改字段结构 |
-| 优化表单详情页视觉样式 | `yida-form-detail` | 注入 CSS 美化详情页，不改字段 |
-
-### 公式 vs 业务规则 vs 集成自动化
-
-| 用户意图 | 正确技能 | 判断依据 |
-|---------|---------|---------|
-| 字段自动计算、默认值、校验 | `yida-formula` | 配在字段属性上的实时计算/校验 |
-| 提交后跨表增删改（用户明确要求高级函数） | `yida-business-rule` | INSERT/UPDATE/DELETE/UPSERT |
-| 提交后逻辑编排（推荐方案） | `yida-integration` | 图形化集成自动化流 |
-
-### 流程创建 vs 流程规则
-
-| 用户意图 | 正确技能 | 判断依据 |
-|---------|---------|---------|
-| 从零创建流程表单 | `yida-create-process` | 表单还不存在，一步到位 |
-| 修改已有流程的审批规则 | `yida-process-rule` | 表单已存在，只改流程节点/分支 |
-| 只需创建普通表单（无审批） | `yida-create-form-page` | 不涉及审批流程 |
-
-### 权限体系（四层 + 流程字段权限）
-
-| 用户意图 | 正确技能 | 判断依据 |
-|---------|---------|---------|
-| 平台管理员、子管理员、通讯录 | `yida-corp-manager` | 平台级，影响整个组织 |
-| 应用主管理员、数据管理员、开发成员 | `yida-app-permission` | 单个应用级别 |
-| 表单权限组、数据范围、操作权限 | `yida-form-permission` | 单个表单级别 |
-| 流程节点字段权限（可见/只读/隐藏） | `yida-process-rule` | 审批节点内字段可见性 |
-| 页面公开访问 / 组织内分享 | `yida-page-config` | 页面 URL 分享设置 |
-
----
-
-## 关键规则
-
-### 1. 执行子技能前必须读取其 SKILL.md
-
-每个子技能的详细参数、注意事项、示例均在其 SKILL.md 中。**执行任何子技能前，必须先读取对应的 SKILL.md**，不要凭记忆猜测参数格式。
-
-### 2. 执行成功率与性能规则（必须遵守）
-
-- **只读必要文档**：先根据用户意图选定 1 个主技能；只有该技能明确要求时，才读取对应 `references/` 文档，禁止一次性读取全部技能文档。
-- **优先复用缓存**：已创建的 `appType`、`formUuid`、`fieldId`、`reportId` 优先从 `.cache/<项目名>-schema.json` 读取；缺失或不确定时再执行 `openyida get-schema`。
-- **先本地校验再发布**：自定义页面发布前运行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；发布时留意同名双副本内容不一致警告，必要时加 `--health-check` 做首屏 HTTP 健康检查；JSON 配置写入文件后先做 JSON 解析校验，再调用平台命令。
-- **避免无效重试**：同一命令失败后，先根据错误信息检查登录态、组织、参数和字段 ID；不要无修改地连续重试超过 1 次。
-- **数据性能优先**：统计/聚合类需求优先使用 `yida-report` 原生报表服务端聚合；不要在自定义页面前端分页拉取大量表单数据后自行聚合。
-- **模板优先**：自定义页面、表单字段、报表配置等复杂产物优先使用 `openyida sample` 或现有示例生成骨架，再做最小改动。
-- **官方示例范式优先**：用户要求参考/蒸馏宜搭示例中心时，先按 [官方示例中心 Schema 范式](references/official-example-schema-patterns.md) 理解脱敏 schema 的承载方式，再优化技能或实现方案；不要只凭截图、卡片标题或页面视觉做判断。
-- **按 schema 证据选择技能**：先看 `formType`、组件树和 `dataSource.online`。`receipt/process/report` 分别优先落到表单、流程、报表技能；只有默认页是自定义展示页、或确实需要列表/看板/工具页交互时，才默认落到 `yida-custom-page`。
-- **配置承载优先于代码承载**：字段结构、公式、联动、报表聚合、审批规则、集成自动化、连接器动作应分别由对应技能承载；自定义页面代码只做展示、事件分发和必要胶水。
-
-### 3. corpId 一致性检查（必须遵守）
-
-在创建页面前，**必须对比 prd 文档中的 corpId 与 `.cache/cookies.json` 中的 corpId 是否一致**：
-
-- **一致** → 继续执行
-- **不一致** → 询问用户：重新登录到正确组织，还是在当前组织新建应用？
-
-### 4. 配置信息分两处存储
-
-| 信息类型 | 存储位置 | 内容示例 |
-|---------|---------|---------|
-| 业务语义信息 | `prd/<项目名>.md` | 字段名称、字段类型、字段说明 |
-| Schema ID | `.cache/<项目名>-schema.json` | `appType`、`formUuid`、`fieldId` |
-
-> **prd 文档不记录 `formUuid`、`fieldId` 等 ID**，这些写入 `.cache/` 临时文件。
-
-### 4.1 PRD 质量门槛（必须遵守）
-
-`prd/<项目名>.md` 不是普通需求摘要，必须能直接驱动后续技能执行。创建或评审 PRD 时至少包含：
-
-- MVP 范围与版本边界：V1 必做、V1 不做、V2 候选
-- 目标用户与权限：角色、入口、可执行操作
-- 核心用户旅程：用户完成关键任务的步骤和成功标准
-- 页面与表单配置：业务语义字段，不写 `formUuid`/`fieldId`
-- 流程与状态机：状态、允许操作、下一状态、操作角色
-- 数据关联与约束：唯一性、关联关系、冲突校验、并发/重复提交风险
-- 交互与验收标准：用可验证标准描述“好用”
-- OpenYida 落地约束：Schema 写 `.cache/<项目名>-schema.json`，发布前 `check-page` + `compile`
-
-### 5. 临时文件规范
-
-所有临时文件（cookies、schema 缓存、字段配置、报表配置、流程配置、导入数据、一次性脚本等）**必须写在项目根目录的 `.cache/` 文件夹中**，不要写到仓库根目录，也不要写在系统其他位置。
-
-推荐路径：
-
-| 工件类型 | 推荐位置 |
-|---------|---------|
-| Schema / ID 映射 | `.cache/<项目名>-schema.json` |
-| 表单字段 / 报表 / 流程配置 | `.cache/openyida/<项目名>/` |
-| 批量导入数据 JSON / JSONL / CSV | `.cache/openyida/data-import/` |
-| 一次性 Python / JS 执行脚本 | `.cache/openyida/scripts/` |
-
-> 若只是为了调用 `openyida` 命令临时生成的 `*.json`、`*.js`、`*.py`、`*.csv` 文件，一律放入 `.cache/openyida/` 子目录；只有需要长期维护的 PRD、页面源码或示例资源才写入 `prd/`、`pages/src/`、`project/` 等正式目录。
-
-### 6. 报表优化/美化提示规则（必须遵守）
-
-当用户提到"优化"、"美化"、"更好看"、"不够漂亮"等与报表视觉效果相关的关键词时，**必须先询问用户**选择以下哪种方案：
-
-| 方案 | 说明 | 适用场景 |
-|------|------|---------|
-| **方案 A：优化宜搭原生报表** | 调整图表类型、布局、筛选器等，仍使用宜搭原生报表组件 | 快速优化，无需编写代码 |
-| **方案 B：创建 ECharts 高级报表** | 使用 ECharts + 自定义页面 JSX，实现高度定制化、更美观的数据可视化 | 需要更精美的视觉效果、复杂交互、数据大屏 |
-
-**提示话术示例**：
-
-> 我可以通过两种方式帮你优化报表：
-> 1. **优化原生报表**：调整图表类型组合、布局排列、添加筛选器，快速提升效果
-> 2. **创建 ECharts 高级报表**：使用 ECharts 自定义页面，实现更精美的视觉效果和交互体验（如渐变色、动画、自定义主题等）
+> 选定 **1 个**最匹配的项执行。表**按业务域分组**，每组内既可能是 skill 也可能是 CLI：
+> - 行名为 `yida-xxx` / `sls-log-workbench` / `large-file-write` 的是 **skill** → 先读它的 `skills/<技能名>/SKILL.md` 再执行；
+> - 行名为 `openyida xxx` 并标 **`CLI`** 的**无 SKILL.md** → 识别到诉求直接执行命令、**不要当 skill 去 read**。
 >
-> 你想选择哪种方案？
+> 按分组 +「何时选择」内联区别对号入座即可。
 
-- 用户选择方案 A → 使用 `yida-report` 技能（`openyida create-report`）
-- 用户选择方案 B → 读取 `skills/yida-chart/SKILL.md`，使用 `yida-chart` 技能
+> ⚠️ **同类易错先分清**：改字段结构→`create-form-page`｜只读 Schema→`get-schema`｜改数据记录→`data-management`｜详情页美化→`form-detail`；字段实时校验→`formula`｜提交后编排→`integration`｜跨表高级函数→`business-rule`；从零建流程→`create-process`｜改已有流程→`process-rule`；权限按层级：组织→`corp-manager`／应用→`app-permission`／表单→`form-permission`／页面分享→`page-config`。
+
+| 分组 | 技能 | 何时选择（关键区别已内联） |
+|------|------|--------------------------|
+| **应用与登录** | `yida-app` | 从零搭建整个应用（多步骤全流程编排） |
+| | `yida-create-app` | 只需创建应用、拿 appType |
+| | `yida-login` | 手动触发登录（通常自动触发） |
+| | `yida-logout` | 切换账号或组织 |
+| **页面与表单** | `yida-create-page` | 创建空白自定义页面拿 formUuid，后续写 JSX |
+| | `yida-create-form-page` | 创建/更新表单、增删改**字段结构**（普通表单，无审批） |
+| | `yida-create-process` | 从零建**带审批**流程表单（表单还不存在，一步到位） |
+| | `yida-custom-page` | 编写自定义页面 JSX 逻辑与 UI |
+| | `yida-publish-page` | JSX 写完后编译并发布 |
+| | `yida-table-form` | Excel 式表格批量录入提交 |
+| | `yida-ppt-slider` | 全屏幻灯片页面（分享/路演/培训/演示） |
+| | `openyida aggregate-table` `CLI` | 聚合表 / 虚拟视图（virtualView）：`list` 列出 · `create-empty` 建空白（返回设计器 URL）· `preview` 预览不保存 · `publish` 发布配置 |
+| **数据可视化** | `yida-report` | 普通报表/统计，开箱即用（原生 16 组件） |
+| | `yida-chart` | 更美观/定制化/数据大屏（ECharts） |
+| | `yida-dashboard` | 完整看板 / 驾驶舱产品化交付 |
+| **连接器** | `yida-connector` | 创建/管理连接器、配鉴权 |
+| | `yida-connector-safe-actions` | 连接器已有，从 API 代码生成执行动作 |
+| | `yida-data-source-connectors` | 自定义页面中通过数据源调用连接器 |
+| **数据与公式** | `yida-data-management` | 增删改查**数据记录**，不动字段结构 |
+| | `yida-get-schema` | **只读**查 Schema / 字段 ID，不改结构 |
+| | `yida-formula` | 配在**字段属性**上的实时计算/默认值/校验 |
+| | `yida-formula-evaluate` | 公式语法与字段引用静态检查 |
+| | `yida-business-rule` | 提交后**跨表**高级函数 INSERT/UPDATE/DELETE |
+| **流程与自动化** | `yida-process-rule` | **改已有**流程节点/分支/字段权限（表单已存在） |
+| | `yida-integration` | 提交后**逻辑编排**（图形化自动化流，推荐） |
+| | `yida-agent-center` | 流程代理（在职/离职代理人） |
+| | `openyida ai-form-setting` `CLI` | 流程表单 AI 审批提示：`models` 查模型 · `fields` 查可插入字段（TEXT/IMAGE/ATTACHMENT）· `get` 查配置 |
+| **权限与访问** | `yida-corp-manager` | **组织级**权限（平台/子管理员、通讯录，影响整个组织） |
+| | `yida-app-permission` | **单应用级**权限（应用管理员/开发成员） |
+| | `yida-form-permission` | **单表单级**权限（权限组/数据范围） |
+| | `yida-page-config` | **页面级**：公开访问 / 组织内分享 |
+| **应用配置与平台** | `yida-nav-group` | 应用左侧菜单分组/排序 |
+| | `yida-form-detail` | 只注 **CSS** 美化详情页，不改字段 |
+| | `yida-density` | 列表/表格信息密度选择 |
+| | `yida-i18n` | 应用多语言 / 国际化 |
+| | `yida-basic-info` | 组织版本/容量/域名/额度查询 |
+| | `yida-corp-efficiency` | 企业效能 / 低代码学习成果 |
+| **辅助工具** | `yida-flash-note-to-prd` | 会议纪要/闪记转 PRD |
+| | `yida-export-conversation` | 导出当前对话为 Markdown |
+| | `yida-voc` | 整理故障/需求反馈材料 |
+| | `sls-log-workbench` | SLS 平台问题日志查询 |
+| | `yida-db-seq-fix` | PostgreSQL 主键冲突 / Sequence 修复 |
+| | `large-file-write` | 可靠写入 100+ 行大文件 |
+| | `openyida ai` `CLI` | 调用宜搭 AI 通用能力：文生文（文本生成）/ 识图（图片识别） |
+| | `openyida batch` `CLI` | 批量顺序执行多条 OpenYida 命令（读 tasks 文件，支持 `--json --quiet`） |
 
 ---
 
-## 表单字段类型速查
+## 核心规则
 
-| 类型 | 说明 | 特殊属性 |
-|------|------|---------|
-| `TextField` | 单行文本 | — |
-| `TextareaField` | 多行文本 | — |
-| `NumberField` | 数字 | `precision`（小数位）、`innerAfter`（单位） |
-| `RadioField` | 单选 | `options` |
-| `CheckboxField` | 多选 | `options` |
-| `SelectField` | 下拉单选 | `options` / `remoteDataSource` |
-| `MultiSelectField` | 下拉多选 | `options` / `remoteDataSource` |
-| `DateField` | 日期 | `format`（如 `"YYYY-MM-DD"`） |
-| `CascadeDateField` | 级联日期（范围） | `format` |
-| `EmployeeField` | 成员选择 | `multiple` |
-| `DepartmentSelectField` | 部门选择 | `multiple` |
-| `AddressField` | 地址 | — |
-| `AttachmentField` | 附件上传 | — |
-| `ImageField` | 图片上传 | — |
-| `TableField` | 子表格 | `children`（子字段列表） |
-| `AssociationFormField` | 关联表单 | `associationForm` |
-| `SerialNumberField` | 流水号 | `serialNumberRule` |
-| `RateField` | 评分 | `count`（星级数） |
-| `CountrySelectField` | 国家选择 | `multiple` |
+### 致命规则（FATAL，违反即失败/报错）
 
----
+1. **先读后执行**：执行任何子技能前，必须先读取其 SKILL.md，不凭记忆猜参数格式。
+2. **corpId 一致性检查**：创建页面前对比 prd 与 `.cache/cookies.json` 的 corpId，不一致必须询问用户（重新登录 or 当前组织新建）。
+3. **发布前本地校验**：自定义页面发布前跑 `openyida check-page` + `openyida compile`；JSON 配置写盘后先解析校验，再调用平台命令。
 
-## 宜搭应用 URL 规则
+### 重要规则（IMPORTANT，影响质量/性能/可维护性）
 
-| 页面类型 | URL 格式 |
-|---------|---------|
-| 应用首页 | `{base_url}/{appType}/workbench` |
-| 表单提交页 | `{base_url}/{appType}/submission/{formUuid}` |
-| 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
-| 自定义页面（隐藏导航） | `{base_url}/{appType}/custom/{formUuid}?isRenderNav=false` |
-| 表单详情页 | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}` |
-| 表单详情页（编辑模式） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit` |
+1. **只读必要文档**：按意图选 1 个主技能，禁止一次性读取全部技能文档。
+2. **优先复用缓存**：`appType`/`formUuid`/`fieldId` 优先从 `.cache/<项目名>-schema.json` 读，缺失再 `get-schema`。
+3. **模板优先**：复杂产物先用 `openyida sample` 或现有示例生成骨架，再做最小改动。
+4. **配置承载优先于代码**：字段/公式/联动/报表/审批/集成交给对应技能，自定义页面只做展示与胶水。
+5. **数据性能优先**：统计聚合用 `yida-report` 服务端聚合，不在前端拉全量后自行聚合。
+6. **避免无效重试**：失败先查登录态/组织/参数/字段 ID，无修改不连续重试超 1 次。
+7. **配置分两处存**：业务语义 → `prd/<项目名>.md`；Schema ID → `.cache/<项目名>-schema.json`（prd 不记 ID）。
+8. **临时文件入 `.cache/`**：cookies/schema/配置/脚本一律放 `.cache/openyida/`，不写仓库根目录。
+9. **报表美化先问方案**：用户说"优化/美化报表"时先问选原生报表(`yida-report`)还是 ECharts(`yida-chart`)。
+10. **按 schema 证据选技能**：先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能。
+11. **官方示例范式优先**：蒸馏官方示例时先理解脱敏 schema 承载方式，不凭截图/标题/视觉判断。
 
-> 所有地址拼接 `&corpid={corpId}` 可自动切换到对应组织。
+> 📖 每条规则的完整说明、PRD 质量门槛、临时文件路径规范、报表美化话术 → [references/development-rules.md](references/development-rules.md)
 
 ---
 
-## 常见问题
-**Q：发布时提示登录失效？**
+## 参考文件
 
-重新登录后再发布：
-```bash
-openyida login
-openyida publish <源文件路径> <appType> <formUuid> --health-check
-```
-
-**Q：如何查看已有表单的字段 ID？**
-
-使用 `yida-get-schema` 技能获取表单 Schema，从中读取各字段的 `fieldId`：
-```bash
-openyida get-schema <appType> <formUuid>
-```
-
-**Q：如何更新已有表单字段？**
-
-使用 `yida-create-form-page` 的 update 模式，详见 `skills/yida-create-form-page/SKILL.md`：
-```bash
-openyida create-form update <appType> <formUuid> '[{"action":"add","field":{"type":"TextField","label":"新字段"}}]'
-```
-
-**Q：发布时提示 corpId 不匹配？**
-
-询问用户是否在当前组织创建新应用发布，或重新登录到正确组织：
-```bash
-openyida logout
-openyida login
-```
+| 文档 | 覆盖范围 | 何时阅读 |
+|------|---------|---------|
+| [环境准备与登录检测](references/setup-and-env.md) | 环境依赖、env 解读、多环境登录、悟空降级、Codex handoff、project 初始化 | 环境异常或登录问题时 |
+| [核心规则详解](references/development-rules.md) | 成功率清单、PRD 门槛、临时文件、报表美化、corpId | 编写 PRD / 规范执行前 |
+| [字段类型/URL/常见问题](references/field-and-url-reference.md) | 表单字段类型速查、应用 URL 规则、FAQ | 建表单 / 拼访问链接 / 排障时 |
+| [宜搭 API](references/yida-api.md) | 宜搭 API 完整参数 | 调用 API 前 |
+| [公式函数库](references/formula-functions.md) | 公式函数速查 | 编写公式前 |
+| [官方示例 Schema 范式](references/official-example-schema-patterns.md) | 脱敏 schema 承载范式 | 蒸馏官方示例时 |
+| [查询条件构造](references/query-condition-guide.md) | 数据查询条件写法 | 数据查询/筛选时 |
+| [报表字段配置](references/report-field-config-guide.md) | 报表字段配置规范 | 配置报表时 |
+| [版本功能差异](references/edition-features-guide.md) | 各版本能力差异 | 版本能力查询时 |
+| [模型 API](references/model-api.md) | AI 模型接口 | 调用宜搭 AI 模型时 |
