@@ -215,7 +215,9 @@ describe('terminal QR code rendering', () => {
       platform: 'linux',
     });
     expect(result.poll_command).toBe("openyida login --agent-poll '/tmp/session.json' --env 'intl'");
+    expect(result.browser_login_command).toBe("openyida login --browser --env 'intl'");
     expect(result.qr_image_opened).toBe(false);
+    expect(result.agent_response_markdown).toContain("openyida login --browser --env 'intl'");
 
     const windowsResult = __test__.buildNeedQrScanResult({
       qrUrl: 'https://login.dingtalk.com/oauth2/qr_confirm.htm?code=abc',
@@ -230,6 +232,7 @@ describe('terminal QR code rendering', () => {
       qr_image_file: 'C:\\tmp\\openyida-login.png',
       qr_image_opened: true,
       poll_command: 'openyida login --agent-poll "C:\\tmp\\session.json" --env "public" --corp-id "ding-main"',
+      browser_login_command: 'openyida login --browser --env "public"',
     });
   });
 

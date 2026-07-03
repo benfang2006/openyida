@@ -594,7 +594,7 @@ describe('CLI offline smoke', () => {
     }
   });
 
-  test('login returns Wukong browser handoff instead of desktop fallback when CDP is unavailable', () => {
+  test('login returns QR handoff in Wukong cloud when local browser login is unavailable', () => {
     const wukong = createWukongWorkRoot();
     try {
       const output = runOkWithEnv(['login'], {
@@ -607,13 +607,13 @@ describe('CLI offline smoke', () => {
       }, wukong.projectDir);
       const parsed = JSON.parse(output.trim());
       expect(parsed).toMatchObject({
-        status: 'need_codex_browser_login',
-        handoff_type: 'browser',
-        browser: 'wukong',
+        status: 'need_qr_scan',
+        handoff_type: 'qr',
         can_auto_use: false,
       });
-      expect(parsed.login_url).toBe('https://example.test/workPlatform');
-      expect(parsed.fallback_command).toContain('openyida login --browser');
+      expect(parsed.qr_url).toContain('https://login.example.test/qr');
+      expect(parsed.browser_login_command).toContain('openyida login --browser');
+      expect(parsed.agent_response_markdown).toContain('openyida login --browser');
     } finally {
       fs.rmSync(wukong.base, { recursive: true, force: true });
     }

@@ -565,6 +565,7 @@ describe('interactiveLogin 浏览器优先级', () => {
     }));
     jest.doMock('../lib/auth/cdp-browser-login', () => ({
       cdpBrowserLogin: jest.fn(cdpImpl),
+      findBrowserExecutable: jest.fn(() => '/fake/chrome'),
     }));
     jest.doMock('child_process', () => ({
       execSync: jest.fn(execSyncImpl || (() => {
@@ -673,6 +674,29 @@ describe('interactiveLogin 浏览器优先级', () => {
     expect(cdpModule.cdpBrowserLogin).toHaveBeenCalledTimes(1);
     expect(childProcess.execSync).not.toHaveBeenCalled();
     expect(result).toBeNull();
+  });
+
+  test('hasLocalBrowserLoginCapability requires a desktop browser capability', () => {
+    const { loginModule } = loadLoginWithMocks(() => ({
+      cookies: [],
+      base_url: 'https://www.aliwork.com',
+    }));
+
+    expect(loginModule.hasLocalBrowserLoginCapability({
+      env: {},
+      platform: 'linux',
+      playwrightFallback: false,
+    })).toBe(false);
+    expect(loginModule.hasLocalBrowserLoginCapability({
+      env: { DISPLAY: ':0' },
+      platform: 'linux',
+      playwrightFallback: false,
+    })).toBe(true);
+    expect(loginModule.hasLocalBrowserLoginCapability({
+      env: { DISPLAY: ':0', OPENYIDA_DISABLE_CDP_LOGIN: '1' },
+      platform: 'linux',
+      playwrightFallback: false,
+    })).toBe(false);
   });
 
   test('ensureLogin force=true 时跳过本地缓存重新登录', () => {
@@ -793,6 +817,7 @@ describe('authLogin 登录优先级', () => {
     jest.doMock('../lib/auth/login', () => ({
       checkLoginOnly: jest.fn(() => ({ status: 'not_logged_in' })),
       interactiveLogin,
+      hasLocalBrowserLoginCapability: jest.fn(() => true),
       logout: jest.fn(),
     }));
     jest.doMock('../lib/auth/qr-login', () => ({ qrLogin }));
