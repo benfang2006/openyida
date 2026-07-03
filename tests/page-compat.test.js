@@ -456,6 +456,8 @@ export function renderJsx() {
     expect(result.fixes.map(fix => fix.rule)).toContain('tailwind-didmount-hook');
     expect(result.code).toContain('export function ensureTailwind');
     expect(result.code).toContain('this.ensureTailwind();');
+    expect(result.code).toContain('https://g.alicdn.com/code/lib/tailwindcss-browser/0.0.0-insiders.fed6c6a/index.global.min.js');
+    expect(result.code).not.toContain('https://cdn.tailwindcss.com');
 
     const withoutTailwind = `
 export function renderJsx() {

@@ -151,13 +151,24 @@ description: >
 
 ---
 
+## 常见问题
+
+| 问题 | 处理 |
+|------|------|
+| 发布提示登录失效 | 先 `openyida login`，再 `openyida publish <源文件> <appType> <formUuid> --health-check` |
+| 查已有表单的字段 ID | `openyida get-schema <appType> <formUuid>`，从 Schema 读各字段 `fieldId`（详见 `yida-get-schema`） |
+| 更新已有表单字段 | 用 `create-form` 的 update 模式：`openyida create-form update <appType> <formUuid> '[{"action":"add","field":{"type":"TextField","label":"新字段"}}]'`（详见 `yida-create-form-page`） |
+| 发布提示 corpId 不匹配 | 问用户：当前组织新建应用发布，或 `openyida logout` 后重新登录到正确组织 |
+
+---
+
 ## 参考文件
 
 | 文档 | 覆盖范围 | 何时阅读 |
 |------|---------|---------|
 | [环境准备与登录检测](references/setup-and-env.md) | 环境依赖、env 解读、多环境登录、悟空降级、Codex handoff、project 初始化 | 环境异常或登录问题时 |
 | [核心规则详解](references/development-rules.md) | 成功率清单、PRD 门槛、临时文件、报表美化、corpId | 编写 PRD / 规范执行前 |
-| [字段类型/URL/常见问题](references/field-and-url-reference.md) | 表单字段类型速查、应用 URL 规则、FAQ | 建表单 / 拼访问链接 / 排障时 |
+| [字段类型 / URL 规则](references/field-and-url-reference.md) | 表单字段类型速查、应用 URL 拼接规则 | 建表单 / 拼访问链接时 |
 | [宜搭 API](references/yida-api.md) | 宜搭 API 完整参数 | 调用 API 前 |
 | [公式函数库](references/formula-functions.md) | 公式函数速查 | 编写公式前 |
 | [官方示例 Schema 范式](references/official-example-schema-patterns.md) | 脱敏 schema 承载范式 | 蒸馏官方示例时 |

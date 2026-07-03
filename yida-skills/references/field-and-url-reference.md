@@ -1,6 +1,6 @@
-# 字段类型、URL 规则与常见问题
+# 字段类型与 URL 规则
 
-> 建表单查字段类型、拼应用访问链接、排查发布/字段/组织类报错时查本文档。
+> 建表单查字段类型、拼应用访问链接时查本文档。（常见问题排障见主 SKILL.md「常见问题」）
 
 ## 表单字段类型速查
 
@@ -40,12 +40,3 @@
 | 表单详情页（编辑态） | 上行 + `&mode=edit` |
 
 > 任意地址追加 `&corpid={corpId}` 可自动切到对应组织。
-
-## 常见问题
-
-| 问题 | 处理 |
-|------|------|
-| 发布提示登录失效 | 先 `openyida login`，再 `openyida publish <源文件> <appType> <formUuid> --health-check` |
-| 查已有表单的字段 ID | `openyida get-schema <appType> <formUuid>`，从 Schema 读各字段 `fieldId`（详见 `yida-get-schema`） |
-| 更新已有表单字段 | 用 `create-form` 的 update 模式：`openyida create-form update <appType> <formUuid> '[{"action":"add","field":{"type":"TextField","label":"新字段"}}]'`（详见 `yida-create-form-page`） |
-| 发布提示 corpId 不匹配 | 问用户：当前组织新建应用发布，或 `openyida logout` 后重新登录到正确组织 |
