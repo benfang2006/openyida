@@ -11,6 +11,7 @@ const {
   mapEventTypes,
   buildDataRetrieveCondition,
   buildDataCreateAssignments,
+  buildInitiateApprovalAssignments,
   buildProcessJson,
 } = require('../lib/integration/integration-process-builder');
 const { buildViewJson } = require('../lib/integration/integration-view-builder');
@@ -79,6 +80,24 @@ describe('integration process builder', () => {
       { column: 'numberField_count', valueType: 'literal', value: 12, assignments: [] },
       { column: 'textField_name', valueType: 'processVar', value: 'form_inst_creator', assignments: [] },
     ]);
+  });
+
+  test('buildInitiateApprovalAssignments matches designer payload shape', () => {
+    const assignments = [
+      { column: 'textField_process', valueType: 'literal', value: 'hello' },
+      { column: 'numberField_count', valueType: 'literal', value: '7' },
+    ];
+
+    expect(buildInitiateApprovalAssignments(assignments, { includeRequired: false })).toEqual([
+      { column: 'textField_process', valueType: 'literal', value: 'hello' },
+      { column: 'numberField_count', valueType: 'literal', value: 7 },
+    ]);
+    expect(buildInitiateApprovalAssignments(assignments, { includeRequired: true })[0]).toMatchObject({
+      column: 'textField_process',
+      valueType: 'literal',
+      value: 'hello',
+      required: false,
+    });
   });
 
   test('buildProcessJson links trigger, data, add-data, message, and finish nodes in order', () => {
@@ -191,6 +210,33 @@ describe('integration process builder', () => {
     });
   });
 
+  test('buildProcessJson inserts httpConnector node when connectorMode is 5', () => {
+    const processJson = buildProcessJson({
+      processCode: 'LPROC-TEST',
+      formUuid: 'FORM-HTTP',
+      appType: 'APP-HTTP',
+      formEventTypes: ['insert'],
+      toUsers: [],
+      nodeIds: ['trigger', 'connector', 'end'],
+      hasMessageNode: false,
+      connectorId: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+      actionId: 'publish_month_qs',
+      connectorMode: 5,
+      connectionId: '28336',
+      connectorAssignments: [
+        { column: 'month', valueType: 'processVar', value: 'textField_month' },
+      ],
+    });
+
+    expect(processJson.nodes.map((n) => n.type)).toEqual(['trigger', 'httpConnector', 'finish']);
+    expect(processJson.nodes[1].props.inputs).toMatchObject({
+      connectorId: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+      actionId: 'publish_month_qs',
+      connectionId: '28336',
+      connectorMode: 5,
+    });
+  });
+
   test('buildProcessJson chains dataRetrieve → innerConnector → sendMessage when all present', () => {
     const processJson = buildProcessJson({
       processCode: 'LPROC-TEST',
@@ -218,5 +264,129 @@ describe('integration process builder', () => {
     expect(processJson.nodes[1].nextId).toEqual(['connector']);
     expect(processJson.nodes[2].nextId).toEqual(['message']);
     expect(processJson.nodes[3].nextId).toEqual(['end']);
+  });
+
+  test('buildProcessJson inserts initiateApproval node with captured designer rules', () => {
+    const processJson = buildProcessJson({
+      processCode: 'LPROC-PARENT',
+      formUuid: 'FORM-A',
+      appType: 'APP-A',
+      formEventTypes: ['insert'],
+      toUsers: [],
+      nodeIds: ['trigger', 'approval', 'end'],
+      hasMessageNode: false,
+      initiateApprovalFormUuid: 'FORM-PROCESS-B',
+      initiateApprovalFormName: 'Process B',
+      initiateApprovalInitiator: {
+        type: 'select_user',
+        value: '{"id":"user-1","label":"Alice","type":"employee"}',
+      },
+      initiateApprovalAssignments: [
+        { column: 'textField_b', valueType: 'literal', value: 'created-by-openyida' },
+      ],
+    });
+
+    expect(processJson.nodes.map((node) => node.type)).toEqual(['trigger', 'initiateApproval', 'finish']);
+    expect(processJson.nodes[0].nextId).toEqual(['approval']);
+    expect(processJson.nodes[1]).toMatchObject({
+      type: 'initiateApproval',
+      nodeId: 'approval',
+      nextId: ['end'],
+      props: {
+        type: 'single',
+        formUuid: 'FORM-PROCESS-B',
+        processCode: 'LPROC-PARENT',
+        appType: 'APP-A',
+        initiator: {
+          type: 'select_user',
+          value: '{"id":"user-1","label":"Alice","type":"employee"}',
+        },
+        assignments: [
+          { column: 'textField_b', valueType: 'literal', value: 'created-by-openyida' },
+        ],
+      },
+    });
+    expect(processJson.nodes[1].props.description).toContain('Process B');
+  });
+
+  test('buildViewJson renders InitiateApprovalNode with required flags for the designer', () => {
+    const viewJson = buildViewJson({
+      processCode: 'LPROC-PARENT',
+      formUuid: 'FORM-A',
+      appType: 'APP-A',
+      formEventTypes: ['insert'],
+      toUsers: [],
+      nodeIds: ['canvas', 'trigger', 'approval', 'end'],
+      hasMessageNode: false,
+      initiateApprovalFormUuid: 'FORM-PROCESS-B',
+      initiateApprovalFormName: 'Process B',
+      initiateApprovalInitiator: {
+        type: 'select_user',
+        value: '{"id":"user-1","label":"Alice","type":"employee"}',
+      },
+      initiateApprovalAssignments: [
+        { column: 'textField_b', valueType: 'literal', value: 'created-by-openyida' },
+      ],
+    });
+
+    expect(viewJson.schema.children.map((node) => node.componentName)).toEqual([
+      'StartNode',
+      'InitiateApprovalNode',
+      'EndNode',
+    ]);
+    const approvalNode = viewJson.schema.children[1];
+    expect(approvalNode.props.nodeName).toBe('InitiateApprovalNode');
+    expect(approvalNode.props.signAction).toBe('one_by_one');
+    expect(approvalNode.props.initiateApprovalRules).toMatchObject({
+      type: 'single',
+      formUuid: 'FORM-PROCESS-B',
+      processCode: 'LPROC-PARENT',
+      appType: 'APP-A',
+      assignments: [
+        {
+          column: 'textField_b',
+          valueType: 'literal',
+          value: 'created-by-openyida',
+          required: false,
+        },
+      ],
+    });
+  });
+
+  test('buildViewJson keeps HTTP connector metadata for the designer side panel', () => {
+    const viewJson = buildViewJson({
+      processCode: 'LPROC-TEST',
+      formUuid: 'FORM-HTTP',
+      appType: 'APP-HTTP',
+      formEventTypes: ['insert'],
+      toUsers: [],
+      nodeIds: ['canvas', 'trigger', 'connector', 'end'],
+      hasMessageNode: false,
+      connectorId: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+      actionId: 'publish_month_qs',
+      connectorMode: 5,
+      connectionId: '28336',
+      connectorName: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+      connectorDisplayName: '加福加德BI后端',
+      connectorAssignments: [
+        { column: 'month', valueType: 'processVar', value: 'textField_month' },
+      ],
+    });
+
+    const connectorNode = viewJson.schema.children.find((node) => node.componentName === 'ConnectorNode');
+    expect(connectorNode.props.name).toBe('加福加德BI后端');
+    expect(connectorNode.props.connectorRules).toMatchObject({
+      connectorId: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+      actionId: 'publish_month_qs',
+      connectionId: '28336',
+      connector: {
+        connectorId: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+        connectorName: 'Http_2ed1618fdc744a288e5cb52bc02e462f',
+        mode: 5,
+        connectorMode: 5,
+        name: '加福加德BI后端',
+        displayName: '加福加德BI后端',
+      },
+    });
   });
 });
