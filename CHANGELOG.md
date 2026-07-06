@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [2026.7.6] - 2026-07-06
+## [2026.7.7] - 2026-07-07
 
 ### Highlights
 - 重点覆盖集成自动化编排、应用结构导出、技能包内容优化和发布防护能力。

@@ -108,6 +108,18 @@ function buildHumanScores(screenshots = []) {
   }));
 }
 
+function toMarkdownPath(abs, workDir) {
+  if (!abs) {return null;}
+  if (!workDir) {return abs.replace(/\\/g, '/');}
+
+  const isWindowsPath = /^[a-zA-Z]:[\\/]/.test(abs) || /^[a-zA-Z]:[\\/]/.test(workDir);
+  const relPath = isWindowsPath
+    ? path.win32.relative(workDir, abs)
+    : path.relative(workDir, abs);
+
+  return (relPath || abs).replace(/\\/g, '/');
+}
+
 /**
  * 生成人工打分文档（Markdown），内嵌截图与链接。
  * @param {object} options
@@ -118,11 +130,6 @@ function buildHumanScores(screenshots = []) {
  */
 function renderScoringMarkdown(options = {}) {
   const { config = {}, scores = [], workDir, rubric = DEFAULT_RUBRIC } = options;
-  const rel = (abs) => {
-    if (!abs) {return null;}
-    if (!workDir) {return abs;}
-    return path.relative(workDir, abs) || abs;
-  };
 
   const lines = [];
   lines.push('# 宜搭应用效果 · 人工打分表');
@@ -150,7 +157,7 @@ function renderScoringMarkdown(options = {}) {
     lines.push('');
     if (s.url) {lines.push(`- 链接：${s.url}`);}
     if (s.screenshot) {
-      const relPath = rel(s.screenshot);
+      const relPath = toMarkdownPath(s.screenshot, workDir);
       lines.push(`- 截图：\`${relPath}\``);
       lines.push('');
       lines.push(`![${s.stage || 'screenshot'}](${relPath})`);
@@ -193,5 +200,6 @@ module.exports = {
   autoScoreScreenshots,
   buildHumanScores,
   renderScoringMarkdown,
+  toMarkdownPath,
   writeScoringDoc,
 };
