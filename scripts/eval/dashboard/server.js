@@ -77,7 +77,7 @@ const TASKS = {
   },
 };
 
-const ANSI = /\[[0-9;]*m/g;
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
 const runs = new Map(); // runId -> child process
 
 function send(res, status, type, body) {
@@ -88,7 +88,9 @@ function send(res, status, type, body) {
 function serveIndex(res) {
   const file = path.join(__dirname, 'index.html');
   fs.readFile(file, 'utf8', (err, html) => {
-    if (err) return send(res, 500, 'text/plain; charset=utf-8', 'index.html 读取失败');
+    if (err) {
+      return send(res, 500, 'text/plain; charset=utf-8', 'index.html 读取失败');
+    }
     return send(res, 200, 'text/html; charset=utf-8', html);
   });
 }
@@ -196,7 +198,9 @@ function servePrompts(res) {
 
 function runTask(req, res, taskId) {
   const task = TASKS[taskId];
-  if (!task) return send(res, 404, 'text/plain; charset=utf-8', '未知任务');
+  if (!task) {
+    return send(res, 404, 'text/plain; charset=utf-8', '未知任务');
+  }
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
@@ -226,8 +230,14 @@ function runTask(req, res, taskId) {
     buf += chunk.toString().replace(ANSI, '');
     const lines = buf.split('\n');
     buf = lines.pop();
-    for (const line of lines) emit(stream, line);
-    if (bufName === 'out') stdoutBuf = buf; else stderrBuf = buf;
+    for (const line of lines) {
+      emit(stream, line);
+    }
+    if (bufName === 'out') {
+      stdoutBuf = buf;
+    } else {
+      stderrBuf = buf;
+    }
   };
 
   child.stdout.on('data', (c) => pump(c, 'out', 'log'));
@@ -241,8 +251,12 @@ function runTask(req, res, taskId) {
   });
 
   child.on('close', (code) => {
-    if (stdoutBuf) emit('log', stdoutBuf);
-    if (stderrBuf) emit('log', stderrBuf);
+    if (stdoutBuf) {
+      emit('log', stdoutBuf);
+    }
+    if (stderrBuf) {
+      emit('log', stderrBuf);
+    }
     emit('done', JSON.stringify({ code }));
     runs.delete(runId);
     res.end();
@@ -303,12 +317,24 @@ function stopRun(res, runId) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${HOST}:${PORT}`);
-  if (url.pathname === '/') return serveIndex(res);
-  if (url.pathname === '/info') return serveInfo(res);
-  if (url.pathname === '/prompts') return servePrompts(res);
-  if (url.pathname === '/report') return serveLatestReport(res);
-  if (url.pathname === '/run') return runTask(req, res, url.searchParams.get('task'));
-  if (url.pathname === '/stop') return stopRun(res, url.searchParams.get('id'));
+  if (url.pathname === '/') {
+    return serveIndex(res);
+  }
+  if (url.pathname === '/info') {
+    return serveInfo(res);
+  }
+  if (url.pathname === '/prompts') {
+    return servePrompts(res);
+  }
+  if (url.pathname === '/report') {
+    return serveLatestReport(res);
+  }
+  if (url.pathname === '/run') {
+    return runTask(req, res, url.searchParams.get('task'));
+  }
+  if (url.pathname === '/stop') {
+    return stopRun(res, url.searchParams.get('id'));
+  }
   return send(res, 404, 'text/plain; charset=utf-8', 'Not Found');
 });
 

@@ -58,6 +58,51 @@ function copyDirRecursive(src, dest) {
   return count;
 }
 
+function transformSkillReferences(content, subskillReferencePattern) {
+  return content
+    .replace(/yida-skills\/SKILL\.md/g, '../../../SKILL.md')
+    .replace(/skills\/([a-z0-9-]+)\/SKILL\.md/g, subskillReferencePattern)
+    .replace(/\.\.\/([a-z0-9-]+)\/SKILL\.md/g, '../$1/README.md')
+    .replace(/skills\/<技能名>\/SKILL\.md/g, 'references/subskills/<技能名>/README.md')
+    .replace(/详见 SKILL\.md/g, '详见 README.md');
+}
+
+function copyReferencesRecursive(src, dest) {
+  if (!fs.existsSync(src)) {
+    return 0;
+  }
+
+  fs.mkdirSync(dest, { recursive: true });
+
+  let count = 0;
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      count += copyReferencesRecursive(srcPath, destPath);
+    } else if (entry.isFile()) {
+      if (entry.name.endsWith('.md')) {
+        const referenceRoot = path.join(SOURCE_ROOT, 'references');
+        const relativeDir = path.relative(referenceRoot, path.dirname(srcPath));
+        const depth = relativeDir ? relativeDir.split(path.sep).length : 0;
+        const prefix = depth > 0 ? '../'.repeat(depth) : '';
+        fs.writeFileSync(
+          destPath,
+          transformSkillReferences(readRequiredFile(srcPath), prefix + 'subskills/$1/README.md'),
+          'utf8',
+        );
+      } else {
+        fs.copyFileSync(srcPath, destPath);
+      }
+      count++;
+    }
+  }
+
+  return count;
+}
+
 function readRequiredFile(src) {
   if (!fs.existsSync(src)) {
     throw new Error('Missing required file: ' + path.relative(ROOT, src));
@@ -67,8 +112,7 @@ function readRequiredFile(src) {
 }
 
 function writeRootSkill(src, dest) {
-  const content = readRequiredFile(src)
-    .replace(/skills\/([a-z0-9-]+)\/SKILL\.md/g, 'references/subskills/$1/README.md')
+  const content = transformSkillReferences(readRequiredFile(src), 'references/subskills/$1/README.md')
     .replace(/详见 SKILL\.md/g, '详见 README.md')
     .replace('| 技能 | SKILL.md 路径 | 用途 | 典型命令 |', '| 技能 | README 路径 | 用途 | 典型命令 |')
     .replace('> 每个子技能均有独立的 SKILL.md。执行时先选定一个最匹配的子技能，只读取该子技能文档；references 按文档提示按需读取，避免一次性加载全量文档。',
@@ -222,7 +266,7 @@ function buildSkillsPackage(outputRoot) {
     path.join(SOURCE_ROOT, 'SKILL.md'),
     path.join(outputRoot, 'SKILL.md'),
   );
-  count += copyDirRecursive(
+  count += copyReferencesRecursive(
     path.join(SOURCE_ROOT, 'references'),
     path.join(outputRoot, 'references'),
   );

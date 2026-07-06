@@ -96,6 +96,7 @@ description: >
 | | `yida-create-process` | 从零建**带审批**流程表单（表单还不存在，一步到位） |
 | | `yida-custom-page` | 编写自定义页面 JSX 逻辑与 UI |
 | | `yida-publish-page` | JSX 写完后编译并发布 |
+| | `yida-openyida-publish-guard` | 发布已有自定义页面前检查线上设计器状态，避免本地旧源码覆盖用户在线改动 |
 | | `yida-table-form` | Excel 式表格批量录入提交 |
 | | `yida-ppt-slider` | 全屏幻灯片页面（分享/路演/培训/演示） |
 | | `openyida aggregate-table` `CLI` | 聚合表 / 虚拟视图（virtualView）：`list` 列出 · `create-empty` 建空白（返回设计器 URL）· `preview` 预览不保存 · `publish` 发布配置 |
