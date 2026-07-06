@@ -1,6 +1,6 @@
 ---
 name: yida-create-app
-description: 创建宜搭应用，返回 appType。搭建应用的第一步。不适用于：应用已存在时（先查询是否已有同名应用），或只需在已有应用中创建页面/表单（直接使用 yida-create-page 或 yida-create-form-page）。
+description: 创建宜搭应用，返回 appType。搭建应用的第一步。适用于从零新建全新应用时。
 ---
 
 # 创建应用

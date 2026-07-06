@@ -1,0 +1,86 @@
+[
+  {
+    "id": "dashboard-vs-report-vs-chart-1",
+    "prompt": "帮我做一个公司经营看板/驾驶舱，要能产品化交付给老板看",
+    "expectedSkill": "yida-dashboard",
+    "note": "看板产品化 → dashboard，区别于普通报表与单图表"
+  },
+  {
+    "id": "dashboard-vs-report-vs-chart-2",
+    "prompt": "给我这张订单表做个开箱即用的统计报表",
+    "expectedSkill": "yida-report",
+    "note": "普通统计报表 → report"
+  },
+  {
+    "id": "dashboard-vs-report-vs-chart-3",
+    "prompt": "我想用 ECharts 画一个很炫的定制化数据大屏",
+    "expectedSkill": "yida-chart",
+    "note": "ECharts 定制 → chart"
+  },
+  {
+    "id": "connector-vs-safe-actions-1",
+    "prompt": "我要接一个外部天气 API，连接器还没建，帮我创建并配鉴权",
+    "expectedSkill": "yida-connector",
+    "note": "连接器不存在/需管理 → connector"
+  },
+  {
+    "id": "connector-vs-safe-actions-2",
+    "prompt": "连接器已经有了，帮我从这段 API 代码生成执行动作",
+    "expectedSkill": "yida-connector-safe-actions",
+    "note": "已有连接器+从代码生成 action → safe-actions"
+  },
+  {
+    "id": "create-process",
+    "prompt": "帮我创建一个带审批流程的请假申请",
+    "expectedSkill": "yida-create-process",
+    "note": "需要审批流程一步到位 → create-process"
+  },
+  {
+    "id": "get-schema",
+    "prompt": "我只想查一下这个表单都有哪些字段、字段 ID 是什么",
+    "expectedSkill": "yida-get-schema",
+    "note": "只读查询结构 → get-schema"
+  },
+  {
+    "id": "flash-note-to-prd",
+    "prompt": "把这份会议闪记整理成一份 PRD 需求文档",
+    "expectedSkill": "yida-flash-note-to-prd",
+    "note": "闪记/纪要转 PRD"
+  },
+  {
+    "id": "publish-page",
+    "prompt": "页面 JSX 写完了，帮我编译并发布上线",
+    "expectedSkill": "yida-publish-page",
+    "note": "编译发布 → publish-page"
+  },
+  {
+    "id": "page-config-share",
+    "prompt": "把这个页面设置成组织内可分享，给我访问链接",
+    "expectedSkill": "yida-page-config",
+    "note": "页面公开访问/分享设置 → page-config"
+  },
+  {
+    "id": "full-app",
+    "prompt": "从零帮我搭一个完整的 CRM 客户管理系统",
+    "expectedSkill": "yida-app",
+    "note": "从零多步骤全流程 → yida-app 编排"
+  },
+  {
+    "id": "table-form",
+    "prompt": "我要一个像 Excel 那样可以多行批量录入再一次提交的页面",
+    "expectedSkill": "yida-table-form",
+    "note": "表格式批量录入 → table-form"
+  },
+  {
+    "id": "ppt-slider",
+    "prompt": "做一个全屏的技术分享路演幻灯片页面",
+    "expectedSkill": "yida-ppt-slider",
+    "note": "全屏幻灯片 → ppt-slider"
+  },
+  {
+    "id": "logout",
+    "prompt": "我要退出登录切换到另一个组织",
+    "expectedSkill": "yida-logout",
+    "note": "切换账号/组织 → logout"
+  }
+]

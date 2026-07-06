@@ -42,12 +42,7 @@ description: 宜搭数据管理。表单实例/子表/流程实例/任务中心�
 - "查看表单实例"、"发起流程"
 - "录入数据"、"批量导入"、"查询待办任务"
 
-**不适用场景（不要触发）**：
-- 修改表单结构（字段增删改）→ `yida-create-form-page`
-- 配置集成自动化 → `yida-integration`
-- 自定义页面接入 HTTP 连接器、第三方接口或外部系统数据 → `yida-data-source-connectors`
-- 获取字段 ID → `yida-get-schema`
-- 表单接口（`/v1/form/`）和流程接口（`/v1/process/`）不能混用
+> ⚠️ 表单接口（`/v1/form/`）和流程接口（`/v1/process/`）不能混用。
 
 ## 危险操作确认
 

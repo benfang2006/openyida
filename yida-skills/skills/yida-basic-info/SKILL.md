@@ -1,6 +1,6 @@
 ---
 name: yida-basic-info
-description: 宜搭平台管理 basicInfo 页面的组织基本信息、资源容量、额度和域名设置查询。适用于排查组织版本、Corp ID、授权人数、容量用量、固定域名引用和高级能力额度。不适用于：表单数据管理（应使用 yida-data-management）、组织管理员配置（应使用 yida-corp-manager）。
+description: 宜搭平台管理 basicInfo 页面的组织基本信息、资源容量、额度和域名设置查询。适用于排查组织版本、Corp ID、授权人数、容量用量、固定域名引用和高级能力额度。
 ---
 
 # 组织基本信息

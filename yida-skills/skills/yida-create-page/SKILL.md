@@ -1,6 +1,6 @@
 ---
 name: yida-create-page
-description: 在宜搭应用中创建自定义展示页面（display 类型），返回 formUuid。不适用于：创建带字段的数据收集表单（应使用 yida-create-form-page），或编写页面 JSX 代码（应使用 yida-custom-page），或发布已有页面（应使用 yida-publish-page）。
+description: 在宜搭应用中创建自定义展示页面（display 类型），返回 formUuid。适用于需要新建空白自定义页面，后续编写 JSX 代码并发布。
 ---
 # 创建自定义页面
 
@@ -30,11 +30,6 @@ description: 在宜搭应用中创建自定义展示页面（display 类型）�
 - "创建自定义展示页面"、"新建可视化大屏"
 - "创建自定义 UI 页面"、"新建一个页面"
 - 完整应用开发流程中的页面创建步骤（由 `yida-app` 编排调用）
-
-**不适用场景（不要触发）**：
-- 创建带字段的数据收集表单 → `yida-create-form-page`
-- 编写页面 JSX 代码 → `yida-custom-page`
-- 发布已有页面 → `yida-publish-page`
 
 ---
 

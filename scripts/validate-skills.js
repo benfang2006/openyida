@@ -64,6 +64,12 @@ function frontmatterField(frontmatter, fieldName) {
   return match[1].trim();
 }
 
+function isDeprecatedSkill(skillFile) {
+  const content = readText(skillFile);
+  const frontmatter = parseFrontmatter(content) || '';
+  return /已废弃|deprecated/i.test(frontmatter);
+}
+
 function validateSkillFrontmatter(skillDirName, skillFile) {
   const content = readText(skillFile);
   const frontmatter = parseFrontmatter(content);
@@ -140,10 +146,16 @@ function validateIndexEntry(skillDirName, skillFile) {
     return;
   }
 
+  if (isDeprecatedSkill(skillFile)) {
+    return;
+  }
+
   const indexText = readText(INDEX_FILE);
   const expectedPath = 'skills/' + skillDirName + '/SKILL.md';
-  if (!indexText.includes(expectedPath)) {
-    errors.push(toRelative(skillFile) + ': missing from yida-skills/SKILL.md index as ' + expectedPath);
+  // Support both old format (explicit path) and new grouped format (backtick skill name)
+  const skillNameRef = '`' + skillDirName + '`';
+  if (!indexText.includes(expectedPath) && !indexText.includes(skillNameRef)) {
+    errors.push(toRelative(skillFile) + ': missing from yida-skills/SKILL.md index as ' + expectedPath + ' or ' + skillNameRef);
   }
 }
 

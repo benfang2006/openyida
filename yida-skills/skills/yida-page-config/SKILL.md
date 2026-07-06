@@ -1,6 +1,6 @@
 ---
 name: yida-page-config
-description: 页面公开访问和组织内分享配置。支持 URL 验证、配置保存、导航显示控制。不适用于：配置表单数据权限（应使用 yida-form-permission），或修改页面代码内容（应使用 yida-custom-page + yida-publish-page）。
+description: 页面公开访问和组织内分享配置。支持 URL 验证、配置保存、导航显示控制。适用于设置页面免登访问或生成分享链接时。
 ---
 
 # 页面配置
@@ -33,10 +33,6 @@ description: 页面公开访问和组织内分享配置。支持 URL 验证、�
 - "组织内分享"、"内部分享"
 - "隐藏导航"、"全屏展示"、"隐藏顶部导航栏"
 - 页面发布后需要配置访问权限时
-
-**不适用场景（不要触发）**：
-- 配置表单数据权限（字段级/角色级）→ `yida-form-permission`
-- 修改页面代码内容 → `yida-custom-page` + `yida-publish-page`
 
 ---
 

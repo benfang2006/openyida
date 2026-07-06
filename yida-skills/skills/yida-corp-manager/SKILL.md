@@ -1,6 +1,6 @@
 ---
 name: yida-corp-manager
-description: 宜搭平台权限管理。查询和维护应用管理员、平台管理员、平台子管理员，以及通讯录可见性开关。适用于用户提到平台权限管理、corpManager、应用管理员、平台管理员、子管理员、通讯录权限。不适用于表单权限组（应使用 yida-form-permission）。
+description: 宜搭平台权限管理。查询和维护应用管理员、平台管理员、平台子管理员，以及通讯录可见性开关。触发词：「平台权限管理」「corpManager」「平台管理员」「通讯录权限」。
 ---
 
 # 平台权限管理
@@ -11,12 +11,6 @@ description: 宜搭平台权限管理。查询和维护应用管理员、平台�
 - 增删改管理员会影响真实组织权限，执行前向用户确认目标人员、角色、部门范围和管理场景。
 - 同名人员必须用 `search-user` 的 `departmentNamePath` 区分，不得只凭姓名操作。
 - 平台子管理员必须指定 `--dept-ids`，场景默认 `appManage,bulletinBoard`。
-
-## 不适用场景
-
-- 表单权限组、数据权限、操作权限：使用 `yida-form-permission`。
-- 流程节点字段权限：使用 `yida-process-rule`。
-- 页面公开访问或组织内分享：使用 `yida-page-config`。
 
 ## 常用命令
 

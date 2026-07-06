@@ -1,6 +1,6 @@
 ---
 name: yida-logout
-description: 退出宜搭登录，清空本地 Cookie 缓存。不适用于：仅需刷新 Cookie（应等待自动刷新），或登录态正常但命令失败（先排查其他原因）。
+description: 退出宜搭登录，清空本地 Cookie 缓存。适用于需要切换账号或切换组织时。
 ---
 
 # 退出登录

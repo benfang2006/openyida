@@ -1,6 +1,6 @@
 ---
 name: yida-connector
-description: 宜搭 HTTP 连接器管理。创建、配置、测试连接器，打通钉钉/自建系统/第三方 API。支持 6 种鉴权方式。不适用于：管理表单数据（应使用 yida-data-management），或配置集成自动化逻辑流（应使用 yida-integration）。
+description: 宜搭 HTTP 连接器创建与管理。打通钉钉/自建系统/第三方 API，支持 6 种鉴权方式。适用于用户需要接入外部接口、配置鉴权、创建或管理连接器时。
 ---
 
 # HTTP 连接器管理
@@ -28,11 +28,6 @@ description: 宜搭 HTTP 连接器管理。创建、配置、测试连接器，�
 - "连接钉钉开放平台"、"HTTP 连接器"
 - "打通自建系统"、"API 集成"
 - "配置鉴权"、"创建连接器"
-
-**不适用场景（不要触发）**：
-- 管理宜搭表单数据（增删改查）→ `yida-data-management`
-- 配置集成自动化逻辑流 → `yida-integration`
-- 在自定义页面直接写 fetch 调用 → `yida-custom-page`
 
 ## 危险操作确认
 

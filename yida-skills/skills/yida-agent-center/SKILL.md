@@ -1,6 +1,6 @@
 ---
 name: yida-agent-center
-description: 宜搭代理中心管理。查询、新增、编辑、撤销在职流程代理和离职代理，支持代处理流程、代提交流程、全部/部分流程范围。不适用于流程规则设计（应使用 yida-process-rule）或任务列表查询（应使用 yida-data-management/task-center）。
+description: 宜搭代理中心管理。查询、新增、编辑、撤销在职流程代理和离职代理，支持代处理流程、代提交流程、全部或部分流程范围。适用于设置流程审批的代理人。
 ---
 
 # 代理中心管理
@@ -12,12 +12,6 @@ description: 宜搭代理中心管理。查询、新增、编辑、撤销在职�
 - 离职代理只有平台管理员可操作；如果接口返回无权限，不要重试，提示用户切换管理员账号或联系平台管理员。
 - 普通在职代理必须传 `--start` 和 `--end`；离职代理不要传时间，平台按离职状态生效。
 - 部分流程代理使用 `--range part` 时，必须提供 `--range-form <appType:formUuid>` 或 `--range-json`/`--range-file`。
-
-## 不适用场景
-
-- 设计或发布审批流程规则：使用 `yida-process-rule`。
-- 查询待办、已处理、抄送、代提交任务：使用 `openyida task-center` 或 `yida-data-management`。
-- 平台管理员、应用管理员、通讯录可见性：使用 `yida-corp-manager`。
 
 ## 常用命令
 

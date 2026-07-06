@@ -1,6 +1,6 @@
 ---
 name: yida-export-conversation
-description: 导出 AI 对话记录，生成结构化的 Markdown 文档。支持 Claude Code 自动检测，其他环境通过 --input 手动指定。不适用于：导出宜搭表单数据（应使用 yida-data-management），或导出应用配置（应使用 openyida export-app 命令）。
+description: 导出 AI 对话记录，生成结构化的 Markdown 文档。支持 Claude Code 自动检测，其他环境通过 --input 手动指定。适用于保存和回顾 AI 编程过程记录。
 ---
 # 导出 AI 对话记录
 
@@ -28,10 +28,7 @@ description: 导出 AI 对话记录，生成结构化的 Markdown 文档。支�
 - "生成开发文档"、"导出本次对话"
 - "把对话记录存下来"
 
-**不适用场景（不要触发）**：
-- 导出宜搭表单数据 → `yida-data-management`
-- 需要实时同步对话内容 → 本技能为一次性导出，不支持实时同步
-- 非 Claude Code 环境且未提供 `--input` 参数 → 提示用户手动指定对话文件
+**注意**：本技能为一次性导出，不支持实时同步。非 Claude Code 环境需通过 `--input` 手动指定对话文件。
 
 ---
 

@@ -284,6 +284,44 @@ this.setCustomState({ count: count + 1, loading: true });
 this.forceUpdate();
 ```
 
+### ⚠️ 读状态只能用 `getCustomState()`，禁止读 `this.state.<业务字段>`（静默空壳页）
+
+业务态由 `setCustomState()` 写入 `_customState`；`this.state` 里**只有** `forceUpdate()` 写的 `{ timestamp }`。因此 `this.state.<业务字段>` 恒为 `undefined`，页面无任何报错，却渲染成"数据全为占位符、图表全空"的空壳页——极难排查。
+
+`this.state` 仅允许读两个运行时契约字段：`this.state.timestamp`（重渲染标记）和 `this.state.urlParams`（URL 参数）。其余一律走 `getCustomState()`。
+
+```javascript
+// ✅ 正确：业务态用 getCustomState 读
+export function renderJsx() {
+  var self = this;
+  var state = this.getCustomState();          // 全部业务态
+  var agg = state.agg;
+  if (state.loading) { /* 渲染加载态 */ }
+  return (
+    <div>
+      <div>{agg ? agg.totalGmv : '-'}</div>
+      {/* timestamp 仍从 this.state 读，这是运行时契约字段 */}
+      <div style={{ display: 'none' }}>{this.state && this.state.timestamp}</div>
+    </div>
+  );
+}
+export function renderCharts() {
+  var agg = this.getCustomState('agg');        // ✅ 单值也用 getCustomState
+  if (!agg) { return; }
+}
+
+// ❌ 错误：读 this.state 的业务字段，恒为 undefined → KPI 恒显示占位符、图表恒空、进不了 loading 分支
+export function renderJsx() {
+  var state = this.state || {};                // ❌ this.state 里没有业务态
+  var agg = state.agg;                          // ❌ undefined
+}
+export function renderCharts() {
+  var agg = this.state && this.state.agg;       // ❌ undefined，图表永不渲染
+}
+```
+
+> **自检规则**：生成/审查页面时，`grep` 一遍 `this.state.` 与 `self.state.`；除 `timestamp`、`urlParams` 外，出现任何 `.state.<业务字段>` 都要改成 `getCustomState()`。
+
 ---
 
 ## 生命周期钩子

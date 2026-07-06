@@ -1,6 +1,6 @@
 ---
 name: yida-dashboard
-description: "宜搭 Dashboard / 经营看板 / 管理驾驶舱 / 数据大屏专项技能。把表单、流程、报表或业务数据沉淀成可直接交付给高管汇报的组织内看板页面，默认包含真实数据接入、日期/财年/维度筛选、多端友好布局、卡片截图、组织内短链接、隐藏导航，以及按需打通「saveFormData → 集成自动化 → 待办2.0 连接器」的真实钉钉待办闭环。当用户提到「dashboard」「Dashboard」「看板」「经营看板」「业务看板」「管理驾驶舱」「经营驾驶舱」「数据大屏」「领导驾驶舱」「高层汇报」「指标卡截图」「组织内短链」「隐藏导航」「钉钉待办」等场景时，优先使用此技能；具体 ECharts 图表实现按需调用 yida-chart。"
+description: "经营看板/驾驶舱/数据大屏产品化交付。含真实数据接入、筛选交互、卡片截图、组织内短链、钉钉待办闭环。触发词：「看板」「驾驶舱」「大屏」「Dashboard」「高层汇报」。单图美化用 yida-chart，普通统计用 yida-report。"
 license: MIT
 metadata:
   audience: developers
@@ -110,6 +110,10 @@ metadata:
 [Step 8] 组织内短链 + 隐藏导航 + 卡片截图验证
    openyida verify-short-url <appType> <formUuid> <url>
    openyida save-share-config ... --hide-nav
+           ↓
+[Step 9] 如果属于完整应用，回到 yida-app 编排层统一整理导航
+   openyida nav-group order <appType> <首页/总览> <核心业务表单...> <专题看板...>
+   多个看板并存时，不要把所有看板无脑置顶。
 ```
 
 ---

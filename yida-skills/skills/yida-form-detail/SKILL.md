@@ -1,9 +1,7 @@
 ---
 name: yida-form-detail
 description: >
-  宜搭表单详情页 formDetail 样式优化规范。用于美化表单详情页、详情页卡片化、字段详情视觉优化、
-  评论区/操作栏样式调整，或在新建应用后统一表单详情页风格。通过表单 Schema 注入 Html 组件承载 CSS；
-  不用于自定义页面 JSX 发布，也不用于表单数据增删改查。
+  表单详情页 formDetail 样式优化。通过 Schema 注入 Html 组件承载 CSS，实现卡片化布局、字段视觉美化、评论区与操作栏调整。适用于新建应用后统一表单详情页风格。
 license: MIT
 compatibility:
   - opencode

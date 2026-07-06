@@ -328,9 +328,11 @@ function shouldUsePlaywrightFallbackInAgentLogin() {
   return hasDesktopEnvironment() || process.env.OPENYIDA_AGENT_PLAYWRIGHT_FALLBACK === '1';
 }
 
-function shouldUseDesktopBrowserLogin() {
-  const { hasDesktopEnvironment } = require('../lib/core/utils');
-  return hasDesktopEnvironment();
+function shouldUseLocalBrowserLogin(options = {}) {
+  const { hasLocalBrowserLoginCapability } = require('../lib/auth/login');
+  return hasLocalBrowserLoginCapability({
+    playwrightFallback: options.playwrightFallback,
+  });
 }
 
 function shouldUseCodexQrLogin(cliArgs) {
@@ -599,26 +601,17 @@ async function main() {
         if (cachedResult.status === 'ok') {
           printLoginResult(cachedResult);
         } else {
-          const { detectActiveTool } = require('../lib/core/utils');
-          const activeTool = detectActiveTool();
           const { interactiveLogin } = require('../lib/auth/login');
-          const browserResult = interactiveLogin({
-            playwrightFallback: shouldUsePlaywrightFallbackInAgentLogin(),
-          });
+          const playwrightFallback = shouldUsePlaywrightFallbackInAgentLogin();
+          const browserResult = shouldUseLocalBrowserLogin({ playwrightFallback })
+            ? interactiveLogin({ playwrightFallback })
+            : null;
           if (browserResult) {
             printLoginResult(browserResult);
           } else {
-            // CDP/Playwright 失败后的兜底策略：
-            // Wukong/QoderWork 有 in-app browser，优先使用 browser handoff；其余走 AI 对话框 QR handoff。
-            if (activeTool && (activeTool.tool === 'wukong' || activeTool.tool === 'qoderwork')) {
-              const { codexLogin } = require('../lib/auth/codex-login');
-              const result = await codexLogin({ tool: activeTool.tool });
-              printLoginResult(result);
-            } else {
-              const { startCodexQrLogin } = require('../lib/auth/qr-login');
-              const result = await startCodexQrLogin({ corpId: getArgValue(loginArgs, '--corp-id') });
-              printLoginResult(result);
-            }
+            const { startCodexQrLogin } = require('../lib/auth/qr-login');
+            const result = await startCodexQrLogin({ corpId: getArgValue(loginArgs, '--corp-id') });
+            printLoginResult(result);
           }
         }
       } else if (shouldUseBrowserHandoffLogin(loginArgs)) {
@@ -636,7 +629,7 @@ async function main() {
           printLoginResult(cachedResult);
           break;
         }
-        if (shouldUseDesktopBrowserLogin()) {
+        if (shouldUseLocalBrowserLogin({ playwrightFallback: true })) {
           const { interactiveLogin } = require('../lib/auth/login');
           const browserResult = interactiveLogin({ playwrightFallback: true });
           if (browserResult) {

@@ -1,0 +1,8 @@
+{
+  "mode": "e2e",
+  "skill": null,
+  "stages": null,
+  "screenshot": true,
+  "autoScore": false,
+  "scenariosDir": "scripts/eval/scenarios"
+}
