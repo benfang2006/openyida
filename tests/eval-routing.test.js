@@ -13,6 +13,7 @@ const {
   buildHumanScores,
   buildScorePrompt,
   renderScoringMarkdown,
+  toMarkdownPath,
 } = require('../scripts/eval/score');
 
 describe('eval agent.extractJsonObject', () => {
@@ -181,5 +182,9 @@ describe('eval score', () => {
     expect(md).toContain('https://x/p');
     expect(md).toContain('eval-screenshots/a.png');
     expect(md).toContain('人工评分');
+  });
+
+  test('toMarkdownPath 在 Windows 路径下输出 Markdown 友好的斜杠', () => {
+    expect(toMarkdownPath('C:\\work\\eval-screenshots\\a.png', 'C:\\work')).toBe('eval-screenshots/a.png');
   });
 });
