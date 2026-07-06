@@ -6,7 +6,7 @@ const { spawnSync } = require('child_process');
 
 const MAX_TARBALL_BYTES = 1536 * 1024;
 const MAX_UNPACKED_BYTES = 4608 * 1024;
-const MAX_ENTRY_COUNT = 300;
+const MAX_ENTRY_COUNT = 330;
 const MAX_SINGLE_FILE_BYTES = 512 * 1024;
 
 function formatBytes(bytes) {
