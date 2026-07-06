@@ -172,6 +172,7 @@ openyida copy
 | `yida-create-process` | `skills/yida-create-process/SKILL.md` | 创建流程表单并配置流程 | `openyida create-process <appType> "<表单名>" <字段JSON> <流程JSON>` |
 | `yida-aggregate-table` | — | 聚合表（virtualView）列表、创建空白页、读取配置、预览、保存草稿和发布 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> ...` |
 | `yida-get-schema` | `skills/yida-get-schema/SKILL.md` | 获取单个/全部表单 Schema，确认字段 ID | `openyida get-schema <appType> <formUuid>` |
+| `yida-er` | — | 只读导出应用表单实体、子表和系统实体关系图 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` |
 | `yida-custom-page` | `skills/yida-custom-page/SKILL.md` | 编写自定义页面 JSX 代码规范 | 详见 SKILL.md |
 | `yida-publish-page` | `skills/yida-publish-page/SKILL.md` | 编译并发布自定义页面 | `openyida publish <源文件路径> <appType> <formUuid> [--health-check]` |
 | `yida-openyida-publish-guard` | `skills/yida-openyida-publish-guard/SKILL.md` | 发布既有自定义页面前拉取线上 schema 并对比现状，避免本地旧代码覆盖设计器即时修改 | `openyida get-schema <appType> <formUuid> --json` |
