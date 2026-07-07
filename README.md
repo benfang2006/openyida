@@ -8,7 +8,7 @@
 
 OpenYida connects AI coding agents with Yida's low-code platform, so developers can create apps, forms, workflows, custom pages, reports, integrations, and deployment configuration from a normal chat-driven development workflow.
 
-[Quick Start](#quick-start) · [Capabilities](#capabilities) · [CLI Reference](#cli-reference) · [Examples](#examples) · [Contributing](./CONTRIBUTING.md) · [Changelog](./CHANGELOG.md)
+[Quick Start](#quick-start) · [Capabilities](#capabilities) · [Full Capability List](./docs/capabilities.md) · [CLI Reference](#cli-reference) · [Examples](#examples) · [Contributing](./CONTRIBUTING.md) · [Changelog](./CHANGELOG.md)
 
 [![npm version](https://img.shields.io/npm/v/openyida?color=brightgreen&label=npm)](https://www.npmjs.com/package/openyida)
 [![npm downloads](https://img.shields.io/npm/dm/openyida?color=blue)](https://www.npmjs.com/package/openyida)
@@ -169,6 +169,8 @@ openyida/
 ```
 
 ## Capabilities
+
+For a user-facing list of supported features and matching CLI commands, see [OpenYida 功能完整列表](./docs/capabilities.md).
 
 ### Application and Form Management
 
