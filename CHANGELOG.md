@@ -6,7 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > **版本规则**：从 v2026.03.19 起，版本号采用日期格式 `vYYYY.MM.DD`，每次发布以当天日期为版本号，Git tag 格式为 `v2026.03.19`，npm 包版本格式为 `2026.03.19`。
 
-## [Unreleased]
+## [2026.7.8] - 2026-07-08
+
+### Added
+- `openyida publish` 支持 Code Canvas 自定义页面发布：`.canvas.jsx` / `.canvas.tsx` 会自动走本地 Babel 编译，生成 `runtimeCode` 与 `importedModules` 并保存为 `YidaCodeCanvas` Schema；扩展名不规范时可使用 `--canvas` 显式启用。
+- 新增 `yida-canvas-custom-page` 和 `yida-canvas-upgrade` 技能，覆盖 Code Canvas 页面从零开发、依赖白名单、HTTP 数据桥、品牌主色落地和原生页面迁移。
+- 新增 `yida-page-uiux` 与 `yida-nav-shell` 技能，在编写自定义页面前先确定工作台、看板、列表、详情或官网落地页的视觉方向，并支持隐藏应用导航后的页面内自绘导航壳。
+
+### Changed
+- 自定义页面技能路由调整为默认优先使用 Code Canvas；仅在强依赖原生页面实例数据桥时回退到 native 自定义页面链路。
+- 自定义页面模板和设计 token 强化“主色跟随应用品牌”的约束，减少固定蓝色、统一圆角卡片等模板化视觉。
+- npm 包校验和 CI 校验使用隔离 npm cache，并同步放宽技能包文件数量阈值，降低本地环境缓存对发布校验的影响。
+
+### Tests
+- 新增 Code Canvas 本地编译测试，覆盖依赖提取、window alias 改写、React 自动注入、TypeScript 剥离和编译错误提示。
 
 ## [2026.7.7] - 2026-07-07
 

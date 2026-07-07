@@ -83,7 +83,7 @@ export function injectTailwindSource() {
     '@import "tailwindcss/theme";',
     '@import "tailwindcss/preflight";',
     '@import "tailwindcss/utilities";',
-    '@theme { --color-brand: #2F6FED; }',
+    '@theme { --color-brand: var(--color-brand1-6, #2F6FED); }',  // 跟随 App 主题，缺失时兜底
   ].join('\n');
   document.head.appendChild(style);
 }
@@ -98,11 +98,11 @@ export function injectTailwindFallback() {
   style.innerHTML = [
     '.oyd-btn,.oyd-select-trigger,.oyd-select-option{appearance:none;-webkit-appearance:none;font-family:inherit;}',
     '.oyd-btn{height:36px;border-radius:6px;border:1px solid #D0D5DD;background:#fff;padding:0 12px;font-size:14px;cursor:pointer;}',
-    '.oyd-btn-primary{background:#2F6FED;border-color:#2F6FED;color:#fff;}',
+    '.oyd-btn-primary{background:var(--color-brand1-6,#2F6FED);border-color:var(--color-brand1-6,#2F6FED);color:#fff;}',
     '.oyd-select-trigger{height:38px;border-radius:6px;border:1px solid #D0D5DD;background:#fff;padding:0 12px;font-size:14px;text-align:left;box-shadow:0 6px 14px rgba(15,23,42,.06);}',
     '.oyd-select-menu{position:absolute;z-index:30;margin-top:6px;width:100%;padding:6px;border:1px solid #E4E7EC;border-radius:10px;background:#fff;box-shadow:0 16px 32px rgba(16,24,40,.14);}',
     '.oyd-select-option{width:100%;min-height:36px;border:0;border-radius:8px;background:#fff;padding:0 10px;text-align:left;font-size:14px;cursor:pointer;}',
-    '.oyd-select-option-active{background:#EFF6FF;color:#1D4ED8;font-weight:600;}',
+    '.oyd-select-option-active{background:var(--color-brand1-1,#EFF6FF);color:var(--color-brand1-6,#1D4ED8);font-weight:600;}',
   ].join('');
   document.head.appendChild(style);
 }

@@ -15,7 +15,7 @@ description: 将 JSX 源码编译发布到宜搭自定义页面。Babel 转 ES5 
 ## 严格要求 (MUST DO)
 
 - 发布前确认 JSX 源码已通过 `yida-custom-page` 规范编写
-- 发布前优先执行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；`.oyd.jsx` 会先自动构建为宜搭兼容源码，再执行 lint/Babel/UglifyJS
+- native `.oyd.jsx` / `.jsx` 发布前优先执行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；`.oyd.jsx` 会先自动构建为宜搭兼容源码，再执行 lint/Babel/UglifyJS。Code Canvas `.canvas.jsx` 不走这两个 native 检查命令，发布时由 `openyida publish <源文件> ...` 的 Canvas 编译阶段校验 `runtimeCode + importedModules`。
 - 推荐源码放在 `project/pages/src/<页面名>.oyd.jsx`；编译器会把兼容产物写到 `project/pages/build/<页面名>.yida.jsx`，最终发布产物写到 `project/pages/dist/<页面名>.yida.js`
 - 发布前注意 CLI 会检查 `<workspace>/project/pages/src/` 与 `<workspace>/projects/<id>/artifacts/` 中同名源码是否内容不一致；出现警告时必须确认实际要发布哪一份
 - 发布前确认 `openyida env` 检测通过，登录态有效
@@ -43,15 +43,19 @@ description: 将 JSX 源码编译发布到宜搭自定义页面。Babel 转 ES5 
 ## 命令
 
 ```bash
-openyida publish <源文件路径> <appType> <formUuid> [--compat] [--health-check] [--force]
+openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [--health-check] [--force]
 ```
+
+> 本技能覆盖 **native `.oyd.jsx`/`.jsx`** 链路（Babel + UglifyJS + `Jsx` 组件 Schema）。**Code Canvas 页面**走另一条链路：源码写成 `.canvas.jsx` 时 `openyida publish` 会自动**本地用 Babel 编译**、生成 `YidaCodeCanvas` Schema；从零写或迁移 Canvas 页见 `yida-canvas-custom-page` / `yida-canvas-upgrade`。
+> 注意：`openyida check-page` / `openyida compile` 当前是 native 页面检查器，不适合作为 `.canvas.jsx` 的预检；Canvas 预检以 `publish` 的「编译 Code Canvas 源码」阶段为准。
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
-| `源文件路径` | 是 | JSX 源码路径，推荐 `project/pages/src/my-page.oyd.jsx` |
+| `源文件路径` | 是 | JSX 源码路径，推荐 `project/pages/src/my-page.oyd.jsx`；`.canvas.jsx` 会自动走 Code Canvas 链路 |
 | `appType` | 是 | 应用 ID |
 | `formUuid` | 是 | 自定义页面 ID，必须是 `openyida list-forms <appType>` 返回的 `formType=display` 目标，不要使用数据底表或流程表单 ID |
 | `--compat` / `--modern` | 否 | 对普通 `.jsx` 也强制启用 OpenYida 兼容构建；`.oyd.jsx` 默认自动启用 |
+| `--canvas` | 否 | 显式走 Code Canvas 链路（本地 Babel 编译 + `YidaCodeCanvas` Schema）；`.canvas.jsx` 扩展名已自动启用，仅当扩展名不规范但确为 Canvas 源码时需要 |
 | `--health-check` | 否 | 发布成功后请求页面 URL，回显 HTTP 健康检查结果，避免只看到 200 接口返回但首屏坏掉 |
 | `--force` | 否 | 显式绕过发布目标类型保护；只有确认目标是自定义页面但导航接口暂时无法识别时才使用 |
 

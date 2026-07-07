@@ -1,5 +1,7 @@
 # 宜搭自定义页面设计规范
 
+> **本文件是 token / 组件实现层（数值层）**：提供色彩/圆角/字体/间距的具体值与组件模板。视觉**方向与差异化**（选哪种气质、如何偏离默认脸、去 AI 味）由 `../../yida-page-uiux/SKILL.md` 决定——**先定方向、再用本文件落地**。直接套用本文件的默认组合（灰白底 + 统一圆角卡片）而不先做方向决策，正是页面「有 AI 味」的根因。
+
 > 宜搭自定义页面默认使用 Tailwind utility `className` 组织视觉层，并保留内联 `style` 兜底。不能使用 CSS 文件、CSS Modules、shadcn/ui 或构建期样式方案。
 
 > 原因：宜搭自定义页面运行在单文件环境中，不能像普通 React 项目一样 `import` CSS。Tailwind 通过 `@tailwindcss/browser` 运行时脚本加载，默认使用已验证的 `g.alicdn.com` 地址，并开启 preflight 重置原生控件外观；关键控件仍要有 JavaScript `style` 兜底。
@@ -22,27 +24,33 @@
 
 在 `renderJsx` 顶部定义语义色彩对象，全页复用：
 
-> **主色说明**：宜搭平台已内置品牌色 CSS 变量，主色相关 token 直接使用平台变量，无需硬编码色值，可随平台主题自动适配。
+> **主色说明**：宜搭平台已内置品牌色 CSS 变量（色阶 `--color-brand1-1` 最浅 → `--color-brand1-6` 主色 → `--color-brand1-10` 最深）。**所有主色/强调/链接/选中/info/标签系一律走平台变量，不要硬编码蓝色**，页面才能跟随 App 主题自动适配。只有语义色（成功/警告/错误）固定不随主题变，保证语义稳定。
+>
+> **前提是导航可见**：跟随品牌主色是为了跟应用框架融合。若页面隐藏了应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏），主色相可自立、不必严格跟品牌（由 `yida-page-uiux` 的 Step 0 决策）——但**语义色仍固定、去 AI 味红线仍生效**。拿不准就按「跟随品牌」这个更安全的默认走。
+>
+> ⚠️ **常见错误**：把 `primaryHover` 设成 `brand1-1`（最浅档）会让填充主按钮 hover 时「泛白」；把 `hover` 设成 `brand1-9`（深档）当行 hover 底会让行「变暗」。填充按钮 hover 要比主色**亮一档**（`brand1-5`）、按下**深一档**（`brand1-7`）；通用浅色 hover 底用 `brand1-1`。
 
 ```javascript
 export function renderJsx() {
   var colors = {
-    primary:      'var(--color-brand1-6)',  // 主色（品牌蓝），用于主操作按钮、链接、选中态高亮
-    primaryHover: 'var(--color-brand1-1)',  // 主色悬停态，鼠标 hover 时的按钮/链接颜色
-    hover:        'var(--color-brand1-9)',  // 通用悬停背景色，用于列表行 hover、菜单项 hover
-    active:       'var(--color-brand1-9)',  // 通用激活/按下态，点击时的视觉反馈
-    disabled:     'var(--color-brand1-8)',  // 禁用态颜色，用于不可操作的按钮、控件
-    primaryLight: 'var(--color-brand1-2)',  // 主色浅背景，用于选中行底色、标签高亮背景
+    primary:       'var(--color-brand1-6)',  // 主色，用于主操作按钮、链接、选中态高亮
+    primaryHover:  'var(--color-brand1-5)',  // 主色 hover：填充按钮/链接 hover，比主色亮一档
+    primaryActive: 'var(--color-brand1-7)',  // 主色按下：填充按钮 active，比主色深一档
+    hover:         'var(--color-brand1-1)',  // 通用浅色 hover 底：列表行 hover、菜单项 hover
+    active:        'var(--color-brand1-2)',  // 通用浅色激活/按下底
+    disabled:      'var(--color-brand1-3)',  // 禁用态：浅、去饱和
+    primaryLight:  'var(--color-brand1-2)',  // 主色浅背景：选中行底色、标签高亮背景
 
-    // 语义色
+    // 语义色（固定，不随主题变）
     success:        '#52C41A',
     successLight:   '#F6FFED',
     warning:        '#FAAD14',
     warningLight:   '#FFFBE6',
     error:          '#FF4D4F',
     errorLight:     '#FFF2F0',
-    info:           '#1677FF',
-    infoLight:      '#E6F4FF',
+    // info = 品牌信息色，跟随主题（不再固定蓝）
+    info:           'var(--color-brand1-6)',
+    infoLight:      'var(--color-brand1-1)',
 
     // 中性色（从深到浅）
     text:           '#1D2129',  // 主文字
@@ -176,7 +184,7 @@ btnPrimary: {
   justifyContent: 'center',
   padding: '0 16px',
   height: '32px',
-  background: '#1677FF',
+  background: 'var(--color-brand1-6)',  // 主色跟随 App 主题，勿硬编码蓝
   color: '#FFFFFF',
   border: 'none',
   borderRadius: '6px',
@@ -238,7 +246,7 @@ tag: function(type) {
     success: { color: '#52C41A', bg: '#F6FFED', border: '#B7EB8F' },
     warning: { color: '#FAAD14', bg: '#FFFBE6', border: '#FFE58F' },
     error:   { color: '#FF4D4F', bg: '#FFF2F0', border: '#FFCCC7' },
-    info:    { color: '#1677FF', bg: '#E6F4FF', border: '#91CAFF' },
+    info:    { color: 'var(--color-brand1-6)', bg: 'var(--color-brand1-1)', border: 'var(--color-brand1-3)' },
     default: { color: '#4E5969', bg: '#F2F3F5', border: '#E5E6EB' },
   };
   var c = colorMap[type] || colorMap.default;
@@ -305,3 +313,12 @@ empty: {
 ❌ **禁止忽略空状态**，列表/数据为空时必须有友好提示
 ❌ **禁止忽略加载状态**，异步操作必须有 loading 反馈
 ❌ **禁止移动端不适配**，所有页面必须用 `isMobile` 做响应式处理
+
+### 去 AI 味反模式（与 `../../yida-page-uiux/` 对齐，实现前先定视觉方向）
+
+❌ **禁蓝紫 AI 万能渐变背景**：不要用 `#6366f1→#a855f7` 一类蓝紫渐变当区块/卡片底；主色走平台品牌变量，强调靠语义色/点缀色而非渐变。
+❌ **禁彩色发光阴影 / 半透明彩色 blob / 渐变文字**：阴影用中性色低透明度（如 `rgba(0,0,0,.06)`），不要彩色光晕；不要背景漂浮彩色模糊球，不要文字渐变。
+❌ **禁每个卡片/章节标题前配一枚装饰线性图标**：这是最典型的 AI 味。图标只用在功能处（按钮/状态/导航），标题纯文字；同页只用一套图标风格。
+❌ **严禁 emoji（FATAL）**：页面渲染的任何位置（标题/按钮/标签/状态/空态/图表标题）一律不得出现 emoji（😀🚀✅⚠️📦📊 等），JS 注释也不留装饰符号（←→✓）。需要图标用功能性内联 SVG，需要状态用文字 + 语义色标签。emoji 跨端不一致且是最明显的 AI 味来源。
+
+> 注：上文「统一 `borderRadius: 8px`」是数值兜底，不代表全页只能一个圆角性格。圆角**性格**（直角/微圆 vs 标准圆 vs 圆润）由 `yida-page-uiux` 按气质选定后，再在本文件圆角系统里取分层数值。

@@ -3,6 +3,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+if [ -z "${npm_config_cache:-}" ]; then
+  npm_config_cache="$(mktemp -d "${TMPDIR:-/tmp}/openyida-npm-cache-XXXXXX")"
+  export npm_config_cache
+  trap 'rm -rf "$npm_config_cache"' EXIT
+fi
+
 echo "=== Step 1: Install dependencies ==="
 npm ci --ignore-scripts
 

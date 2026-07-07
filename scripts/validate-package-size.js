@@ -3,10 +3,13 @@
 'use strict';
 
 const { spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const MAX_TARBALL_BYTES = 1536 * 1024;
 const MAX_UNPACKED_BYTES = 4608 * 1024;
-const MAX_ENTRY_COUNT = 330;
+const MAX_ENTRY_COUNT = 350;
 const MAX_SINGLE_FILE_BYTES = 512 * 1024;
 
 function formatBytes(bytes) {
@@ -26,10 +29,18 @@ function fail(message) {
 }
 
 function runNpmPackDryRun() {
+  const shouldCreateCache = !process.env.OPENYIDA_NPM_CACHE;
+  const npmCache = shouldCreateCache
+    ? fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-npm-cache-'))
+    : process.env.OPENYIDA_NPM_CACHE;
   const result = spawnSync('npm', ['pack', '--dry-run', '--json'], {
     encoding: 'utf8',
+    env: { ...process.env, npm_config_cache: npmCache, NPM_CONFIG_CACHE: npmCache },
     stdio: 'pipe',
   });
+  if (shouldCreateCache) {
+    fs.rmSync(npmCache, { recursive: true, force: true });
+  }
 
   if (result.status !== 0) {
     process.stderr.write(result.stderr || result.stdout);

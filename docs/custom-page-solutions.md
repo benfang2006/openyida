@@ -28,7 +28,7 @@ page.oyd.jsx
 |---|------|------|--------------|----------|
 | 1 | `pageSize` 超限 | 数据请求返回异常 / 被平台截断 | 推荐 `pageSize: 50`（性能最佳），最大 100 | linter：`>100` error `page-size-limit`；`51~100` warning `page-size-recommend`。compat：缺省补 50、`>100` 钳到 100 |
 | 2 | 受控 `input value={}` | 输入框无法编辑 | 用 `defaultValue` 而非 `value` | linter：error `controlled-input` |
-| 3 | 原生 `<select>` | 样式不一致、移动端兼容差 | 改用宜搭 `SelectField`，或 `div+button+onClick` 自定义下拉 | linter：warning `native-select-ui`（文案引导 SelectField） |
+| 3 | 原生 `<select>` | 样式不一致、移动端兼容差 | 普通自定义页用 `div+button+onClick` 自定义下拉；Code Canvas 仅在依赖映射验证后才使用宜搭字段组件 | linter：warning `native-select-ui` |
 | 4 | `{['线索','在谈'].map()}` | 被误报为 ES6 计算属性、编译中断 | 写法本身合法；根因是行级正则误报，已修复 | linter：删除行级正则，改由 AST `ObjectProperty` 权威判定 |
 | 5 | `String.padStart()` | 静默失败、无输出 | 用三元运算符手写补齐 | linter：warning `pad-method` |
 | 6 | JSX 事件绑定丢 `this` | 点击回调里 `this` 为 undefined | 用箭头函数包裹：`onClick={e => self.fn(e)}` | compat：`fixEventHandlers` 自动改写；linter：error `event-function` |
@@ -89,7 +89,7 @@ export function forceUpdate() {
 6. 业务态写入 `_customState`，用 `setCustomState()` / `forceUpdate()` 重渲染；`this.setState`
    仅用于 `timestamp` 契约字段。
 7. 数据请求 `pageSize` 推荐 50、最大 100，优先 10/20/50。
-8. 下拉优先宜搭 `SelectField`；确需自定义时用 `div+button+onClick`，不用原生 `<select>`。
+8. 普通自定义页下拉优先用 `div+button+onClick` 自定义实现，不用原生 `<select>`；Code Canvas 场景需先验证组件库依赖映射，再使用宜搭字段组件。
 9. ECharts 在容器挂载后初始化：`setTimeout(function(){ echarts.init(...) }, 300)`。
 10. Tailwind 原子类需在 `didMount` 中 `ensureTailwind()` 先注入 CDN 后使用。
 
@@ -155,7 +155,7 @@ export function renderChart() {
 | `self-binding-inserted` | autofix | compat | 幂等插入 `var self = this;`（自动修，不改写残留 this） | 规则 2 |
 | `setState-non-timestamp` | warning | linter | `setState({业务字段})` → 引导 `forceUpdate()`/`setCustomState()` | 规则 6 / 误区 A |
 | `echarts-dom-ready` | warning | linter | `echarts.init` 无 `setTimeout` 守卫（提示） | 规则 9 |
-| `native-select-ui` | warning | linter | 原生 `<select>` → 引导宜搭 `SelectField` | 规则 8 |
+| `native-select-ui` | warning | linter | 原生 `<select>` → 引导自定义下拉；Code Canvas 另行验证组件依赖 | 规则 8 |
 | `pad-method` | warning | linter | `padStart/padEnd` 静默失败 → 三元手写 | 问题 5 |
 | `tailwind-injected` / `tailwind-didmount-hook` | autofix | compat | 命中原子类时按需注入 CDN 加载器，仅追加到空 `didMount` | 规则 10 |
 | `pagesize-default-inserted` / `pagesize-clamped` | autofix | compat | 分页对象缺 `pageSize` 补 50；`>100` 钳到 100 | 规则 7 |

@@ -168,7 +168,7 @@ var styles = {
     height: '36px',
     padding: '0 12px',
     borderRadius: '8px',
-    background: '#1677FF',
+    background: 'var(--color-brand1-6, #1677FF)',
     color: '#fff',
     border: 'none',
     fontSize: '12px',

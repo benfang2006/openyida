@@ -4,7 +4,7 @@
 
 ## 致命规则（FATAL）
 
-**F1 先读后执行**：执行任何子技能前，必须先读取其 `skills/<技能名>/SKILL.md`，按文档里的参数格式操作，不凭记忆猜。
+**F1 先读后执行**：执行任何子技能前，必须先读取对应子技能文档`skills/<技能名>/SKILL.md`，按文档里的参数格式操作，不凭记忆猜。
 
 **F2 corpId 一致性检查**：创建页面前对比 prd 文档与 `.cache/cookies.json` 的 corpId——
 - 一致 → 继续；
@@ -73,7 +73,7 @@
 | 方案 | 做法 | 适用 | 落到 |
 |------|------|------|------|
 | A 优化原生报表 | 调整图表类型、布局、筛选器，仍用宜搭原生组件 | 快速优化、无需写代码 | `yida-report`（`openyida create-report`） |
-| B ECharts 高级报表 | ECharts + 自定义页面 JSX，高度定制 | 精美视觉、复杂交互、数据大屏 | 读 `skills/yida-chart/SKILL.md` |
+| B ECharts 高级报表 | ECharts + 自定义页面 JSX，高度定制 | 精美视觉、复杂交互、数据大屏 | 读 `yida-chart` 子技能文档 |
 
 话术示例：
 
