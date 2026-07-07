@@ -54,7 +54,8 @@ description: >
               ↓
 [Step 4]（按需）创建/更新表单 → openyida create-form → 获得 formUuid（表单）
               ↓
-[Step 5] 编写自定义页面代码 → yida-custom-page 规范 → pages/src/<项目名>.oyd.jsx
+[Step 5] 编写自定义页面代码 → 先按「自定义页面选路」定链路（**默认 Code Canvas yida-canvas-custom-page**，含开放 API 读数据页；仅强依赖原生实例数据桥的页回退 native yida-custom-page）
+              ↓  （首次生成面向用户的页必做：先用 yida-page-uiux 产出「视觉方向决策块」，避免统一灰白圆角的 AI 味模板脸，再交所选链路落地）
               ↓
 [Step 6] 发布页面 → openyida publish
               ↓
@@ -69,6 +70,8 @@ description: >
 [Step 10] 输出访问链接，用系统浏览器打开
 ```
 
+> **Step 5 先定视觉方向（首次生成面向用户页必做）**：写 JSX 前先用 `yida-page-uiux` 锁定视觉方向（页面类型判定 → 意图解码 → 差异化决策 → 去 AI 味自检），产出「视觉方向决策块」，再交所选链路（默认 `yida-canvas-custom-page`，回退 `yida-custom-page`）按 `design-system.md` token 落地。跳过此步会直接套用统一灰白圆角模板，生成有 AI 味的平庸页面。详见 `skills/yida-page-uiux/SKILL.md`。
+>
 > **Step 7 导航整理（含看板/多页面时必做）**：首次生成完整应用后，必须基于业务信息架构重排导航，不能保留创建时的默认顺序。默认原则：面向决策者的**总览/驾驶舱看板作为应用门面靠前**，数据录入/明细表单在其后；同级多个专题看板按业务优先级排，不要把所有页面无脑堆最前。详见 `skills/yida-nav-group/SKILL.md`。
 >
 > **Step 8 灌入示例数据（有表单时默认执行）**：新建应用的表单默认无数据，看板会空。导航整理完成后，默认向核心表单灌入 **2-3 条**覆盖关键维度（如不同活动/渠道/日期）的示例记录，让看板首屏可展示真实聚合效果。`DateField`/`CascadeDateField` 必须用 13 位毫秒时间戳；灌后执行 `openyida data query` 抽查至少 1 条，确认字段值非空。详见 `skills/yida-data-management/SKILL.md`。
@@ -78,12 +81,19 @@ description: >
 ## 技能路由（单一 / 增量任务）
 
 > 选定 **1 个**最匹配的项执行。表**按业务域分组**，每组内既可能是 skill 也可能是 CLI：
-> - 行名为 `yida-xxx` / `sls-log-workbench` / `large-file-write` 的是 **skill** → 先读它的 `skills/<技能名>/SKILL.md` 再执行；
+> - 行名为 `yida-xxx` / `sls-log-workbench` / `large-file-write` 的是 **skill** → 先读对应子技能文档再执行；
 > - 行名为 `openyida xxx` 并标 **`CLI`** 的**无 SKILL.md** → 识别到诉求直接执行命令、**不要当 skill 去 read**。
 >
 > 按分组 +「何时选择」内联区别对号入座即可。
 
-> ⚠️ **同类易错先分清**：改字段结构→`create-form-page`｜只读 Schema→`get-schema`｜改数据记录→`data-management`｜详情页美化→`form-detail`；字段实时校验→`formula`｜提交后编排→`integration`｜跨表高级函数→`business-rule`；从零建流程→`create-process`｜改已有流程→`process-rule`；权限按层级：组织→`corp-manager`／应用→`app-permission`／表单→`form-permission`／页面分享→`page-config`。
+> ⚠️ **同类易错先分清**：改字段结构→`create-form-page`｜只读 Schema→`get-schema`｜改数据记录→`data-management`｜详情页美化→`form-detail`；自定义页视觉方向/去AI味→`page-uiux`(定方向)｜token/组件实现→`custom-page`(design-system)；加导航先分清→平台左侧菜单分组/排序→`nav-group`｜页面隐藏应用导航后页面内自绘导航壳→`nav-shell`（必须隐藏原导航，并让导航项 URL 带 `isRenderNav=false` 等参数）；字段实时校验→`formula`｜提交后编排→`integration`｜跨表高级函数→`business-rule`；从零建流程→`create-process`｜改已有流程→`process-rule`；权限按层级：组织→`corp-manager`／应用→`app-permission`／表单→`form-permission`／页面分享→`page-config`；**自定义页面选路见下方专表**。
+
+> 🧭 **自定义页面选路（默认 Code Canvas，按顺序命中即停）**：
+> 1. **默认 → Code Canvas** `yida-canvas-custom-page`：现代 React 交互 / hooks 状态 / 可视化 / AI 生成 / 需崩溃隔离，**以及只需通过开放 API（HTTP）读取宜搭数据的页面**（Canvas 自写 fetch 即可拿数据）；
+> 2. 仅当页面强依赖**原生实例数据桥**——表单内字段双向绑定 `this.$(fieldId)`、`this.utils.yida.*`、`dataSourceMap`、提交流程 / 设计器数据源深度耦合，且用开放 API 重写代价过高 → 回退 **native** `yida-custom-page`；
+> 3. 已有普通 `.oyd.jsx` 要迁到 Canvas → `yida-canvas-upgrade`。
+>
+> 依据（源码核实）：Canvas 代码在宿主页真实 `window` 中 `new Function` 执行，但物料只透传 `code/runtimeCode/importedModules/pageType`，**无 `this` 上下文、无 `dataSourceMap`**，`this.utils.yida.*` 不可用；宿主 window 全局（`__yida_plugin_runtime__` 插件系统、`__VcDeepYidaUtils__`）均非表单数据桥，也无 `window.Deep` 字段组件。Canvas 读宜搭数据 = 在 `YidaComp` 内自写 HTTP 调开放 API。只有需要免费 `this` 实例桥的页才留 native。
 
 | 分组 | 技能 | 何时选择（关键区别已内联） |
 |------|------|--------------------------|
@@ -94,7 +104,11 @@ description: >
 | **页面与表单** | `yida-create-page` | 创建空白自定义页面拿 formUuid，后续写 JSX |
 | | `yida-create-form-page` | 创建/更新表单、增删改**字段结构**（普通表单，无审批） |
 | | `yida-create-process` | 从零建**带审批**流程表单（表单还不存在，一步到位） |
-| | `yida-custom-page` | 编写自定义页面 JSX 逻辑与 UI |
+| | `yida-page-uiux` | 写自定义页面 UI 前先定视觉方向、去 AI 味（工作台/看板/列表/详情/官网落地页；产出决策块，不写代码；canvas / native 两链路通用） |
+| | `yida-canvas-custom-page` | **自定义页面默认链路**：现代 React 交互 / hooks / 可视化 / AI 页，含只需开放 API HTTP 读数据的页（Code Canvas，`runtimeCode` + `importedModules`，真 React18 + 崩溃隔离） |
+| | `yida-custom-page` | 回退项：仅当强依赖原生实例数据桥（`this.$(fieldId)` 双向绑定 / `this.utils.yida.*` / `dataSourceMap` / 提交流程深度耦合）时才用（native `.oyd.jsx` 链路） |
+| | `yida-canvas-upgrade` | 将已有普通 `.oyd.jsx` / `Jsx` 页面升级迁移到 Code Canvas / `YidaCodeCanvas` 链路 |
+| | `yida-nav-shell` | 自定义页**隐藏应用导航**（`isRenderNav=false`，沉浸/门户/大屏/分享）后，页面内用 JSX 自绘侧边/顶部/浮动/标签导航壳；发布后要配置隐藏原导航，跨页导航项要拼完整 URL 并合并 `isRenderNav=false` / `corpid` / 业务参数（**区别** `yida-nav-group` 平台左侧菜单分组：那是真实导航树，本项是页面内自建导航） |
 | | `yida-publish-page` | JSX 写完后编译并发布 |
 | | `yida-openyida-publish-guard` | 发布已有自定义页面前检查线上设计器状态，避免本地旧源码覆盖用户在线改动 |
 | | `yida-table-form` | Excel 式表格批量录入提交 |
@@ -119,7 +133,7 @@ description: >
 | | `yida-app-permission` | **单应用级**权限（应用管理员/开发成员） |
 | | `yida-form-permission` | **单表单级**权限（权限组/数据范围） |
 | | `yida-page-config` | **页面级**：公开访问 / 组织内分享 |
-| **应用配置与平台** | `yida-nav-group` | 应用左侧菜单分组/排序 |
+| **应用配置与平台** | `yida-nav-group` | 应用**左侧菜单**分组/排序（真实导航树；页面内自绘导航壳见 `yida-nav-shell`） |
 | | `yida-form-detail` | 只注 **CSS** 美化详情页，不改字段 |
 | | `yida-density` | 列表/表格信息密度选择 |
 | | `yida-i18n` | 应用多语言 / 国际化 |

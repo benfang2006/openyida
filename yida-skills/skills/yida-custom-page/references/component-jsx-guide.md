@@ -5,6 +5,7 @@
 ## 先说清楚边界
 
 - 不要假设自定义页面能直接 `import` 宜搭内部表单组件；当前规范下应使用原生 JSX 元素、Tailwind `className` 和必要的内联兜底样式组合。
+- Code Canvas 是自定义页面的默认链路（现代 React/hooks/可视化/AI）；本 native 指南只服务纯展示无刷新页和需数据桥的数据驱动页。用户要现代交互页，或提到代码画布、`YidaCodeCanvas`、`runtimeCode`、`importedModules` 时，切换到 `yida-canvas-custom-page`。
 - 不要把字段中文名当作 `fieldId`；字段 ID 必须来自 `openyida get-schema`。
 - 不要把原生表单页面的组件配置 JSON 直接复制到自定义页面 JSX；两者不是同一个运行面。
 - 如果确有平台内置选择器、上传器等 API，必须先由用户提供官方示例或在目标环境验证，再写入代码。
@@ -200,10 +201,10 @@ var styles = {
     minHeight: 36,
     padding: '8px 12px',
     textAlign: 'left',
-    background: '#EFF6FF',
+    background: 'var(--color-brand1-1, #EFF6FF)',
     border: 0,
     borderRadius: 8,
-    color: '#1D4ED8',
+    color: 'var(--color-brand1-6, #1D4ED8)',
     appearance: 'none',
     WebkitAppearance: 'none',
     fontFamily: 'inherit',

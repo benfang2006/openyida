@@ -1,9 +1,11 @@
 ---
 name: yida-custom-page
-description: 宜搭自定义页面 JSX 开发规范。React 16 宜搭原生 export function 页面模式，宜搭 JS API 调用，状态管理与编码约束。适用于编写自定义页面代码时。
+description: 宜搭 native 自定义页面 JSX 开发规范（React 16 宜搭原生 export function renderJsx 模式、宜搭 JS API、状态管理与编码约束）。是**回退链路**：仅当页面强依赖原生实例数据桥（this.$(fieldId) 表单字段双向绑定、this.utils.yida.*、dataSourceMap、提交流程深度耦合）时才用；纯展示无刷新页也可用。其余自定义页面（含只需开放 API HTTP 读数据的页）默认走 yida-canvas-custom-page。
 ---
 
 # 自定义页面开发
+
+> **先确认链路**：自定义页面**默认走 Code Canvas** `yida-canvas-custom-page`（现代 React 交互 / hooks / 可视化 / AI / 需崩溃隔离，含只需开放 API HTTP 读数据的页）。本 native 技能是**回退链路**，只处理：① 强依赖原生实例数据桥——表单内字段双向绑定 `this.$(fieldId)`、`this.utils.yida.*`、`dataSourceMap`、提交流程深度耦合——的页面（Canvas 无 `this` 桥，重写代价过高时留 native）；② 纯展示、无运行态刷新页。把已有 native 页升级到 Canvas 走 `yida-canvas-upgrade`。
 
 ## 核心规则
 
@@ -30,6 +32,7 @@ description: 宜搭自定义页面 JSX 开发规范。React 16 宜搭原生 expo
 
 影响代码质量和用户体验：
 
+0. **写 UI 前先定视觉方向**：面向用户的页面在动手写 JSX 前，先读 `skills/yida-page-uiux/SKILL.md` 完成「视觉方向决策」（页面类型判定 + 差异化 + 去 AI 味自检），拿到「视觉方向决策块」后再按本技能 `references/design-system.md` 的 token/组件实现；不要直接套用统一灰白底 + 8px 圆角卡片网格的默认模板（那正是 AI 味来源）。
 1. **代码生成前确认功能摘要**：详见 [编码指南 编注 0](references/coding-guide.md)
 2. **pageSize 推荐 50，最大 100**：列表/看板默认 `pageSize: 50`；分页接口 `searchFormDatas` 等的 `pageSize` 最大 100
 3. **didUnmount 清理定时器**：在 `didUnmount` 中清理所有 `setInterval`/`setTimeout`，防止内存泄漏
@@ -42,7 +45,8 @@ description: 宜搭自定义页面 JSX 开发规范。React 16 宜搭原生 expo
 10. **Tabs 显隐控制**：下拉值变更后自动回退到第一个可见 Tab，内容区用 `display: none` 保留 DOM
 11. **加载态必须可恢复**：列表/看板页默认保留空态或演示数据；接口失败、超时或返回异常时必须把 `loading` 置回 `false`，不要只渲染“正在加载...”挡住整页
 12. **禁止可见原生下拉**：筛选、预约、审批等用户可见下拉交互不要使用 `<select>`；使用 Tailwind className 组合 `button + menu + option` 的自定义下拉组件
-13. **发布前必须跑检查链路**：先执行 `openyida check-page <file>` 和 `openyida compile <file>`；若出现 warning/error，按规则修复后再发布
+13. **严禁 emoji**：页面渲染出来的任何位置（标题、按钮、标签、状态、空态文案、图表标题等）**一律禁止出现 emoji**（😀🚀✅⚠️📦📊 等一切彩色符号字符）。需要图标一律用功能性内联 SVG（见 `skills/yida-page-uiux` 图标策略）；需要状态标记用文字 + 语义色标签。emoji 是最明显的 AI 味来源之一，且跨端显示不一致。JS 注释里也不要留装饰性符号。
+14. **发布前必须跑检查链路**：先执行 `openyida check-page <file>` 和 `openyida compile <file>`；若出现 warning/error，按规则修复后再发布
 
 > 每条规则的代码示例、反模式和常见错误见 [编码指南](references/coding-guide.md)（编写代码前强制必读）。
 > 运行时易错点、`check-page` 规则和兼容层自动修复边界见 [运行时护栏](references/runtime-guardrails.md)。
@@ -166,6 +170,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | 文档 | 覆盖范围 | 何时阅读 |
 |------|---------|---------|
 | **本技能文档** | | |
+| [视觉方向决策（去 AI 味）](../yida-page-uiux/SKILL.md) | 页面类型 playbook、5 维差异化引擎、去 AI 味黑名单/8 问自检、图标策略 | 实现面向用户的 UI 且要求好看/去 AI 味时，**先于写代码**阅读并产出决策块 |
 | [编码指南](references/coding-guide.md) | 文件结构模板、状态管理、生命周期、19 条编码规范 | 编写任何页面代码前必读 |
 | [运行时护栏](references/runtime-guardrails.md) | pageSize、loading 恢复、ECharts DOM 时序、setState 约束、check-page 规则映射 | 编写列表、看板、图表或接口页面前必读 |
 | [设计规范](references/design-system.md) | 色彩/圆角/字体/间距系统、7 类组件样式模板、8 条反模式 | 实现 UI 样式时必读 |
