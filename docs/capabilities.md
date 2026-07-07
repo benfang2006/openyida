@@ -58,12 +58,14 @@
 | 创建看板页 | `openyida create-page <appType> "<页面名称>" --mode dashboard` |
 | 从模板生成页面源码 | `openyida generate-page <template>` |
 | 构建宜搭兼容页面源码 | `openyida build-page <sourceFile> [--output file\|--write]` |
-| 检查页面规范 | `openyida check-page <src> [--compat]` |
-| 本地编译页面 | `openyida compile <src>` |
-| 发布页面 | `openyida publish <src> <appType> <formUuid>` |
+| 检查 native 页面规范 | `openyida check-page <src> [--compat]` |
+| 本地编译 native 页面 | `openyida compile <src>` |
+| 发布 native 自定义页面 | `openyida publish project/pages/src/home.oyd.jsx <appType> <formUuid>` |
+| 发布 Code Canvas 页面 | `openyida publish project/pages/src/home.canvas.jsx <appType> <formUuid>`（`.canvas.jsx` / `.canvas.tsx` 自动启用 Canvas 编译，生成 `runtimeCode` + `importedModules` 并保存为 `YidaCodeCanvas` Schema） |
+| 显式按 Code Canvas 链路发布 | `openyida publish <src> <appType> <formUuid> --canvas` |
 | 发布并做健康检查 | `openyida publish <src> <appType> <formUuid> --health-check` |
 | 更新页面/表单配置 | `openyida update-form-config <appType> ...` |
-| 开发高级自定义页面、看板、图表或幻灯片 | 使用 `create-page`、`check-page`、`compile`、`publish` 组合完成 |
+| 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；仅强依赖 native 页面实例数据桥时使用 `check-page`、`compile`、`publish` 的 native 组合 |
 
 ## 流程、审批与任务
 
