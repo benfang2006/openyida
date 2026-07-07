@@ -54,7 +54,8 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
 [Step 5]（按需，需求含「审批」「流程」「申请」「审核」「工单」等关键词时必须执行）
           配置流程 → 读取 skills/yida-create-process/SKILL.md → openyida create-process / configure-process
               ↓
-[Step 6] 编写自定义页面代码 → yida-custom-page 规范 → pages/src/<项目名>.oyd.jsx
+[Step 6] 编写自定义页面代码 → 先 yida-page-uiux 定视觉方向，再 yida-custom-page 落地 → pages/src/<项目名>.oyd.jsx
+              ↓  （首次生成必做：先用 yida-page-uiux 产出「视觉方向决策块」，避免统一灰白圆角的 AI 味模板脸）
               ↓  openyida check-page / compile 预检（.oyd.jsx 自动兼容构建）
               ↓  （列表/表格类页面：参考 yida-density 技能选择合适的信息密度）
               ↓
@@ -69,7 +70,7 @@ description: 宜搭完整应用开发技能。从零到一搭建完整宜搭应�
 [Step 10] 输出访问链接，用系统浏览器打开
 ```
 
-### 编写自定义页面代码前必须完整学习 `skills/yida-custom-page/SKILL.md`
+### 编写自定义页面代码前先读 `skills/yida-page-uiux/SKILL.md` 定视觉方向，再完整学习 `skills/yida-custom-page/SKILL.md`
 
 ### 生成表单 schema 前必须完整学习 `skills/yida-create-form-page/SKILL.md`
 
