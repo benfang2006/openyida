@@ -818,7 +818,7 @@ async function main() {
     }
 
     case 'publish': {
-      const passThroughFlags = new Set(['--skip-lint', '--health-check', '--check', '--open', '--no-open', '--compat', '--modern', '--force']);
+      const passThroughFlags = new Set(['--skip-lint', '--health-check', '--check', '--open', '--no-open', '--compat', '--modern', '--force', '--canvas']);
       const filteredArgs = args.filter(arg => !passThroughFlags.has(arg));
       if (filteredArgs.length < 3) {
         throwCliUsage(t('cli.publish_usage'), t('cli.publish_example'));
