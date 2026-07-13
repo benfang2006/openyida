@@ -60,8 +60,8 @@ openyida login --check-only --json
 # Step 2: 准备原生报表数据源
 # 无原生报表时先使用 yida-report 创建；已有 URL 时解析 appType/formUuid
 
-# Step 3: 获取报表 Schema，输出到文件避免终端截断
-openyida get-schema <appType> <reportFormUuid> > .cache/report-schema-output.txt 2>&1
+# Step 3: 获取报表 Schema；需要文件时用 CLI 输出目录或结构化文件写入工具保存 stdout
+openyida get-schema <appType> --all --keyword <报表名称> --output-dir .cache/openyida/<项目名或任务名>/schemas
 
 # Step 4: 解析 cid / className / dataSetKey / filterKey / cname
 
@@ -156,5 +156,5 @@ A：更新 `_customState.filterValueMap`，重新调用报表数据请求函数�
 | [ECharts 视觉规范](references/echarts-design-spec.md) | 默认风格、配色、卡片、图表模板、多端适配、表格样式 | 设计页面 UI 时必读 |
 | [已有报表绑定指南](references/echarts-bindding-guide.md) | 方案 C、Schema 解析、filterKey、数据源完整性校验 | 用户提供报表 URL 时必读 |
 | [示例](references/examples.md) | 命令示例、页面代码示例、常见图表实现 | 需要参考完整写法时阅读 |
-| [yida-report](../yida-report/SKILL.md) | 原生报表创建、追加图表、Schema 生成 | 需要先创建或补齐原生报表时阅读 |
-| [yida-custom-page](../yida-custom-page/SKILL.md) | 宜搭 React 16 自定义页面规则 | 不确定页面运行时限制时阅读 |
+| `yida-report` 子技能 | 原生报表创建、追加图表、Schema 生成 | 需要先创建或补齐原生报表时调用 `use_skill("yida-report", "创建或补齐原生报表")` |
+| `yida-custom-page` 子技能 | 宜搭 React 16 自定义页面规则 | 不确定页面运行时限制时调用 `use_skill("yida-custom-page", "确认宜搭自定义页面运行时限制")` |

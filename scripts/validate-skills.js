@@ -9,7 +9,32 @@ const ROOT = path.resolve(__dirname, '..');
 const SKILLS_ROOT = path.join(ROOT, 'yida-skills');
 const SKILLS_DIR = path.join(SKILLS_ROOT, 'skills');
 const INDEX_FILE = path.join(SKILLS_ROOT, 'SKILL.md');
+const SKILLS_INDEX_FILE = path.join(SKILLS_ROOT, 'skills-index.json');
+const GENERATED_SKILL_ROOT = path.join(ROOT, 'dist', 'skills', 'openyida');
 const MAX_RECOMMENDED_LINES = 500;
+const SKILLS_INDEX_ENTRY_ALLOWED_FIELDS = new Set([
+  'name',
+  'path',
+  'display_name',
+  'description',
+  'category',
+  'tags',
+  'aliases',
+  'priority',
+  'requires',
+  'capabilities',
+  'modes',
+  'requires_login',
+]);
+const SKILLS_INDEX_PROMPT_FIELDS = new Set([
+  'prompt',
+  'instructions',
+  'rules',
+  'workflow',
+  'steps',
+  'doneWhen',
+  'optionalAfterDone',
+]);
 
 const errors = [];
 const warnings = [];
@@ -20,6 +45,10 @@ function toRelative(filePath) {
 
 function readText(filePath) {
   return fs.readFileSync(filePath, 'utf8');
+}
+
+function readJson(filePath) {
+  return JSON.parse(readText(filePath));
 }
 
 function collectMarkdownFiles(dir, files) {
@@ -159,6 +188,208 @@ function validateIndexEntry(skillDirName, skillFile) {
   }
 }
 
+function validateSkillsIndex(skillDirNames) {
+  if (!fs.existsSync(SKILLS_INDEX_FILE)) {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': missing machine-readable skills index');
+    return;
+  }
+
+  let index;
+  try {
+    index = readJson(SKILLS_INDEX_FILE);
+  } catch (error) {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': invalid JSON: ' + error.message);
+    return;
+  }
+
+  if (index.version !== 1) {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': version must be 1');
+  }
+  if (index.source !== 'openyida') {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': source must be "openyida"');
+  }
+  if (index.entry !== 'openyida') {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': entry must be "openyida"');
+  }
+  if (!Array.isArray(index.skills)) {
+    errors.push(toRelative(SKILLS_INDEX_FILE) + ': skills must be an array');
+    return;
+  }
+
+  const expectedPaths = new Set(skillDirNames.map(function(skillDirName) {
+    return 'skills/' + skillDirName + '/SKILL.md';
+  }));
+  const expectedNames = new Set(skillDirNames);
+  const seenNames = new Set();
+  const seenPaths = new Set();
+
+  for (let i = 0; i < index.skills.length; i++) {
+    const entry = index.skills[i];
+    const entryLabel = toRelative(SKILLS_INDEX_FILE) + ': skills[' + i + ']';
+
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      errors.push(entryLabel + ': entry must be an object');
+      continue;
+    }
+
+    for (const key of Object.keys(entry)) {
+      if (!SKILLS_INDEX_ENTRY_ALLOWED_FIELDS.has(key)) {
+        errors.push(entryLabel + ': unsupported field "' + key + '"; skills-index.json must stay a machine registry');
+      }
+      if (SKILLS_INDEX_PROMPT_FIELDS.has(key)) {
+        errors.push(entryLabel + ': prompt/workflow field "' + key + '" belongs in SKILL.md, not skills-index.json');
+      }
+    }
+
+    if (!entry.name || typeof entry.name !== 'string') {
+      errors.push(entryLabel + ': missing string field "name"');
+    } else if (seenNames.has(entry.name)) {
+      errors.push(entryLabel + ': duplicate name "' + entry.name + '"');
+    } else {
+      seenNames.add(entry.name);
+      if (!expectedNames.has(entry.name)) {
+        errors.push(entryLabel + ': orphan skill name "' + entry.name + '" has no matching skills/<name>/ directory');
+      }
+    }
+
+    if (!entry.path || typeof entry.path !== 'string') {
+      errors.push(entryLabel + ': missing string field "path"');
+      continue;
+    }
+    if (seenPaths.has(entry.path)) {
+      errors.push(entryLabel + ': duplicate path "' + entry.path + '"');
+    } else {
+      seenPaths.add(entry.path);
+      if (!expectedPaths.has(entry.path)) {
+        errors.push(entryLabel + ': orphan path "' + entry.path + '" has no matching skills directory');
+      }
+    }
+
+    if (!/^skills\/[a-z0-9-]+\/SKILL\.md$/.test(entry.path)) {
+      errors.push(entryLabel + ': path must look like skills/<skill-name>/SKILL.md');
+      continue;
+    }
+
+    const skillFile = path.join(SKILLS_ROOT, entry.path);
+    if (!fs.existsSync(skillFile)) {
+      errors.push(entryLabel + ': path does not exist: ' + entry.path);
+      continue;
+    }
+
+    const content = readText(skillFile);
+    const frontmatter = parseFrontmatter(content);
+    const frontmatterName = frontmatter ? frontmatterField(frontmatter, 'name') : null;
+    if (frontmatterName && entry.name !== frontmatterName) {
+      errors.push(entryLabel + ': name "' + entry.name + '" does not match frontmatter name "' + frontmatterName + '"');
+    }
+
+    const pathSkillName = entry.path.split('/')[1];
+    if (entry.name && entry.name !== pathSkillName) {
+      errors.push(entryLabel + ': name "' + entry.name + '" does not match path skill name "' + pathSkillName + '"');
+    }
+
+    if (!entry.display_name || typeof entry.display_name !== 'string') {
+      errors.push(entryLabel + ': missing string field "display_name"');
+    }
+    if (!entry.description || typeof entry.description !== 'string') {
+      errors.push(entryLabel + ': missing string field "description"');
+    } else if (entry.description.length > 280) {
+      errors.push(entryLabel + ': description must stay concise for machine search (<= 280 chars)');
+    }
+    if (!entry.category || typeof entry.category !== 'string') {
+      errors.push(entryLabel + ': missing string field "category"');
+    }
+    if (!Array.isArray(entry.tags) || entry.tags.length === 0) {
+      errors.push(entryLabel + ': tags must be a non-empty array');
+    }
+  }
+
+  for (const expectedPath of expectedPaths) {
+    if (!seenPaths.has(expectedPath)) {
+      errors.push(toRelative(SKILLS_INDEX_FILE) + ': missing skill path "' + expectedPath + '"');
+    }
+  }
+  for (const expectedName of expectedNames) {
+    if (!seenNames.has(expectedName)) {
+      errors.push(toRelative(SKILLS_INDEX_FILE) + ': missing skill name "' + expectedName + '"');
+    }
+  }
+}
+
+function validateGeneratedSkillRoot() {
+  if (!fs.existsSync(GENERATED_SKILL_ROOT)) {
+    warnings.push(toRelative(GENERATED_SKILL_ROOT) + ': generated skill root not found; run npm run build:skills to validate package output');
+    return;
+  }
+
+  for (const fileName of ['SKILL.md', 'skills-index.json']) {
+    const filePath = path.join(GENERATED_SKILL_ROOT, fileName);
+    if (!fs.existsSync(filePath)) {
+      errors.push(toRelative(GENERATED_SKILL_ROOT) + ': generated skill root must contain ' + fileName);
+    }
+  }
+
+  const generatedIndexFile = path.join(GENERATED_SKILL_ROOT, 'skills-index.json');
+  if (fs.existsSync(generatedIndexFile)) {
+    try {
+      const sourceIndex = readJson(SKILLS_INDEX_FILE);
+      const generatedIndex = readJson(generatedIndexFile);
+      if (JSON.stringify(generatedIndex) !== JSON.stringify(sourceIndex)) {
+        errors.push(toRelative(generatedIndexFile) + ': must match source yida-skills/skills-index.json');
+      }
+    } catch (error) {
+      errors.push(toRelative(generatedIndexFile) + ': invalid JSON: ' + error.message);
+    }
+  }
+}
+
+function validateSkillLoadingInstructions(instructionFiles) {
+  const forbiddenPatterns = [
+    {
+      pattern: /skills\/[a-z0-9-]+\/SKILL\.md/,
+      message: 'must load subskills via use_skill instead of source skill paths',
+    },
+    {
+      pattern: /\.\.\/[a-z0-9-]+\/SKILL\.md/,
+      message: 'must load sibling subskills via use_skill instead of relative SKILL.md paths',
+    },
+    {
+      pattern: /(?:先读|先读取|完整读取|完整学习|读它的|详见|参考|查阅).{0,60}SKILL\.md/,
+      message: 'must not instruct agents to read SKILL.md directly',
+    },
+    {
+      pattern: /未读取.{0,60}SKILL\.md/,
+      message: 'must express prerequisites as loaded skills, not direct SKILL.md reads',
+    },
+    {
+      pattern: /一次性(?:读取|加载).{0,40}(?:全部|多个|全量).{0,20}技能|全部技能文档/,
+      message: 'must not describe bulk loading multiple skills',
+    },
+  ];
+
+  for (const instructionFile of instructionFiles) {
+    const content = readText(instructionFile);
+    const lines = content.split(/\r?\n/);
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const line = lines[lineIndex];
+      const isAllowedFallback = /没有\s*`?use_skill\/search_skills`?|当前阶段唯一必要/.test(line);
+      const isAllowedBan = /禁止.*(?:Read|read_file|cat).*SKILL\.md/.test(line);
+      if (isAllowedFallback || isAllowedBan) {
+        continue;
+      }
+
+      for (const rule of forbiddenPatterns) {
+        if (rule.pattern.test(line)) {
+          errors.push(
+            toRelative(instructionFile) + ':' + (lineIndex + 1) + ': ' + rule.message
+          );
+          break;
+        }
+      }
+    }
+  }
+}
+
 function isExternalLink(target) {
   return /^(https?:|mailto:|tel:|app:\/\/|plugin:\/\/|#)/i.test(target);
 }
@@ -220,6 +451,7 @@ function run() {
       return fs.statSync(fullPath).isDirectory();
     }).sort();
 
+    const skillDirNamesWithSkillFile = [];
     for (const skillDirName of skillDirNames) {
       const skillFile = path.join(SKILLS_DIR, skillDirName, 'SKILL.md');
       if (!fs.existsSync(skillFile)) {
@@ -227,9 +459,12 @@ function run() {
         continue;
       }
 
+      skillDirNamesWithSkillFile.push(skillDirName);
       validateSkillFrontmatter(skillDirName, skillFile);
       validateIndexEntry(skillDirName, skillFile);
     }
+
+    validateSkillsIndex(skillDirNames);
   }
 
   const markdownFiles = [];
@@ -237,6 +472,21 @@ function run() {
   for (const markdownFile of markdownFiles.sort()) {
     validateMarkdownLinks(markdownFile);
   }
+
+  const instructionFiles = [INDEX_FILE];
+  if (fs.existsSync(SKILLS_DIR)) {
+    const skillDirNames = fs.readdirSync(SKILLS_DIR).filter(function(name) {
+      return fs.statSync(path.join(SKILLS_DIR, name)).isDirectory();
+    }).sort();
+    for (const skillDirName of skillDirNames) {
+      const skillFile = path.join(SKILLS_DIR, skillDirName, 'SKILL.md');
+      if (fs.existsSync(skillFile)) {
+        instructionFiles.push(skillFile);
+      }
+    }
+  }
+  validateSkillLoadingInstructions(instructionFiles);
+  validateGeneratedSkillRoot();
 
   if (warnings.length > 0) {
     console.warn('Skill validation warnings:');

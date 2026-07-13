@@ -163,10 +163,46 @@ describe('CLI offline smoke', () => {
     const output = runOk(['commands', '--json']);
     const parsed = JSON.parse(output);
     const commands = parsed.commands.map(entry => entry.id);
+    const commandById = Object.fromEntries(parsed.commands.map(entry => [entry.id, entry]));
 
     expect(parsed).toHaveProperty('schema_version', 1);
     expect(parsed).toHaveProperty('name', 'openyida');
     expect(parsed).toHaveProperty('version', version);
+    expect(parsed.side_effect_schema).toMatchObject({
+      version: 1,
+      kinds: {
+        mixed: expect.stringContaining('Action-dependent command'),
+      },
+      fields: {
+        action_dependent: expect.stringContaining('mixed commands'),
+      },
+    });
+    expect(parsed.summary).toMatchObject({
+      command_count: parsed.commands.length,
+      group_count: parsed.groups.length,
+    });
+    expect(parsed.summary.side_effect_counts.remote_write).toBeGreaterThan(0);
+    expect(parsed.summary.read_only_command_ids).toContain('agent-capabilities');
+    expect(parsed.summary.mutating_command_ids).toContain('create-app');
+    expect(parsed.summary.core_workflows.full_app_fast_build).toMatchObject({
+      mode: 'fast_build',
+      default_page_skill_id: 'yida-custom-page',
+      optional_canvas_skill_id: 'yida-canvas-custom-page',
+      required_command_ids: expect.arrayContaining([
+        'agent-capabilities',
+        'create-app',
+        'create-form.create',
+        'create-page',
+        'publish',
+      ]),
+      do_not_default_skill_ids: expect.arrayContaining([
+        'yida-page-uiux',
+        'yida-canvas-custom-page',
+        'yida-data-source-connectors',
+        'yida-data-management',
+        'yida-nav-group',
+      ]),
+    });
     expect(commands).toContain('env');
     expect(commands).toContain('login');
     expect(commands).toContain('corp-efficiency');
@@ -190,6 +226,7 @@ describe('CLI offline smoke', () => {
     expect(commands).toContain('externalize-form');
     expect(commands).toContain('db-seq-fix');
     expect(commands).toContain('commands');
+    expect(commands).toContain('agent-capabilities');
     expect(commands).toContain('a2a');
     expect(commands).toContain('ai');
     expect(parsed.commands.find(entry => entry.id === 'a2a')).toMatchObject({
@@ -199,6 +236,11 @@ describe('CLI offline smoke', () => {
     });
     expect(parsed.commands.find(entry => entry.id === 'commands')).toMatchObject({
       usage: 'openyida commands [--json]',
+      output: 'json',
+      requires_login: false,
+    });
+    expect(parsed.commands.find(entry => entry.id === 'agent-capabilities')).toMatchObject({
+      usage: 'openyida agent-capabilities [--json]',
       output: 'json',
       requires_login: false,
     });
@@ -237,6 +279,165 @@ describe('CLI offline smoke', () => {
       usage: 'openyida ai-form-setting <get|fields|models|enable|disable|save> <appType> ...',
       output: 'json',
       requires_login: true,
+    });
+    expect(commandById['check-page'].side_effect).toMatchObject({
+      kind: 'local_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById['generate-page'].side_effect).toMatchObject({
+      kind: 'local_write',
+      mutates_yida: false,
+      mutates_local: true,
+    });
+    expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
+      kind: 'remote_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById.ai.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: false,
+      action_dependent: true,
+      note: expect.stringContaining('Action-dependent command'),
+    });
+    expect(commandById['db-seq-fix'].side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: false,
+      action_dependent: true,
+      read_actions: ['default', '--dry-run'],
+      mutating_actions: ['--fix'],
+    });
+  });
+
+  test('agent-capabilities --json renders one-shot agent snapshot', () => {
+    const output = runOk(['agent-capabilities', '--json']);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toMatchObject({
+      schema_version: 1,
+      name: 'openyida-agent-capabilities',
+      openyida: {
+        version,
+        command_prefix: 'openyida',
+      },
+      skills: {
+        index_file: 'skills-index.json',
+        entry: 'openyida',
+      },
+    });
+    expect(parsed.commands).toMatchObject({
+      count: parsed.command_manifest.commands.length,
+      group_count: parsed.command_manifest.groups.length,
+    });
+    expect(parsed.commands.side_effect_counts.remote_write).toBeGreaterThan(0);
+    expect(parsed.commands.read_only_command_ids).toContain('agent-capabilities');
+    expect(parsed.commands.core_workflows.full_app_fast_build).toMatchObject({
+      mode: 'fast_build',
+      default_page_skill_id: 'yida-custom-page',
+      optional_canvas_skill_id: 'yida-canvas-custom-page',
+      required_command_ids: expect.arrayContaining([
+        'create-app',
+        'create-form.create',
+        'create-page',
+        'publish',
+      ]),
+      do_not_default_skill_ids: expect.arrayContaining([
+        'yida-page-uiux',
+        'yida-canvas-custom-page',
+        'yida-data-source-connectors',
+        'yida-data-management',
+        'yida-nav-group',
+      ]),
+    });
+    expect(parsed.recommended.default_full_app_workflow).toMatchObject({
+      mode: 'fast_build',
+      completion_contract: expect.stringContaining('Create app'),
+    });
+    expect(parsed.command_manifest.side_effect_schema).toMatchObject({
+      version: 1,
+      kinds: {
+        mixed: expect.stringContaining('Action-dependent command'),
+      },
+    });
+    expect(parsed.command_manifest.summary.command_count).toBe(parsed.command_manifest.commands.length);
+    expect(parsed.login).toHaveProperty('status');
+    expect(parsed.login).not.toHaveProperty('cookies');
+    expect(parsed.login).not.toHaveProperty('csrf_token');
+    expect(parsed.sideEffects.read_only_preflight).toContain('openyida agent-capabilities --json');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating the app');
+    const commandIds = parsed.command_manifest.commands.map(entry => entry.id);
+    const commandById = Object.fromEntries(parsed.command_manifest.commands.map(entry => [entry.id, entry]));
+    expect(commandIds).toContain('agent-capabilities');
+    expect(commandById['create-app'].side_effect).toMatchObject({
+      kind: 'remote_write',
+      mutates_yida: true,
+    });
+    expect(commandById['app-list'].side_effect).toMatchObject({
+      kind: 'remote_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById['formula.evaluate'].side_effect).toMatchObject({
+      kind: 'local_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById['check-page'].side_effect).toMatchObject({
+      kind: 'local_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById['generate-page'].side_effect).toMatchObject({
+      kind: 'local_write',
+      mutates_yida: false,
+      mutates_local: true,
+    });
+    expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
+      kind: 'remote_read',
+      mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById.ai.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: false,
+      action_dependent: true,
+    });
+    expect(commandById['batch.file'].side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: true,
+      action_dependent: true,
+    });
+    expect(commandById.auth.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: false,
+      mutates_local: true,
+      read_actions: ['status'],
+      mutating_actions: ['login', 'refresh', 'logout'],
+    });
+    expect(commandById.org.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: false,
+      mutates_local: true,
+    });
+    expect(commandById.doctor.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: false,
+      mutates_local: true,
+    });
+    expect(commandById.feedback.side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: true,
+    });
+    expect(commandById['corp-efficiency'].side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: true,
+      mutates_local: false,
     });
   });
 
