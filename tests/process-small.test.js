@@ -34,11 +34,8 @@ const createProcess = require('../lib/process/create-process');
 const previewProcess = require('../lib/process/preview-process');
 
 const mockAuthData = {
-  csrf_token: 'openyida_cli_bearer',
-  base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',
-  corp_id: 'corp-1',
   user_id: 'user-1',
   csrf_token: 'csrf-token',
   base_url: 'https://www.aliwork.com',

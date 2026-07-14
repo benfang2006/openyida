@@ -332,11 +332,11 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida login [target-url] [--env <name>\|--intl\|--overseas\|--global\|--yidaapps\|--alibaba] [--client-id <clientId>] [--endpoint <url>]` | Login (OAuth token mode) |
-| `openyida logout` | Logout / switch account |
-| `openyida auth <status\|login\|refresh\|logout>` | Login state management |
+| `openyida login [target-url] [--env <name>\|--intl\|--overseas\|--global\|--yidaapps\|--alibaba] [--client-id <clientId>] [--endpoint <url>]` | Login with OAuth token mode |
+| `openyida logout` | Logout / clear token |
+| `openyida auth <status\|login\|refresh\|logout>` | Token login state management |
 | `openyida org <list\|switch> [--json] [--corp-id <corpId>]` | Organization management (list / switch by OAuth re-login) |
-| `openyida env [--json\|setup\|list\|show\|switch\|add\|remove] [options]` | Detect AI tool environment & login state |
+| `openyida env [--json\|setup\|list\|show\|switch\|add\|remove] [options]` | Detect AI tool environment & token login state |
 
 ### App Management
 
