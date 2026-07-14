@@ -13,7 +13,6 @@ const utils = require('../lib/core/utils');
 const basicInfo = require('../lib/basic-info/basic-info');
 
 const mockAuthData = {
-  csrf_token: 'openyida_cli_bearer',
   base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',

@@ -24,7 +24,6 @@ const {
 } = require('../lib/i18n-management/i18n-management');
 
 const mockAuthData = {
-  csrf_token: 'openyida_cli_bearer',
   base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',

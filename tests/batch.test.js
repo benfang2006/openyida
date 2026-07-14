@@ -10,12 +10,10 @@ jest.mock('../lib/core/utils', () => {
   return {
     ...real,
     loadAuthData: jest.fn(() => ({
-  csrf_token: 'openyida_cli_bearer',
-  base_url: 'https://www.aliwork.com',
-  auth_mode: 'token',
-  auth_source: 'token',
-  corp_id: 'corp-1',
-  user_id: 'user-1',
+      auth_mode: 'token',
+      auth_source: 'token',
+      corp_id: 'corp-1',
+      user_id: 'user-1',
       csrf_token: 'fake-csrf',
       base_url: 'https://www.aliwork.com',
     })),
