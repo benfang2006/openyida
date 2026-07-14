@@ -8,11 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [2026.7.14] - 2026-07-14
+## [2026.7.14-2] - 2026-07-14
 
 ### Highlights
 - 登录鉴权从本地 Cookie / 二维码模式切换为钉钉 OAuth loopback + 宜搭 CLI token 模式，后续业务请求统一通过 `Authorization: Bearer <access_token>` 进入宜搭服务端鉴权。
-- 本版本面向国内 `aliwork.com` 链路；海外版宜搭暂无法通过新的 OAuth token 方式登录。需要继续使用海外版宜搭的用户，请安装低于 `2026.7.14` 的版本，例如 `npm install -g openyida@2026.7.13`。
+- 本版本面向国内 `aliwork.com` 链路；海外版宜搭暂无法通过新的 OAuth token 方式登录。需要继续使用海外版宜搭的用户，请安装低于 `2026.7.14-2` 的版本，例如 `npm install -g openyida@2026.7.13`。
 
 ### Changed
 - `openyida login`、`openyida auth` 默认进入 token 登录态管理，不再要求 CLI 感知或保存 `ai_app_user_auth_token`、`tianshu_csrf_token` 等 Web Cookie。
