@@ -16,7 +16,6 @@ jest.mock('../lib/core/utils', () => {
       auth_source: 'token',
       corp_id: 'corp-1',
       user_id: 'user-1',
-      csrf_token: 'fake-csrf',
       base_url: 'https://www.aliwork.com',
     })),
     triggerLogin: jest.fn(),

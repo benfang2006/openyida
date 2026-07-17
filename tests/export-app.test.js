@@ -26,7 +26,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'tok123',
 };
 
 let logSpy;
@@ -62,7 +61,6 @@ describe('export-app', () => {
       const exported = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
 
       expect(fetchFormPageList).toHaveBeenCalledWith('APP_XXX', expect.objectContaining({
-        csrfToken: 'tok123',
         baseUrl: 'https://www.aliwork.com',
       }));
       expect(utils.httpGet).toHaveBeenCalledTimes(2);
@@ -98,7 +96,6 @@ describe('export-app', () => {
     });
 
     const result = await fetchFormSchema('APP_XXX', 'FORM_MISSING', {
-      csrfToken: 'tok123',
       baseUrl: 'https://www.aliwork.com',
     });
 

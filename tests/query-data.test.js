@@ -19,7 +19,6 @@ jest.mock('../lib/core/utils', () => ({
 const utils = require('../lib/core/utils');
 
 const mockAuthData = {
-  csrf_token: 'tok123',
   base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',
@@ -116,14 +115,14 @@ describe('run() 未登录场景', () => {
     utils.loadAuthData.mockReturnValue(null);
     utils.triggerLogin.mockReturnValue(null);
 
-    await expectCliError(run(['query', 'form', 'APP_XXX', 'FORM-XXX']), '无法获取有效登录态');
+    await expectCliError(run(['query', 'form', 'APP_XXX', 'FORM-XXX']), '无法获取有效 token 登录态');
   });
 
   test('loadAuthData 返回不可用对象时尝试 triggerLogin，仍失败则退出', async () => {
     utils.loadAuthData.mockReturnValue({});
     utils.triggerLogin.mockReturnValue(null);
 
-    await expectCliError(run(['query', 'form', 'APP_XXX', 'FORM-XXX']), '无法获取有效登录态');
+    await expectCliError(run(['query', 'form', 'APP_XXX', 'FORM-XXX']), '无法获取有效 token 登录态');
   });
 });
 

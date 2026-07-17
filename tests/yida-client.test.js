@@ -17,7 +17,6 @@ describe('yida-client', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     utils.loadAuthData.mockReturnValue({
-      csrf_token: 'csrf123',
       base_url: 'https://example.yida.test',
       auth_mode: 'token',
       auth_source: 'token',
@@ -33,7 +32,6 @@ describe('yida-client', () => {
     const authRef = createAuthRef();
 
     expect(authRef).toMatchObject({
-      csrfToken: 'csrf123',
       baseUrl: 'https://example.yida.test',
       authMode: 'token',
       authSource: 'token',
@@ -48,14 +46,13 @@ describe('yida-client', () => {
   test('falls back to login when cache is missing', () => {
     utils.loadAuthData.mockReturnValue(null);
     utils.triggerLogin.mockReturnValue({
-      csrf_token: 'fresh',
       auth_mode: 'token',
       auth_source: 'token',
     });
 
     const authRef = createAuthRef();
 
-    expect(authRef.csrfToken).toBe('fresh');
+    expect(authRef.authMode).toBe('token');
     expect(utils.triggerLogin).toHaveBeenCalledTimes(1);
   });
 
@@ -86,15 +83,15 @@ describe('yida-client', () => {
 
   test('can build request params from the current auth ref', async () => {
     const client = createYidaClient();
-    await client.postForm('/save/path.json', auth => ({ _csrf_token: auth.csrfToken, name: 'Ada' }));
+    await client.postForm('/save/path.json', auth => ({ userId: auth.userId, name: 'Ada' }));
 
-    expect(utils.httpPost.mock.calls[0][2]).toBe('_csrf_token=csrf123&name=Ada');
+    expect(utils.httpPost.mock.calls[0][2]).toBe('userId=user-1&name=Ada');
   });
 
   test('posts JSON bodies with auth-aware paths and referers', async () => {
     const client = createYidaClient();
     const result = await client.postJson(
-      auth => `/save/path.json?_csrf_token=${auth.csrfToken}`,
+      auth => `/save/path.json?userId=${auth.userId}`,
       { name: 'Ada Lovelace' },
       auth => ({ referer: `${auth.baseUrl}/settings` })
     );
@@ -102,9 +99,9 @@ describe('yida-client', () => {
     expect(result).toEqual({ success: true, method: 'post-json' });
     expect(utils.httpPostJson).toHaveBeenCalledWith(
       'https://example.yida.test',
-      '/save/path.json?_csrf_token=csrf123',
+      '/save/path.json?userId=user-1',
       { name: 'Ada Lovelace' },
-      { csrfToken: 'csrf123', referer: 'https://example.yida.test/settings' }
+      { referer: 'https://example.yida.test/settings' }
     );
   });
 });

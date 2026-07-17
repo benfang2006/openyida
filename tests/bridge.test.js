@@ -312,7 +312,7 @@ describe('bridge HTTP protocol', () => {
           appName: '售后工单',
           appType: 'APP_AFTER_SALES',
           systemLink: 'https://www.aliwork.com/APP_AFTER_SALES/workbench',
-          csrfToken: 'secret-token',
+          access_token: 'secret-token',
         },
         {
           name: '异常链接',

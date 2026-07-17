@@ -14,7 +14,6 @@ jest.mock('../lib/core/utils', () => ({
   httpPostJson: jest.fn(),
   requestWithAutoLogin: jest.fn((requestFn, authRef) => requestFn(authRef)),
   isLoginExpired: jest.fn(() => false),
-  isCsrfTokenExpired: jest.fn(() => false),
 }));
 
 const utils = require('../lib/core/utils');
@@ -32,7 +31,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'csrf-token',
 };
 
 beforeEach(() => {
@@ -219,10 +217,9 @@ describe('ai-form-setting run', () => {
 
       expect(utils.httpPostJson).toHaveBeenCalledWith(
         'https://www.aliwork.com',
-        '/APP_XXX/query/aiApprove/saveOrUpdateAIApproveConfig.json?_csrf_token=csrf-token',
+        '/APP_XXX/query/aiApprove/saveOrUpdateAIApproveConfig.json',
         expect.objectContaining({ formUuid: 'FORM_XXX' }),
         {
-          csrfToken: 'csrf-token',
           referer: 'https://www.aliwork.com/APP_XXX/admin/FORM_XXX/settings/aiFormSetting',
         }
       );

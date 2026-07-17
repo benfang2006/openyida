@@ -37,7 +37,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'tok123',
 };
 
 beforeEach(() => {
@@ -295,7 +294,7 @@ describe('fetchSchemaRecord', () => {
     const record = await fetchSchemaRecord(
       'APP_XXX',
       { formUuid: 'FORM-A', formName: '客户信息' },
-      { csrfToken: 'tok123', authMode: 'token', authSource: 'token' },
+      { authMode: 'token', authSource: 'token' },
       1
     );
 

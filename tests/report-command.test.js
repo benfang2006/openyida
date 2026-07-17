@@ -22,14 +22,12 @@ const createReport = require('../lib/report/index');
 const appendReport = require('../lib/report/append');
 
 const authRef = {
-  csrfToken: 'csrf-token',
   baseUrl: 'https://demo.aliwork.com',
   authMode: 'token',
   authSource: 'token',
   corpId: 'corp-1',
   userId: 'user-1',
   authData: {
-    csrf_token: 'csrf-token',
     base_url: 'https://demo.aliwork.com',
     auth_mode: 'token',
     auth_source: 'token',
@@ -67,7 +65,6 @@ describe('report command helpers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     utils.loadAuthData.mockReturnValue({
-      csrf_token: authRef.csrfToken,
       base_url: authRef.baseUrl,
       auth_mode: 'token',
       auth_source: 'token',
@@ -92,12 +89,10 @@ describe('report command helpers', () => {
 
     expect(utils.httpPost.mock.calls[0][1]).toBe('/dingtalk/web/APP_XXX/query/formdesign/saveFormSchemaInfo.json');
     expect(querystring.parse(utils.httpPost.mock.calls[0][2])).toMatchObject({
-      _csrf_token: 'csrf-token',
       formType: 'report',
     });
     expect(utils.httpPost.mock.calls[1][1]).toBe('/dingtalk/web/APP_XXX/_view/query/formdesign/saveFormSchema.json');
     expect(querystring.parse(utils.httpPost.mock.calls[1][2])).toMatchObject({
-      _csrf_token: 'csrf-token',
       formUuid: 'REPORT_1',
       schemaVersion: 'V5',
       importSchema: 'true',

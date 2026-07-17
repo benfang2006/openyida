@@ -31,7 +31,6 @@ const {
 } = require('../lib/ai/ai');
 
 const authRef = {
-  csrfToken: 'csrf-token',
   baseUrl: 'https://demo.aliwork.com',
   authMode: 'token',
   authSource: 'token',
@@ -49,7 +48,6 @@ describe('openyida ai command helpers', () => {
     jest.clearAllMocks();
     utils.findProjectRoot.mockReturnValue(tmpDir);
     utils.loadAuthData.mockReturnValue({
-      csrf_token: authRef.csrfToken,
       base_url: authRef.baseUrl,
       auth_mode: 'token',
       auth_source: 'token',
@@ -111,7 +109,6 @@ describe('openyida ai command helpers', () => {
     expect(baseUrl).toBe('https://demo.aliwork.com');
     expect(requestPath).toBe('/query/intelligent/txtFromAI.json');
     expect(querystring.parse(postData)).toMatchObject({
-      _csrf_token: 'csrf-token',
       prompt: '检查文本',
       maxTokens: '3000',
       skill: 'ToText',
@@ -247,7 +244,6 @@ describe('openyida ai command helpers', () => {
     const result = getAuthRef({ baseUrl: 'https://custom.example.com' });
 
     expect(result).toMatchObject({
-      csrfToken: 'csrf-token',
       baseUrl: 'https://custom.example.com',
       authMode: 'token',
       authSource: 'token',

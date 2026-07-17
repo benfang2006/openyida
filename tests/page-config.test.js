@@ -22,7 +22,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'tok123',
 };
 
 let logSpy;
@@ -71,7 +70,6 @@ describe('get-page-config', () => {
     expect(utils.httpPost.mock.calls[0][1]).toBe('/dingtalk/web/APP_XXX/query/formdesign/getShareConfig.json');
     expect(querystring.parse(utils.httpPost.mock.calls[0][2])).toMatchObject({
       _api: 'Share.getShareConfig',
-      _csrf_token: 'tok123',
       formUuid: 'FORM_XXX',
     });
     expect(result).toEqual({
@@ -103,7 +101,6 @@ describe('verify-short-url', () => {
     expect(utils.httpGet.mock.calls[0][1]).toBe('/dingtalk/web/APP_XXX/query/formdesign/verifyShortUrl.json');
     expect(utils.httpGet.mock.calls[0][2]).toMatchObject({
       _api: 'App.verifyShortUrlForm',
-      _csrf_token: 'tok123',
       formUuid: 'FORM_XXX',
       openUrl: '/o/new-page',
     });
@@ -162,7 +159,6 @@ describe('save-share-config', () => {
     const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
     expect(body).toMatchObject({
       _api: 'Share.saveShareConfig',
-      _csrf_token: 'tok123',
       formUuid: 'FORM_XXX',
       openUrl: '/o/public-page',
       isOpen: 'y',

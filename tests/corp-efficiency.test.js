@@ -29,7 +29,6 @@ const {
 const utils = require('../lib/core/utils');
 
 const mockAuthData = {
-  csrf_token: 'openyida_cli_bearer',
   base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',
@@ -39,7 +38,6 @@ const mockAuthData = {
 
 const mockAuth = {
   baseUrl: 'https://www.aliwork.com',
-  csrfToken: 'openyida_cli_bearer',
   authMode: 'token',
   authSource: 'token',
   corpId: 'ding-corp',

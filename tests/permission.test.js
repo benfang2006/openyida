@@ -21,7 +21,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'csrf',
 };
 
 describe('get-permission command regression', () => {
@@ -71,7 +70,6 @@ describe('get-permission command regression', () => {
       '/APP-1/permission/manage/listPermitPackages.json',
       expect.objectContaining({
         _api: 'Permission.getPermitGroupList',
-        _csrf_token: 'csrf',
         formUuid: 'FORM-1',
         appType: 'APP-1',
       })

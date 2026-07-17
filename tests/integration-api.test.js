@@ -22,7 +22,6 @@ describe('integration api', () => {
       get: jest.fn(async (path, query, options) => {
         const auth = {
           baseUrl: 'https://example.com',
-          csrfToken: 'csrf-token',
         };
         const resolvedQuery = typeof query === 'function' ? query(auth) : query;
         return httpGet(auth.baseUrl, path, resolvedQuery, options);
@@ -42,7 +41,6 @@ describe('integration api', () => {
 
     const result = await listLogicflowLogs({
       baseUrl: 'https://example.com',
-      csrfToken: 'csrf-token',
     }, {
       appType: 'APP_TEST',
       processCode: 'LPROC-TEST',
@@ -76,7 +74,6 @@ describe('integration api', () => {
 
     await listFormLogicflows({
       baseUrl: 'https://example.com',
-      csrfToken: 'csrf-token',
     }, {
       appType: 'APP_TEST',
       formUuid: 'FORM_TEST',
@@ -133,7 +130,6 @@ describe('integration api', () => {
 
     const fields = await getFormSchema({
       baseUrl: 'https://example.com',
-      csrfToken: 'csrf-token',
     }, {
       appType: 'APP_TEST',
       formUuid: 'FORM_TARGET',

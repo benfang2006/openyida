@@ -32,7 +32,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'csrf',
 };
 
 beforeEach(() => {
