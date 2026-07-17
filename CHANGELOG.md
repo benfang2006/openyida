@@ -6,7 +6,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > **版本规则**：从 v2026.03.19 起，版本号采用日期格式 `vYYYY.MM.DD`，每次发布以当天日期为版本号，Git tag 格式为 `v2026.03.19`，npm 包版本格式为 `2026.03.19`。
 
-## [Unreleased]
+## 说明
+
+海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
+
+
+## [2026.7.17] - 2026-07-17
+
+### Highlights
+
+- 自定义页面与应用生成继续强化双链路能力：默认使用 Code Canvas `.canvas.jsx` 生成与发布，只有在页面明确依赖普通自定义页面实例桥时才走 `.oyd.jsx` / native JSX。
+- 自定义页面补充门户类组件与宜搭运行态组件支持，覆盖门户导航、成员/部门选择、附件上传和图片上传等常见业务门户场景。
+- 页面生成链路从模板输出升级为「UIUX 决策 + 页面 IR + 主题 profile + 素材状态」的产品化流程，提升 AI 一次生成工作台、看板、列表、详情页和官网落地页的稳定性。
+- 表单创建能力增强，支持更丰富的布局组件、主题配置、字段属性、规则和增量更新，便于生成更接近真实业务的表单结构。
+
+### Added
+- `openyida generate-page` 新增多套 Code Canvas 页面模板，覆盖官网/落地页、数据大屏、驾驶舱、工作台、业务列表、详情页、分栏详情、门户壳、待办清单，以及成员/部门/上传组件验证场景。
+- 新增 `openyida asset` 素材命令，支持素材能力检测、图片 URL 校验、素材解析回填、CDN 转存/镜像和素材来源引导，帮助官网/落地页生成前确认素材可用性。
+- 自定义页面新增门户组件、门户导航壳、成员、部门、附件上传、图片上传等宜搭运行态组件的 Code Canvas 桥接文档与模板，并补充 native JSX 链路下的组件使用指引。
+- 新增 `yida-app-uiux`、`yida-canvas-data-binding`、`yida-theme` 等子技能，并扩展 `yida-page-uiux` 的多页面应用蓝图、导航、主题、素材和场景化页面设计参考。
+- 新增中文版 README 与多份设计、发布和 Code Canvas 能力规划文档，补充当前能力清单与开发规则说明。
+
+
+### Changed
+- 优化 yida-skills 技能树与路由描述，明确完整应用、页面 UIUX、Code Canvas、native JSX、数据绑定、主题和发布等子技能的协作边界。
+- 自定义页面主链路调整为先做 UIUX 视觉方向决策，再默认使用 Code Canvas 生成与发布；仅在页面强依赖 `this.$(...)`、`this.utils.yida.*`、`dataSourceMap` 等原生实例桥时使用 native JSX 链路。
+- `create-form` 拆分为参数解析、字段定义读取、Schema 构建、补丁、规则、校验和数据源绑定模块，增强表单布局、主题、分组组件和增量更新能力。
+- `generate-page` 引入页面 IR、主题 profile/scope、素材状态、模板推断和本地 Canvas 编译输出，提升 AI 从需求到页面源码的一次生成稳定性。
+- CLI 入口、命令清单、首次复制、脚本校验和 npm 包体积规则同步适配新增的 asset、Canvas、表单与技能包内容。
+- Code Canvas 编译、发布、页面 lint、示例模板和技能路由持续优化，增强数据接口、导航壳、门户组件和运行态组件的一致性。
+- 打磨 native 自定义页面控件视觉：统一输入框 hover / focus 态，修复下拉浅色选中态与控件焦点样式，减少默认蓝色描边干扰。
+- 对齐并美化「数据管理」场景的 native 与 Code Canvas 示例（设备台账 / 多维表风格），同步优化图表、密度切换和官网 / 落地页等自定义页面样例，详见 [`docs/demo-page-samples.md`](docs/demo-page-samples.md)。
+
+### Removed
+- 移除旧的 `docs/custom-page-solutions.md`，相关页面链路和组件使用说明已迁移到 README、能力清单和 yida-skills。
+
+### Tests
+- 新增或扩展 asset、safe-json、generate-page、page-ir、page-linter、canvas-compile、create-form、CLI smoke、package smoke 和 skill contract 测试，覆盖本次页面生成、素材、表单和命令路由调整。
 
 ## [2026.7.17-3] - 2026-07-17
 

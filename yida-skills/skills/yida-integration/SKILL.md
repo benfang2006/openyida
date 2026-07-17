@@ -25,7 +25,6 @@ description: 宜搭集成&自动化配置。支持创建、查询、开启、关
 |---------|---------|
 | 表单提交后自动通知 | "自动通知"、"数据变更触发"、"集成&自动化" |
 | 数据操作自动化 | "自动新增"、"自动更新"、"逻辑流" |
-| 人工审批流程 | → 改用 `yida-process-rule` |
 
 ## 异常处理
 
@@ -359,16 +358,6 @@ lib/
 └── integration/
     └── integration-create.js    # integration create 子命令实现
 ```
-
-## 与其他技能配合
-
-1. **创建应用** → 使用 `yida-create-app` 技能获取 `appType`
-2. **创建表单页面** → 使用 `yida-create-form-page` 技能获取 `formUuid`
-3. **查询字段 ID** → 使用 `yida-get-schema` 技能获取 `fieldId` 和 `ComponentType`，用于构建字段变量引用
-4. **创建集成&自动化** → 本技能，传入 `appType` 和 `formUuid`
-5. **公式计算** → 当需要在赋值中使用复杂公式（如 `CONCATENATE`、`IF`、`SUM` 等）时，参考 `yida-formula` 技能（独立技能，待完善）；目前已支持基础公式：
-   - 字符串拼接：`CONCATENATE(#{fieldId_a},#{fieldId_b})`
-   - 数值运算：`${nodeId}.numberField_xxx+1`
 
 ## 触发条件
 

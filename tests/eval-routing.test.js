@@ -124,7 +124,7 @@ describe('eval routing', () => {
     expect(r.forbiddenDefaultSkillHits).toEqual([]);
   });
 
-  test('evaluateScenario 把默认链路加载 UIUX / Canvas / 数据源判为未命中', () => {
+  test('evaluateScenario 允许 fast_build 默认加载 Canvas，但加载 UIUX / 数据源判为未命中', () => {
     const fakeAgent = () => ({
       available: true,
       json: {
@@ -139,7 +139,7 @@ describe('eval routing', () => {
         prompt: '帮我搭建一个访客系统，按默认方案搭建，不要追问，直接创建',
         expectedSkill: 'yida-app',
         expectedMode: 'fast_build',
-        forbiddenDefaultSkills: ['yida-page-uiux', 'yida-canvas-custom-page', 'yida-data-source-connectors'],
+        forbiddenDefaultSkills: ['yida-page-uiux', 'yida-data-source-connectors'],
       },
       routingContext: 'doc',
       skillNames: ['yida-app', 'yida-page-uiux', 'yida-data-source-connectors'],
@@ -147,7 +147,7 @@ describe('eval routing', () => {
     });
 
     expect(r.hit).toBe(false);
-    expect(r.forbiddenDefaultSkillHits).toEqual(['yida-page-uiux', 'yida-canvas-custom-page', 'yida-data-source-connectors']);
+    expect(r.forbiddenDefaultSkillHits).toEqual(['yida-page-uiux', 'yida-data-source-connectors']);
   });
 
   test('evaluateScenario 未命中与 agent 不可用', () => {

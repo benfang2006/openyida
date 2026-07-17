@@ -17,7 +17,7 @@ const { execSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..', '..');
 
 /**
- * 解析 playwright 模块路径（复刻 lib/auth/login.js getPlaywrightPath 策略）。
+ * 解析 playwright 模块路径（复用 token session 截图链路的 Playwright 解析策略）。
  * @returns {string|null}
  */
 function getPlaywrightPath() {

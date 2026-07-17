@@ -10,6 +10,37 @@ function readSkill(relativePath) {
 }
 
 describe('OpenYida skill contracts', () => {
+  test('agent-facing docs use token auth wording instead of legacy cookie login guidance', () => {
+    const docs = [
+      'AGENTS.md',
+      'README.md',
+      'README_zhCN.md',
+      'scripts/eval/runner.js',
+      'scripts/eval/VERIFY.md',
+      'yida-skills/skills/yida-app/SKILL.md',
+    ].map(readSkill).join('\n');
+
+    expect(docs).toContain('token session');
+    expect(docs).not.toContain('登录宜搭并缓存 Cookie');
+    expect(docs).not.toContain('有效 cookie 缓存');
+    expect(docs).not.toContain('读取 .cache/cookies.json 中的 corpId');
+    expect(docs).not.toContain('lib/auth/login.js');
+    expect(docs).not.toContain('lib/auth/qr-login.js');
+    expect(docs).not.toContain('lib/auth/codex-login.js');
+  });
+
+  test('page command examples keep Code Canvas as the default chain', () => {
+    const localeDir = path.join(ROOT, 'lib', 'core', 'locales');
+    const localeSource = fs.readdirSync(localeDir)
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => fs.readFileSync(path.join(localeDir, file), 'utf8'))
+      .join('\n');
+
+    expect(localeSource).toContain('openyida compile pages/src/home.canvas.jsx');
+    expect(localeSource).toContain('openyida check-page pages/src/home.canvas.jsx');
+    expect(localeSource).toContain('openyida generate-page <template> --output pages/src/home.canvas.jsx');
+  });
+
   test('root skill uses compact agent-capabilities for default preflight', () => {
     const skill = readSkill('yida-skills/SKILL.md');
 
@@ -54,5 +85,26 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('源码包含 `this.dataSourceMap.`');
     expect(skill).toContain('`No custom page data sources to preserve`');
     expect(skill).toContain('本次发布不能视为完成');
+  });
+
+  test('sample visual lessons are codified in page uiux, theme, chart, and report skills', () => {
+    const pageUiux = readSkill('yida-skills/skills/yida-page-uiux/SKILL.md');
+    const theme = readSkill('yida-skills/skills/yida-theme/SKILL.md');
+    const chart = readSkill('yida-skills/skills/yida-chart/SKILL.md');
+    const report = readSkill('yida-skills/skills/yida-report/SKILL.md');
+    const retrospective = readSkill('yida-skills/references/task-retrospective.md');
+
+    expect(pageUiux).toContain('参考 Dribbble');
+    expect(pageUiux).toContain('参考转成可执行选择');
+    expect(theme).toContain('`--theme` 预置值与自定义主题边界');
+    expect(theme).toContain('官方 sample 主题验收纪律');
+    expect(theme).toContain('style#yida-global-theme');
+    expect(chart).toContain('已有 chart sample / 跨应用迁移修复流程');
+    expect(chart).toContain('getFormNavigationListByOrder');
+    expect(chart).toContain('report-binding.json');
+    expect(report).toContain('作为 chart sample 数据源的绑定纪律');
+    expect(report).toContain('REPORT_xxx');
+    expect(retrospective).toContain('Chart sample / 原生报表绑定经验');
+    expect(retrospective).toContain('工作台是操作首页，不是 demo 页面');
   });
 });

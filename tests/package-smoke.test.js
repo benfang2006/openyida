@@ -7,7 +7,7 @@ const { spawnSync } = require('child_process');
 const packageJson = require('../package.json');
 
 const ROOT = path.join(__dirname, '..');
-const NPM_BIN = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const NPM_BIN = process.env.OPENYIDA_NPM_BIN || (process.platform === 'win32' ? 'npm.cmd' : 'npm');
 
 describe('npm package smoke', () => {
   test('runtime dependencies stay lightweight for agent installs', () => {
@@ -15,7 +15,36 @@ describe('npm package smoke', () => {
     expect(packageJson.dependencies).not.toHaveProperty('playwright-core');
   });
 
+  test('package size validator reports missing npm without TypeError', () => {
+    const missingNpm = path.join(os.tmpdir(), 'openyida-missing-npm-' + Date.now());
+    const result = spawnSync(process.execPath, ['scripts/validate-package-size.js'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        OPENYIDA_NPM_BIN: missingNpm,
+      },
+      timeout: 30000,
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('failed to run');
+    expect(result.stderr).toContain('OPENYIDA_NPM_BIN');
+    expect(result.stderr).not.toContain('TypeError');
+  });
+
   test('dry-run package includes runtime assets and excludes local-only files', () => {
+    const npmCheck = spawnSync(NPM_BIN, ['--version'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+      timeout: 30000,
+    });
+    if (npmCheck.error || npmCheck.status !== 0) {
+      console.warn(`Skipping npm pack smoke: ${NPM_BIN} is not available`);
+      return;
+    }
+
     const npmCache = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-npm-cache-'));
     try {
       const result = spawnSync(NPM_BIN, ['pack', '--dry-run', '--json'], {

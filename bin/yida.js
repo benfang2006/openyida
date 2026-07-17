@@ -707,6 +707,12 @@ async function main() {
       break;
     }
 
+    case 'get-form-config': {
+      const { run: runGetFormConfig } = require('../lib/app/get-form-config');
+      await runGetFormConfig(args);
+      break;
+    }
+
     case 'update-app': {
       if (args.length < 2) {
         throwCliUsage(t('cli.update_app_usage'), t('cli.update_app_example'));
@@ -864,6 +870,12 @@ async function main() {
     case 'cdn-refresh': {
       const { run: runCdnRefresh } = require('../lib/cdn/cdn-refresh');
       await runCdnRefresh(args);
+      break;
+    }
+
+    case 'asset': {
+      const { run: runAsset } = require('../lib/asset/asset-cmd');
+      await runAsset(args);
       break;
     }
 

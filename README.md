@@ -18,6 +18,8 @@ OpenYida connects AI coding agents with Yida's low-code platform, so developers 
 
 **Documentation:** [English](https://openyida.ai/docs/en) · [简体中文](https://openyida.ai/docs) · [繁體中文](https://openyida.ai/docs/zh-Hant/) · [日本語](https://openyida.ai/docs/ja/) · [한국어](https://openyida.ai/docs/ko/) · [Français](https://openyida.ai/docs/fr/) · [Deutsch](https://openyida.ai/docs/de/) · [Español](https://openyida.ai/docs/es/) · [Português](https://openyida.ai/docs/pt/) · [Tiếng Việt](https://openyida.ai/docs/vi/) · [हिन्दी](https://openyida.ai/docs/hi/) · [العربية](https://openyida.ai/docs/ar/)
 
+[English README](./README.md) · [简体中文 README](./README_zhCN.md)
+
 </div>
 
 ---
@@ -175,19 +177,28 @@ openyida get-schema APP_XXX FORM_XXX
 openyida get-schema APP_XXX --all --output-dir .cache/schemas
 ```
 
+Form definitions support 19 business field types plus verified `@ali/vc-deep-yida` presentation/layout components. Prefer `Divider` for section titles and `ColumnContainer` (mapped to `ColumnsLayout` + `Column`) for multi-column layout; use `GroupContainer` / `PageSection` only when an actual grouping container is needed.
+
 ### Custom Page Development
 
 ```bash
 openyida create-page APP_XXX "Dashboard" --mode dashboard
-openyida generate-page product-homepage --spec .cache/openyida/page-specs/home.json --output pages/src/home.oyd.jsx --compile
-openyida generate-page todo-mvc --output pages/src/todo-mvc.oyd.jsx --compile
-openyida check-page pages/src/home.oyd.jsx
-openyida compile pages/src/home.oyd.jsx
-openyida publish pages/src/home.oyd.jsx APP_XXX FORM_XXX
+openyida generate-page product-homepage --scene workbench --theme-profile yida-app-theme --theme-scope page --spec .cache/openyida/page-specs/home.json --output pages/src/home.canvas.jsx --compile
+openyida generate-page official-homepage --theme-profile yida-app-theme --spec .cache/openyida/page-specs/official-home.json --resolve-assets --upload-assets --output pages/src/official-home.canvas.jsx --compile
+openyida generate-page data-screen --theme-profile yida-app-theme --output pages/src/data-screen.canvas.jsx --compile
+openyida generate-page split-pane-detail --theme-profile yida-app-theme --output pages/src/split-pane-detail.canvas.jsx --compile
+openyida generate-page portal-shell-home --theme-profile yida-app-theme --output pages/src/portal-shell-home.canvas.jsx --compile
+openyida sample yida-canvas-custom-page dashboard-starter --output pages/src/dashboard-starter.canvas.jsx
+openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx
+openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx
+openyida generate-page todo-mvc --output pages/src/todo-mvc.canvas.jsx --compile
+openyida publish pages/src/home.canvas.jsx APP_XXX FORM_XXX
 ```
 
-`generate-page` turns a structured spec into a Page IR, renders a curated React 16-compatible template, writes a `.openyida-page.json` manifest, and optionally compiles the result. The manifest makes follow-up AI edits safer because agents can update known blocks instead of rewriting a large JSX file by hand.
-Built-in templates currently include `product-homepage` for product/portal pages and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
+`generate-page` turns a structured spec into a Page IR, renders a curated template, writes a `.openyida-page.json` manifest, and optionally compiles the result. Code Canvas is the default output (`.canvas.jsx`); pass `--native` or output `.oyd.jsx` only when the page must use the 普通自定义页面 JSX/Jsx 组件链路. Pass `--scene workbench|dashboard|list|detail|landing|screen` and `--theme-profile <name-or-json>` / `--visual-profile <name-or-json>` to preserve the visual direction decision in both source comments and the manifest. The user-facing default theme profile is `yida-app-theme`, which follows Yida application theme styling, compact business density, and layered 12/8/6/4 radii. `--theme-scope page` only injects theme variables into the generated page root; `--theme-scope app` additionally calls `window.__YIDA__.updateShellConfig({ themeConfig })` so the application shell can adopt the same theme. Landing pages should declare `spec.assets.heroImage` / `productImages`; use `--resolve-assets` to verify public image URLs and `--upload-assets` to mirror local or verified external images to CDN when CDN is configured. Use `--offline-assets` only for draft/offline gating. The manifest makes follow-up AI edits safer because agents can update known blocks and visual constraints instead of rewriting a large JSX file by hand.
+Built-in templates currently include `official-homepage` for brand/law-firm/product official sites, `data-screen` for immersive monitoring screens, `dashboard-overview` for business dashboards, `workbench-home` for task/entry workbenches, `business-list` for list management pages, `detail-profile` for single-object detail pages, `split-pane-detail` for left-list/right-detail processing consoles, `portal-shell-home` for in-page portal shells, `native-components-smoke` for runtime probing existing Yida host components without changing `vc-deep-yida`, `portal-native-components` for runtime-bridged portal, member, department, and upload components, `product-homepage` for legacy workbench-style pages, and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
+
+For member, department, attachment, and image upload components, choose the page chain first. Code Canvas pages should start with `native-components-smoke` or `portal-native-components` and follow `yida-canvas-custom-page/references/native-components-bridge.md` for feature detection, fallback, and value normalization. 普通自定义页面 JSX/Jsx pages should use `.oyd.jsx`, read `yida-custom-page/references/component-jsx-guide.md`, and read `attachment-upload-guide.md` when upload fields are involved.
 
 ### Workflow, Data, and Permissions
 
@@ -270,7 +281,7 @@ npm run eval:routing
 # sub-skill, adds guardrail assertions, screenshots the published page, and writes a
 # human scoring template. Runs deterministic CLI commands (no agent) so it serves as
 # a control that proves the build→publish→screenshot→score plumbing itself works.
-# Requires OPENYIDA_E2E=1 and a valid cookie cache.
+# Requires OPENYIDA_E2E=1 and a valid token session.
 OPENYIDA_E2E=1 npm run eval:e2e -- --skill yida-dashboard --screenshot
 
 # Same, plus automatic screenshot scoring via the local multimodal `claude -p`.
@@ -375,6 +386,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida compile <src>` | Compile custom page locally |
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--open\|--no-open]` | Compile and publish custom page |
 | `openyida update-form-config <appType> ...` | Update form configuration |
+| `openyida get-form-config <appType> <formUuid> [--json]` | Query form configuration |
 
 ### Data & Permissions
 
@@ -464,6 +476,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida batch <file>\|--commands "cmd1 ; cmd2" [--stop-on-error] [--json]` | Run OpenYida commands in batch |
 | `openyida flash-to-prd --file <path> --name "<project>"` | Convert flash notes or meeting notes to a PRD prompt |
 | `openyida ai <text\|image> [options]` | Call Yida AI text and image recognition APIs |
+| `openyida asset <status\|verify-url\|resolve\|generate> [options]` | Detect asset capability / verify image URLs / resolve materials |
 | `openyida cdn-config [options]` | Configure CDN / OSS upload |
 | `openyida cdn-upload <image-path>` | Upload image to CDN |
 | `openyida cdn-refresh [options]` | Refresh CDN cache |
@@ -471,6 +484,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 <!-- OPENYIDA_COMMANDS_END -->
 
 ### CLI Notes
+
+`openyida asset resolve --hero <path-or-url> --product <path-or-url> --require-hero --upload-assets --json` is the preferred preflight for homepage visuals. It verifies public image URLs, uploads local images when CDN is configured, mirrors verified external images to CDN when `--upload-assets` is passed, and returns `materialStatus: final|draft|none` so agents do not claim an unfinished visual page is final.
 
 #### Environment and Localization
 

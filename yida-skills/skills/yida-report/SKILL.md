@@ -12,15 +12,18 @@ description: "宜搭原生报表创建，支持 16 种图表/表格/筛选器组
 - 不要将本技能与 `yida-chart` 混淆：本技能负责创建原生报表（数据源），`yida-chart` 负责 ECharts 可视化
 - 不要在没有原生报表的情况下直接使用 ECharts，ECharts 必须依赖原生报表作为数据源
 - 不要用 shell heredoc、`cat`/`echo`/`printf`/`tee` 或重定向生成报表配置 JSON
+- 不要把其他应用的 `REPORT_xxx`、`prdId/topicId`、`cid` 复制给当前应用的 chart sample 或 ECharts 页面
 
 ## 严格要求 (MUST DO)
 
 - **创建/发布前必须确认**：执行报表创建或发布操作前，必须向用户展示报表配置摘要（图表类型、数据源、字段映射），获得用户明确同意后再执行
 - 普通"报表"、"统计"需求默认使用本技能，不要直接跳到 `yida-chart`
+- 报表作为 ECharts / sample 数据源时，必须创建或同步到消费页面所在的同一个 `appType`；跨应用迁移必须重新创建/同步报表并替换绑定
 - 参考官方示例时先确认 schema 证据：只有 `formType: "report"` 或组件树出现 `Youshu*` 报表组件时才按原生报表处理；`report` 标签但默认页是 `receipt` 或自定义页时，先判断是否只是数据准备页或看板页
-- 调用报表数据 API 前必须确认 `reportId` 和 `datasetId` 来自真实报表
+- 调用报表数据 API 前必须确认 `reportId`、`cid`、`dataSetKey`、`filterKey` 来自当前应用真实报表 Schema
 - 解析报表数据时必须处理 `data.rows` 为空的情况，避免页面崩溃
 - 报表配置 JSON 需要落盘时，必须用结构化文件写入工具创建到 `<projectRoot>/.cache/openyida/<项目名或任务名>/`，例如 `<projectRoot>/.cache/openyida/pm/pm-report-team.json`；不要在仓库根目录、系统临时目录或 `.cache/` 顶层生成 `*-report*.json`
+- 为 chart sample / ECharts 页面创建报表后，必须同步写入 `<projectRoot>/.cache/openyida/<任务名>/report-binding.json`，记录数据源表单、`REPORT_xxx`、组件 `cid`、`className`、`dataSetKey`、`filterKey`
 - 本技能不读写 memory，报表配置通过 `openyida create-report` 命令写入宜搭平台，不依赖跨会话的 memory 状态
 
 ## 适用场景
@@ -68,7 +71,17 @@ description: "宜搭原生报表创建，支持 16 种图表/表格/筛选器组
 ECharts 自定义页面（前端渲染）
 ```
 
-官方示例中心的报表范式是“原生报表先聚合，自定义页面后增强”。因此，除非用户明确要做高级视觉看板，否则先创建或复用原生报表；只有在已有报表提供聚合数据后，再让 `yida-chart` 或 `yida-custom-page` 承担展示层。
+官方示例中心的报表范式是“原生报表先聚合，自定义页面后增强”。因此，除非用户明确要做高级视觉看板，否则先创建或复用原生报表；只有在已有报表提供聚合数据后，再让 `yida-chart` 或 `yida-canvas-custom-page` 承担展示层。展示层如果明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖普通自定义页实例桥，再选择 `yida-custom-page`。
+
+### 作为 chart sample 数据源的绑定纪律
+
+官方 sample 或 ECharts 页面出现 `no permission for the report` 时，优先怀疑页面绑定了旧应用报表。修复顺序必须是：
+
+1. 在当前 Samples / 当前业务应用内创建或同步数据源表单与原生报表。
+2. `openyida get-schema <appType> <REPORT_xxx> --json` 回读新报表 Schema。
+3. 从 `componentsTree` 提取真实 `node_oc...` 形式的 `cid`、`componentName/className`、`dataSetModelMap` key 和组件级 `filterKey`。
+4. ECharts 页面通过 `getFormNavigationListByOrder` 按 `REPORT_xxx` 动态拿 `topicId/prdId`，不要硬编码旧 `prdId`。
+5. 把绑定关系落到 `.cache/openyida/<任务名>/report-binding.json`，再补 Jest / grep 断言，禁止旧 `REPORT_xxx`、旧 appType、旧 cid 回流。
 
 **为什么不用 `searchFormDatas` 前端聚合？**
 
