@@ -24,6 +24,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `openyida generate-page` 新增多套 Code Canvas 页面模板，覆盖官网/落地页、数据大屏、驾驶舱、工作台、业务列表、详情页、分栏详情、门户壳、待办清单，以及成员/部门/上传组件验证场景。
 - 新增 `openyida asset` 素材命令，支持素材能力检测、图片 URL 校验、素材解析回填、CDN 转存/镜像和素材来源引导，帮助官网/落地页生成前确认素材可用性。
 - 自定义页面新增门户组件、门户导航壳、成员、部门、附件上传、图片上传等宜搭运行态组件的 Code Canvas 桥接文档与模板，并补充 native JSX 链路下的组件使用指引。
+- 新增自定义页面支持宜搭组件（JSX 与 Canvas）示意截图，展示门户、成员/部门、上传、导航壳等组件在双链路下的效果；示例页面见下：
+
+  - ![自定义页面截图1](https://img.alicdn.com/imgextra/i2/O1CN01ivyoA01VoC8RsfVkJ_!!6000000002699-2-tps-3840-4798.png)
+  - ![自定义页面截图2](https://img.alicdn.com/imgextra/i1/O1CN01ykxr161F2X4A4GkuC_!!6000000000429-2-tps-3840-2320.png)
+  - ![自定义页面截图3](https://img.alicdn.com/imgextra/i1/O1CN01PPLkQV1f8eMmITj52_!!6000000003962-2-tps-3840-2506.png)
+  - ![自定义页面截图4](https://img.alicdn.com/imgextra/i4/O1CN01d908Qu1dvzo8ZSosp_!!6000000003799-2-tps-3840-3326.png)
+  - ![自定义页面截图5](https://img.alicdn.com/imgextra/i4/O1CN01ZmOaey257RKV1V4nC_!!6000000007479-2-tps-3840-1988.png)
+  - ![自定义页面截图6](https://img.alicdn.com/imgextra/i1/O1CN01s6TAzt1ewk4JwGwWc_!!6000000003936-2-tps-3840-3456.png)
+  - ![自定义页面截图7](https://img.alicdn.com/imgextra/i2/O1CN016lbFwu1zNZaMLnCwG_!!6000000006702-2-tps-3840-1916.png)
+  - ![自定义页面截图8](https://img.alicdn.com/imgextra/i1/O1CN01b6oO2u1gSdGJeC9Cy_!!6000000004141-2-tps-3840-2256.png)
+  - ![自定义页面截图9](https://img.alicdn.com/imgextra/i4/O1CN01CzLe4t21Te4MB6Tvx_!!6000000006986-2-tps-3840-2468.png)
+  - ![自定义页面截图10](https://img.alicdn.com/imgextra/i1/O1CN01fxmCH81xG7uq7hfjU_!!6000000006415-2-tps-3840-4316.png)
+  - ![自定义页面截图11](https://img.alicdn.com/imgextra/i1/O1CN01gyslBU1WkMR4Pcw4k_!!6000000002826-0-tps-3840-1916.jpg)
 - 新增 `yida-app-uiux`、`yida-canvas-data-binding`、`yida-theme` 等子技能，并扩展 `yida-page-uiux` 的多页面应用蓝图、导航、主题、素材和场景化页面设计参考。
 - 新增中文版 README 与多份设计、发布和 Code Canvas 能力规划文档，补充当前能力清单与开发规则说明。
 
