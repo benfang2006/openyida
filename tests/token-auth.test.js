@@ -62,6 +62,7 @@ describe('token-auth', () => {
             accessToken: 'new-local-access-token',
             refreshToken: 'new-local-refresh-token',
             expiresIn: 1800,
+            baseUrl: 'https://corp.example.com',
           },
         }));
       });
@@ -80,6 +81,7 @@ describe('token-auth', () => {
 
       const refreshed = await tokenRefresh({
         projectRoot: tmpDir,
+        endpoint: `http://127.0.0.1:${port}`,
         env: {
           OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
         },
@@ -90,6 +92,7 @@ describe('token-auth', () => {
       const saved = JSON.parse(fs.readFileSync(getTokenFilePath({ projectRoot: tmpDir }), 'utf8'));
       expect(saved.access_token).toBe('new-local-access-token');
       expect(saved.refresh_token).toBe('new-local-refresh-token');
+      expect(saved.base_url).toBe('https://corp.example.com');
       expect(saved.corp_id).toBe('corp-local');
       expect(saved.user_id).toBe('user-local');
     } finally {
@@ -106,13 +109,17 @@ describe('token-auth', () => {
       userId: process.env.OPENYIDA_TOKEN_USER_ID,
     };
     const seenAccessTokens = [];
-    let refreshTokenUsed;
+    const refreshTokensUsed = [];
+    let refreshRequestCount = 0;
     const server = http.createServer((req, res) => {
       if (req.url === '/openapi/cli/v1/auth/refresh') {
+        refreshRequestCount += 1;
         const chunks = [];
         req.on('data', (chunk) => chunks.push(chunk));
         req.on('end', () => {
-          refreshTokenUsed = JSON.parse(Buffer.concat(chunks).toString('utf8')).refreshToken;
+          refreshTokensUsed.push(
+            JSON.parse(Buffer.concat(chunks).toString('utf8')).refreshToken
+          );
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify({
             success: true,
@@ -121,6 +128,7 @@ describe('token-auth', () => {
               accessToken: 'refreshed-access-token',
               refreshToken: 'refreshed-refresh-token',
               expiresIn: 1800,
+              base_url: 'https://corp.example.com',
             },
           }));
         });
@@ -142,16 +150,22 @@ describe('token-auth', () => {
       seenAccessTokens.push(firstToken);
       const secondToken = await getAccessToken({ projectRoot: tmpDir });
       seenAccessTokens.push(secondToken);
+      await tokenRefresh({ projectRoot: tmpDir });
 
       expect(seenAccessTokens).toEqual([
         'refreshed-access-token',
         'refreshed-access-token',
       ]);
-      expect(refreshTokenUsed).toBe('sandbox-refresh-token');
+      expect(refreshTokensUsed).toEqual([
+        'sandbox-refresh-token',
+        'refreshed-refresh-token',
+      ]);
+      expect(refreshRequestCount).toBe(2);
 
       const saved = JSON.parse(fs.readFileSync(getTokenFilePath({ projectRoot: tmpDir }), 'utf8'));
       expect(saved.access_token).toBe('refreshed-access-token');
       expect(saved.refresh_token).toBe('refreshed-refresh-token');
+      expect(saved.base_url).toBe('https://corp.example.com');
       expect(saved.corp_id).toBe('corp-env');
       expect(saved.user_id).toBe('user-env');
     } finally {

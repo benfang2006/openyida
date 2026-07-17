@@ -8,10 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [2026.7.17] - 2026-07-17
+## [2026.7.17-2] - 2026-07-17
 
 ### Fixed
 - 业务请求遇到 access token 失效时，自动使用本地 refresh token 刷新 access token 并重试原请求；仅 refresh token 也失效时才提示重新 OAuth 登录。
+- refresh token 换取新 access token 时使用当前环境的认证 endpoint，并保留服务端返回的业务 `base_url` 写入本地 token session。
 - 移除 CLI 业务请求中显式拼接 `_csrf_token` 的逻辑，运行态只向宜搭服务端传递 `Authorization: Bearer <access_token>`。
 
 ## [2026.7.14-2] - 2026-07-14
