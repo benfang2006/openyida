@@ -58,14 +58,28 @@
 | 创建看板页 | `openyida create-page <appType> "<页面名称>" --mode dashboard` |
 | 从模板生成页面源码 | `openyida generate-page <template>` |
 | 构建宜搭兼容页面源码 | `openyida build-page <sourceFile> [--output file\|--write]` |
-| 检查 native 页面规范 | `openyida check-page <src> [--compat]` |
-| 本地编译 native 页面 | `openyida compile <src>` |
-| 发布 native 自定义页面 | `openyida publish project/pages/src/home.oyd.jsx <appType> <formUuid>` |
+| 检查普通自定义页面 JSX 规范 | `openyida check-page <src> [--compat]` |
+| 本地编译普通自定义页面 JSX | `openyida compile <src>` |
+| 发布普通自定义页面 JSX | `openyida publish project/pages/src/home.oyd.jsx <appType> <formUuid>` |
 | 发布 Code Canvas 页面 | `openyida publish project/pages/src/home.canvas.jsx <appType> <formUuid>`（`.canvas.jsx` / `.canvas.tsx` 自动启用 Canvas 编译，生成 `runtimeCode` + `importedModules` 并保存为 `YidaCodeCanvas` Schema） |
 | 显式按 Code Canvas 链路发布 | `openyida publish <src> <appType> <formUuid> --canvas` |
 | 发布并做健康检查 | `openyida publish <src> <appType> <formUuid> --health-check` |
 | 更新页面/表单配置 | `openyida update-form-config <appType> ...` |
-| 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；仅强依赖 native 页面实例数据桥时使用 `check-page`、`compile`、`publish` 的 native 组合 |
+| 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；明确要求普通自定义页面 JSX/Jsx，或强依赖普通自定义页实例桥时使用 `.oyd.jsx` + `check-page` / `compile` / `publish` |
+| Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | `openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx`；再参考 `yida-canvas-custom-page/references/native-components-bridge.md` |
+| Code Canvas 门户 + 成员/部门/上传组件示例 | `openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx` |
+| 普通自定义页面 JSX/Jsx 使用成员/部门组件 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/component-jsx-guide.md` |
+| 普通自定义页面 JSX/Jsx 使用附件/图片上传 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/attachment-upload-guide.md` |
+
+### 自定义页面链路选择
+
+| 需求 | 推荐链路 |
+|---|---|
+| 现代 React、hooks、官网、工作台、看板、列表、详情、可视化、AI 首次生成页面 | Code Canvas：`.canvas.jsx` / `YidaCodeCanvas` |
+| 需要成员、部门、附件上传、图片上传等宜搭运行态组件，且希望页面保持现代 React 体验 | Code Canvas + 原生组件桥；先跑 smoke 示例验证运行态组件，再做 fallback 和值归一化 |
+| 用户明确要求普通自定义页面 JSX/Jsx 组件链路 | 普通自定义页面：`.oyd.jsx` / `Jsx` |
+| 强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定 | 普通自定义页面：`.oyd.jsx` / `Jsx` |
+| 已有普通 `.oyd.jsx` 页面要迁移到 Code Canvas | 参考 `yida-canvas-upgrade` 技能 |
 
 ## 流程、审批与任务
 

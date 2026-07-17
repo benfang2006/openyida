@@ -128,13 +128,3 @@ openyida get-schema APP_XXX --all --keyword 客户 --concurrency 5 --retries 2
 | 批量部分失败 | 查看 stdout 的 `failedCount` 和 `forms[].errorMsg`，必要时提高 `--retries` 或缩小 `--keyword` 范围 |
 | 找不到目标字段 | 检查字段是否已创建，字段 ID 格式如 `textField_xxxxxxxx`，不能手写猜测 |
 | Schema 输出为空 | 表单可能没有字段，先用 `yida-create-form-page` 创建字段 |
-
-## 与其他技能的配合
-
-| 步骤 | 技能 | 说明 |
-|------|------|------|
-| 前置 | `yida-create-form-page` | 先创建表单，再获取字段 ID |
-| 前置 | `yida-login` | 确认登录态有效 |
-| 后续 | `yida-data-management` | 使用 fieldId 查询/新增/更新数据 |
-| 后续 | `yida-process-rule` | 使用 fieldId 配置流程字段权限 |
-| 后续 | `yida-custom-page` | 在 JSX 代码中引用 fieldId 常量 |

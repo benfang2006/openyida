@@ -11,7 +11,7 @@
 - 不一致 → 询问用户：重新登录到正确组织，还是在当前组织新建应用。
 
 **F3 发布前本地校验**：
-- 自定义页面发布前先跑 `openyida check-page <源文件>` + `openyida compile <源文件>`；
+- 普通自定义页面 `.oyd.jsx` / `.jsx` 发布前先跑 `openyida check-page <源文件>` + `openyida compile <源文件>`；Code Canvas `.canvas.jsx` 不跑这两个普通自定义页面检查，改由 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检校验；
 - 发布时留意"同名双副本内容不一致"警告，必要时加 `--health-check` 做首屏 HTTP 健康检查；
 - 任何 JSON 配置写盘后先做 JSON 解析校验，再调用平台命令。
 
@@ -30,7 +30,7 @@
 | 7 | 配置分两处存 | 详见 [配置信息分两处存储](#配置信息分两处存储) 与 [PRD 质量门槛](#prd-质量门槛)。 |
 | 8 | 临时文件入 project `.cache/` | 详见 [临时文件规范](#临时文件规范)。 |
 | 9 | 报表美化先问方案 | 详见 [报表优化 / 美化提示规则](#报表优化--美化提示规则)。 |
-| 10 | 按 schema 证据选技能 | 先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能，只有默认页是自定义展示页、或确需列表/看板/工具页交互时才落到 `yida-custom-page`。 |
+| 10 | 按 schema 证据选技能 | 先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能。默认页是自定义展示页、或确需列表/看板/工具页交互时，默认落到 `yida-canvas-custom-page`；只有强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定深度耦合时，才落到 `yida-custom-page`。 |
 | 11 | 官方示例范式优先 | 蒸馏宜搭示例中心时，先按 [官方示例 Schema 范式](official-example-schema-patterns.md) 理解脱敏 schema 的承载方式，不凭截图/卡片标题/页面视觉判断。 |
 
 ## 配置信息分两处存储
@@ -53,7 +53,7 @@
 - **流程与状态机**：状态、允许操作、下一状态、操作角色
 - **数据关联与约束**：唯一性、关联关系、冲突校验、并发/重复提交风险
 - **交互与验收标准**：用可验证标准描述"好用"
-- **落地约束**：Schema 写 `.cache/<项目名>-schema.json`，发布前 `check-page` + `compile`
+- **落地约束**：Schema 写 `.cache/<项目名>-schema.json`；发布前按页面链路校验，普通自定义页面跑 `check-page` + `compile`，Canvas 跑 Canvas 编译快检或由 `publish` 编译阶段校验
 
 ## 临时文件规范
 

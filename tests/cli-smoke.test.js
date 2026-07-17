@@ -77,15 +77,6 @@ function createCodexWorkspace() {
   return workspace;
 }
 
-function createWukongWorkRoot() {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-wukong-login-'));
-  const agentWorkRoot = path.join(base, '.real', 'users', 'user-test');
-  const projectDir = path.join(agentWorkRoot, 'workspace', 'project');
-  fs.mkdirSync(projectDir, { recursive: true });
-  fs.writeFileSync(path.join(projectDir, 'config.json'), '{}', 'utf8');
-  return { base, agentWorkRoot, projectDir };
-}
-
 function runAny(args) {
   const result = spawnSync(process.execPath, [BIN, ...args], {
     cwd: ROOT,
@@ -285,8 +276,8 @@ describe('CLI offline smoke', () => {
     ]);
     expect(parsed.summary.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
-      default_page_skill_id: 'yida-custom-page',
-      optional_canvas_skill_id: 'yida-canvas-custom-page',
+      default_page_skill_id: 'yida-canvas-custom-page',
+      ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
         'create-app',
@@ -296,7 +287,6 @@ describe('CLI offline smoke', () => {
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
         'yida-page-uiux',
-        'yida-canvas-custom-page',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
@@ -700,8 +690,8 @@ describe('CLI offline smoke', () => {
     expect(parsed.commands.read_only_command_ids).toContain('agent-capabilities');
     expect(parsed.commands.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
-      default_page_skill_id: 'yida-custom-page',
-      optional_canvas_skill_id: 'yida-canvas-custom-page',
+      default_page_skill_id: 'yida-canvas-custom-page',
+      ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
         'create-form.create',
@@ -710,7 +700,6 @@ describe('CLI offline smoke', () => {
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
         'yida-page-uiux',
-        'yida-canvas-custom-page',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
@@ -967,6 +956,9 @@ describe('CLI offline smoke', () => {
       expect(output).toContain('--force 模式');
       expect(fs.existsSync(path.join(workspace, 'config.json'))).toBe(true);
       expect(fs.existsSync(path.join(workspace, 'pages', 'src'))).toBe(true);
+      expect(fs.existsSync(path.join(workspace, '.cache'))).toBe(false);
+      expect(fs.existsSync(path.join(workspace, 'pages', 'build'))).toBe(false);
+      expect(fs.existsSync(path.join(workspace, 'pages', 'dist'))).toBe(false);
     } finally {
       fs.rmSync(workspace, { recursive: true, force: true });
     }

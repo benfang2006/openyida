@@ -208,3 +208,41 @@ describe('t()', () => {
     expect(result.length).toBeGreaterThan(0);
   });
 });
+
+// ── t() 兼底链：当前语言 → en → zh ────────────────────────
+
+describe('t() 兼底链', () => {
+  const zhDict = require('../lib/core/locales/zh');
+  const enDict = require('../lib/core/locales/en');
+
+  test('非中英语言缺失 key 时优先回退到英文而非中文', () => {
+    // integration.create_usage：ja 缺失，en 存在，zh 存在且与 en 不同
+    const zhVal = zhDict.integration.create_usage;
+    const enVal = enDict.integration.create_usage;
+    expect(zhVal).not.toBe(enVal); // 前提：两者确实不同
+    setLanguage('ja');
+    const result = t('integration.create_usage');
+    expect(result).toBe(enVal);
+    expect(result).not.toBe(zhVal);
+  });
+
+  test('en 也缺失时才回退到 zh', () => {
+    // auth_usage：为 zh 遗留顶层 key，en 已规范化为 cli.auth_usage，故 en 无此顶层 key
+    expect(typeof zhDict.auth_usage).toBe('string');
+    expect(enDict.auth_usage).toBeUndefined();
+    setLanguage('ja');
+    const result = t('auth_usage');
+    expect(result).toBe(zhDict.auth_usage);
+  });
+
+  test('en 环境缺失 key 时回退到 zh', () => {
+    setLanguage('en');
+    const result = t('auth_usage');
+    expect(result).toBe(zhDict.auth_usage);
+  });
+
+  test('所有语言都缺失时返回 key 本身', () => {
+    setLanguage('ja');
+    expect(t('non.existent.key.xyz')).toBe('non.existent.key.xyz');
+  });
+});

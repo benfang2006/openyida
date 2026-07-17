@@ -76,7 +76,7 @@ npm run eval:routing
 > 目的(对照基线):**不经过 agent**,用固定命令把「建应用→发布→截图→打分」整条管道跑通,
 > 确认基础设施本身没坏。当第 5 步「真实生成」失败时,先看这条是否绿,就能区分是 agent 还是工具的问题。
 
-**会在宜搭组织里真的创建一次性应用**,需 `OPENYIDA_E2E=1` + 有效 cookie 缓存(先 `openyida login`)。
+**会在宜搭组织里真的创建一次性应用**,需 `OPENYIDA_E2E=1` + 有效 token session（先 `openyida login`，再用 `openyida login --check-only --json` 验证）。
 
 ```bash
 OPENYIDA_E2E=1 npm run eval:e2e -- --skill yida-dashboard --screenshot

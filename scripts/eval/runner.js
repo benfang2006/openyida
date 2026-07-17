@@ -185,7 +185,7 @@ async function runE2e(config) {
 
   const result = fullRunner.run({ env });
   if (result.skipped) {
-    log('[e2e] 已跳过真实链路（需 OPENYIDA_E2E=1 与有效 cookie 缓存）。');
+    log('[e2e] 已跳过真实链路（需 OPENYIDA_E2E=1 与有效 token session）。');
     return { skipped: true };
   }
 
