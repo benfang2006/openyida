@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.7.17-3] - 2026-07-17
+
+### Fixed
+- refresh token 换取新 access token 时，如果服务端未返回业务 `base_url`，继续保留本地 token session 中已有的业务域名，避免刷新后业务请求错误落到认证 endpoint。
+
 ## [2026.7.17-2] - 2026-07-17
 
 ### Fixed

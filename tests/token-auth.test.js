@@ -62,7 +62,6 @@ describe('token-auth', () => {
             accessToken: 'new-local-access-token',
             refreshToken: 'new-local-refresh-token',
             expiresIn: 1800,
-            baseUrl: 'https://corp.example.com',
           },
         }));
       });
@@ -73,7 +72,7 @@ describe('token-auth', () => {
       saveTokenSession({
         access_token: 'expired-access-token',
         expires_at: Date.now() - 1000,
-        base_url: `http://127.0.0.1:${port}`,
+        base_url: 'https://legacy-corp.example.com',
         client_id: 'suite9xvlxxerybljwheo',
         corp_id: 'corp-local',
         user_id: 'user-local',
@@ -92,7 +91,7 @@ describe('token-auth', () => {
       const saved = JSON.parse(fs.readFileSync(getTokenFilePath({ projectRoot: tmpDir }), 'utf8'));
       expect(saved.access_token).toBe('new-local-access-token');
       expect(saved.refresh_token).toBe('new-local-refresh-token');
-      expect(saved.base_url).toBe('https://corp.example.com');
+      expect(saved.base_url).toBe('https://legacy-corp.example.com');
       expect(saved.corp_id).toBe('corp-local');
       expect(saved.user_id).toBe('user-local');
     } finally {
