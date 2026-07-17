@@ -46,7 +46,6 @@ describe('detectLoginStatus', () => {
     expect(result).toMatchObject({
       loggedIn: false,
       canAutoUse: false,
-      csrfToken: null,
       corpId: null,
       userId: null,
       baseUrl: null,
@@ -74,7 +73,6 @@ describe('detectLoginStatus', () => {
     expect(result).toMatchObject({
       loggedIn: true,
       canAutoUse: true,
-      csrfToken: null,
       corpId: 'corpABC',
       userId: 'user456',
       baseUrl: 'https://www.aliwork.com',

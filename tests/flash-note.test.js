@@ -139,7 +139,6 @@ describe('flash-to-prd CLI command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     utils.loadAuthData.mockReturnValue({
-      csrf_token: 'tok123',
       base_url: 'https://www.aliwork.com',
       auth_mode: 'token',
       auth_source: 'token',
@@ -175,7 +174,6 @@ describe('flash-to-prd CLI command', () => {
 
   test('callAI posts through yida-client and returns generated text', async () => {
     const result = await callAI('生成 PRD', 2048, {
-      csrfToken: 'tok123',
       baseUrl: 'https://www.aliwork.com',
       authMode: 'token',
       authSource: 'token',
@@ -185,7 +183,6 @@ describe('flash-to-prd CLI command', () => {
     expect(utils.httpPost).toHaveBeenCalledTimes(1);
     expect(utils.httpPost.mock.calls[0][1]).toBe('/query/intelligent/txtFromAI.json');
     expect(querystring.parse(utils.httpPost.mock.calls[0][2])).toMatchObject({
-      _csrf_token: 'tok123',
       prompt: '生成 PRD',
       maxTokens: '2048',
       skill: 'ToText',
@@ -199,7 +196,6 @@ describe('flash-to-prd CLI command', () => {
     });
 
     await expect(callAI('生成 PRD', 2048, {
-      csrfToken: 'tok123',
       baseUrl: 'https://www.aliwork.com',
       authMode: 'token',
       authSource: 'token',

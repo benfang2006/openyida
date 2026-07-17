@@ -79,7 +79,6 @@ describe('OpenYida MCP server helpers', () => {
       selected_corp: null,
     });
     expect(result.cookies).toBeUndefined();
-    expect(result.csrf_token).toBeUndefined();
   });
 });
 

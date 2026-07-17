@@ -58,6 +58,106 @@ describe('token-store', () => {
     expect(loadTokenSession(options)).toBe(null);
   });
 
+  test('uses the injected env refresh token when the local token file is absent', () => {
+    const options = {
+      projectRoot,
+      envName: 'public',
+      env: {
+        OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
+        OPENYIDA_ENDPOINT: 'https://www.aliwork.com',
+        OPENYIDA_TOKEN_CLIENT_ID: 'openyida-cli',
+        OPENYIDA_TOKEN_CORP_ID: 'corp-env',
+        OPENYIDA_TOKEN_USER_ID: 'user-env',
+      },
+    };
+
+    const loaded = loadTokenSession(options);
+
+    expect(loaded.access_token).toBeUndefined();
+    expect(loaded.refresh_token).toBe('env-refresh-token');
+    expect(loaded.auth_source).toBe('env');
+    expect(loaded.corp_id).toBe('corp-env');
+    expect(loaded.user_id).toBe('user-env');
+  });
+
+  test('does not fall back to env when a valid local token file exists', () => {
+    const options = {
+      projectRoot,
+      envName: 'public',
+      env: {
+        OPENYIDA_ACCESS_TOKEN: 'env-access-token',
+        OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
+      },
+    };
+    saveTokenSession({
+      access_token: 'local-access-token',
+      refresh_token: 'local-refresh-token',
+      expires_in: 1800,
+    }, options);
+
+    const loaded = loadTokenSession(options);
+
+    expect(loaded.access_token).toBe('local-access-token');
+    expect(loaded.refresh_token).toBe('local-refresh-token');
+    expect(loaded.auth_source).toBe('local');
+  });
+
+  test('fills a missing local refresh token from env without replacing local access token', () => {
+    const options = {
+      projectRoot,
+      envName: 'public',
+      env: {
+        OPENYIDA_ACCESS_TOKEN: 'env-access-token',
+        OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
+      },
+    };
+    saveTokenSession({
+      access_token: 'local-access-token',
+      expires_at: Date.now() - 1000,
+    }, options);
+
+    const loaded = loadTokenSession(options);
+    expect(loaded.access_token).toBe('local-access-token');
+    expect(loaded.refresh_token).toBe('env-refresh-token');
+    expect(loaded.auth_source).toBe('mixed');
+  });
+
+  test('never fills a missing local access token from env', () => {
+    const options = {
+      projectRoot,
+      envName: 'public',
+      env: {
+        OPENYIDA_ACCESS_TOKEN: 'env-access-token',
+        OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
+      },
+    };
+    saveTokenSession({ refresh_token: 'local-refresh-token' }, options);
+
+    const loaded = loadTokenSession(options);
+    expect(loaded.access_token).toBeUndefined();
+    expect(loaded.refresh_token).toBe('local-refresh-token');
+    expect(loaded.auth_source).toBe('local');
+  });
+
+  test('falls back to env fields when the local token file cannot be parsed', () => {
+    const options = {
+      projectRoot,
+      envName: 'public',
+      env: {
+        OPENYIDA_ACCESS_TOKEN: 'env-access-token',
+        OPENYIDA_REFRESH_TOKEN: 'env-refresh-token',
+      },
+    };
+    const tokenFile = getTokenFilePath(options);
+    fs.mkdirSync(path.dirname(tokenFile), { recursive: true });
+    fs.writeFileSync(tokenFile, '{not-json', 'utf8');
+
+    const loaded = loadTokenSession(options);
+    expect(loaded.access_token).toBeUndefined();
+    expect(loaded.refresh_token).toBe('env-refresh-token');
+    expect(loaded.auth_source).toBe('env');
+  });
+
   test('masks token values', () => {
     expect(maskToken('1234567890abcdefg')).toBe('12345678...bcdefg');
     expect(maskToken('short')).toBe('shor...');

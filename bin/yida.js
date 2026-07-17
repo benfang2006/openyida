@@ -216,12 +216,6 @@ const TOKEN_OUTPUT_SECRET_KEYS = new Set([
   'accessToken',
   'refresh_token',
   'refreshToken',
-  'ai_app_user_auth_token',
-  'aiAppUserAuthToken',
-  'tianshu_csrf_token',
-  'tianshuCsrfToken',
-  'csrf_token',
-  'csrfToken',
 ]);
 
 function maskSensitiveAuthOutput(value) {
@@ -448,12 +442,6 @@ function applyQuietFlag() {
 function throwCliUsage(...lines) {
   throw new CliError(lines.filter(Boolean).join('\n'), {
     code: 'INVALID_ARGUMENTS',
-  });
-}
-
-function throwNeedLogin(message) {
-  throw new CliError(message, {
-    code: 'NEED_LOGIN',
   });
 }
 

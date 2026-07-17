@@ -37,7 +37,6 @@ const mockAuthData = {
   auth_mode: 'token',
   auth_source: 'token',
   user_id: 'user-1',
-  csrf_token: 'csrf-token',
   base_url: 'https://www.aliwork.com',
   corp_id: 'corp-1',
 };
@@ -84,7 +83,6 @@ describe('small process commands', () => {
     });
     expect(utils.httpPost.mock.calls[0][1]).toContain('/APP_XXX/query/formdesign/switchFormType.json');
     expect(querystring.parse(utils.httpPost.mock.calls[0][2])).toMatchObject({
-      _csrf_token: 'csrf-token',
       toFormType: 'process',
       formUuid: 'FORM_1',
     });

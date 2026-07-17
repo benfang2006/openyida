@@ -9,7 +9,6 @@ const http = require('http');
 const {
   resolveBaseUrl,
   isLoginExpired,
-  isCsrfTokenExpired,
   loadAuthData,
   detectActiveTool,
   hasDesktopEnvironment,
@@ -17,7 +16,6 @@ const {
   httpPost,
   httpPostJson,
   httpGet,
-  requestWithAutoLogin,
 } = require('../lib/core/utils');
 
 jest.mock('../lib/auth/token-auth', () => ({
@@ -121,6 +119,17 @@ describe('isLoginExpired', () => {
     expect(isLoginExpired({ success: false, errorCode: 'not_logged_in' })).toBe(true);
   });
 
+  test('invalid_access_token 状态会被识别为 access token 失效', () => {
+    expect(isLoginExpired({ status: 'invalid_access_token' })).toBe(true);
+    expect(isLoginExpired({
+      success: true,
+      content: {
+        status: 'invalid_access_token',
+        message: 'Authorization Bearer token is invalid or expired',
+      },
+    })).toBe(true);
+  });
+
   test('success 为 true 时返回 false', () => {
     expect(isLoginExpired({ success: true, errorCode: '307' })).toBe(false);
   });
@@ -135,26 +144,6 @@ describe('isLoginExpired', () => {
 
   test('空对象时返回 false', () => {
     expect(isLoginExpired({})).toBe(false);
-  });
-});
-
-// ── isCsrfTokenExpired ────────────────────────────────────────────────
-
-describe('isCsrfTokenExpired', () => {
-  test('errorCode TIANSHU_000030 时返回 true', () => {
-    expect(isCsrfTokenExpired({ success: false, errorCode: 'TIANSHU_000030' })).toBe(true);
-  });
-
-  test('success 为 true 时返回 false', () => {
-    expect(isCsrfTokenExpired({ success: true, errorCode: 'TIANSHU_000030' })).toBe(false);
-  });
-
-  test('errorCode 不匹配时返回 false', () => {
-    expect(isCsrfTokenExpired({ success: false, errorCode: 'OTHER_CODE' })).toBe(false);
-  });
-
-  test('null 时返回 falsy', () => {
-    expect(isCsrfTokenExpired(null)).toBeFalsy();
   });
 });
 
@@ -251,35 +240,46 @@ describe('http redirect login detection', () => {
 // ── requestWithAutoLogin ──────────────────────────────────────────────
 
 describe('requestWithAutoLogin', () => {
-  test('csrf 失败在 token-only 模式下直接返回明确错误', async () => {
-    const requestFn = jest.fn().mockResolvedValueOnce({ __csrfExpired: true });
+  test('登录失效且 refresh 请求失败时不回退到登录引导', async () => {
+    jest.resetModules();
+    const tokenRefresh = jest.fn(() => {
+      throw new Error('refresh failed');
+    });
+    const isRefreshAuthRequired = jest.fn(() => false);
+    jest.doMock('../lib/auth/token-auth', () => ({ tokenRefresh, isRefreshAuthRequired }));
+    const utils = require('../lib/core/utils');
+    const requestFn = jest.fn().mockResolvedValueOnce({ __needLogin: true });
 
-    const result = await requestWithAutoLogin(requestFn, {
-      csrfToken: 'openyida_cli_bearer',
+    const result = await utils.requestWithAutoLogin(requestFn, {
       baseUrl: 'https://www.aliwork.com',
       authMode: 'token',
       authSource: 'token',
     });
 
+    expect(tokenRefresh).toHaveBeenCalledTimes(1);
     expect(requestFn).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
       success: false,
-      __needLogin: true,
-      errorCode: 'TOKEN_AUTH_REQUIRED',
+      errorCode: 'TOKEN_REFRESH_FAILED',
     });
+    jest.dontMock('../lib/auth/token-auth');
+    jest.resetModules();
   });
 
-  test('登录失效且 refresh 失败时不回退到 cookie 登录', async () => {
+  test('登录失效且 refresh token 无效时才提示重新登录', async () => {
     jest.resetModules();
-    const tokenRefresh = jest.fn(() => {
-      throw new Error('refresh failed');
+    const tokenRefresh = jest.fn().mockResolvedValue({
+      ok: false,
+      auth_mode: 'token',
+      status: 'invalid_refresh_token',
+      can_auto_use: false,
     });
-    jest.doMock('../lib/auth/token-auth', () => ({ tokenRefresh }));
+    const isRefreshAuthRequired = jest.fn((value) => value && value.status === 'invalid_refresh_token');
+    jest.doMock('../lib/auth/token-auth', () => ({ tokenRefresh, isRefreshAuthRequired }));
     const utils = require('../lib/core/utils');
     const requestFn = jest.fn().mockResolvedValueOnce({ __needLogin: true });
 
     const result = await utils.requestWithAutoLogin(requestFn, {
-      csrfToken: 'openyida_cli_bearer',
       baseUrl: 'https://www.aliwork.com',
       authMode: 'token',
       authSource: 'token',
@@ -293,6 +293,58 @@ describe('requestWithAutoLogin', () => {
       errorCode: 'TOKEN_AUTH_REQUIRED',
     });
     jest.dontMock('../lib/auth/token-auth');
+    jest.resetModules();
+  });
+
+  test('登录失效且 refresh 成功时刷新 token 并重试原请求', async () => {
+    jest.resetModules();
+    const tokenRefresh = jest.fn().mockResolvedValue({
+      access_token: 'new-access-token',
+      refresh_token: 'refresh-token',
+      base_url: 'https://www.aliwork.com',
+    });
+    const loadTokenSession = jest.fn().mockReturnValue({
+      access_token: 'new-access-token',
+      refresh_token: 'refresh-token',
+      base_url: 'https://www.aliwork.com',
+      corp_id: 'ding-corp',
+      user_id: 'user-1',
+    });
+    const isRefreshAuthRequired = jest.fn(() => false);
+    jest.doMock('../lib/auth/token-auth', () => ({ tokenRefresh, isRefreshAuthRequired }));
+    jest.doMock('../lib/auth/token-store', () => ({ loadTokenSession }));
+    const utils = require('../lib/core/utils');
+    const requestFn = jest.fn()
+      .mockResolvedValueOnce({ __needLogin: true })
+      .mockResolvedValueOnce({ success: true, content: { ok: true } });
+    const authRef = {
+      baseUrl: 'https://www.aliwork.com',
+      authData: {
+        auth_mode: 'token',
+        auth_source: 'token',
+        base_url: 'https://www.aliwork.com',
+        client_id: 'suite9xvlxxerybljwheo',
+      },
+      authMode: 'token',
+      authSource: 'token',
+    };
+
+    const result = await utils.requestWithAutoLogin(requestFn, authRef);
+
+    expect(tokenRefresh).toHaveBeenCalledWith(expect.objectContaining({
+      baseUrl: 'https://www.aliwork.com',
+      clientId: 'suite9xvlxxerybljwheo',
+    }));
+    expect(requestFn).toHaveBeenCalledTimes(2);
+    expect(authRef.authData).toMatchObject({
+      auth_mode: 'token',
+      base_url: 'https://www.aliwork.com',
+      corp_id: 'ding-corp',
+      user_id: 'user-1',
+    });
+    expect(result).toEqual({ success: true, content: { ok: true } });
+    jest.dontMock('../lib/auth/token-auth');
+    jest.dontMock('../lib/auth/token-store');
     jest.resetModules();
   });
 });
@@ -323,7 +375,6 @@ describe('loadAuthData', () => {
 
     const result = loadAuthData(tmpDir);
     expect(result).toMatchObject({
-      csrf_token: 'openyida_cli_bearer',
       corp_id: 'corpA',
       user_id: 'user1',
       base_url: 'https://www.aliwork.com',
@@ -336,7 +387,7 @@ describe('loadAuthData', () => {
     const cacheDir = path.join(tmpDir, '.cache');
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([
-      { name: 'tianshu_csrf_token', value: 'unsafe-cookie-token' },
+      { name: 'ai_app_user_auth_token', value: 'unsafe-cookie-token' },
     ]), 'utf-8');
 
     expect(loadAuthData(tmpDir)).toBeNull();

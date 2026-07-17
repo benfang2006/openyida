@@ -409,7 +409,6 @@ describe('configure-process command runner', () => {
     fs.writeFileSync(definitionFile, JSON.stringify({ nodes: [] }));
 
     const mockAuthRef = {
-      csrfToken: 'csrf-test',
       baseUrl: 'https://www.aliwork.com',
     };
     const mockGet = jest.fn().mockResolvedValueOnce({

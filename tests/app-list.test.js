@@ -19,7 +19,6 @@ jest.mock('../lib/core/i18n', () => ({
 const utils = require('../lib/core/utils');
 
 const mockAuthData = {
-  csrf_token: 'openyida_cli_bearer',
   base_url: 'https://www.aliwork.com',
   auth_mode: 'token',
   auth_source: 'token',
@@ -36,7 +35,6 @@ const makeApp = (overrides = {}) => ({
 
 const mockAuth = {
   baseUrl: 'https://www.aliwork.com',
-  csrfToken: 'tok123',
   userId: 'user001',
 };
 

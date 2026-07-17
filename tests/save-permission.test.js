@@ -24,7 +24,6 @@ const mockAuthData = {
   auth_source: 'token',
   corp_id: 'corp-1',
   user_id: 'user-1',
-  csrf_token: 'csrf',
 };
 
 describe('save-permission command', () => {
@@ -77,7 +76,6 @@ describe('save-permission command', () => {
     expect(utils.httpPost).toHaveBeenCalledTimes(1);
     const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
     expect(body).toMatchObject({
-      _csrf_token: 'csrf',
       formUuid: 'FORM-1',
       packageUuid: 'pkg-1',
       fieldPermit: '{"fieldRange":"CUSTOM","fields":{"textField_a":"READONLY"}}',
@@ -112,7 +110,6 @@ describe('save-permission command', () => {
     const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
     expect(body.packageUuid).toBeUndefined();
     expect(body).toMatchObject({
-      _csrf_token: 'csrf',
       formUuid: 'FORM-1',
       fieldPermit: '{"fieldRange":"CUSTOM","fields":{"textField_a":"READONLY"}}',
     });
