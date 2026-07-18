@@ -11,6 +11,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.7.18-2] - 2026-07-18
+
+### Changed
+- 优化 `openyida login` 与 `openyida bridge` 的浏览器拉起体验：新增跨平台默认浏览器检测（macOS 读 LaunchServices bundle id、Windows 读注册表 ProgId、Linux 读 `.desktop`），检测到已知浏览器时真正打开一个**新窗口**（Chromium 系 `--new-window`、Firefox `-new-window`、Safari 走 AppleScript），而不再是 `open -n <url>` 那种「只在默认浏览器开新标签页却假装开窗口」的行为。
+
+### Fixed
+- 修复 macOS 下 `openyida login` 拉起浏览器只新开标签页、不新开窗口的问题：`open -n <url>` 对已运行的单实例浏览器（Chrome/Safari）无效，实际只会开新标签页。现按检测到的默认浏览器用其原生新窗口参数打开。
+
+### Added
+- 新增 `npm run check:release-risks`（`scripts/check-release-risks.js`）发布前跨端风险静态扫描，并纳入 `check:ci` 门禁：`cmd /c start <url>` 截断 URL、`open -n <url>` 假装开窗口等 HARD 反模式命中即阻断发布（退出码 1）；涉及浏览器/URL 拉起的文件输出跨端人工验证提醒（不阻断）。扫描会跳过注释与字符串字面量，避免把说明性注释误判成真实反模式。
+- 新增项目技能 `.qoder/skills/openyida-cross-platform-release-guard`，沉淀「浏览器/登录/bridge 拉起改动」的发布前风险检查流程与 Windows/macOS/Linux 人工验证清单。
+
+### Guardrails
+- 跨端行为兜底：未知/不支持的默认浏览器（如 Arc 或任何未映射的 bundle id / ProgId / `.desktop`）以及检测失败时，一律回退到系统默认浏览器新标签页 + 回调页自动关闭，绝不尝试新窗口动作。
+
+### Tests
+- `tests/oauth-loopback.test.js`：新增默认浏览器检测（依赖可注入）、三平台新窗口命令、未知/不支持浏览器回退等用例，共 20 个用例。
+- 新增 `tests/check-release-risks.test.js`：覆盖 HARD 反模式命中、注释/字符串误判排除，以及「当前 `lib/` 源码零 HARD 反模式」的仓库守卫。
+
+
 ## [2026.7.18-1] - 2026-07-18
 
 ### Fixed

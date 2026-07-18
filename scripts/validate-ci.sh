@@ -45,15 +45,19 @@ echo "=== Step 9: Run lint ==="
 npm run lint
 
 echo ""
-echo "=== Step 10: Run tests ==="
+echo "=== Step 10: Scan cross-platform release risks ==="
+npm run check:release-risks
+
+echo ""
+echo "=== Step 11: Run tests ==="
 npm run test:unit -- --runInBand
 
 echo ""
-echo "=== Step 11: Validate npm package size budget ==="
+echo "=== Step 12: Validate npm package size budget ==="
 npm run check:package-size
 
 echo ""
-echo "=== Step 12: Validate npm package contents ==="
+echo "=== Step 13: Validate npm package contents ==="
 npm run check:package
 
 echo ""
