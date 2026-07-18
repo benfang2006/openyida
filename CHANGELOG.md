@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.7.18-1] - 2026-07-18
+
+### Fixed
+- 修复 Windows 下 `openyida login` 无法登录的问题：拉起浏览器时改用 `rundll32 url.dll,FileProtocolHandler`，不再经过 `cmd /c start`。此前 cmd.exe 会把 OAuth URL 中的 `&` 当作命令分隔符，导致 URL 在第一个 `&` 处被截断，`client_id`、`response_type`、`scope`、`state` 全部丢失，钉钉登录页报「参数无效：clientId is blank」。macOS/Linux 不受影响，因此该问题仅在 Windows 用户侧出现。
+- 同步修复 `openyida bridge` 页面唤起在 Windows 下的相同缺陷：bridge 页面 URL 通过 hash 片段携带的 `oy_bridge_url`、`oy_bridge_token` 参数会被 `cmd /c start` 在 `&` 处截断，导致 bridge 配对回连信息丢失、配对失败。现与登录链路复用同一套浏览器拉起逻辑（`resolveBrowserLauncher`），行为统一。
+
+
 ## [2026.7.18] - 2026-07-18
 
 ### Highlights
