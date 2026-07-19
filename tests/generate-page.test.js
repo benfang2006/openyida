@@ -602,6 +602,96 @@ describe('generate-page command', () => {
     expect(manifest.insights[0].conclusion).toBe('华东区贡献 43%');
   });
 
+  test('marks thin business specs as draft when sample defaults remain', () => {
+    const specPath = path.join(tmpDir, 'thin-dashboard.json');
+    fs.writeFileSync(specPath, JSON.stringify({
+      template: 'dashboard-overview',
+      output: 'pages/src/thin-dashboard.canvas.jsx',
+      requirement: '帮我做一个奶茶门店经营看板',
+      brandName: '奶茶门店经营看板',
+    }, null, 2), 'utf8');
+
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      '--spec',
+      specPath,
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'thin-dashboard.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(manifest.domainFidelity.status).toBe('draft-needs-domain-spec');
+    expect(manifest.domainFidelity.sampleFallbacks).toEqual(expect.arrayContaining([
+      'features',
+      'metrics',
+      'roadmap',
+    ]));
+    expect(manifest.domainFidelity.missing.join('\n')).toMatch(/指标口径/);
+  });
+
+  test('marks rich business specs as domain-ready instead of sample output', () => {
+    const specPath = path.join(tmpDir, 'rich-dashboard.json');
+    fs.writeFileSync(specPath, JSON.stringify({
+      template: 'dashboard-overview',
+      output: 'pages/src/rich-dashboard.canvas.jsx',
+      requirement: '帮我做一个奶茶门店经营看板',
+      brandName: '奶茶门店经营看板',
+      tagline: '门店销售、库存和巡检风险一屏判断',
+      heroText: '为区域督导和门店店长提供本周销售、爆品库存、巡检异常和补货动作，让每天早会能直接围绕数据做决策。',
+      visualProfile: {
+        name: 'milk-tea-store-ops',
+        tone: 'fresh-operational',
+        motif: ['kpi-first', 'store-rank', 'inventory-risk'],
+      },
+      interactionProfile: {
+        primaryAction: '查看需补货门店',
+        detailMode: 'drawer',
+        bulkActions: ['导出巡店清单'],
+      },
+      features: [
+        { title: '门店销售', text: '按区域、门店和饮品系列拆解本周收入。' },
+        { title: '爆品库存', text: '识别珍珠、茶底和杯材的低库存门店。' },
+        { title: '巡检风险', text: '聚合卫生、陈列和服务评分异常。' },
+      ],
+      metrics: [
+        { value: '32.6万', label: '本周销售额' },
+        { value: '18', label: '需补货门店' },
+        { value: '7', label: '巡检异常' },
+      ],
+      roadmap: [
+        { stage: '早会', title: '先看低库存门店', text: '按缺货风险排序安排补货。' },
+        { stage: '午间', title: '复盘爆品销售', text: '追踪新品和套餐转化变化。' },
+        { stage: '闭店', title: '沉淀巡检动作', text: '把异常项分派给店长跟进。' },
+      ],
+    }, null, 2), 'utf8');
+
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      '--spec',
+      specPath,
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'rich-dashboard.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(manifest.domainFidelity.status).toBe('domain-ready');
+    expect(manifest.domainFidelity.sampleFallbacks).toEqual([]);
+    expect(manifest.blocks[1].items[0].title).toBe('门店销售');
+    expect(manifest.blocks[2].items[1].label).toBe('需补货门店');
+  });
+
   test('marks generated pages with page-level app navigation to hide Yida app nav by default', () => {
     const specPath = path.join(tmpDir, 'app-home.json');
     fs.writeFileSync(specPath, JSON.stringify({

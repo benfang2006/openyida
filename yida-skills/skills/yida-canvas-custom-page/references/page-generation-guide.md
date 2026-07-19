@@ -8,6 +8,14 @@
 
 `generate-page` 的模板只用于选定运行时契约、数据桥、主题变量和首版 primitives；它不是最终视觉稿。生成真实页面时，必须结合 `yida-page-uiux` 的视觉方向决策块重写区块顺序、信息层级、局部构图、文案和样式节奏。可以保留模板的编译安全结构和必要 primitive class，但不要照搬默认 Hero、卡片网格、三段式卖点或库存文案。
 
+生成器会在 `.openyida-page.json` 中写入 `domainFidelity`，并在 CLI 输出中提示当前页面是否还依赖 sample fallback：
+
+- `domain-ready`：主要业务语义已覆盖，sample 只剩编译骨架。
+- `draft-needs-domain-spec`：用户已有业务要求，但 page spec 仍缺业务对象、指标、交互或视觉方向；继续补 spec 或改源码。
+- `sample-reference`：基本没有业务化输入，结果只能当 sample 参考，不能交付为真实应用页面。
+
+真实业务页的 `page-spec.json` 不能只写 `template/title/output`。至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；看板/列表/详情优先写 `dataBinding` 或字段映射，官网/品牌页优先写 `assets` 或素材缺口。`sample` 是例子，不是框架；如果 `domainFidelity.sampleFallbacks` 里还出现 `features`、`metrics`、`roadmap`、`heroText` 等关键项，必须继续定制。
+
 | 用户需求 | CLI 模板 | scene | 视觉要点 |
 | --- | --- | --- | --- |
 | 官网首页、品牌官网、律所官网、茶叶官网、落地页、门户官网 | `official-homepage` | `landing` | 首屏叙事、可信视觉面板、服务矩阵、信任背书 |
@@ -86,6 +94,7 @@
 | `archetype` | 页面原型，如 `overview/analysis/monitor/profile` | 按 scene 推断 |
 | `interactionProfile` | 主操作、详情方式、批量动作、空/载/错状态 | 按 scene 推断 |
 | `insights` | 看板/报告/工作台的数据洞察 | 无则空数组或场景默认洞察 |
+| `domainFidelity` | 生成后由 CLI 回填，标记是否仍像 sample | 无需手写 |
 
 示例：
 

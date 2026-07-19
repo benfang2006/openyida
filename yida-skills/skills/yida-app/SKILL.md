@@ -47,7 +47,7 @@ description: 宜搭完整应用开发编排技能。从零搭建应用时使用�
               ↓      需求含“审批 / 流程 / 申请 / 审核 / 工单”等关键词时执行
               ↓
 [Step 6] 编写自定义页面代码 → 默认 use_skill("yida-canvas-custom-page", "生成 Code Canvas 主页面")
-              ↓      openyida generate-page <模板> --theme-profile yida-app-theme --theme-scope page --spec <page-spec.json> --compile
+              ↓      先写业务化 page-spec.json，再 openyida generate-page <模板> --theme-profile yida-app-theme --theme-scope page --spec <page-spec.json> --compile
               ↓      需要真实数据时在 spec.dataBinding 写 appType/formUuid/字段映射；深度接入再加载 yida-canvas-data-binding
               ↓      明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖 this.$ / this.utils.yida.* / this.dataSourceMap 等实例桥时选择 yida-custom-page
               ↓
@@ -79,6 +79,19 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 - 用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥时，选择 `yida-custom-page`：`this.$(fieldId)` 双向绑定、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或流程发起与页面实例深度耦合。
 - 普通自定义页面使用 `.oyd.jsx`、`renderJsx()`、`check-page` / `compile`，发布为平台 `Jsx` 组件；Code Canvas 使用 `.canvas.jsx`、`YidaComp`、`openyida generate-page ... --compile` 或 Canvas 本地快检，发布为 `YidaCodeCanvas` 组件。
 
+## Sample 与业务页边界
+
+`openyida sample` 和 `openyida generate-page <模板>` 只能提供可编译骨架、运行时契约和 primitive 结构，不能当成真实业务页面的最终稿。生成应用时必须把用户需求转成业务化 `page-spec.json`，至少覆盖：
+
+- `brandName` / `tagline` / `heroText`：使用当前应用的业务名称、角色和问题域，不沿用模板默认标题。
+- `features`：写真实业务对象、模块入口或处理事项，不写“统一入口 / 状态跟进 / 流程闭环”这类通用模板卖点。
+- `metrics`：写贴合场景的指标口径；没有真实数据时也要使用业务占位口径，并在 `dataBinding.seedStrategy` 标明演示数据。
+- `roadmap` 或 `interactionProfile`：写用户动作、筛选、下钻、批量处理、空/载/错状态。
+- `visualProfile`：写一个区别于 sample 的视觉方向，例如信息密度、构图节奏、强调色来源、图表/列表/队列母题。
+- 官网/品牌页还必须写 `assets` 或明确素材缺口；看板/列表/详情页优先写 `dataBinding`、字段映射或表单链接。
+
+生成后检查命令输出和 `.openyida-page.json` 里的 `domainFidelity.status`：只有 `domain-ready` 才能把 sample 视为“只是骨架”。`sample-reference` 或 `draft-needs-domain-spec` 表示仍有 sample fallback，必须继续补 page spec 或改源码，不能对用户声称已完成业务化页面。
+
 ## 模板优先
 
 为避免生成错误代码，优先用 CLI 内置模板和生成器，不要读取不存在的 `skills/*/templates` 路径：
@@ -92,9 +105,11 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 代码生成前必须：
 
-1. 优先执行对应的 `openyida generate-page` 命令生成 Code Canvas 模板；
-2. 以模板为基础进行扩展；
-3. 验证所有参数名称与 CLI 一致。
+1. 先从 PRD 提炼当前业务自己的 page spec；
+2. 再执行对应的 `openyida generate-page` 命令生成 Code Canvas 骨架；
+3. 读取 manifest 的 `domainFidelity`，若仍是 sample-reference / draft，则补 spec 或改源码；
+4. 以模板为基础扩展交互和真实数据；
+5. 验证所有参数名称与 CLI 一致。
 
 表单详情页视觉优化不走 `openyida publish`。当用户要求“详情页美化 / formDetail 样式优化”时，改由单点任务加载 `use_skill("yida-form-detail", "优化表单详情页样式")`，通过表单 Schema 注入 Html 组件承载 CSS。
 
