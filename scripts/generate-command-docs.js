@@ -49,7 +49,12 @@ function getByPath(object, keyPath) {
 }
 
 function translate(locale, key) {
-  return getByPath(locale, key) || key;
+  const value = getByPath(locale, key);
+  if (!value) {
+    console.warn('[generate-command-docs] 缺失翻译，已回退为 key：' + key);
+    return key;
+  }
+  return value;
 }
 
 function escapeTableCell(value) {

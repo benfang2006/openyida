@@ -1,6 +1,16 @@
 'use strict';
 
-const { t, getLanguage, setLanguage, detectLanguage, SUPPORTED_LANGUAGES } = require('../lib/core/i18n');
+const {
+  t,
+  getLanguage,
+  setLanguage,
+  detectLanguage,
+  SUPPORTED_LANGUAGES,
+  CORE_LANGUAGES,
+  OPTIONAL_LANGUAGES,
+  getAvailableLanguages,
+  loadLocaleForLanguage,
+} = require('../lib/core/i18n');
 
 // ── 测试前后还原语言和环境变量 ────────────────────────────────────────
 
@@ -42,6 +52,12 @@ describe('SUPPORTED_LANGUAGES', () => {
 
   test('共 12 种语言', () => {
     expect(SUPPORTED_LANGUAGES).toHaveLength(12);
+  });
+
+  test('核心语言默认内置，其他语言按需加载', () => {
+    expect(CORE_LANGUAGES).toEqual(['zh', 'en']);
+    expect(OPTIONAL_LANGUAGES).toContain('ja');
+    expect(getAvailableLanguages()).toEqual(expect.arrayContaining(['zh', 'en']));
   });
 });
 
@@ -212,8 +228,8 @@ describe('t()', () => {
 // ── t() 兼底链：当前语言 → en → zh ────────────────────────
 
 describe('t() 兼底链', () => {
-  const zhDict = require('../lib/core/locales/zh');
-  const enDict = require('../lib/core/locales/en');
+  const zhDict = loadLocaleForLanguage('zh');
+  const enDict = loadLocaleForLanguage('en');
 
   test('非中英语言缺失 key 时优先回退到英文而非中文', () => {
     // integration.create_usage：ja 缺失，en 存在，zh 存在且与 en 不同
@@ -226,19 +242,22 @@ describe('t() 兼底链', () => {
     expect(result).not.toBe(zhVal);
   });
 
-  test('en 也缺失时才回退到 zh', () => {
-    // auth_usage：为 zh 遗留顶层 key，en 已规范化为 cli.auth_usage，故 en 无此顶层 key
+  test('可选语言补齐后不再穿透回退到 zh', () => {
+    const jaDict = loadLocaleForLanguage('ja');
     expect(typeof zhDict.auth_usage).toBe('string');
-    expect(enDict.auth_usage).toBeUndefined();
+    expect(typeof enDict.auth_usage).toBe('string');
+    expect(jaDict.auth_usage).toBe(enDict.auth_usage);
     setLanguage('ja');
     const result = t('auth_usage');
-    expect(result).toBe(zhDict.auth_usage);
+    expect(result).toBe(jaDict.auth_usage);
+    expect(result).not.toBe(zhDict.auth_usage);
   });
 
-  test('en 环境缺失 key 时回退到 zh', () => {
+  test('en 顶层历史 key 已补齐', () => {
     setLanguage('en');
     const result = t('auth_usage');
-    expect(result).toBe(zhDict.auth_usage);
+    expect(result).toBe(enDict.auth_usage);
+    expect(result).not.toBe(zhDict.auth_usage);
   });
 
   test('所有语言都缺失时返回 key 本身', () => {

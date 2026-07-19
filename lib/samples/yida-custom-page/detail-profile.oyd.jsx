@@ -221,7 +221,7 @@ export function renderJsx() {
                 {HISTORY.map((h, idx) => {
                   var dot = h.tone === 'warn' ? colors.warning : colors.primary;
                   return (
-                    <div key={idx} style={{ position: 'relative', paddingBottom: idx === HISTORY.length - 1 ? 0 : 18 }}>
+                    <div key={h.date + '-' + h.title} style={{ position: 'relative', paddingBottom: idx === HISTORY.length - 1 ? 0 : 18 }}>
                       <span style={{ position: 'absolute', left: -19, top: 3, width: 10, height: 10, borderRadius: 999, background: '#fff', border: '2.5px solid ' + dot }}></span>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: colors.ink }}>{h.title}</span>

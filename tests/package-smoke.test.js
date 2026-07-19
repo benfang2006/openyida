@@ -52,7 +52,7 @@ describe('npm package smoke', () => {
         encoding: 'utf8',
         env: { ...process.env, npm_config_cache: npmCache },
         shell: process.platform === 'win32',
-        timeout: 30000,
+        timeout: 120000,
       });
       if (result.status !== 0 || result.error) {
         throw new Error([
@@ -68,11 +68,16 @@ describe('npm package smoke', () => {
 
       expect(files).toContain('bin/yida.js');
       expect(files).toContain('lib/core/utils.js');
+      expect(files).toContain('lib/core/locales/zh.js');
+      expect(files).toContain('lib/core/locales/en.js');
+      expect(files).toContain('docs/capabilities.md');
       expect(files).toContain('project/config.json');
       expect(files).toContain('yida-skills/SKILL.md');
       expect(files).toContain('scripts/postinstall.js');
-      expect(files.some((file) => file.startsWith('project/pages/src/demo-'))).toBe(true);
+      expect(files).toContain('lib/samples/yida-canvas-custom-page/dashboard-starter.canvas.jsx');
 
+      expect(files.some((file) => file.startsWith('locales-extra/'))).toBe(false);
+      expect(files.some((file) => /^lib\/core\/locales\/(?!zh|en)[^/]+\.js$/.test(file))).toBe(false);
       expect(files).not.toContain('.env.local');
       expect(files.some((file) => file.startsWith('tests/'))).toBe(false);
       expect(files.some((file) => file.startsWith('node_modules/'))).toBe(false);

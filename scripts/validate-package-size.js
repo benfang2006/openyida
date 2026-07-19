@@ -32,7 +32,10 @@ function fail(message) {
 }
 
 function resolveNpmBin() {
-  return process.env.OPENYIDA_NPM_BIN || 'npm';
+  if (process.env.OPENYIDA_NPM_BIN) {
+    return process.env.OPENYIDA_NPM_BIN;
+  }
+  return process.platform === 'win32' ? 'npm.cmd' : 'npm';
 }
 
 function runNpmPackDryRun() {

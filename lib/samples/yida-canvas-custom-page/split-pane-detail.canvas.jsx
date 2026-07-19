@@ -8,7 +8,7 @@
  * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ConfigProvider, Button, Input, Select, Tag, Typography } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
@@ -245,7 +245,7 @@ function DetailPane({ item }) {
 }
 
 function YidaComp() {
-  updateShellTheme();
+  useEffect(() => { updateShellTheme(); }, []);
   const rows = useMemo(() => getSeedRows(), []);
   const [selectedId, setSelectedId] = useState(rows[0] && rows[0].id);
   const [queueFilters, setQueueFilters] = useState({ keyword: '', status: 'all' });

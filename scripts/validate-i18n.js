@@ -5,14 +5,14 @@
 /**
  * i18n 语言包一致性校验
  *
- * 以 zh（源语言）为基准，校验 lib/core/locales/ 下所有语言包的 key 是否对齐：
+ * 以 zh（源语言）为基准，校验核心语言包和 locales-extra/core 下可选语言包的 key 是否对齐：
  *   - 基准中存在但目标语言缺失的 key  -> 错误（会 fallback 到其它语言，用户可见）
  *   - 目标语言多出的 key             -> 警告（可能是残留 / 拼写错误）
  *   - 叶子/分支类型不一致（string vs object）-> 错误
  *
  * 用法：
  *   node scripts/validate-i18n.js            # 严格模式：任意缺失则退出码 1（本地全量审计）
- *   node scripts/validate-i18n.js --check    # 棘轮模式：仅当漂移超过基线时失败（CI 用）
+ *   node scripts/validate-i18n.js --check    # 棘轮模式：核心语言漂移超过基线时失败（CI 用）
  *   node scripts/validate-i18n.js --update-baseline  # 将当前漂移写入基线
  *   node scripts/validate-i18n.js --json     # 输出机器可读结果
  */
@@ -22,22 +22,42 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const LOCALES_DIR = path.join(ROOT, 'lib', 'core', 'locales');
+const EXTRA_LOCALES_DIR = path.join(ROOT, 'locales-extra', 'core');
 const BASELINE_FILE = path.join(__dirname, 'i18n-baseline.json');
 const BASE_LOCALE = 'zh';
+const CORE_CHECK_LOCALES = new Set(['en']);
+
+function resolveLocaleFile(name) {
+  const coreFile = path.join(LOCALES_DIR, `${name}.js`);
+  if (fs.existsSync(coreFile)) {
+    return coreFile;
+  }
+  const extraFile = path.join(EXTRA_LOCALES_DIR, `${name}.js`);
+  if (fs.existsSync(extraFile)) {
+    return extraFile;
+  }
+  return null;
+}
 
 function loadLocale(name) {
   // 清除 require 缓存，保证多次运行结果稳定
-  const file = path.join(LOCALES_DIR, `${name}.js`);
+  const file = resolveLocaleFile(name);
+  if (!file) {
+    throw new Error(`Locale not found: ${name}`);
+  }
   delete require.cache[require.resolve(file)];
   return require(file);
 }
 
 function listLocales() {
-  return fs
-    .readdirSync(LOCALES_DIR)
-    .filter((f) => f.endsWith('.js'))
-    .map((f) => f.replace(/\.js$/, ''))
-    .sort();
+  const localeNames = new Set();
+  [LOCALES_DIR, EXTRA_LOCALES_DIR].forEach((dir) => {
+    if (!fs.existsSync(dir)) { return; }
+    fs.readdirSync(dir)
+      .filter((f) => f.endsWith('.js'))
+      .forEach((f) => localeNames.add(f.replace(/\.js$/, '')));
+  });
+  return [...localeNames].sort();
 }
 
 /**
@@ -147,6 +167,7 @@ function main() {
     }
     const regressions = [];
     Object.keys(report).forEach((name) => {
+      if (!CORE_CHECK_LOCALES.has(name)) { return; }
       const base = baseline.locales[name] || { missing: 0, typeMismatch: 0 };
       if (report[name].missing.length > base.missing) {
         regressions.push(`${name} 缺失 ${base.missing} → ${report[name].missing.length}`);
@@ -160,7 +181,7 @@ function main() {
       console.error('（存量缺失作为跟踪项，补齐后运行 --update-baseline 收紧基线）');
       process.exit(1);
     }
-    console.log('\n[i18n] 棘轮校验通过：无新增漂移 ✓（存量缺失见上，作为翻译跟踪项）');
+    console.log('\n[i18n] 棘轮校验通过：核心语言无新增漂移 ✓（可选语言同步参与结构校验）');
     return;
   }
 

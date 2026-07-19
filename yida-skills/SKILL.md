@@ -76,7 +76,7 @@ description: >
 
 先按用户任务命中一个**大类目录**，再在该目录内选定 1 个最匹配的子技能。支持 `search_skills` 的宿主可优先用用户原话搜索；支持 `use_skill` 的宿主用 `use_skill("<技能名>", "<本阶段目的>")` 加载。`skills-index.json` 中的 `route_groups` 与下表保持一致，供 yida-agent 或同构宿主做机器路由。
 
-**机器路由推荐顺序**：先用 `route_groups[].signals` 命中 `yida-skills/<area>` 大类；只在该 `category` 下用 skill 的 `description`、`tags`、`signals` 精排；再用下方“高频分歧”覆盖易混场景；最后调用 `use_skill`。`category` 是路由目录，不是技能路径，必须保持 `yida-skills/<简名>` 格式。
+**机器路由推荐顺序**：先用 `route_groups[].signals` 命中 `yida-skills/<area>` 大类；只在该 `category` 下用 skill 的 `description`、`tags`、`aliases`、`positive_signals` 精排；命中 `negative_signals` 的候选降权或剔除；再用下方“高频分歧”覆盖易混场景；最后调用 `use_skill`。`command_ids` 只用于解释该技能可能调用哪些 CLI，不要替代技能加载；`done_when` 只用于判断完成条件。`category` 是路由目录，不是技能路径，必须保持 `yida-skills/<简名>` 格式。
 
 | 大类目录 | 第一层意图信号 | 子技能 |
 |------|------|------|
@@ -118,7 +118,9 @@ description: >
 | 普通报表/统计 | `yida-report` |
 | ECharts、高级图表、大屏视觉 | `yida-chart` |
 | 产品化经营看板/驾驶舱交付 | `yida-dashboard` |
+| 页面美化/视觉方向 | `yida-page-uiux` 只产出视觉决策；落地实现仍回到 `yida-canvas-custom-page` 或 `yida-custom-page` |
 | 公开访问/组织内分享 | `yida-page-config` |
+| 评测指定技能质量并给出评分建议 | `yida-skill-evaluator` |
 
 ### 无独立子技能的 CLI
 

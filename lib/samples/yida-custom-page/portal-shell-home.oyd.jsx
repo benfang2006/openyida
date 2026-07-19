@@ -96,14 +96,19 @@ export function injectControlReset() {
     style.id = id;
     document.head.appendChild(style);
   }
-  style.innerHTML = CONTROL_RESET_CSS;
+  style.textContent = CONTROL_RESET_CSS;
 }
 
 export function didMount() {
   this.injectControlReset();
 }
 
-export function didUnmount() {}
+export function didUnmount() {
+  var style = document.getElementById('openyida-portal-control-reset');
+  if (style && style.parentNode) {
+    style.parentNode.removeChild(style);
+  }
+}
 
 export function handleSearchInput(e) {
   if (_customState._isComposing) { return; }

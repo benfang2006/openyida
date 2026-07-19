@@ -156,6 +156,18 @@ describe('http redirect login detection', () => {
     });
   }
 
+  function closeServer(server) {
+    return new Promise((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
   test('httpPost 将 302 跳转识别为需要重新登录', async () => {
     const server = http.createServer((req, res) => {
       res.statusCode = 302;
@@ -173,7 +185,7 @@ describe('http redirect login detection', () => {
         __location: '/login.html',
       });
     } finally {
-      server.close();
+      await closeServer(server);
     }
   });
 
@@ -194,7 +206,7 @@ describe('http redirect login detection', () => {
         __location: '/workPlatform',
       });
     } finally {
-      server.close();
+      await closeServer(server);
     }
   });
 
@@ -213,7 +225,7 @@ describe('http redirect login detection', () => {
         __httpStatus: 401,
       });
     } finally {
-      server.close();
+      await closeServer(server);
     }
   });
 
@@ -232,7 +244,7 @@ describe('http redirect login detection', () => {
         __httpStatus: 403,
       });
     } finally {
-      server.close();
+      await closeServer(server);
     }
   });
 });

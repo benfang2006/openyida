@@ -73,7 +73,14 @@ openyida login --check-only --json
 openyida login
 ```
 
-在 Codex、Qoder、悟空、Claude Code、Cursor 等 AI 工具环境中，OpenYida 会优先复用本地登录缓存；没有有效缓存时，优先使用本地 Chrome / Edge / Chromium CDP 登录。如果本地浏览器不可用，会返回 AI 对话框二维码 handoff，Agent 应直接展示 `qr_image_markdown` 或 `agent_response_markdown`，用户扫码后再执行返回的 `poll_command`。
+OpenYida 默认使用 OAuth token 模式：打开钉钉 OAuth 授权页，通过本地 loopback 回调接收授权码，再由宜搭服务换取并缓存 `access_token` / `refresh_token`。Agent 不需要提取浏览器 Cookie，也不需要手写 `.cache/cookies.json`。
+
+AI 工具中建议登录后用下面任一命令确认 token session 可用：
+
+```bash
+openyida login --check-only --json
+openyida auth status
+```
 
 如果用户给出明确的宜搭入口 URL，需要把 URL 传给登录命令：
 
@@ -113,6 +120,10 @@ Agent 会读取 `yida-skills/` 中的技能说明，调用 OpenYida CLI 创建�
 ```bash
 export PATH="$HOME/.real/.bin/node/bin:$PATH"
 ```
+
+## 语言包
+
+CLI 默认内置 `zh` 和 `en` 两个核心语言包，以中文为主、英文兜底。其他语言包按需启用：将 `ja.js`、`fr.js` 等文件放到一个外部目录，设置 `OPENYIDA_LOCALE_DIR` 指向该目录，再设置 `OPENYIDA_LANG=ja`。如果目标语言包不可用，OpenYida 会按 `en -> zh` 回退，不影响命令执行。
 
 ## 项目结构
 
@@ -374,6 +385,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida copy [--force]` | 复制 project 工作目录 |
 | `openyida sample [--list]` | 输出代码示例/模板 |
 | `openyida doctor [--fix]` | 环境诊断与自动修复 |
+| `openyida eval --mode <mode> [--skill <name>] [--runs N]` | 技能多维评测（文档质量、路由准确率、安全合规等） |
 | `openyida db-seq-fix [--fix]` | PostgreSQL Sequence 漂移检测与修复 |
 | `openyida formula evaluate <formula\|file> [--schema file]` | 静态检查宜搭公式语法和字段引用 |
 | `openyida update` | 检查并更新到最新版本 |

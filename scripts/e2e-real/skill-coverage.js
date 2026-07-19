@@ -58,6 +58,7 @@ const SKILL_COVERAGE = {
   'yida-report': { level: 'real-e2e', stages: ['report'], commands: ['create-report', 'append-chart'] },
   'yida-table-form': { level: 'offline-unit', reason: 'table-form custom page template should be validated with check-page fixture before real publish stage is added' },
   'yida-theme': { level: 'offline-unit', tests: ['tests/create-form.test.js', 'tests/generate-page.test.js', 'tests/page-ir.test.js'], reason: 'application theme tokens can affect app shell, form runtime and page rendering; shared real E2E should validate generated theme payloads and page/theme inference without mutating tenant-wide theme config' },
+  'yida-skill-evaluator': { level: 'offline-unit', tests: ['skill metadata and packaging validation', 'eval test suites'], reason: 'evaluator skill reads and scores other skills; no Yida API mutation' },
   'yida-voc': { level: 'offline-unit', reason: 'VOC formatting skill is local text transformation, not Yida API mutation' },
 };
 

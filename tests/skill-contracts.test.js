@@ -30,10 +30,16 @@ describe('OpenYida skill contracts', () => {
   });
 
   test('page command examples keep Code Canvas as the default chain', () => {
-    const localeDir = path.join(ROOT, 'lib', 'core', 'locales');
-    const localeSource = fs.readdirSync(localeDir)
-      .filter((file) => file.endsWith('.js'))
-      .map((file) => fs.readFileSync(path.join(localeDir, file), 'utf8'))
+    const localeDirs = [
+      path.join(ROOT, 'lib', 'core', 'locales'),
+      path.join(ROOT, 'locales-extra', 'core'),
+    ];
+    const localeSource = localeDirs.flatMap((localeDir) => {
+      if (!fs.existsSync(localeDir)) { return []; }
+      return fs.readdirSync(localeDir)
+        .filter((file) => file.endsWith('.js'))
+        .map((file) => fs.readFileSync(path.join(localeDir, file), 'utf8'));
+    })
       .join('\n');
 
     expect(localeSource).toContain('openyida compile pages/src/home.canvas.jsx');
@@ -49,6 +55,26 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('不要把 full capabilities 放进 `fast_build` 默认链路');
     expect(skill).toContain('`workdir` 对应 full capabilities 的 `active.projectRoot`');
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
+  });
+
+  test('skills index carries machine routing hints for high-confusion skills', () => {
+    const index = JSON.parse(readSkill('yida-skills/skills-index.json'));
+    const byName = new Map(index.skills.map((skill) => [skill.name, skill]));
+
+    const form = byName.get('yida-create-form-page');
+    expect(form.positive_signals).toEqual(expect.arrayContaining(['新增字段']));
+    expect(form.negative_signals).toEqual(expect.arrayContaining(['新增记录']));
+    expect(form.command_ids).toEqual(expect.arrayContaining(['create-form.create']));
+
+    const data = byName.get('yida-data-management');
+    expect(data.positive_signals).toEqual(expect.arrayContaining(['新增记录']));
+    expect(data.negative_signals).toEqual(expect.arrayContaining(['修改表单结构']));
+
+    const canvas = byName.get('yida-canvas-custom-page');
+    expect(canvas.negative_signals).toEqual(expect.arrayContaining(['强依赖 this.$']));
+
+    const uiux = byName.get('yida-page-uiux');
+    expect(uiux.done_when).toContain('视觉方向');
   });
 
   test('yida-app fast_build forbids unbound dataSourceMap by default', () => {

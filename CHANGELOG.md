@@ -11,6 +11,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.7.19] - 2026-07-20
+
+### Highlights
+- Skill 评测体系扩展：新增多维评测、并行执行、覆盖率、Junit 报告、历史记录、dashboard 控制台和 Skill-as-Evaluator，提升技能发布前的质量判断能力。
+- CLI 语言包从「全量内置」调整为「核心中英内置 + 非中英按需加载」，降低 npm 默认包体积，同时保留小语种扩展能力。
+- 继续收口高频业务模块的错误退出方式，减少可复用模块内直接 `process.exit(...)` 对测试、批处理、MCP/A2A 嵌入调用的影响。
+- 优化 OpenYida 技能路由与技能文档结构，补充机器可读路由提示，并拆分过长的报表技能文档，降低 Agent 加载成本。
+
+### Added
+- 新增 `yida-skill-evaluator` 等技能与参考文档，补齐应用 UIUX、数据绑定、主题和测评工作流。
+- 新增可选 CLI 语言包目录 `locales-extra/core/`，用于存放 `zh-HK`、`ja`、`ko`、`fr`、`de`、`es`、`pt`、`ar`、`hi`、`vi` 等非核心语言包；可通过 `OPENYIDA_LOCALE_DIR` 指向外部语言包目录按需启用。
+- 新增 `lib/core/command-errors.js`，提供 `CliError`/usage/error 抛错辅助方法，供可复用业务模块统一错误处理。
+- 新增 `docs/project-risk-and-optimization-2026-07-19.md`，记录当前项目风险点、已完成优化和后续治理建议。
+- 新增 `yida-skills/skills/yida-report/references/schema-builder-details.md`，承载报表 Schema 构建细节、组件示例和低频参考内容。
+
+### Changed
+- CLI 发布包默认只内置核心界面语言 `zh` / `en`，降低默认安装体积；其他 CLI UI 语言包不随 npm 包默认分发，运行时按 `OPENYIDA_LANG` + `OPENYIDA_LOCALE_DIR` 加载。
+- 国际化运行时回退链路调整为「目标语言 -> en -> zh」；非中英可选语言包已补齐结构缺失，便于真实用户使用某语种时单独校对和分发。
+- `app-list`、`list-forms`、`create-app`、`create-page`、`get-schema`、`get-form-config`、`i18n-management`、`corp-manager`、`agent-center`、`formula` 等高频业务模块改为抛错交由 CLI 入口统一处理，减少业务层直接退出。
+- `yida-skills/skills-index.json` 补充 `positive_signals`、`negative_signals`、`command_ids`、`done_when` 等机器路由字段，降低表单结构、数据管理、Canvas 页面和 UIUX 等高混淆技能的误路由概率。
+- `yida-skills/SKILL.md` 同步补充技能索引读取策略和路由提示，要求先用索引快速判断，再按需读取单个子技能文档。
+- `yida-report/SKILL.md` 从长文档拆为主流程文档 + `references/schema-builder-details.md`，主文档保留路由信号、必要步骤和完成标准。
+- `README.md`、`README_zhCN.md`、`docs/capabilities.md` 补充 CLI 语言包按需加载说明，并对齐当前 OAuth token 登录和功能清单说明。
+
+### Removed
+- 清理旧的 demo 源码、构建产物和演示 CSV 数据，减少发布包中的历史示例噪音。
+- 移除旧 `docs/custom-page-solutions.md`，相关说明已迁移到 README、能力清单与各技能参考文档。
+- 从默认 npm 发布内容中移除非中英 CLI UI 语言包，保留在源码态 `locales-extra/core/` 作为可选语言包。
+
+### Fixed
+- 修复 Jest 全量测试结束后的 open-handle / worker 未优雅退出提示：`scripts/eval/parallel.js` 统一 child process timeout 清理，避免 spawn 原生 timeout 与自定义 timeout 叠加。
+- 修复 `tests/utils.test.js`、`tests/token-auth.test.js` 中本地 HTTP server 未等待 `close` 完成的问题，避免测试资源释放滞后。
+- 补齐 `en` 顶层历史 key 和非中英可选语言包结构缺失，`npm run check:i18n` 中核心语言与可选语言均达到缺失 0。
+- `npm pack --dry-run` 的 package smoke 测试增加核心语言包、能力文档和可选语言包排除校验，并放宽超时时间，减少 CI 假失败。
+
+### Tests
+- 新增或扩展 asset、safe-json、generate-page、page-ir、page-linter、canvas-compile、create-form、CLI smoke、package smoke、i18n、skill contract 和 eval 系列测试。
+- 新增 Skill eval CI workflow、命令文档校验、i18n 棘轮校验和发布包体积校验适配，覆盖本次 UI 生成与技能评测链路。
+- 补充业务模块抛错、可选语言加载、技能索引机器路由字段、长技能文档校验、package smoke 和 Jest open-handle 相关回归测试。
+- 验证 `npm test` 默认并行模式下 111 个 suite / 1303 个用例全绿，且不再出现 Jest open-handle 或 worker 退出提示。
+
 ## [2026.7.18-2] - 2026-07-19
 
 ### Changed
@@ -39,6 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 自定义页面补充门户类组件与宜搭运行态组件支持，覆盖门户导航、成员/部门选择、附件上传和图片上传等常见业务门户场景。
 - 页面生成链路从模板输出升级为「UIUX 决策 + 页面 IR + 主题 profile + 素材状态」的产品化流程，提升 AI 一次生成工作台、看板、列表、详情页和官网落地页的稳定性。
 - 表单创建能力增强，支持更丰富的布局组件、主题配置、字段属性、规则和增量更新，便于生成更接近真实业务的表单结构。
+- ![表单支持分割线示例1](https://img.alicdn.com/imgextra/i2/O1CN01b66Noa1OpqFXJ42ZN_!!6000000001755-0-tps-3024-1370.jpg)
 
 ### Added
 - `openyida generate-page` 新增多套 Code Canvas 页面模板，覆盖官网/落地页、数据大屏、驾驶舱、工作台、业务列表、详情页、分栏详情、门户壳、待办清单，以及成员/部门/上传组件验证场景。

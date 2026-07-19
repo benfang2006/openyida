@@ -8,7 +8,7 @@
  * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ConfigProvider, Button, Input, Tag, Typography } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
@@ -245,7 +245,7 @@ function RoleBoard({ features }) {
 }
 
 function YidaComp() {
-  updateShellTheme();
+  useEffect(() => { updateShellTheme(); }, []);
   const navItems = useMemo(() => getNavItems(), []);
   const [active, setActive] = useState(navItems[0] || PAGE.brandName);
   const insight = INSIGHTS[0] || { conclusion: PAGE.ctaText, evidence: '', suggestion: '' };

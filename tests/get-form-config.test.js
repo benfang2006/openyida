@@ -129,11 +129,10 @@ describe('get-form-config run', () => {
     expect(payload.config).toEqual(content);
   });
 
-  test('reports failure and exits non-zero when the API returns success:false', async () => {
+  test('reports failure and throws CliError when the API returns success:false', async () => {
     utils.httpPost.mockResolvedValue({ success: false, errorMsg: 'boom' });
-    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
-    await getFormConfig.run(['APP_X', 'FORM_Y']);
+    await expect(getFormConfig.run(['APP_X', 'FORM_Y'])).rejects.toThrow('boom');
 
     const payloads = logSpy.mock.calls
       .map((call) => {
@@ -146,6 +145,5 @@ describe('get-form-config run', () => {
       .filter(Boolean);
     const failurePayload = payloads.find((payload) => payload.success === false);
     expect(failurePayload).toBeDefined();
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 });

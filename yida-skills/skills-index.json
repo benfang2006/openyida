@@ -136,7 +136,25 @@
       ],
       "aliases": [
         "业务关联"
-      ]
+      ],
+      "positive_signals": [
+        "业务关联规则",
+        "高级函数",
+        "表单内跨表联动",
+        "INSERT",
+        "UPDATE",
+        "DELETE 规则"
+      ],
+      "negative_signals": [
+        "集成自动化逻辑流",
+        "HTTP 连接器",
+        "页面 dataSourceMap",
+        "流程审批节点"
+      ],
+      "command_ids": [
+        "create-form.rule"
+      ],
+      "done_when": "业务关联规则配置写入目标表单 Schema。"
     },
     {
       "name": "yida-canvas-custom-page",
@@ -153,7 +171,28 @@
       "aliases": [
         "代码画布",
         "Canvas 页面"
-      ]
+      ],
+      "positive_signals": [
+        "Code Canvas",
+        "代码画布",
+        "现代 React 页面",
+        "官网首页",
+        "工作台",
+        "看板页面",
+        ".canvas.jsx"
+      ],
+      "negative_signals": [
+        "普通自定义页面 JSX/Jsx",
+        "强依赖 this.$",
+        "强依赖 this.dataSourceMap",
+        "renderJsx 旧页面迁移"
+      ],
+      "command_ids": [
+        "generate-page",
+        "build-page",
+        "publish"
+      ],
+      "done_when": "Canvas 源码生成并通过 Canvas 发布链路写入 YidaCodeCanvas Schema。"
     },
     {
       "name": "yida-canvas-data-binding",
@@ -203,7 +242,25 @@
       "aliases": [
         "高级图表",
         "数据大屏"
-      ]
+      ],
+      "positive_signals": [
+        "ECharts",
+        "高级图表",
+        "数据大屏图表",
+        "地图",
+        "雷达图",
+        "散点图"
+      ],
+      "negative_signals": [
+        "原生报表",
+        "完整驾驶舱交付",
+        "仅创建报表数据源"
+      ],
+      "command_ids": [
+        "sample",
+        "publish"
+      ],
+      "done_when": "ECharts 页面源码完成并发布，必要时报表数据源已绑定。"
     },
     {
       "name": "yida-connector",
@@ -299,7 +356,32 @@
       "aliases": [
         "建表单",
         "字段设计"
-      ]
+      ],
+      "positive_signals": [
+        "创建表单",
+        "新建表单",
+        "新增字段",
+        "修改字段结构",
+        "字段联动",
+        "数据源绑定字段"
+      ],
+      "negative_signals": [
+        "查询表单数据",
+        "新增记录",
+        "更新记录",
+        "删除记录",
+        "发起流程实例"
+      ],
+      "command_ids": [
+        "create-form.create",
+        "create-form.update",
+        "create-form.patch",
+        "create-form.rule",
+        "create-form.validation",
+        "create-form.bind-datasource",
+        "create-form.add-option"
+      ],
+      "done_when": "表单结构创建或更新成功，并拿到真实 formUuid / fieldId 证据。"
     },
     {
       "name": "yida-create-page",
@@ -348,7 +430,28 @@
       "aliases": [
         "页面开发",
         "普通自定义页面"
-      ]
+      ],
+      "positive_signals": [
+        "普通自定义页面",
+        "Jsx 组件链路",
+        "this.$",
+        "this.utils.yida",
+        "this.dataSourceMap",
+        "renderJsx",
+        ".oyd.jsx"
+      ],
+      "negative_signals": [
+        "默认现代 React 页面",
+        "Code Canvas 默认链路",
+        "只做视觉方向决策"
+      ],
+      "command_ids": [
+        "sample",
+        "check-page",
+        "compile",
+        "publish"
+      ],
+      "done_when": "普通自定义页面源码通过 check-page / compile 并发布到目标页面。"
     },
     {
       "name": "yida-dashboard",
@@ -365,7 +468,26 @@
       "aliases": [
         "经营看板",
         "驾驶舱"
-      ]
+      ],
+      "positive_signals": [
+        "经营看板",
+        "管理驾驶舱",
+        "产品化工作台",
+        "指标闭环",
+        "行动看板"
+      ],
+      "negative_signals": [
+        "单个 ECharts 图",
+        "原生报表",
+        "只做页面视觉美化"
+      ],
+      "command_ids": [
+        "create-page",
+        "generate-page",
+        "create-report",
+        "publish"
+      ],
+      "done_when": "看板页面、数据来源和关键行动入口形成可访问交付。"
     },
     {
       "name": "yida-data-management",
@@ -382,7 +504,27 @@
       "aliases": [
         "数据管理",
         "造数"
-      ]
+      ],
+      "positive_signals": [
+        "查询数据",
+        "新增记录",
+        "更新记录",
+        "批量导入",
+        "表单实例",
+        "子表数据",
+        "任务中心"
+      ],
+      "negative_signals": [
+        "新增字段",
+        "修改表单结构",
+        "字段联动规则",
+        "页面数据源设计器配置"
+      ],
+      "command_ids": [
+        "data",
+        "task-center"
+      ],
+      "done_when": "目标数据查询或写入完成，并用 query/get 抽查真实记录。"
     },
     {
       "name": "yida-data-source-connectors",
@@ -574,7 +716,30 @@
       ],
       "aliases": [
         "自动化流"
-      ]
+      ],
+      "positive_signals": [
+        "集成自动化",
+        "逻辑流",
+        "提交后跨表写入",
+        "外部 API 自动化",
+        "开启自动化",
+        "关闭自动化",
+        "异常日志"
+      ],
+      "negative_signals": [
+        "表单内业务关联规则",
+        "只创建 HTTP 连接器动作",
+        "页面 dataSourceMap 数据源"
+      ],
+      "command_ids": [
+        "integration.create",
+        "integration.list",
+        "integration.enable",
+        "integration.disable",
+        "integration.check",
+        "integration.diagnose"
+      ],
+      "done_when": "集成自动化创建/启停/诊断完成，并返回 processCode 或检查结果。"
     },
     {
       "name": "yida-login",
@@ -686,7 +851,25 @@
       ],
       "aliases": [
         "视觉决策"
-      ]
+      ],
+      "positive_signals": [
+        "页面美化",
+        "视觉方向",
+        "去 AI 味",
+        "高级感",
+        "品牌化",
+        "页面太丑"
+      ],
+      "negative_signals": [
+        "创建页面资源",
+        "发布页面",
+        "表单字段建模",
+        "数据记录操作"
+      ],
+      "command_ids": [
+        "generate-page"
+      ],
+      "done_when": "输出可执行视觉方向决策块，并交给页面实现技能落地。"
     },
     {
       "name": "yida-ppt",
@@ -766,7 +949,24 @@
       ],
       "aliases": [
         "原生报表"
-      ]
+      ],
+      "positive_signals": [
+        "原生报表",
+        "统计报表",
+        "指标卡",
+        "表格报表",
+        "筛选器"
+      ],
+      "negative_signals": [
+        "ECharts 大屏",
+        "产品化驾驶舱页面",
+        "自定义页面视觉实现"
+      ],
+      "command_ids": [
+        "create-report",
+        "append-chart"
+      ],
+      "done_when": "原生报表或图表创建成功并返回 reportId / 页面链接。"
     },
     {
       "name": "yida-table-form",
@@ -799,6 +999,22 @@
       "aliases": [
         "应用主题",
         "品牌色"
+      ]
+    },
+    {
+      "name": "yida-skill-evaluator",
+      "path": "skills/yida-skill-evaluator/SKILL.md",
+      "display_name": "技能质量评测",
+      "description": "评测指定的 openyida 技能质量，自动执行多维评测（规范性、触发准确率、执行完整性、输出有效性、可维护性），生成评测报告和改进建议。",
+      "category": "yida-skills/ops",
+      "tags": [
+        "评测",
+        "技能质量",
+        "skill eval",
+        "评估"
+      ],
+      "aliases": [
+        "技能评测"
       ]
     },
     {

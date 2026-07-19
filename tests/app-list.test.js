@@ -185,54 +185,39 @@ describe('run() 未登录场景', () => {
 // ── API 失败场景 ──────────────────────────────────────────────────────
 
 describe('run() API 失败场景', () => {
-  test('API 返回 success=false 时打印错误并以 exit code 1 退出', async () => {
+  test('API 返回 success=false 时抛出 CliError', async () => {
     utils.httpGet.mockResolvedValueOnce({
       success: false,
       errorMsg: '权限不足',
     });
 
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
     const mockError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(run([])).rejects.toThrow('process.exit(1)');
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(mockError).toHaveBeenCalledWith(expect.stringContaining('权限不足'));
+    await expect(run([])).rejects.toThrow('权限不足');
+    expect(mockError).not.toHaveBeenCalled();
 
-    mockExit.mockRestore();
     mockError.mockRestore();
   });
 
-  test('requestWithAutoLogin 抛出异常时打印错误并以 exit code 1 退出', async () => {
+  test('requestWithAutoLogin 抛出异常时抛出 CliError', async () => {
     utils.requestWithAutoLogin.mockRejectedValue(new Error('网络超时'));
 
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
     const mockError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(run([])).rejects.toThrow('process.exit(1)');
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(mockError).toHaveBeenCalledWith(expect.stringContaining('网络超时'));
+    await expect(run([])).rejects.toThrow('网络超时');
+    expect(mockError).not.toHaveBeenCalled();
 
-    mockExit.mockRestore();
     mockError.mockRestore();
   });
 
   test('API 返回登录失效内部标记时输出明确错误', async () => {
     utils.httpGet.mockResolvedValueOnce({ __needLogin: true });
 
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
     const mockError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(run([])).rejects.toThrow('process.exit(1)');
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(mockError).toHaveBeenCalledWith(expect.stringContaining('登录态已失效'));
+    await expect(run([])).rejects.toThrow('登录态已失效');
+    expect(mockError).not.toHaveBeenCalled();
 
-    mockExit.mockRestore();
     mockError.mockRestore();
   });
 });
