@@ -6,7 +6,7 @@ const path = require('path');
 const querystring = require('querystring');
 
 jest.mock('child_process', () => ({
-  execSync: jest.fn(() => ''),
+  spawnSync: jest.fn(() => ({ status: 0 })),
 }));
 
 jest.mock('../lib/core/utils', () => ({
@@ -51,7 +51,7 @@ describe('small process commands', () => {
     utils.loadAuthData.mockReturnValue(mockAuthData);
     utils.findProjectRoot.mockReturnValue(tmpDir);
     utils.requestWithAutoLogin.mockImplementation((requestFn, authRef) => requestFn(authRef));
-    childProcess.execSync.mockReturnValue('');
+    childProcess.spawnSync.mockReturnValue({ status: 0 });
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
@@ -118,7 +118,25 @@ describe('small process commands', () => {
     expect(fs.readFileSync(outputPath, 'utf8')).toContain('PROC_INST_1');
     expect(utils.httpGet.mock.calls[0][1]).toBe('/dingtalk/web/APP_XXX/v1/process/getInstanceById.json');
     expect(utils.httpGet.mock.calls[1][1]).toBe('/dingtalk/web/APP_XXX/v1/process/getOperationRecords.json');
-    expect(childProcess.execSync).toHaveBeenCalled();
+    expect(childProcess.spawnSync).toHaveBeenCalled();
+    const [, args] = childProcess.spawnSync.mock.calls[0];
+    expect(args[args.length - 1]).toBe(outputPath);
+  });
+
+  test('preview browser launcher passes local file paths as argv', () => {
+    const filePath = 'C:\\tmp\\preview & report.html';
+    expect(previewProcess.resolvePreviewBrowserLauncher(filePath, 'darwin')).toEqual({
+      command: 'open',
+      args: [filePath],
+    });
+    expect(previewProcess.resolvePreviewBrowserLauncher(filePath, 'win32')).toEqual({
+      command: 'rundll32',
+      args: ['url.dll,FileProtocolHandler', filePath],
+    });
+    expect(previewProcess.resolvePreviewBrowserLauncher(filePath, 'linux')).toEqual({
+      command: 'xdg-open',
+      args: [filePath],
+    });
   });
 
   test('usage errors reject as CliError instead of exiting', async () => {
