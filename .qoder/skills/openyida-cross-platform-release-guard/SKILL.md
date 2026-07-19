@@ -31,8 +31,9 @@ npm run check:release-risks
     检测不到默认浏览器时回退纯 `open <url>`。
 - **SOFT 提示 → 不阻断**：列出涉及浏览器/URL 拉起的文件，提醒补人工跨端验证。
 
-扫描逻辑见 `scripts/check-release-risks.js`（纯静态扫描 `lib/`，会跳过注释与字符串字面量，
-不把说明性注释误判成真实反模式）；契约由 `tests/check-release-risks.test.js` 锁定。
+扫描逻辑见 `scripts/check-release-risks.js`（纯静态扫描 `lib/`，会跳过注释，并正确识别字符串中的
+`//` / `/*` 不是注释；命令字符串仍会保留扫描，确保能抓到 `spawn('cmd', ...)` 这类真实反模式）；
+契约由 `tests/check-release-risks.test.js` 锁定。
 
 ## 第二步：跨端人工验证清单
 

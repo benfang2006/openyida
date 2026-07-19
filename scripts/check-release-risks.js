@@ -47,7 +47,8 @@ const HARD_RULES = [
 ];
 
 // SOFT 提示：命中不阻断，只提醒发布人补人工跨端验证。
-const SOFT_LAUNCH_PRIMITIVES = /rundll32|xdg-open|osascript|['"]open['"]\s*,|FileProtocolHandler|--new-window|-new-window/;
+const SOFT_LAUNCH_PRIMITIVES =
+  /rundll32|xdg-open|osascript|FileProtocolHandler|--new-window|-new-window|command\s*:\s*['"]open['"]|spawn(?:Sync)?\(\s*['"]open['"]/;
 
 // 把注释内容替换成等长空白（保留换行以维持行号），避免把「解释为何避免
 // cmd /c start」这类说明性注释误判成真实反模式。会跟踪字符串/模板字面量，

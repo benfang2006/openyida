@@ -64,6 +64,15 @@ describe('check-release-risks ignores comments and safe code', () => {
     expect(errorIds(findings)).toHaveLength(0);
     expect(findings.some((f) => f.severity === 'warning')).toBe(true);
   });
+
+  test('does NOT warn for ordinary business enum values named open', () => {
+    const code = [
+      "const action = { target: 'open', label: 'Open permission' };",
+      "if (!['open', 'share'].includes(action.target)) throw new Error('bad target');",
+    ].join('\n');
+    const findings = analyzeContent('business.js', code);
+    expect(findings).toHaveLength(0);
+  });
 });
 
 describe('check-release-risks guards the real repository', () => {

@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Tests
 - `tests/oauth-loopback.test.js`：新增默认浏览器检测（依赖可注入）、三平台新窗口命令、未知/不支持浏览器回退等用例，共 20 个用例。
 - 新增 `tests/check-release-risks.test.js`：覆盖 HARD 反模式命中、注释/字符串误判排除，以及「当前 `lib/` 源码零 HARD 反模式」的仓库守卫。
+- `tests/check-release-risks.test.js`：补充普通业务枚举值 `open` 不触发 soft warning 的回归用例。
+- `tests/process-small.test.js`：补充流程预览三端打开命令与路径 argv 传递用例。
+- `npm run check:structure`：新增锁文件版本一致性校验。
 
 
 ## [2026.7.18-1] - 2026-07-18
