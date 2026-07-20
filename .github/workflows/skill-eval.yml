@@ -1,9 +1,10 @@
-# OpenYida Skill Eval CI — PR / Nightly / Release 自动评测
+# OpenYida Skill Eval CI — Manual / Nightly / Release 评测
 #
 # 触发场景:
-#   1. PR: yida-skills/ 或 scripts/eval/ 目录变更时触发轻量评测 (静态+路由)
+#   1. Local PR: 提 PR 前在本地按需运行 npm run eval:*，GitHub 不默认自动触发
 #   2. Nightly: 每日 02:00 UTC 全量评测 (comprehensive + baseline)
 #   3. Release: tag v* 推送前运行准出门槛检查 (pipeline)
+#   4. Manual: 通过 workflow_dispatch 手动运行指定评测
 #
 # 安全原则:
 #   - 不硬编码 Cookie/Token/凭证
@@ -13,12 +14,6 @@
 name: Skill Eval
 
 on:
-  pull_request:
-    paths:
-      - 'yida-skills/**'
-      - 'scripts/eval/**'
-    branches: [master, main]
-
   schedule:
     # Nightly: 02:00 UTC (10:00 北京时间)
     - cron: '0 2 * * *'
@@ -47,7 +42,7 @@ env:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
-  # Job 1: Unit tests — always run, gate for other jobs
+  # Job 1: Unit tests — gate for scheduled/manual/release eval jobs
   # ═══════════════════════════════════════════════════════════════
   unit-tests:
     name: '🧪 单元测试'
@@ -63,64 +58,7 @@ jobs:
         env:
           CI: true
 
-  # ═══════════════════════════════════════════════════════════════
-  # Job 2: PR Eval — lightweight static + routing (on PR)
-  # ═══════════════════════════════════════════════════════════════
-  pr-eval:
-    name: '📋 PR 轻量评测'
-    needs: unit-tests
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-
-      # Detect which skills changed
-      - name: Detect changed skills
-        id: changed
-        run: |
-          CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD -- yida-skills/skills/ | \
-            sed -n 's|yida-skills/skills/\([^/]*\)/.*|\1|p' | sort -u | tr '\n' ',' | sed 's/,$//')
-          echo "skills=$CHANGED" >> $GITHUB_OUTPUT
-          echo "Changed skills: $CHANGED"
-
-      # Static doc-quality check
-      - name: Doc Quality
-        run: npm run eval:doc-quality
-
-      # Safety check
-      - name: Safety Check
-        run: npm run eval:safety
-
-      # Coverage analysis
-      - name: Coverage Analysis
-        run: npm run eval:coverage
-
-      # Comprehensive eval for each changed skill
-      - name: Comprehensive Eval (changed skills)
-        if: steps.changed.outputs.skills != ''
-        run: |
-          IFS=',' read -ra SKILLS <<< "${{ steps.changed.outputs.skills }}"
-          for skill in "${SKILLS[@]}"; do
-            echo "══ Evaluating: $skill ══"
-            npm run eval:comprehensive -- --skill "$skill" || true
-          done
-
-      # Upload eval artifacts
-      - name: Upload eval reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-reports-pr
-          path: project/.cache/eval/
-          retention-days: 14
-
-  # ═══════════════════════════════════════════════════════════════
-  # Job 3: Nightly — full evaluation suite
+  # Job 2: Nightly — full evaluation suite
   # ═══════════════════════════════════════════════════════════════
   nightly-eval:
     name: '🌙 Nightly 全量评测'
@@ -165,7 +103,7 @@ jobs:
         continue-on-error: true
 
   # ═══════════════════════════════════════════════════════════════
-  # Job 4: Release Gate — strict pipeline before publish
+  # Job 3: Release Gate — strict pipeline before publish
   # ═══════════════════════════════════════════════════════════════
   release-gate:
     name: '🚀 Release 准出门槛'
@@ -200,7 +138,7 @@ jobs:
           retention-days: 90
 
   # ═══════════════════════════════════════════════════════════════
-  # Job 5: Manual Dispatch — custom eval
+  # Job 4: Manual Dispatch — custom eval
   # ═══════════════════════════════════════════════════════════════
   manual-eval:
     name: '🔧 手动评测'
