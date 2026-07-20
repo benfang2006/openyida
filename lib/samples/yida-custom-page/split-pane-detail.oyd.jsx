@@ -139,6 +139,7 @@ export function renderJsx() {
     normal: { label: '常规', color: colors.inkSoft, bg: colors.chipBg },
   };
   var slaColor = { danger: colors.danger, warn: colors.warning, ok: colors.success };
+  var slaBg = { danger: colors.dangerBg, warn: colors.warningBg, ok: colors.successBg };
 
   var list = self.getVisibleTickets();
   var current = self.getSelected();
@@ -202,7 +203,7 @@ export function renderJsx() {
                 </div>
                 <div style={{ marginTop: 8, fontSize: 13, color: colors.inkSoft }}>{current.id} · {current.requester} · {current.channel} · 最近更新 {current.updated}</div>
               </div>
-              <span style={{ height: 30, padding: '0 12px', borderRadius: 8, background: colors.dangerBg, color: slaColor[current.slaLevel], fontSize: 13, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ height: 30, padding: '0 12px', borderRadius: 8, background: slaBg[current.slaLevel] || colors.dangerBg, color: slaColor[current.slaLevel], fontSize: 13, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M8 5.5v3l2 1.2M8 2h0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
                 SLA {current.sla}
               </span>

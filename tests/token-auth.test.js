@@ -14,6 +14,18 @@ function listen(server) {
   });
 }
 
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    server.close((err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 describe('token-auth', () => {
   let tmpDir;
 
@@ -95,7 +107,7 @@ describe('token-auth', () => {
       expect(saved.corp_id).toBe('corp-local');
       expect(saved.user_id).toBe('user-local');
     } finally {
-      server.close();
+      await closeServer(server);
     }
   });
 
@@ -168,7 +180,7 @@ describe('token-auth', () => {
       expect(saved.corp_id).toBe('corp-env');
       expect(saved.user_id).toBe('user-env');
     } finally {
-      server.close();
+      await closeServer(server);
       const restore = (name, value) => {
         if (value === undefined) {
           delete process.env[name];

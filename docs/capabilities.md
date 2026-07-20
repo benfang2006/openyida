@@ -14,7 +14,9 @@
 | 交互式切换组织 | `openyida org switch` |
 | 切换到指定组织 | `openyida org switch --corp-id <corpId>` |
 | 退出登录 | `openyida logout` |
+| 管理 token 登录态 | `openyida auth <status\|login\|refresh\|logout>` |
 | 查看全部命令清单 | `openyida commands --json` |
+| 查看 Agent 一次性能力快照 | `openyida agent-capabilities --json` / `openyida agent-capabilities --summary-json` |
 
 ## 应用与组织管理
 
@@ -31,6 +33,8 @@
 | 查询组织基础信息、容量、额度、域名 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` |
 | 查询企业效能 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options]` |
 | 管理平台管理员和通讯录权限 | `openyida corp-manager <search-user\|list\|add\|remove\|address-book> ...` |
+
+说明：CLI 界面语言默认内置 `zh` / `en`。其他语言包可通过 `OPENYIDA_LOCALE_DIR` 按需加载；应用内多语言仍使用 `openyida i18n` 管理宜搭应用文案。
 
 ## 表单与数据模型
 
@@ -65,6 +69,7 @@
 | 显式按 Code Canvas 链路发布 | `openyida publish <src> <appType> <formUuid> --canvas` |
 | 发布并做健康检查 | `openyida publish <src> <appType> <formUuid> --health-check` |
 | 更新页面/表单配置 | `openyida update-form-config <appType> ...` |
+| 查询页面/表单配置 | `openyida get-form-config <appType> <formUuid> [--json]` |
 | 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；明确要求普通自定义页面 JSX/Jsx，或强依赖普通自定义页实例桥时使用 `.oyd.jsx` + `check-page` / `compile` / `publish` |
 | Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | `openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx`；再参考 `yida-canvas-custom-page/references/native-components-bridge.md` |
 | Code Canvas 门户 + 成员/部门/上传组件示例 | `openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx` |
@@ -139,7 +144,8 @@
 | 生成 API 文档模板 | `openyida connector gen-template [output]` |
 | 创建集成自动化 | `openyida integration create <appType> ... [--spec file.json]` |
 | 查询集成自动化 | `openyida integration list <appType> [--form-uuid <uuid>]` |
-| 启用/停用集成自动化 | `openyida integration <enable\|disable> <appType> <formUuid> <processCode>` |
+| 启用集成自动化 | `openyida integration enable <appType> <formUuid> <processCode>` |
+| 停用集成自动化 | `openyida integration disable <appType> <formUuid> <processCode>` |
 | 检查集成异常日志 | `openyida integration check <appType...>` |
 | 诊断集成配置问题 | `openyida integration diagnose (--text <text>\|--file <path>\|--rules)` |
 | 调用钉钉 CLI | `openyida dws <command> [args]` |
@@ -152,6 +158,10 @@
 |---|---|
 | 宜搭 AI 文生文 | `openyida ai text [options]` |
 | 宜搭 AI 识图 | `openyida ai image [options]` |
+| 检测素材能力 | `openyida asset status [options]` |
+| 校验图片 URL | `openyida asset verify-url <url> [options]` |
+| 解析并回填页面素材 | `openyida asset resolve [options]` |
+| 生成 AI 图片素材 | `openyida asset generate [options]` |
 | 检查宜搭公式 | `openyida formula evaluate <formula\|file> [--schema file]` |
 | 闪记/会议纪要转 PRD | `openyida flash-to-prd --file <path> --name "<project>"` |
 | 导出 AI 对话记录 | `openyida export-conversation [options]` |
@@ -175,3 +185,18 @@
 | 启动 MCP 服务 | `openyida mcp` |
 | 启动 A2A adapter 或输出 Agent Card | `openyida a2a <serve\|agent-card> [options]` |
 | 启动本地 Web bridge | `openyida bridge start [--token <pair-token>] [--port 6736]` |
+| 输出机器可读命令清单 | `openyida commands --json` |
+| 输出 Agent 能力快照 | `openyida agent-capabilities --json` |
+| 运行技能评测 | `openyida eval --mode <mode> [--skill <name>] [--runs N]` |
+
+## Agent 能力、评测与安全提示
+
+| 功能 | 执行操作 |
+|---|---|
+| 快速判断当前工作区、登录态、组织和命令能力 | `openyida agent-capabilities --summary-json` |
+| 获取完整命令 Manifest、副作用和权限元数据 | `openyida commands --json` |
+| 运行无副作用路由评测 | `openyida eval --mode routing [--skill <name>]` |
+| 运行文档质量 / 安全 / 覆盖率评测 | `openyida eval --mode <doc-quality\|safety\|coverage\|comprehensive>` |
+| 运行真实端到端评测 | `OPENYIDA_E2E=1 openyida eval --mode <e2e\|generate>` |
+
+`commands --json` 中的 `sideEffect` 和 `permission` 是 Agent 执行前的重要依据。`mixed` 命令需要继续查看具体子命令或参数：例如 `data query` 是读操作，`data delete` 是删除；`nav-group list` 是读操作，`nav-group delete` 需要确认。

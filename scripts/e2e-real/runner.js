@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const BIN = path.join(ROOT, 'bin', 'yida.js');
 const DEFAULT_REGISTRY_DIR = path.join(ROOT, 'project', '.cache', 'e2e-real');
 const DEFAULT_FIELDS_FILE = path.join(__dirname, 'fixtures', 'form-fields.json');
-const DEFAULT_PAGE_SOURCE = path.join(ROOT, 'project', 'pages', 'src', 'demo-compat-smoke.oyd.jsx');
+const DEFAULT_PAGE_SOURCE = path.join(ROOT, 'lib', 'samples', 'yida-canvas-custom-page', 'dashboard-starter.canvas.jsx');
 
 function nowStamp(date = new Date()) {
   return date.toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);

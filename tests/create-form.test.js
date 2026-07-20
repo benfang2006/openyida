@@ -11,7 +11,7 @@ const createFormSplitSource = [
   'definition-reader.js',
   'field-normalizers.js',
   'rule-builder.js',
-  'schema-builder.js',
+  'api-path.js',
   'schema-patch.js',
   'validation-builder.js',
 ].map((file) => fs.readFileSync(path.join(__dirname, '..', 'lib', 'app', 'create-form', file), 'utf-8')).join('\n');

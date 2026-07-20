@@ -76,17 +76,12 @@ describe('run', () => {
     mockError.mockRestore();
   });
 
-  test('参数不足时打印用法并退出', async () => {
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
+  test('参数不足时抛出用法错误', async () => {
     const mockError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(run([])).rejects.toThrow('process.exit(1)');
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(mockError).toHaveBeenCalledWith(expect.stringContaining('list-forms'));
+    await expect(run([])).rejects.toThrow('list-forms');
+    expect(mockError).not.toHaveBeenCalled();
 
-    mockExit.mockRestore();
     mockError.mockRestore();
   });
 });

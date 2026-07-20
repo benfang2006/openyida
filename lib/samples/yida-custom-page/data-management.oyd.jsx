@@ -75,14 +75,19 @@ export function injectControlReset() {
     style.id = id;
     document.head.appendChild(style);
   }
-  style.innerHTML = CONTROL_RESET_CSS;
+  style.textContent = CONTROL_RESET_CSS;
 }
 
 export function didMount() {
   this.injectControlReset();
 }
 
-export function didUnmount() {}
+export function didUnmount() {
+  var style = document.getElementById('openyida-asset-control-reset');
+  if (style && style.parentNode) {
+    style.parentNode.removeChild(style);
+  }
+}
 
 export function chooseCategory(value) {
   _customState.category = value;
@@ -166,6 +171,12 @@ export function renderJsx() {
     return { text: due + ' 天后保养', color: colors.inkSoft, bg: colors.lineSoft };
   };
 
+  var healthColorOf = function (health) {
+    if (health >= 80) { return colors.success; }
+    if (health >= 60) { return colors.warning; }
+    return colors.danger;
+  };
+
   return (
     <div className="oyd-page oyd-asset-page" style={styles.page}>
       <div style={{ display: 'none' }}>{this.state && this.state.timestamp}</div>
@@ -229,7 +240,7 @@ export function renderJsx() {
               {filtered.map((d) => {
                 var st = statusMap[d.status] || statusMap.stopped;
                 var dt = dueTag(d.due);
-                var healthColor = d.health >= 80 ? colors.success : d.health >= 60 ? colors.warning : colors.danger;
+                var healthColor = healthColorOf(d.health);
                 return (
                   <div key={d.id} onClick={(e) => { self.openDevice(d.id); }} style={{ display: isMobile ? 'block' : 'grid', gridTemplateColumns: '2.2fr 1.4fr 1fr 1.1fr 0.9fr', alignItems: 'center', padding: isMobile ? '14px 16px' : '14px 18px', borderTop: '1px solid ' + colors.lineSoft, cursor: 'pointer' }}>
                     <div>

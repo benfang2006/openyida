@@ -141,6 +141,8 @@ function MetricCard({ item, index }) {
   );
 }
 
+const RISK_LEVEL_TAG_COLOR = { '高': 'error', '中': 'warning', '低': 'processing' };
+
 function YidaComp() {
   const [range, setRange] = useState('今日');
   const [updatedAt, setUpdatedAt] = useState('09:30');
@@ -157,7 +159,8 @@ function YidaComp() {
     { label: '人效指数', value: '86.2', delta: 8, color: SAMPLE_THEME.violet },
   ], []);
 
-  const healthScore = range === '今日' ? '87.4' : range === '本周' ? '91.2' : '88.6';
+  const HEALTH_SCORE_MAP = { '今日': '87.4', '本周': '91.2', '本月': '88.6' };
+  const healthScore = HEALTH_SCORE_MAP[range] || '87.4';
 
   return (
     <ConfigProvider
@@ -354,7 +357,7 @@ function YidaComp() {
                 <div className="oy-risk-card" style={{ '--risk-color': item.color }} key={item.label}>
                   <div className="oy-risk-top">
                     <span className="oy-risk-title">{item.label}</span>
-                    <Tag color={item.level === '高' ? 'error' : item.level === '中' ? 'warning' : 'processing'}>{item.level}</Tag>
+                    <Tag color={RISK_LEVEL_TAG_COLOR[item.level] || 'processing'}>{item.level}</Tag>
                   </div>
                   <div className="oy-risk-value">{item.value}</div>
                 </div>

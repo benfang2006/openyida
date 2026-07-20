@@ -1051,6 +1051,12 @@ async function main() {
       break;
     }
 
+    case 'eval': {
+      const { main: evalMain } = require('../scripts/eval/runner');
+      await evalMain(args);
+      break;
+    }
+
     default: {
       throwCliUsage(t('cli.unknown_command', command), t('cli.run_help'));
     }

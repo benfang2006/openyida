@@ -220,12 +220,19 @@ describe('eval score', () => {
   });
 
   test('autoScoreScreenshots 用注入 agent 打分', () => {
-    const shots = [{ stage: 'dashboard', url: 'u', ok: true, path: '/tmp/a.png' }];
-    const fakeAgent = () => ({ available: true, json: { overall: 8, comment: '不错' } });
-    const { available, scores } = autoScoreScreenshots({ screenshots: shots, runAgent: fakeAgent });
-    expect(available).toBe(true);
-    expect(scores[0].auto.overall).toBe(8);
-    expect(scores[0].auto.model).toBe('claude -p');
+    // 隔离 ambient OPENYIDA_EVAL_AGENT_CMD，确定性断言默认 agent（不受控制台/CI 启动环境影响）
+    const saved = process.env.OPENYIDA_EVAL_AGENT_CMD;
+    delete process.env.OPENYIDA_EVAL_AGENT_CMD;
+    try {
+      const shots = [{ stage: 'dashboard', url: 'u', ok: true, path: '/tmp/a.png' }];
+      const fakeAgent = () => ({ available: true, json: { overall: 8, comment: '不错' } });
+      const { available, scores } = autoScoreScreenshots({ screenshots: shots, runAgent: fakeAgent });
+      expect(available).toBe(true);
+      expect(scores[0].auto.overall).toBe(8);
+      expect(scores[0].auto.model).toBe('claude -p');
+    } finally {
+      if (saved === undefined) { delete process.env.OPENYIDA_EVAL_AGENT_CMD; } else { process.env.OPENYIDA_EVAL_AGENT_CMD = saved; }
+    }
   });
 
   test('autoScoreScreenshots 在 agent 不可用时降级', () => {

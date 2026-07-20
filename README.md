@@ -149,7 +149,7 @@ openyida/
 ├── bin/yida.js                 # CLI entry and command routing
 ├── lib/
 │   ├── app/                    # Application, form, page, import/export commands
-│   ├── auth/                   # Login, QR login, browser handoff, organization switch
+│   ├── auth/                   # OAuth token login, token session storage, organization switch
 │   ├── connector/              # HTTP connector lifecycle and smart creation
 │   ├── core/                   # Environment detection, i18n, diagnostics, data commands
 │   ├── process/                # Process form creation, configuration, preview
@@ -277,6 +277,20 @@ The E2E paths above prove the *CLI* works. The eval harness under `scripts/eval/
 # the selected sub-skill against the golden set.
 npm run eval:routing
 
+# Doc quality — static analysis of all SKILL.md files (standards + maintainability).
+npm run eval:doc-quality
+
+# Safety — credential leak detection, command whitelist, corpId consistency.
+npm run eval:safety
+
+# Coverage — how much of the skill/category/reference space is covered by scenarios.
+npm run eval:coverage
+
+# Comprehensive — 10-dimension scorecard for a single skill (doc quality, routing,
+# safety, step completeness, output validity, efficiency, stability, coverage).
+# Outputs a JSON scorecard, SVG radar chart, and trend analysis.
+npm run eval:comprehensive -- --skill yida-dashboard
+
 # Tool-pipeline baseline (end-to-end) — wraps the real-environment runner for one
 # sub-skill, adds guardrail assertions, screenshots the published page, and writes a
 # human scoring template. Runs deterministic CLI commands (no agent) so it serves as
@@ -302,15 +316,19 @@ OPENYIDA_E2E=1 npm run eval:all -- --skill yida-dashboard --screenshot
 # that runs the tasks above on click. Binds to 127.0.0.1 only; tasks are a fixed
 # whitelist. Use the Node version you start it with, so run `nvm use 20` first.
 npm run eval:dashboard          # http://127.0.0.1:4500
+
+# You can also run eval directly via the CLI:
+openyida eval --mode comprehensive --skill yida-dashboard
 ```
 
 Configuration precedence is `CLI flag > env (OPENYIDA_EVAL_*) > scripts/eval/eval.config.json > defaults`.
 
 | Flag | Purpose |
 |------|---------|
-| `--mode e2e\|routing\|generate\|all` | Which evals to run (default `e2e`; `all` = routing + tool-pipeline baseline + real generation) |
+| `--mode e2e\|routing\|generate\|doc-quality\|safety\|coverage\|comprehensive\|all` | Which evals to run (default `e2e`) |
 | `--skill <name>` | Restrict the e2e run to one sub-skill; stages are reverse-looked-up from the `SKILL_COVERAGE` matrix |
 | `--stages a,b` | Explicit stage list, overriding the skill reverse-lookup |
+| `--runs N` | Multi-run stability: repeat routing N times, report consistency rate |
 | `--screenshot` / `--no-screenshot` | Capture the published page (default on; skipped gracefully if Playwright is absent) |
 | `--auto-score` / `--no-auto-score` | Score screenshots with the local `claude -p` agent (default off → human template only) |
 | `--scenarios <dir>` | Routing golden-set directory (default `scripts/eval/scenarios`) |
@@ -468,6 +486,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida copy [--force]` | Copy project working directory |
 | `openyida sample [--list]` | Output code samples/templates |
 | `openyida doctor [--fix]` | Environment diagnostics & auto-fix |
+| `openyida eval --mode <mode> [--skill <name>] [--runs N]` | Multi-dimensional skill evaluation (doc quality, routing accuracy, safety, etc.) |
 | `openyida db-seq-fix [--fix]` | Detect and repair PostgreSQL sequence drift |
 | `openyida formula evaluate <formula\|file> [--schema file]` | Static-check Yida formula syntax and field refs |
 | `openyida update` | Check and update to latest version |
@@ -492,6 +511,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 Environment selectors such as `--env intl`, `--intl`, `--overseas`, `--global`, and `--yidaapps` can be used on login-required commands to choose the target Yida environment for that run. The `intl` preset uses `https://www.yidaapps.com` as the built-in Global YiDA entrypoint (not the bare `https://yidaapps.com` domain) and DingTalk International OAuth at `https://login.dingtalk.io`; business API requests still use the authenticated environment `baseUrl`, so customer custom subdomains are supported.
 
 For overseas apps, pass `--locale en_US` or `--locale ja_JP` on creation commands, or set `OPENYIDA_CONTENT_LOCALE`. OpenYida writes YiDA resource names with `zh_CN`, `en_US`, and `ja_JP` values so Global YiDA does not fall back to Chinese-only metadata.
+
+The CLI package ships the core UI languages `zh` and `en` by default. Other CLI UI language packs are optional: keep or install files such as `ja.js` / `fr.js` in an external directory and point `OPENYIDA_LOCALE_DIR` to that directory, then set `OPENYIDA_LANG=ja`. If an optional language pack is unavailable, OpenYida falls back through `en -> zh`.
 
 #### Forms and Pages
 

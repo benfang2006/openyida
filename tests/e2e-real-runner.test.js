@@ -46,7 +46,7 @@ describe('real E2E runner', () => {
       formName: 'OY_E2E_TEST_Form',
       pageName: 'OY_E2E_TEST_Page',
       fieldsFile: path.join(__dirname, '..', 'scripts', 'e2e-real', 'fixtures', 'form-fields.json'),
-      pageSource: path.join(__dirname, '..', 'project', 'pages', 'src', 'demo-compat-smoke.oyd.jsx'),
+      pageSource: path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', 'dashboard-starter.canvas.jsx'),
       registryDir: '/tmp/openyida-e2e-test',
       corpId: 'ding-test-corp',
       skipPublish: false,

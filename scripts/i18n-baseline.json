@@ -1,13 +1,13 @@
 {
   "base": "zh",
-  "basePathCount": 1375,
+  "basePathCount": 1392,
   "locales": {
     "ar": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "de": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "en": {
@@ -15,35 +15,35 @@
       "typeMismatch": 0
     },
     "es": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "fr": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "hi": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "ja": {
-      "missing": 379,
+      "missing": 396,
       "typeMismatch": 0
     },
     "ko": {
-      "missing": 679,
+      "missing": 696,
       "typeMismatch": 0
     },
     "pt": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "vi": {
-      "missing": 680,
+      "missing": 697,
       "typeMismatch": 0
     },
     "zh-HK": {
-      "missing": 339,
+      "missing": 356,
       "typeMismatch": 0
     }
   }

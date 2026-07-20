@@ -143,20 +143,15 @@ describe('corp-efficiency overview', () => {
     mock.error.mockRestore();
   });
 
-  test('API 失败时输出错误并退出', async () => {
+  test('API 失败时抛出 CliError', async () => {
     utils.httpGet.mockResolvedValueOnce({ success: false, errorMsg: '权限不足' });
     const mock = mockConsole();
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
 
-    await expect(run([])).rejects.toThrow('process.exit(1)');
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(mock.error).toHaveBeenCalledWith(expect.stringContaining('权限不足'));
+    await expect(run([])).rejects.toThrow('权限不足');
+    expect(mock.error).not.toHaveBeenCalled();
 
     mock.log.mockRestore();
     mock.error.mockRestore();
-    mockExit.mockRestore();
   });
 });
 
@@ -266,17 +261,13 @@ describe('corp-efficiency groups', () => {
 describe('corp-efficiency notify', () => {
   test('没有 --yes 时不会发送通知', async () => {
     const mock = mockConsole();
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit(1)');
-    });
 
-    await expect(run(['notify', '--cid', 'cid-1', '--type', 'noticeStudy'])).rejects.toThrow('process.exit(1)');
+    await expect(run(['notify', '--cid', 'cid-1', '--type', 'noticeStudy'])).rejects.toThrow('--yes');
     expect(utils.httpPost).not.toHaveBeenCalled();
-    expect(mock.error).toHaveBeenCalledWith(expect.stringContaining('--yes'));
+    expect(mock.error).not.toHaveBeenCalled();
 
     mock.log.mockRestore();
     mock.error.mockRestore();
-    mockExit.mockRestore();
   });
 
   test('带 --yes 时发送学习通知', async () => {
