@@ -19,6 +19,7 @@ const {
 } = require('../scripts/e2e-real/schema-source-runner');
 const { version } = require('../package.json');
 const SOURCE_RUNNER = path.join(__dirname, '..', 'scripts', 'e2e-real', 'schema-source-runner.js');
+const LEGACY_COOKIE_ENV = 'OPENYIDA_COOKIE_B64';
 
 let tempDir;
 
@@ -68,16 +69,20 @@ describe('schema source e2e runner', () => {
     expect(trace[0].argv).toEqual(['--version']);
   });
 
-  test('injects schema source auth through OPENYIDA_COOKIE_B64 instead of cookies.json', () => {
+  test('injects schema source auth through token env instead of cookies.json', () => {
     ensureWorkspace(tempDir);
     const launcher = createLauncher(tempDir);
     const env = buildEnv(tempDir, launcher);
 
     expect(env).toMatchObject({
       YIDA_AUTH_ENABLED: 'true',
-      OPENYIDA_BASE_URL: 'https://source-e2e.example.test',
+      OPENYIDA_ACCESS_TOKEN: 'source-e2e-access-token',
+      OPENYIDA_REFRESH_TOKEN: 'source-e2e-refresh-token',
+      OPENYIDA_TOKEN_CORP_ID: 'corpSourceE2E',
+      OPENYIDA_TOKEN_USER_ID: 'userSourceE2E',
+      OPENYIDA_ENDPOINT: 'https://source-e2e.example.test',
     });
-    expect(Buffer.from(env.OPENYIDA_COOKIE_B64, 'base64').toString('utf8')).toContain('tianshu_csrf_token=csrf-source-e2e');
+    expect(env).not.toHaveProperty(LEGACY_COOKIE_ENV);
     expect(fs.existsSync(path.join(tempDir, '.cache', 'cookies.json'))).toBe(false);
   });
 
@@ -157,7 +162,7 @@ describe('schema source e2e runner', () => {
     }, 'reports')).toBe(false);
 
     expect(() => assertNoSensitiveStdio('{"ok":true}', 'stdout')).not.toThrow();
-    expect(() => assertNoSensitiveStdio('csrf-source-e2e', 'stdout')).toThrow(/leaked sensitive/);
+    expect(() => assertNoSensitiveStdio('source-e2e-access-token', 'stdout')).toThrow(/leaked sensitive/);
     expect(() => assertNoSensitiveStdio('textField_secret123', 'stdout')).toThrow(/leaked sensitive/);
   });
 
