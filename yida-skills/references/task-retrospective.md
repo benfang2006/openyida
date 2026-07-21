@@ -84,22 +84,22 @@ OpenYida 任务完成后，除了交付当前结果，还要判断是否有可�
 
 这轮 `Chart - *` sample 暴露出的核心问题是：自定义 ECharts 页面引用了旧应用里的 `REPORT_xxx`、旧 `prdId/topicId` 和旧 `cid`，在当前 Samples 应用中会返回 `no permission for the report`。以后遇到 chart sample 权限或空数据问题时，按下面链路处理。
 
-1. **先在当前应用创建或同步原生报表**  
+1. **先在当前应用创建或同步原生报表**
    不要把另一个应用的 `REPORT_xxx` 复制到当前页面。当前应用如果没有可用数据源表单，先创建专用数据源表单并写入可展示的示例数据；再用 `openyida create-report` 创建原生报表。
 
-2. **所有绑定参数来自新报表 schema**  
+2. **所有绑定参数来自新报表 schema**
    创建报表后必须 `openyida get-schema <appType> <REPORT_xxx> --json`，从组件树提取 `cid`、`componentName/className`、`dataSetKey`、`filterKey`、`cname`。不要沿用旧 `YoushuTable_mmx...` 或旧 `YoushuSimpleIndicatorCard_mmx...`。
 
-3. **`prdId/topicId` 运行时动态获取**  
+3. **`prdId/topicId` 运行时动态获取**
    ECharts 页面不能硬编码 `prdId`。用 `getFormNavigationListByOrder` 按 `REPORT_FORM_UUID` 找 `topicId`，再调用 `getDataAsync.json`。
 
-4. **filterKey 是组件级，不是字段级**  
+4. **filterKey 是组件级，不是字段级**
    同一个“状态筛选”联动到不同组件时也会生成不同 `filterKey`。记录时用 `statusTableStatus`、`budgetTableStatus` 这类组件级命名，不能只写 `status`。
 
-5. **绑定关系要落盘并加测试**  
+5. **绑定关系要落盘并加测试**
    写入 `.cache/openyida/<任务名>/report-binding.json`，同时在 `tests/sample.test.js` 或相关测试中断言 sample 不再包含旧 `REPORT`、旧 `prdId`、旧 appType 或旧 cid 前缀。
 
-6. **发布后全量验收**  
+6. **发布后全量验收**
    对所有 chart sample 执行 `check-page`、`compile`、`publish --health-check`、`git diff --check`。如果页面使用了 ECharts 地图，要同时检查地图底图/GeoJSON 兜底，不允许把“地图组件暂不可用”作为正常态。
 
 ### 沉淀优先级

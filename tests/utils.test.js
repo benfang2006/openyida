@@ -10,6 +10,7 @@ const {
   resolveBaseUrl,
   isLoginExpired,
   loadAuthData,
+  loadCookieData,
   detectActiveTool,
   hasDesktopEnvironment,
   resolveWukongWorkspaceRoot,
@@ -142,6 +143,10 @@ describe('isLoginExpired', () => {
     expect(isLoginExpired(null)).toBeFalsy();
   });
 
+  test('content 为 null 时返回 false', () => {
+    expect(isLoginExpired({ success: true, content: null })).toBe(false);
+  });
+
   test('空对象时返回 false', () => {
     expect(isLoginExpired({})).toBe(false);
   });
@@ -184,6 +189,28 @@ describe('http redirect login detection', () => {
         __httpStatus: 302,
         __location: '/login.html',
       });
+    } finally {
+      await closeServer(server);
+    }
+  });
+
+  test('httpPost 为 200 空响应非 JSON 保留结构化元数据', async () => {
+    const server = http.createServer((req, res) => {
+      res.statusCode = 200;
+      res.end('');
+    });
+    const port = await listen(server);
+
+    try {
+      const result = await httpPost(`http://127.0.0.1:${port}`, '/empty', '', { silentStatus: true });
+
+      expect(result).toMatchObject({
+        success: false,
+        __httpStatus: 200,
+        __nonJsonResponse: true,
+        __emptyBody: true,
+      });
+      expect(result.errorMsg).toMatch(/^HTTP 200:/);
     } finally {
       await closeServer(server);
     }
@@ -361,16 +388,143 @@ describe('requestWithAutoLogin', () => {
   });
 });
 
+// ── loadCookieData ────────────────────────────────────────────────────
+
+describe('loadCookieData', () => {
+  let tmpDir;
+  let cookieFile;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-cookie-utils-'));
+    const cacheDir = path.join(tmpDir, '.cache');
+    fs.mkdirSync(cacheDir, { recursive: true });
+    cookieFile = path.join(cacheDir, 'cookies.json');
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test('读取数组格式的 cookies.json', () => {
+    const cookies = [
+      { name: 'tianshu_csrf_token', value: 'token123' },
+      { name: 'tianshu_corp_user', value: 'corpA_user1' },
+    ];
+    fs.writeFileSync(cookieFile, JSON.stringify(cookies), 'utf-8');
+
+    const result = loadCookieData(tmpDir);
+    expect(result).not.toBeNull();
+    expect(result.csrf_token).toBe('token123');
+    expect(result.corp_id).toBe('corpA');
+    expect(result.user_id).toBe('user1');
+    expect(result.base_url).toBe('https://www.aliwork.com');
+  });
+
+  test('读取对象格式的 cookies.json（含 base_url）', () => {
+    const data = {
+      cookies: [{ name: 'tianshu_csrf_token', value: 'mytoken' }],
+      base_url: 'https://custom.aliwork.com',
+    };
+    fs.writeFileSync(cookieFile, JSON.stringify(data), 'utf-8');
+
+    const result = loadCookieData(tmpDir);
+    expect(result.csrf_token).toBe('mytoken');
+    expect(result.base_url).toBe('https://custom.aliwork.com');
+  });
+
+  test('仓库外 projectRoot 缺少缓存时读取全局 OpenYida 缓存', () => {
+    const originalCacheDir = process.env.OPENYIDA_CACHE_DIR;
+    const globalCacheDir = path.join(tmpDir, 'global-openyida-cache');
+    const outsideRoot = path.join(tmpDir, 'outside-workspace');
+    const data = {
+      cookies: [
+        { name: 'tianshu_csrf_token', value: 'global-token' },
+        { name: 'tianshu_corp_user', value: 'corpGlobal_userGlobal' },
+      ],
+      base_url: 'https://global.aliwork.com',
+    };
+    process.env.OPENYIDA_CACHE_DIR = globalCacheDir;
+    fs.mkdirSync(globalCacheDir, { recursive: true });
+    fs.writeFileSync(path.join(globalCacheDir, 'cookies-public.json'), JSON.stringify(data), 'utf-8');
+
+    try {
+      const result = loadCookieData(outsideRoot);
+      expect(result).not.toBeNull();
+      expect(result.csrf_token).toBe('global-token');
+      expect(result.corp_id).toBe('corpGlobal');
+      expect(result.user_id).toBe('userGlobal');
+      expect(result.base_url).toBe('https://global.aliwork.com');
+    } finally {
+      if (originalCacheDir === undefined) {
+        delete process.env.OPENYIDA_CACHE_DIR;
+      } else {
+        process.env.OPENYIDA_CACHE_DIR = originalCacheDir;
+      }
+    }
+  });
+
+  test('读取云版注入格式时使用顶层 csrf/corp/user 字段', () => {
+    const data = {
+      cookies: [{ name: 'sid', value: 'cookie-only' }],
+      csrf_token: 'top-level-token',
+      corp_id: 'corp-top',
+      user_id: 'user-top',
+      base_url: 'https://www.aliwork.com',
+    };
+    fs.writeFileSync(cookieFile, JSON.stringify(data), 'utf-8');
+
+    const result = loadCookieData(tmpDir);
+    expect(result.csrf_token).toBe('top-level-token');
+    expect(result.corp_id).toBe('corp-top');
+    expect(result.user_id).toBe('user-top');
+    expect(result.cookies).toContainEqual({ name: 'tianshu_csrf_token', value: 'top-level-token' });
+  });
+
+  test('文件不存在时返回 null', () => {
+    fs.rmSync(cookieFile, { force: true });
+    const result = loadCookieData(tmpDir);
+    expect(result).toBeNull();
+  });
+
+  test('文件内容为空时返回 null', () => {
+    fs.writeFileSync(cookieFile, '', 'utf-8');
+    const result = loadCookieData(tmpDir);
+    expect(result).toBeNull();
+  });
+
+  test('文件内容为非法 JSON 时返回 null', () => {
+    fs.writeFileSync(cookieFile, 'not-json', 'utf-8');
+    const result = loadCookieData(tmpDir);
+    expect(result).toBeNull();
+  });
+});
+
 // ── loadAuthData ──────────────────────────────────────────────────────
 
 describe('loadAuthData', () => {
   let tmpDir;
+  let originalAuthEnabled;
+  let originalCookieB64;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-token-utils-'));
+    originalAuthEnabled = process.env.YIDA_AUTH_ENABLED;
+    originalCookieB64 = process.env.OPENYIDA_COOKIE_B64;
+    delete process.env.YIDA_AUTH_ENABLED;
+    delete process.env.OPENYIDA_COOKIE_B64;
   });
 
   afterEach(() => {
+    if (originalAuthEnabled === undefined) {
+      delete process.env.YIDA_AUTH_ENABLED;
+    } else {
+      process.env.YIDA_AUTH_ENABLED = originalAuthEnabled;
+    }
+    if (originalCookieB64 === undefined) {
+      delete process.env.OPENYIDA_COOKIE_B64;
+    } else {
+      process.env.OPENYIDA_COOKIE_B64 = originalCookieB64;
+    }
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
@@ -401,6 +555,48 @@ describe('loadAuthData', () => {
     fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([
       { name: 'ai_app_user_auth_token', value: 'unsafe-cookie-token' },
     ]), 'utf-8');
+
+    expect(loadAuthData(tmpDir)).toBeNull();
+  });
+
+  test('YIDA_AUTH_ENABLED=true 时读取 OPENYIDA_COOKIE_B64 注入 Cookie', () => {
+    process.env.YIDA_AUTH_ENABLED = 'true';
+    process.env.OPENYIDA_COOKIE_B64 = Buffer.from(
+      'tianshu_csrf_token=legacy-csrf; tianshu_corp_user=corpLegacy_userLegacy',
+      'utf8'
+    ).toString('base64');
+
+    expect(loadAuthData(tmpDir)).toMatchObject({
+      auth_mode: 'cookie',
+      auth_source: 'env',
+      csrf_token: 'legacy-csrf',
+      corp_id: 'corpLegacy',
+      user_id: 'userLegacy',
+    });
+  });
+
+  test('YIDA_AUTH_ENABLED=true 时不再读取旧 cookies.json 文件', () => {
+    const cacheDir = path.join(tmpDir, '.cache');
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([
+      { name: 'tianshu_csrf_token', value: 'legacy-csrf' },
+      { name: 'tianshu_corp_user', value: 'corpLegacy_userLegacy' },
+    ]), 'utf-8');
+    process.env.YIDA_AUTH_ENABLED = 'true';
+    delete process.env.OPENYIDA_COOKIE_B64;
+
+    expect(loadAuthData(tmpDir)).toBeNull();
+  });
+
+  test('YIDA_AUTH_ENABLED=true 且 OPENYIDA_COOKIE_B64 非法时不回退 cookies.json', () => {
+    const cacheDir = path.join(tmpDir, '.cache');
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([
+      { name: 'tianshu_csrf_token', value: 'legacy-csrf' },
+      { name: 'tianshu_corp_user', value: 'corpLegacy_userLegacy' },
+    ]), 'utf-8');
+    process.env.YIDA_AUTH_ENABLED = 'true';
+    process.env.OPENYIDA_COOKIE_B64 = 'not-base64';
 
     expect(loadAuthData(tmpDir)).toBeNull();
   });

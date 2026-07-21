@@ -1,6 +1,6 @@
 # OpenYida 项目风险点与优化建议
 
-> 盘点日期：2026-07-19  
+> 盘点日期：2026-07-19
 > 范围：当前 checkout `/Users/fangruiyan/test/openyida`，重点查看 CLI 路由、command manifest、README、功能列表、package 分发配置和现有校验脚本。
 
 ## 结论

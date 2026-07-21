@@ -7,6 +7,16 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 > **先确认链路**：普通自定义页面 JSX/Jsx 组件链路走本技能，发布后落到平台 `Jsx` 组件；Code Canvas 链路走 `yida-canvas-custom-page`，发布后落到 `YidaCodeCanvas` 组件。两者是并列页面实现链路，不要把本技能描述成 Code Canvas 的备用链路。已有普通自定义页面升级到 Code Canvas 时才走 `yida-canvas-upgrade`。
 
+## Resource-First 页面开发
+
+编写页面源码前，先按根技能解析目标 app/page/form context：
+
+- 已有页面 URL、display `formUuid`、bound page 或 workspace cache/config 中可确认的自定义页面时，直接为该页面编写/修改源码，并交给 `yida-publish-page` 发布；不要先调用 `yida-create-page`。
+- bound page 只是默认页面，不是锁定目标；如果当前会话绑定页面 A，但用户本轮明确说要修改页面 B，先解析 B 的 URL / display `formUuid` / 页面名称。B 能唯一解析时改 B；B 无法唯一解析时询问用户；禁止静默把需求发布到 A。
+- 完整应用 `fast_build` 如果已有 bound app/page，主页面源码直接落到该页面；只在缺少主入口 display page 且用户意图允许新增时创建页面容器。
+- 用户只说“优化这个页面 URL / 修改现有页面 / 重新发布”时，本技能与 `yida-publish-page` 配合即可完成，不创建 app/page。
+- 如果用户给的是普通表单 `formUuid`，页面源码只能把它作为数据源或入口链接使用；不能把数据表单 ID 当作发布目标。
+
 ## 核心规则
 
 ### 致命规则（FATAL）
@@ -48,6 +58,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 13. **严禁 emoji**：页面渲染出来的任何位置（标题、按钮、标签、状态、空态文案、图表标题等）**一律禁止出现 emoji**（😀🚀✅⚠️📦📊 等一切彩色符号字符）。需要图标一律用功能性内联 SVG（见 `skills/yida-page-uiux` 图标策略）；需要状态标记用文字 + 语义色标签。emoji 是最明显的 AI 味来源之一，且跨端显示不一致。JS 注释里也不要留装饰性符号。
 14. **light 页面禁灰黑主题**：普通业务列表、协同表、录入表、工作台和门户默认不要用近黑按钮、近黑描边、灰黑重阴影作为主题；主操作、选中态、筛选焦点和批量操作使用品牌色或 sample 自带主题色，边框用浅色品牌混合。只有用户明确要求暗色/高对比时才使用深色主视觉。
 15. **发布前必须跑检查链路**：先执行 `openyida check-page <file>` 和 `openyida compile <file>`；若出现 warning/error，按规则修复后再发布
+16. **源码修改发布闭环**：只要本轮 Write/Edit/Create 了 `project/pages/src/*.{oyd.jsx,jsx,tsx}` 普通自定义页面源码，`check-page` / `compile` 只证明源码可发布，不等于远端页面已更新；final 前必须看到成功的 `openyida publish <source> <appType> <displayPageFormUuid>`。没有 publish 成功证据时，只能说“源码已修改，尚未发布”，不能说“页面已更新 / 已重新发布”。
 
 > 每条规则的代码示例、反模式和常见错误见 [编码指南](references/coding-guide.md)；`fast_build` 默认先遵守本技能正文，不预读长 reference，只有 check-page 报错、复杂交互、`deep_design` 或正文覆盖不了的问题时才读取。
 > 运行时易错点、`check-page` 规则和兼容层自动修复边界见 [运行时护栏](references/runtime-guardrails.md)，按需读取。
@@ -72,7 +83,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 ## 快速开始
 
-以创建「员工信息查询页」为例，完整流程如下：
+以开发「员工信息查询页」为例，完整流程如下：
 
 1. 获取表单 Schema，确认字段 ID：
 
@@ -83,7 +94,9 @@ openyida get-schema APP_XXX FORM-EMPLOYEE
 如需保存完整 Schema，使用 create_file / Write / file edit tool 创建 `<projectRoot>/.cache/openyida/employee-query/employee-schema.json`；ID 映射仍写 `<projectRoot>/.cache/employee-query-schema.json`。
 
 ```bash
-# Step 2：创建自定义页面
+# Step 2：确认或补齐自定义页面发布目标
+# 已有页面 URL / display formUuid 时直接复用该 formUuid，例如 FORM-QUERY001。
+# 只有没有目标页面且允许新增时才执行：
 openyida create-page APP_XXX "员工信息查询"
 
 # Step 3：生成/编写普通自定义页面 JSX 代码
@@ -100,15 +113,17 @@ openyida publish project/pages/src/employee-query.oyd.jsx APP_XXX FORM-QUERY001
 
 **关键说明**：
 - **Step 1** 的 get-schema 输出包含所有字段的 fieldId，在代码中必须使用 `FIELDS` 常量映射这些 ID
-- **Step 3** 的页面代码必须遵循 [编码指南](references/coding-guide.md) 和 [运行时护栏](references/runtime-guardrails.md)
+- **Step 2** 默认复用已有页面 context 并跳过 `openyida create-page`；但本轮用户明确指定另一个页面时先切换目标，不能唯一识别时询问；只有页面缺失且允许新增时才执行创建命令
+- **Step 3** 的页面代码必须遵循本技能正文；[编码指南](references/coding-guide.md) 和 [运行时护栏](references/runtime-guardrails.md) 在 check-page 报错、复杂交互、`deep_design` 或正文覆盖不了时读取
 - 注意：`openyida generate-page` 默认生成 Code Canvas `.canvas.jsx`；明确需要普通自定义页面 JSX/Jsx 组件链路时输出 `.oyd.jsx` 或加 `--native`
+- **Step 4** 是本地质量门槛，**Step 5** 才是远端页面更新证据；如果本轮只完成文件 Write/Edit 或 `check-page` / `compile`，final 只能说明“源码已修改，尚未发布”
 - 优先通过 `openyida generate-page ... --compile` 生成高质量骨架；需要完整交互样板时使用 `todo-mvc`
 - 页面生成 spec、接口调试 JSON、一次性验证脚本等临时工件必须用结构化文件写入工具创建到 `<projectRoot>/.cache/openyida/<项目名或任务名>/` 下；不要在仓库根目录、系统临时目录或 `.cache/` 顶层生成 `page.json`、`data.json` 或脚本文件
 - `check-page` 支持行级禁用：`// openyida-lint-disable-line <rule>` 或 `// openyida-lint-disable-next-line <rule>`。只在确认该行不会触发宜搭运行时问题时使用。
 
 ## fast_build 默认页面模板
 
-完整应用 `fast_build` 生成主页面时，默认选择以下轻量闭环之一：
+完整应用 `fast_build` 编写或更新主页面时，默认选择以下轻量闭环之一：
 
 1. 入口型页面：展示表单入口、核心流程说明、少量统计占位和快捷按钮，不执行真实列表查询。
 2. 内置数据 API 页面：用 `this.utils.yida.searchFormDatas` 查询已创建表单，用 `this.utils.yida.saveFormData` 做快速新增；所有失败路径恢复 `loading: false` 并展示空态。

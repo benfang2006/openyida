@@ -1,14 +1,29 @@
 ---
 name: yida-create-process
-description: 流程表单一体化创建（创建表单 → 转流程 → 获取 processCode → 配置流程）。适用于从零搭建需要审批的流程表单。
+description: 流程表单一体化创建（创建表单 → 转流程 → 配置流程）；仅当无既有流程/表单上下文且用户意图允许新建流程表单时使用。schema-managed 流程由根技能或明确 context 路由到 schema workflow。
 ---
 # 流程表单一体化创建
+
+> 资源边界：本技能只处理普通 OpenYida 资源；若根技能、上下文或 CLI guard 显示目标是 schema-managed，停止本技能并走 schema workflow；目标不明时回到根技能确认。
+> direct/standalone 路径才可执行本技能；schema-managed 路径必须回到 schema validate → plan → apply，不在本技能内降级写入。
+
+## Resource-First 使用门槛
+
+本技能不是“审批/流程”诉求的默认入口。执行前必须先解析 app/form/process context：
+
+- 已有流程表单、`processCode`、流程表单 URL 或 bound process 时，禁止从零创建，改用 `yida-process-rule` 配置/更新节点、分支、字段权限。
+- 已有普通表单 `formUuid` 且用户明确要把这张表单转成审批流程时，可使用用法 2（`--formUuid`）复用该表单；不得新建同名表单。
+- 只有没有目标表单/流程，且用户明确要新建带审批的数据入口或完整审批系统时，才使用用法 1 或推荐两步流程创建新表单再转流程。
+- 多个表单/流程候选按根技能来源优先级选择；同级冲突或无法判断要改哪条流程时才问用户。
 
 ## 严格禁止 (NEVER DO)
 
 - 不要编造 processCode，必须从命令返回的 JSON 中提取
 - 不要在流程定义中使用猜测的 fieldId，必须先用 `yida-get-schema` 获取
+- 不要在流程定义 `nodes` 中声明 `start` / `startNode` / `end` / `endNode` / `finish` 节点；OpenYida 会自动生成发起和结束节点
+- 不要把审批节点写成 `approve`；CLI 支持的是 `approval`（名词），别名可用 `approver` / `approvalNode`
 - 不要用 shell heredoc、`cat`/`echo`/`printf`/`tee` 或重定向生成字段定义、流程定义 JSON 文件
+- 已有流程表单、`processCode` 或 bound process 时，不要从零创建流程表单；改用 `yida-process-rule`。
 
 ## 严格要求 (MUST DO)
 
@@ -21,18 +36,18 @@ description: 流程表单一体化创建（创建表单 → 转流程 → 获取
 
 ## 适用场景
 
-用户需要"创建审批流程"、"新建流程表单"、"搭建审批系统"时使用。
+用户需要"创建审批流程"、"新建流程表单"、"搭建审批系统"，且 resource context 没有既有流程/表单目标时使用。
 
 **关键区分**：
 - 从零创建流程表单（含表单+流程配置）→ 本技能
-- 为已有表单配置/修改审批规则 → `yida-process-rule`
+- 为已有表单或流程配置/修改审批规则 → `yida-process-rule`；已有普通表单要转流程时仅使用本技能的 `--formUuid` 复用模式
 
 ## 触发条件
 
 **正向触发**：
 - "创建审批流程"、"新建流程表单"
 - "搭建审批系统"、"创建带审批的表单"
-- 需求中含「审批」「流程」「申请」「审核」「工单」等关键词，且尚无表单
+- 需求中含「审批」「流程」「申请」「审核」「工单」等关键词，且尚无目标表单/流程
 
 ---
 
@@ -63,6 +78,87 @@ openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>
 
 ```json
 {"success":true,"formUuid":"FORM-YYY","formTitle":"订单处理表","appType":"APP_XXX","fieldCount":6,"processCode":"TPROC--XXX","url":"{base_url}/APP_XXX/workbench/FORM-YYY"}
+```
+
+## 流程定义最小 DSL 合约
+
+`processDefinitionFile` 只描述发起和结束之间的业务节点。OpenYida 编译器会自动注入发起节点和结束节点，`nodes` 数组里不要手写任何 start/end 节点。
+
+合法基础节点类型只使用这些值：
+
+| 节点意图 | `type` 写法 |
+|------|------|
+| 审批 | `approval` |
+| 办理 / 填写 | `operator` |
+| 条件分支 | `route` |
+| 并行分支 | `parallel` |
+| 抄送 | `carbon` |
+
+常见误写必须修正：
+
+| 错误写法 | 正确处理 |
+|------|------|
+| `start`, `startNode`, `StartNode` | 删除该节点，CLI 自动生成发起节点 |
+| `end`, `endNode`, `finish`, `FinishNode` | 删除该节点，CLI 自动生成结束节点 |
+| `approve` | 改成 `approval` |
+
+最小合法流程定义示例：
+
+```json
+{
+  "nodes": [
+    {
+      "type": "approval",
+      "name": "主管审批",
+      "approver": "originator"
+    }
+  ]
+}
+```
+
+带条件分支示例：
+
+```json
+{
+  "nodes": [
+    {
+      "type": "route",
+      "name": "金额分支",
+      "conditions": [
+        {
+          "name": "5万以上",
+          "rules": [
+            {
+              "fieldId": "numberField_amount",
+              "fieldName": "采购金额",
+              "componentType": "NumberField",
+              "op": "GreaterThanOrEqual",
+              "value": 50000
+            }
+          ],
+          "childNodes": [
+            { "type": "approval", "name": "总经理审批", "approver": "originator" }
+          ]
+        },
+        {
+          "name": "5万以下",
+          "rules": [
+            {
+              "fieldId": "numberField_amount",
+              "fieldName": "采购金额",
+              "componentType": "NumberField",
+              "op": "LessThan",
+              "value": 50000
+            }
+          ],
+          "childNodes": [
+            { "type": "approval", "name": "部门经理审批", "approver": "originator" }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ## 推荐两步流程

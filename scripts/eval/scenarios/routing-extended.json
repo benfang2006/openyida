@@ -231,13 +231,6 @@
     "note": "Sequence 修复 → db-seq-fix"
   },
   {
-    "id": "large-file-write-truncate",
-    "prompt": "文件太大了 shell 写入被截断，用可靠方式写入",
-    "expectedSkill": "large-file-write",
-    "group": "辅助工具",
-    "note": "大文件可靠写入 → large-file-write"
-  },
-  {
     "id": "ai-text-generate",
     "prompt": "调用宜搭 AI 帮我生成一段产品介绍文案",
     "expectedSkill": "openyida ai",

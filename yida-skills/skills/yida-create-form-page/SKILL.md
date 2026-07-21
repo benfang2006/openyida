@@ -1,9 +1,22 @@
 ---
 name: yida-create-form-page
-description: 表单页面创建与更新，支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。适用于新建表单、设计表单结构、添加或修改表单字段。
+description: 表单页面创建与更新，支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。适用于新建表单、设计表单结构、添加或修改表单字段；schema-managed 表单由根技能或明确 context 路由到 schema workflow。
 ---
 
 # 表单页面创建与更新
+
+> 资源边界：本技能只处理普通 OpenYida 资源；若根技能、上下文或 CLI guard 显示目标是 schema-managed，停止本技能并走 schema workflow；目标不明时回到根技能确认。
+> direct/standalone 路径才可执行本技能；schema-managed 路径必须回到 schema validate → plan → apply，不在本技能内降级写入。
+
+## Resource-First create/update 判定
+
+执行本技能前必须先解析 app/form resource context：
+
+- 已有目标 `formUuid`、表单 URL、bound form，或 workspace cache/config 中可确认的 standalone form 时，字段结构诉求默认走 update/patch/rule/bind-datasource 模式；不要再 create 同名或同类表单。
+- bound form/page 只是默认候选，不是锁定目标；如果当前会话绑定表单或页面 A，但用户本轮明确要求修改 B 的字段，必须先解析 B 对应的表单 `formUuid`。B 能唯一解析时改 B；B 无法唯一解析或字段归属不清时问用户；禁止默认改 A。
+- 已有目标 app 但缺少业务数据表，且用户明确要求“增加客户表 / 新建订单表 / 新增数据收集入口”等，才使用 create 模式创建新表单。
+- 用户给页面 URL 或自定义页面 `formUuid` 且诉求是优化页面 UI 时，改走 `yida-custom-page` + `yida-publish-page`；不要创建表单。
+- 多个表单候选时按根技能来源优先级选择；同级冲突、字段目标不明或无法判断要改哪张表时才问用户。
 
 ## 严格禁止 (NEVER DO)
 
@@ -11,6 +24,7 @@ description: 表单页面创建与更新，支持 19 种业务字段和 Divider�
 - 不要在 update / patch / rule / validation / bind-datasource 模式中使用猜测的 fieldId，必须先用 `yida-get-schema` 获取
 - 不要用此命令操作数据记录（增删改查），应使用 `yida-data-management`
 - 不要用 shell heredoc、`cat`/`echo`/`printf`/`tee` 或重定向生成字段、变更、补丁、规则、数据源 JSON 文件
+- 已有目标表单且用户是改字段/联动/属性时，不要创建新表单；必须走 update/patch/rule/bind-datasource。
 - 不要用 `GroupContainer` / `PageSection` 承载普通业务分组；普通分组必须优先用 `Divider`
 
 ## 严格要求 (MUST DO)
@@ -91,6 +105,8 @@ Divider > Field
 
 ## create 模式
 
+仅当目标表单缺失且用户意图允许新增数据收集入口时使用。已有 `formUuid` / 表单 URL / bound form 时禁止使用 create 模式。
+
 ```bash
 openyida create-form create <appType> <formTitle> <fieldsJsonOrFile> [--layout double|card] [--theme compact|comfortable] [--label-align top|left]
 # 文件路径示例：.cache/openyida/<项目名或任务名>/<表单名>-fields.json
@@ -105,6 +121,8 @@ openyida create-form create <appType> <formTitle> <fieldsJsonOrFile> [--layout d
 ```
 
 ## update 模式
+
+已有 `formUuid` / 表单 URL / bound form 时优先使用本模式；修改字段前必须用 `openyida get-schema` 确认字段 ID 和当前结构。
 
 ```bash
 openyida create-form update <appType> <formUuid> <changesJsonOrFile>

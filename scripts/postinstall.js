@@ -280,7 +280,7 @@ fast_build 页面源码默认不得使用 \`this.dataSourceMap.*\`，除非本�
 | \`yida-skills/integration\` | 连接器、外部 API、数据源、集成自动化 | \`yida-integration\`, \`yida-connector\`, \`yida-connector-safe-actions\`, \`yida-data-source-connectors\` |
 | \`yida-skills/access\` | 平台/应用/表单/页面权限、公开访问、分享 | \`yida-corp-manager\`, \`yida-app-permission\`, \`yida-form-permission\`, \`yida-page-config\` |
 | \`yida-skills/ops\` | SLS、日志、traceId、Sequence、VOC | \`sls-log-workbench\`, \`yida-db-seq-fix\`, \`yida-voc\` |
-| \`yida-skills/agent\` | 大文件写入、导出对话、会议纪要/闪记转 PRD | \`large-file-write\`, \`yida-export-conversation\`, \`yida-flash-note-to-prd\` |
+| \`yida-skills/agent\` | 导出对话、会议纪要/闪记转 PRD | \`yida-export-conversation\`, \`yida-flash-note-to-prd\` |
 
 ## 执行规则
 

@@ -46,6 +46,7 @@ const chartConfig = [{
 
 function makeReportSchema() {
   return {
+    gmtModified: 100,
     pages: [{
       componentsMap: [],
       componentsTree: [{
@@ -85,7 +86,7 @@ describe('report command helpers', () => {
       .mockResolvedValueOnce({ success: true });
 
     await createBlankReport(authRef, 'APP_XXX', '销售报表');
-    await saveReportSchema(authRef, 'APP_XXX', 'REPORT_1', { pages: [] });
+    await saveReportSchema(authRef, 'APP_XXX', 'REPORT_1', { pages: [] }, 100);
 
     expect(utils.httpPost.mock.calls[0][1]).toBe('/dingtalk/web/APP_XXX/query/formdesign/saveFormSchemaInfo.json');
     expect(querystring.parse(utils.httpPost.mock.calls[0][2])).toMatchObject({
@@ -96,13 +97,37 @@ describe('report command helpers', () => {
       formUuid: 'REPORT_1',
       schemaVersion: 'V5',
       importSchema: 'true',
+      gmtModified: '100',
     });
+    expect(utils.requestWithAutoLogin).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    ['login expiry', { __needLogin: true }],
+    ['CSRF expiry', { __csrfExpired: true }],
+    ['redirect', { __needLogin: true, __httpStatus: 302 }],
+    ['ordinary failure', { success: false, errorCode: 'FAILED' }],
+  ])('report Schema save sends exactly once on %s', async (label, response) => {
+    utils.httpPost.mockResolvedValue(response);
+
+    await expect(saveReportSchema(
+      authRef,
+      'APP_XXX',
+      'REPORT_1',
+      { pages: [] },
+      100
+    )).resolves.toEqual(response);
+
+    expect(label).toBeTruthy();
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    expect(utils.requestWithAutoLogin).not.toHaveBeenCalled();
   });
 
   test('create-report run creates a report and saves generated schema', async () => {
     utils.httpPost
       .mockResolvedValueOnce({ success: true, content: { formUuid: 'REPORT_1' } })
       .mockResolvedValueOnce({ success: true });
+    utils.httpGet.mockResolvedValueOnce({ success: true, content: { gmtModified: 100 } });
 
     const result = await createReport.run(['APP_XXX', '销售报表', JSON.stringify(chartConfig)]);
 
@@ -119,6 +144,7 @@ describe('report command helpers', () => {
       id: 'REPORT_1',
       pages: expect.any(Array),
     });
+    expect(saveBody.gmtModified).toBe('100');
     expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(result);
   });
 
@@ -140,6 +166,7 @@ describe('report command helpers', () => {
     });
     expect(utils.httpGet.mock.calls[0][1]).toBe('/alibaba/web/APP_XXX/_view/query/formdesign/getFormSchema.json');
     const saveBody = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(saveBody.gmtModified).toBe('100');
     const savedSchema = JSON.parse(saveBody.content);
     const rootContent = savedSchema.pages[0].componentsTree[0].children[0];
     expect(rootContent.children).toHaveLength(1);

@@ -1,29 +1,5 @@
 [
   {
-    "id": "large-file-write-pos-1",
-    "prompt": "这个文件太大了，普通写入总是丢内容，帮我用可靠写入方式把这段代码写进去",
-    "expectedSkill": "large-file-write",
-    "type": "positive",
-    "note": "大文件可靠写入场景"
-  },
-  {
-    "id": "large-file-write-pos-2",
-    "prompt": "我有一段超过 500 行的 JSON 配置要写入文件，确保内容完整不丢失",
-    "expectedSkill": "large-file-write",
-    "type": "positive",
-    "note": "强调内容完整性的大文件写入"
-  },
-  {
-    "id": "large-file-write-neg-1",
-    "prompt": "帮我在自定义页面里写一段很长的 JSX 代码",
-    "expectedSkill": "yida-canvas-custom-page",
-    "mustNotTrigger": ["large-file-write"],
-    "type": "negative",
-    "category": "disambiguation",
-    "note": "写代码到页面 ≠ 大文件写入工具，应走 canvas-custom-page"
-  },
-
-  {
     "id": "sls-log-pos-1",
     "prompt": "帮我查一下 SLS 日志，看看昨天下午 3 点到 5 点这个应用的报错信息",
     "expectedSkill": "sls-log-workbench",
