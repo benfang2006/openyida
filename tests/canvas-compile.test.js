@@ -284,6 +284,53 @@ describe('resolveWindowAlias', () => {
 });
 
 describe('compileCanvasLocal', () => {
+  test('rejects unsupported bare package binding imports before runtime', () => {
+    const src = `
+      import { useDataBinding } from 'some-package';
+      export default function App() {
+        const data = useDataBinding({});
+        return <div>{data}</div>;
+      }
+    `;
+
+    let error;
+    try {
+      compileCanvasLocal(src);
+    } catch (compileError) {
+      error = compileError;
+    }
+
+    expect(error).toBeTruthy();
+    expect(error.message).toContain('some-package');
+    expect(error.message).toContain('MODULE_ALIAS_MAP');
+    expect(error.message).toContain('window.*');
+    expect(error.message).toContain('OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS');
+  });
+
+  test('allows explicit legacy window fallback for runtime alias drift', () => {
+    const oldValue = process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS;
+    process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS = '1';
+    try {
+      const src = `
+        import { FutureWidget } from 'future-runtime-package';
+        export default function App() {
+          return <FutureWidget />;
+        }
+      `;
+
+      const { runtimeCode, importedModules } = compileCanvasLocal(src);
+
+      expect(runtimeCode).toContain('window["future-runtime-package"]');
+      expect(JSON.parse(importedModules)).toEqual(['future-runtime-package', 'react']);
+    } finally {
+      if (oldValue === undefined) {
+        delete process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS;
+      } else {
+        process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS = oldValue;
+      }
+    }
+  });
+
   test('produces new Function-compatible runtimeCode that yields a rendering YidaComp', () => {
     const src = `
       import React, { useState } from 'react';
