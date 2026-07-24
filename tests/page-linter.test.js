@@ -34,6 +34,39 @@ export default function App() {
     expect(errorRules).toContain('controlled-input');
   });
 
+  test('blocks emoji in UI copy and code constants', () => {
+    const source = `
+export function renderJsx() {
+  var statusTitle = '✅ 已完成';
+  return <div>{statusTitle}</div>;
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/emoji.jsx');
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rule: 'emoji-forbidden',
+        line: 3,
+      }),
+    ]));
+  });
+
+  test('blocks emoji in page filenames', () => {
+    const source = `
+export function renderJsx() {
+  return <div>ok</div>;
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/home-✅.jsx');
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rule: 'emoji-forbidden',
+        line: 1,
+      }),
+    ]));
+  });
+
   test('flags Yida runtime traps in otherwise JSX-shaped pages', () => {
     const source = `
 export function renderJsx() {

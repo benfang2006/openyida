@@ -1079,6 +1079,25 @@ describe('form compiler field bindings', () => {
     }));
   });
 
+  test('compileFormDefinition rejects emoji before returning a schema', () => {
+    expect(() => formCompiler.compileFormDefinition({
+      formTitle: '访客登记',
+      fields: [
+        { key: 'status', type: 'TextField', label: '✅ 状态' },
+      ],
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_FORM_SCHEMA_EMOJI_FORBIDDEN',
+      details: expect.objectContaining({
+        issues: expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.stringContaining('label'),
+            emoji: '✅',
+          }),
+        ]),
+      }),
+    }));
+  });
+
   test('compileFormDefinition validates AssociationFormField association targets', () => {
     expect(() => formCompiler.compileFormDefinition({
       formTitle: '缺关联配置',
