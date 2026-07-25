@@ -188,6 +188,589 @@ describe('legacy create-form server revision isolation', () => {
   });
 });
 
+describe('legacy create-form schema-aware update evidence', () => {
+  test('label-based update resolves fields internally and emits compact evidence', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Schema Aware Update',
+      fields: [
+        { key: 'title', type: 'TextField', label: '事项名称' },
+        { key: 'remark', type: 'TextField', label: '备注' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_SCHEMA_AWARE',
+    }).schema;
+    initial.gmtModified = 100;
+    const {
+      isolatedCreateForm,
+      mockUtils,
+      consoleSpy,
+      mockChalk,
+    } = loadIsolatedLegacyForm(initial);
+
+    await isolatedCreateForm.run([
+      'update',
+      'APP_TEST',
+      'FORM_SCHEMA_AWARE',
+      JSON.stringify([{ action: 'update', label: '备注', changes: { required: true } }]),
+    ]);
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.formUuid === 'FORM_SCHEMA_AWARE');
+    expect(payload).toMatchObject({
+      success: true,
+      formUuid: 'FORM_SCHEMA_AWARE',
+      appType: 'APP_TEST',
+      changesApplied: 1,
+      changes: [
+        {
+          action: 'update',
+          label: '备注',
+          changedProps: 'required',
+          resolved: {
+            label: '备注',
+            componentName: 'TextField',
+            fieldId: expect.stringMatching(/^textField_/),
+          },
+          updatedProps: { required: true },
+        },
+      ],
+    });
+    const getSchemaCalls = mockUtils.httpGet.mock.calls.filter(call => call[1].includes('getFormSchema'));
+    expect(getSchemaCalls).toHaveLength(1);
+    const saveCall = mockUtils.httpPost.mock.calls.find(call => call[1].includes('/saveFormSchema.json'));
+    const savedSchema = JSON.parse(querystring.parse(saveCall[2]).content);
+    const savedContainer = findFormContainer(savedSchema.pages[0].componentsTree[0]);
+    const savedRemark = savedContainer.children.find(child => child.props.label.zh_CN === '备注');
+    expect(savedRemark.props.validation).toEqual(expect.arrayContaining([{ type: 'required' }]));
+    expect(JSON.stringify(parseConsoleJsonPayloads(consoleSpy))).not.toContain('事项名称');
+    const listItemText = mockChalk.listItem.mock.calls.map(call => call.join(' ')).join('\n');
+    expect(listItemText).toContain('备注');
+    expect(listItemText).not.toContain('事项名称');
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('ambiguous label update returns compact candidates and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Schema Aware Ambiguous',
+      fields: [
+        { key: 'remarkA', type: 'TextField', label: '备注' },
+        { key: 'remarkB', type: 'TextareaField', label: '备注' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_SCHEMA_AMBIGUOUS',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'update',
+      'APP_TEST',
+      'FORM_SCHEMA_AMBIGUOUS',
+      JSON.stringify([{ action: 'update', label: '备注', changes: { required: true } }]),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_SCHEMA_AMBIGUOUS',
+      diagnostics: [
+        {
+          action: 'update',
+          code: 'CREATE_FORM_FIELD_AMBIGUOUS',
+          label: '备注',
+          candidates: [
+            { label: '备注', componentName: 'TextField', fieldId: expect.stringMatching(/^textField_/) },
+            { label: '备注', componentName: 'TextareaField', fieldId: expect.stringMatching(/^textareaField_/) },
+          ],
+        },
+      ],
+    });
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('missing label update returns compact diagnostics and candidates', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Schema Aware Missing',
+      fields: [{ key: 'title', type: 'TextField', label: '事项名称' }],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_SCHEMA_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'update',
+      'APP_TEST',
+      'FORM_SCHEMA_MISSING',
+      JSON.stringify([{ action: 'update', label: '备注', changes: { required: true } }]),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_SCHEMA_MISSING',
+      diagnostics: [
+        {
+          action: 'update',
+          code: 'CREATE_FORM_FIELD_NOT_FOUND',
+          label: '备注',
+          candidates: [
+            { label: '事项名称', componentName: 'TextField', fieldId: expect.stringMatching(/^textField_/) },
+          ],
+        },
+      ],
+    });
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+});
+
+describe('legacy create-form compact field resolver', () => {
+  test('add-option missing field returns compact diagnostics and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Add Option Missing',
+      fields: [
+        { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+        { key: 'title', type: 'TextField', label: '事项名称' },
+        { key: 'owner', type: 'TextField', label: '负责人' },
+        { key: 'priority', type: 'SelectField', label: '优先级', options: ['普通'] },
+        { key: 'remark', type: 'TextareaField', label: '备注' },
+        { key: 'city', type: 'TextField', label: '城市' },
+        { key: 'amount', type: 'NumberField', label: '金额' },
+        { key: 'date', type: 'DateField', label: '日期' },
+        { key: 'dept', type: 'DepartmentSelectField', label: '部门' },
+        { key: 'attachment', type: 'AttachmentField', label: '附件' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_ADD_OPTION_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy, mockChalk } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'add-option',
+      'APP_TEST',
+      'FORM_ADD_OPTION_MISSING',
+      '不存在字段',
+      '已完成',
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_ADD_OPTION_MISSING',
+      diagnostics: [
+        {
+          action: 'add-option',
+          code: 'CREATE_FORM_FIELD_NOT_FOUND',
+          label: '不存在字段',
+          candidates: expect.any(Array),
+        },
+      ],
+    });
+    expect(payload.diagnostics[0].candidates.length).toBeLessThanOrEqual(8);
+    expect(payload).not.toHaveProperty('availableFields');
+    expect(JSON.stringify(payload)).not.toContain('availableFields');
+    expect(mockChalk.hint.mock.calls.map(call => call.join(' ')).join('\n')).not.toContain('可用字段');
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('bind-datasource missing field returns compact diagnostics and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Bind Missing',
+      fields: [
+        { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+        { key: 'title', type: 'TextField', label: '事项名称' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_BIND_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy, mockChalk } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'bind-datasource',
+      'APP_TEST',
+      'FORM_BIND_MISSING',
+      '不存在字段',
+      JSON.stringify({ url: '/gateway/options.json', labelField: 'name', valueField: 'id' }),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_BIND_MISSING',
+      diagnostics: [
+        {
+          action: 'bind-datasource',
+          code: 'CREATE_FORM_FIELD_NOT_FOUND',
+          label: '不存在字段',
+          candidates: expect.any(Array),
+        },
+      ],
+    });
+    expect(payload).not.toHaveProperty('availableFields');
+    expect(JSON.stringify(payload)).not.toContain('availableFields');
+    expect(mockChalk.hint.mock.calls.map(call => call.join(' ')).join('\n')).not.toContain('可用字段');
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('validation success emits compact resolved evidence without unrelated field labels', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Validation Evidence',
+      fields: [
+        { key: 'title', type: 'TextField', label: '事项名称' },
+        { key: 'remark', type: 'TextField', label: '备注' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_VALIDATION_EVIDENCE',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await isolatedCreateForm.run([
+      'validation',
+      'APP_TEST',
+      'FORM_VALIDATION_EVIDENCE',
+      JSON.stringify([{ field: '备注', type: 'required' }]),
+    ]);
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.formUuid === 'FORM_VALIDATION_EVIDENCE');
+    expect(payload).toMatchObject({
+      success: true,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_VALIDATION_EVIDENCE',
+      validationsApplied: 1,
+      rules: [
+        {
+          type: 'required',
+          fieldLabel: '备注',
+          resolved: {
+            label: '备注',
+            componentName: 'TextField',
+            fieldId: expect.stringMatching(/^textField_/),
+          },
+        },
+      ],
+    });
+    expect(JSON.stringify(payload)).not.toContain('事项名称');
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('validation missing field returns compact diagnostics and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Validation Missing',
+      fields: [
+        { key: 'title', type: 'TextField', label: '事项名称' },
+        { key: 'remark', type: 'TextField', label: '备注' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_VALIDATION_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'validation',
+      'APP_TEST',
+      'FORM_VALIDATION_MISSING',
+      JSON.stringify([{ field: '不存在字段', type: 'required' }]),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_VALIDATION_MISSING',
+      diagnostics: [
+        {
+          code: 'CREATE_FORM_FIELD_NOT_FOUND',
+          label: '不存在字段',
+          candidates: expect.any(Array),
+        },
+      ],
+    });
+    expect(payload).not.toHaveProperty('availableFields');
+    expect(JSON.stringify(payload)).not.toContain('availableFields');
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('rule missing field returns compact diagnostics and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Rule Missing',
+      fields: [
+        { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+        { key: 'remark', type: 'TextField', label: '备注' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_RULE_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'rule',
+      'APP_TEST',
+      'FORM_RULE_MISSING',
+      JSON.stringify([{ type: 'visibility', source: '不存在字段', target: '备注', equals: '待处理' }]),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_RULE_MISSING',
+      diagnostics: [
+        {
+          code: 'CREATE_FORM_FIELD_NOT_FOUND',
+          label: '不存在字段',
+          candidates: expect.any(Array),
+        },
+      ],
+    });
+    expect(payload).not.toHaveProperty('availableFields');
+    expect(JSON.stringify(payload)).not.toContain('availableFields');
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('rule resolves tableLabel-scoped fields and emits compact evidence', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact Rule Table Evidence',
+      fields: [
+        { key: 'title', type: 'TextField', label: '事项名称' },
+        { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+        { key: 'remark', type: 'TextField', label: '备注' },
+        {
+          key: 'items',
+          type: 'TableField',
+          label: '明细',
+          children: [
+            { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+            { key: 'remark', type: 'TextField', label: '备注' },
+          ],
+        },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_RULE_TABLE_EVIDENCE',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await isolatedCreateForm.run([
+      'rule',
+      'APP_TEST',
+      'FORM_RULE_TABLE_EVIDENCE',
+      JSON.stringify([{
+        type: 'visibility',
+        tableLabel: '明细',
+        source: '状态',
+        target: { tableLabel: '明细', label: '备注' },
+        equals: '待处理',
+      }]),
+    ]);
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.formUuid === 'FORM_RULE_TABLE_EVIDENCE');
+    expect(payload).toMatchObject({
+      success: true,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_RULE_TABLE_EVIDENCE',
+      rulesApplied: 1,
+      rules: [
+        {
+          type: 'visibility',
+          resolved: {
+            source: {
+              label: '状态',
+              componentName: 'SelectField',
+              path: ['明细', '状态'],
+              tableAncestors: [{ label: '明细', componentName: 'TableField' }],
+            },
+            targets: [
+              {
+                label: '备注',
+                componentName: 'TextField',
+                path: ['明细', '备注'],
+                tableAncestors: [{ label: '明细', componentName: 'TableField' }],
+              },
+            ],
+          },
+        },
+      ],
+      eventBindings: [
+        {
+          label: '状态',
+          event: 'onChange',
+          resolved: {
+            label: '状态',
+            componentName: 'SelectField',
+            path: ['明细', '状态'],
+            tableAncestors: [{ label: '明细', componentName: 'TableField' }],
+          },
+        },
+      ],
+    });
+    expect(JSON.stringify(payload)).not.toContain('事项名称');
+
+    const saveCall = mockUtils.httpPost.mock.calls.find(call => call[1].includes('/saveFormSchema.json'));
+    const savedSchema = JSON.parse(querystring.parse(saveCall[2]).content);
+    const savedContainer = findFormContainer(savedSchema.pages[0].componentsTree[0]);
+    const topLevelStatus = savedContainer.children.find(child => child.props.label.zh_CN === '状态');
+    const table = savedContainer.children.find(child => child.props.label.zh_CN === '明细');
+    const tableStatus = table.children.find(child => child.props.label.zh_CN === '状态');
+    expect(topLevelStatus.props.onChange).toBeUndefined();
+    expect(tableStatus.props.onChange).toMatchObject({
+      type: 'actionRef',
+      name: expect.stringMatching(/^openyidaRuleChange_/),
+    });
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('add-option can resolve a target field by fieldId and emits compact evidence', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact FieldId Success',
+      fields: [
+        { key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] },
+        { key: 'title', type: 'TextField', label: '事项名称' },
+      ],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_FIELD_ID_SUCCESS',
+    }).schema;
+    initial.gmtModified = 100;
+    const formContainer = findFormContainer(initial.pages[0].componentsTree[0]);
+    const statusFieldId = formContainer.children.find(child => child.props.label.zh_CN === '状态').props.fieldId;
+    const { isolatedCreateForm, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await isolatedCreateForm.run([
+      'add-option',
+      'APP_TEST',
+      'FORM_FIELD_ID_SUCCESS',
+      statusFieldId,
+      '已完成',
+    ]);
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.formUuid === 'FORM_FIELD_ID_SUCCESS');
+    expect(payload).toMatchObject({
+      success: true,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_FIELD_ID_SUCCESS',
+      fieldLabel: statusFieldId,
+      resolved: {
+        label: '状态',
+        fieldId: statusFieldId,
+        componentName: 'SelectField',
+      },
+      added: ['已完成'],
+    });
+    expect(JSON.stringify(payload)).not.toContain('事项名称');
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+
+  test('update with missing fieldId returns compact diagnostics and does not save', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Compact FieldId Missing',
+      fields: [{ key: 'title', type: 'TextField', label: '事项名称' }],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_FIELD_ID_MISSING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedLegacyForm(initial);
+
+    await expect(isolatedCreateForm.run([
+      'update',
+      'APP_TEST',
+      'FORM_FIELD_ID_MISSING',
+      JSON.stringify([{ action: 'update', fieldId: 'textField_missing', changes: { required: true } }]),
+    ])).rejects.toMatchObject({ code: 'CREATE_FORM_FIELD_RESOLUTION_FAILED' });
+
+    const payload = parseConsoleJsonPayloads(consoleSpy).find(item => item && item.error === 'CREATE_FORM_FIELD_RESOLUTION_FAILED');
+    expect(payload).toMatchObject({
+      success: false,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_FIELD_ID_MISSING',
+      diagnostics: [
+        {
+          action: 'update',
+          code: 'CREATE_FORM_FIELD_ID_NOT_FOUND',
+          fieldId: 'textField_missing',
+          candidates: expect.any(Array),
+        },
+      ],
+    });
+    expect(payload.diagnostics[0].candidates.length).toBeLessThanOrEqual(8);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('/saveFormSchema.json'))).toHaveLength(0);
+    expect(mockUtils.httpPost.mock.calls.filter(call => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    jest.dontMock('../lib/core/utils');
+    jest.dontMock('../lib/core/chalk');
+    jest.resetModules();
+  });
+});
+
 function loadIsolatedLegacyForm(schema) {
   jest.resetModules();
   const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -217,8 +800,7 @@ function loadIsolatedLegacyForm(schema) {
     requestWithAutoLogin: jest.fn((requestFn, authRef) => requestFn(authRef)),
     detectActiveTool: jest.fn(() => null),
   };
-  jest.doMock('../lib/core/utils', () => mockUtils);
-  jest.doMock('../lib/core/chalk', () => ({
+  const mockChalk = {
     banner: jest.fn(),
     step: jest.fn(),
     label: jest.fn(),
@@ -231,10 +813,13 @@ function loadIsolatedLegacyForm(schema) {
     usage: jest.fn(),
     hint: jest.fn(),
     listItem: jest.fn(),
-  }));
+  };
+  jest.doMock('../lib/core/utils', () => mockUtils);
+  jest.doMock('../lib/core/chalk', () => mockChalk);
   return {
     isolatedCreateForm: require('../lib/app/create-form'),
     mockUtils,
+    mockChalk,
     consoleSpy,
   };
 }
@@ -1084,6 +1669,111 @@ describe('create-form create recovery guardrails', () => {
 
     consoleSpy.mockRestore();
   });
+
+  test('patch mode reports post-save updateFormConfig failure as warning', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Patch Warning',
+      fields: [{ key: 'name', type: 'TextField', label: '姓名' }],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_PATCH_WARNING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy, mockChalk } = loadIsolatedLegacyForm(initial);
+    mockUtils.httpPost.mockImplementation((baseUrl, requestPath) => {
+      if (requestPath.includes('updateFormConfig')) {
+        return Promise.resolve({ success: false, errorMsg: '权限不足', errorCode: 'PERMISSION_DENIED' });
+      }
+      return Promise.resolve({ success: true });
+    });
+
+    await expect(isolatedCreateForm.run([
+      'patch',
+      'APP_TEST',
+      'FORM_PATCH_WARNING',
+      JSON.stringify([{ action: 'add', path: '/postSaveWarningProbe', value: true }]),
+    ])).resolves.toBeUndefined();
+
+    const warningPayload = consoleSpy.mock.calls
+      .map((call) => call[0])
+      .filter((line) => typeof line === 'string' && line.startsWith('{'))
+      .map((line) => JSON.parse(line))
+      .find((payload) => payload && payload.formUuid === 'FORM_PATCH_WARNING');
+
+    expect(warningPayload).toMatchObject({
+      success: true,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_PATCH_WARNING',
+      stage: 'updateFormConfig',
+      schemaSaved: true,
+      configWarning: '权限不足',
+      configResult: {
+        success: false,
+        errorMsg: '权限不足',
+        errorCode: 'PERMISSION_DENIED',
+      },
+    });
+    expect(mockChalk.result.mock.calls.some((call) => call[0] === false)).toBe(false);
+    expect(mockChalk.result).toHaveBeenCalledWith(true, 'Schema 补丁保存成功', expect.any(Array));
+    expect(mockChalk.warn).toHaveBeenCalledWith(expect.stringContaining('权限不足'));
+    expect(mockUtils.httpPost.mock.calls.filter((call) => call[1].includes('updateFormConfig'))).toHaveLength(1);
+
+    consoleSpy.mockRestore();
+  });
+
+  test('add-option mode reports post-save updateFormConfig failure as warning', async () => {
+    const initial = formCompiler.compileFormDefinition({
+      formTitle: 'Add Option Warning',
+      fields: [{ key: 'status', type: 'SelectField', label: '状态', options: ['待处理'] }],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_ADD_OPTION_WARNING',
+    }).schema;
+    initial.gmtModified = 100;
+    const { isolatedCreateForm, mockUtils, consoleSpy, mockChalk } = loadIsolatedLegacyForm(initial);
+    mockUtils.httpPost.mockImplementation((baseUrl, requestPath) => {
+      if (requestPath.includes('updateFormConfig')) {
+        return Promise.resolve({ success: false, errorMsg: '权限不足', errorCode: 'PERMISSION_DENIED' });
+      }
+      return Promise.resolve({ success: true });
+    });
+
+    await expect(isolatedCreateForm.run([
+      'add-option',
+      'APP_TEST',
+      'FORM_ADD_OPTION_WARNING',
+      '状态',
+      '已完成',
+    ])).resolves.toBeUndefined();
+
+    const warningPayload = consoleSpy.mock.calls
+      .map((call) => call[0])
+      .filter((line) => typeof line === 'string' && line.startsWith('{'))
+      .map((line) => JSON.parse(line))
+      .find((payload) => payload && payload.formUuid === 'FORM_ADD_OPTION_WARNING');
+
+    expect(warningPayload).toMatchObject({
+      success: true,
+      appType: 'APP_TEST',
+      formUuid: 'FORM_ADD_OPTION_WARNING',
+      fieldLabel: '状态',
+      added: ['已完成'],
+      stage: 'updateFormConfig',
+      schemaSaved: true,
+      configWarning: '权限不足',
+      configResult: {
+        success: false,
+        errorMsg: '权限不足',
+        errorCode: 'PERMISSION_DENIED',
+      },
+    });
+    expect(mockChalk.result.mock.calls.some((call) => call[0] === false)).toBe(false);
+    expect(mockChalk.result).toHaveBeenCalledWith(true, '选项追加成功', expect.any(Array));
+    expect(mockChalk.warn).toHaveBeenCalledWith(expect.stringContaining('权限不足'));
+    expect(mockUtils.httpPost.mock.calls.filter((call) => call[1].includes('updateFormConfig'))).toHaveLength(1);
+
+    consoleSpy.mockRestore();
+  });
 });
 
 function loadIsolatedCreateFormCommand(overrides = {}) {
@@ -1289,7 +1979,7 @@ describe('form compiler field bindings', () => {
     }));
 
     expect(() => formCompiler.compileFormDefinition({
-      formTitle: '非法 schema-managed 引用',
+      formTitle: '非法 manifest 引用',
       fields: [
         { key: 'customer', type: 'AssociationFormField', label: '关联客户', form: 'customer' },
       ],
@@ -1301,8 +1991,8 @@ describe('form compiler field bindings', () => {
       }),
     }));
 
-    const managedReferenceCompiled = formCompiler.compileFormDefinition({
-      formTitle: 'schema-managed 引用',
+    const manifestReferenceCompiled = formCompiler.compileFormDefinition({
+      formTitle: 'manifest 引用',
       fields: [
         {
           key: 'customer',
@@ -1313,7 +2003,7 @@ describe('form compiler field bindings', () => {
       ],
     });
 
-    expect(managedReferenceCompiled.fieldBindingComponents.customer).toBe('AssociationFormField');
+    expect(manifestReferenceCompiled.fieldBindingComponents.customer).toBe('AssociationFormField');
 
     const compiled = formCompiler.compileFormDefinition({
       formTitle: '合法关联配置',
@@ -1492,6 +2182,13 @@ function findFormContainer(node) {
     }
   }
   return null;
+}
+
+function parseConsoleJsonPayloads(consoleSpy) {
+  return consoleSpy.mock.calls
+    .map(call => call[0])
+    .filter(line => typeof line === 'string' && line.startsWith('{'))
+    .map(line => JSON.parse(line));
 }
 
 // ── add-option 模式 parseArgs 测试 ──────────────────

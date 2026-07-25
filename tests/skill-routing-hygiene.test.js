@@ -3,7 +3,15 @@
 const fs = require('fs');
 const path = require('path');
 
-describe('Schema-as-Code skill State authority', () => {
+const RETIRED_ARCHITECTURE_PATTERN = new RegExp([
+  'Direct' + '-plus',
+  'direct' + '/standalone',
+  'schema' + '-managed',
+  ['Schema', 'as', 'Code'].join('-'),
+  '\\b' + 'S' + 'AC' + '\\b',
+].join('|'));
+
+describe('skill resource boundary copy', () => {
   test.each([
     ['root route', path.join(__dirname, '..', 'yida-skills', 'SKILL.md')],
     ['app route', path.join(__dirname, '..', 'yida-skills', 'skills', 'yida-app', 'SKILL.md')],
@@ -25,16 +33,14 @@ describe('Schema-as-Code skill State authority', () => {
     expect(skill).not.toMatch(/State\s*,\s*generated bindings/i);
   });
 
-  test('root route exposes schema-managed and direct execution paths', () => {
+  test('root route keeps default command flow without internal architecture terms', () => {
     const root = fs.readFileSync(path.join(__dirname, '..', 'yida-skills', 'SKILL.md'), 'utf8');
 
-    expect(root).toMatch(/schema-managed/);
-    expect(root).toMatch(/direct\/standalone/);
-    expect(root).toMatch(/schema validate/);
-    expect(root).toMatch(/schema plan/);
-    expect(root).toMatch(/schema apply/);
+    expect(root).toMatch(/默认使用 `create-app \/ create-form \/ create-page \/ generate-page \/ publish`/);
     expect(root).toMatch(/resolve_resource_context/);
-    expect(root).toMatch(/create missing only/);
+    expect(root).toMatch(/create missing resources only/);
+    expect(root).toMatch(/字段级命令内置解析/);
+    expect(root).not.toMatch(RETIRED_ARCHITECTURE_PATTERN);
   });
 
   test.each([
@@ -44,7 +50,7 @@ describe('Schema-as-Code skill State authority', () => {
     'yida-process-rule',
     'yida-create-page',
     'yida-publish-page',
-  ])('%s keeps SAC routing as a lightweight direct/schema boundary', skillName => {
+  ])('%s keeps ordinary resource-first boundaries', skillName => {
     const skill = fs.readFileSync(path.join(
       __dirname,
       '..',
@@ -54,9 +60,8 @@ describe('Schema-as-Code skill State authority', () => {
       'SKILL.md'
     ), 'utf8');
 
-    expect(skill).toMatch(/direct\/standalone/);
-    expect(skill).toMatch(/schema-managed/);
-    expect(skill).toMatch(/schema validate → plan → apply/);
+    expect(skill).toMatch(/目标不明时先只读确认或询问用户/);
+    expect(skill).not.toMatch(RETIRED_ARCHITECTURE_PATTERN);
     expect(skill).not.toMatch(/generic JIT conflict/);
     expect(skill).not.toMatch(/classification=stale_replanned/);
   });
