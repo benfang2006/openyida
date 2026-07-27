@@ -161,8 +161,9 @@ describe('OpenYida skill contracts', () => {
     expect(app).toContain('阶段 5 的本地源码校验只算“可发布”');
     expect(app).toContain('没有 publish 成功证据，只能对用户说明“源码已修改，尚未发布”');
 
-    expect(canvas).toContain('本技能的本地校验只证明源码可发布，不等于远端页面已更新');
-    expect(canvas).toContain('只能说“Canvas 源码已修改，尚未发布”');
+    expect(canvas).toContain('final 前需要成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`');
+    expect(canvas).toContain('有 publish 成功证据时表述为“页面已发布”');
+    expect(canvas).toContain('只有本地校验证据时表述为“Canvas 源码已修改，尚未发布”');
 
     expect(native).toContain('`check-page` / `compile` 只证明源码可发布，不等于远端页面已更新');
     expect(native).toContain('final 只能说明“源码已修改，尚未发布”');
