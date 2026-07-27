@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: 'एकीकृत डेटा प्रबंधन (फॉर्म/प्रक्रिया/कार्य/उप-फॉर्म)',
     cmd_task_center: 'वैश्विक कार्य केंद्र (लंबित/संसाधित/CC आदि)',
     cmd_basic_info: 'संगठन की मूल जानकारी, क्षमता, कोटा और डोमेन देखें',
+    cmd_read_dingtalk_doc: 'DingTalk दस्तावेज़ की Markdown सामग्री प्राप्त करें',
+    cmd_read_dingtalk_tingji: 'टास्क UUID से DingTalk Tingji विवरण प्राप्त करें',
     cmd_get_permission: 'फॉर्म अनुमति कॉन्फ़िगरेशन पूछें',
     cmd_save_permission: 'फॉर्म अनुमति कॉन्फ़िगरेशन सहेजें',
     cmd_corp_manager: 'प्लेटफ़ॉर्म अनुमतियां प्रबंधित करें',

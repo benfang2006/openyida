@@ -414,6 +414,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida data <action> <resource> [args]` | Unified data management (form/process/task/subform) |
 | `openyida task-center <type> [options]` | Global task center (todo/processed/cc etc.) |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | Query organization basic info, capacity, quotas, and domain settings |
+| `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | Fetch Markdown content from a DingTalk document |
+| `openyida read-dingtalk-tingji <taskUuid> [--json]` | Fetch DingTalk Tingji details by task UUID |
 | `openyida get-permission <appType> <formUuid>` | Query form permission config |
 | `openyida save-permission <appType> <formUuid> ...` | Save form permission config |
 | `openyida corp-manager <search-user\|list\|add\|remove\|address-book> ...` | Manage platform admins and address book permissions |

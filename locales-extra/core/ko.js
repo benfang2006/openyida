@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: '통합 데이터 관리 (양식/프로세스/작업/하위양식)',
     cmd_task_center: '글로벌 작업 센터 (할일/처리됨/참조 등)',
     cmd_basic_info: '조직 기본 정보, 용량, 할당량 및 도메인 설정 조회',
+    cmd_read_dingtalk_doc: 'DingTalk 문서의 Markdown 내용 가져오기',
+    cmd_read_dingtalk_tingji: '작업 UUID로 DingTalk Tingji 상세 정보 가져오기',
     cmd_get_permission: '양식 권한 설정 조회',
     cmd_save_permission: '양식 권한 설정 저장',
     cmd_corp_manager: '플랫폼 권한 관리',

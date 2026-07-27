@@ -869,6 +869,18 @@ async function main() {
       break;
     }
 
+    case 'read-dingtalk-doc': {
+      const { run } = require('../lib/document/document-markdown');
+      await run(args);
+      break;
+    }
+
+    case 'read-dingtalk-tingji': {
+      const { run } = require('../lib/document/tingji');
+      await run(args);
+      break;
+    }
+
     case 'doctor': {
       const { run } = require('../lib/core/doctor');
       await run(args);

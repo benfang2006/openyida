@@ -312,6 +312,8 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida data <action> <resource> [args]` | 统一数据管理（表单/流程/任务/子表单） |
 | `openyida task-center <type> [options]` | 全局任务中心（待办/已处理/抄送等） |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | 查询组织基本信息、容量、额度和域名设置 |
+| `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | 获取钉钉文档的 Markdown 内容 |
+| `openyida read-dingtalk-tingji <taskUuid> [--json]` | 按任务 UUID 获取钉钉听记详情 |
 | `openyida get-permission <appType> <formUuid>` | 查询表单权限配置 |
 | `openyida save-permission <appType> <formUuid> ...` | 保存表单权限配置 |
 | `openyida corp-manager <search-user\|list\|add\|remove\|address-book> ...` | 管理平台管理员与通讯录权限 |
