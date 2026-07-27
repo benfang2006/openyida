@@ -1,6 +1,6 @@
 # Code Canvas 数据桥指南（自写 HTTP 读写宜搭数据）
 
-Code Canvas 运行时**没有** `this.utils.yida.*` / `dataSourceMap` / `this.$(fieldId)` 实例数据桥（核实自 `factory.tsx`：物料只透传 `code / runtimeCode / importedModules / pageType`，`YidaComp` 是普通函数组件，wrapper 只注入 `window`）。因此 `YidaComp` 要读写宜搭数据，只能**自己补一座 HTTP 桥**。本文件给出干净、可复用、合规的写法。
+Code Canvas 运行时**没有** `this.utils.yida.*` / `dataSourceMap` / `this.$(fieldId)` 实例数据桥；`YidaComp` 是普通 React 函数组件。因此 `YidaComp` 要读写宜搭数据，只能在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。本文件给出干净、可复用、合规的写法。
 
 ## 三条数据路径，先选对
 
@@ -8,9 +8,9 @@ Code Canvas 运行时**没有** `this.utils.yida.*` / `dataSourceMap` / `this.$(
 | --- | --- | --- |
 | 宜搭开放 API（OpenAPI，`appKey`/`appSecret` 签名） | **不可** | 需服务端签名；在浏览器里必然泄露 secret。只能由后端 / 连接器代理调，Canvas 不直连。 |
 | 平台已配置**连接器**（HTTP 连接器暴露的同源代理端点） | **推荐** | 同源 `fetch(url, { credentials: 'include' })` 带 cookie 即可，鉴权与密钥留在平台侧，符合数据源治理。 |
-| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 可，但要谨慎 | 与普通自定义页面 `this.utils.yida.searchFormDatas` 命中的是同类端点；需自行带 CSRF token，端点随环境可能变化，不要硬编码跨域绝对地址。 |
+| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 可，但要谨慎 | 与普通自定义页面 `this.utils.yida.searchFormDatas` 命中的是同类端点；使用同源相对路径、`credentials: 'include'` 和运行态 CSRF token。 |
 
-选路原则：**优先走连接器代理**（编码规则 #6「不要绕过数据源治理」）。真需要直连内部端点时，只用**同源相对路径** + `credentials: 'include'`，绝不在源码里硬编码 Cookie / CSRF / appSecret。
+选路原则：优先走连接器代理，让鉴权、密钥和数据源治理留在平台侧。真需要直连内部端点时，使用**同源相对路径** + `credentials: 'include'`，Cookie / CSRF / appSecret 由平台上下文或后端服务提供。
 
 ## 推荐：先写 dataBinding，再生成数据桥
 
@@ -39,10 +39,10 @@ OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `da
 
 数据绑定规则：
 
-- `mode=form` 必须来自真实 `appType/formUuid` 和字段 ID，不要猜字段。
-- `mode=connector/url` 必须使用同源代理端点，不把第三方密钥放进 Canvas 源码。
-- `mode=seed` 只能用于 `openyida sample`、离线预览或明确标注的演示页，不能标注“已接真实数据”；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
-- 模板生成的 `DataBridge` 状态要保留，方便线上排查“接口没通 / 结构没识别 / 权限不足”。
+- `mode=form` 使用真实 `appType/formUuid` 和字段 ID，字段来源为 `get-schema`、表单创建结果或已确认的业务 Schema。
+- `mode=connector/url` 使用同源代理端点，第三方密钥留在连接器或后端服务侧。
+- `mode=seed` 用于 `openyida sample`、离线预览或明确标注的演示页；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
+- 模板生成的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
 
 ## 可复用读数据 Hook
 
@@ -125,14 +125,14 @@ function useYidaFetch(buildRequest, deps) {
 
 要点：
 
-- `credentials: 'include'` 让浏览器带上同源登录态，**不要**手动拼 `Cookie`；很多 Cookie 是 HttpOnly，`document.cookie` 读不到。
-- 如需 CSRF，优先从 `window.g_config._csrf_token` / `window.g_config.csrfToken` 动态读取，按接口要求放入 `_csrf_token` 请求参数和 / 或 `global_csrf_token` 头，别写死。
+- `credentials: 'include'` 让浏览器带上同源登录态；Cookie 由浏览器和平台管理。
+- 如需 CSRF，优先从 `window.g_config._csrf_token` / `window.g_config.csrfToken` 动态读取，按接口要求放入 `_csrf_token` 请求参数和 / 或 `global_csrf_token` 头。
 - 用 `AbortController` 在卸载 / 依赖变化时取消，避免 setState-after-unmount（对应编码规则 #5 副作用清理）。
-- 解析响应按**真实返回结构**处理，不要假设字段名；不同端点和运行态会出现 `data`、`result.data`、`content.data`、`content.result.data`、`list`、`values`、`records` 等包装。
+- 解析响应按**真实返回结构**处理；不同端点和运行态会出现 `data`、`result.data`、`content.data`、`content.result.data`、`list`、`values`、`records` 等包装。
 
 ## 表单查询返回体必须递归解析
 
-“数据管理里有 9 条，但 Code Canvas 页面显示 0 条”的常见根因不是没发请求，而是响应体被多层包装，页面只读了错误层级。统一使用下面的解析器，既兼容数组位置，也能在 `totalCount > 0` 但解析为 0 条时主动暴露故障。
+“数据管理里有数据，但 Code Canvas 页面显示 0 条”的常见失败模式是响应体被多层包装，页面只读了错误层级。统一使用下面的解析器，既兼容数组位置，也能在 `totalCount > 0` 但解析为 0 条时主动暴露故障。
 
 ```jsx
 function unwrapRows(payload) {
@@ -194,8 +194,8 @@ function normalizeFormRow(row) {
 
 保护规则：
 
-- 首屏只有 sample/离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口，不用 seedRows 冒充业务记录。真实接口返回后必须以接口为准。
-- 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，抛出“接口返回结构未识别”，不要展示“暂无数据”。
+- 首屏只有 sample/离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
+- 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，展示“接口返回结构未识别”，并保留原始错误状态供排查。
 - 用 `openyida data query form <appType> <formUuid> --size 20` 或数据管理页核对总数，页面统计必须和真实表单一致。
 
 ## 在组件里用
@@ -239,7 +239,7 @@ export default YidaComp;
 
 ## 轮询只刷新数据，不刷新整页
 
-多人同时提交、点赞、更新状态的留言板 / 投票墙 / 任务看板，需要轮询让不同用户看到同一份状态。轮询只应更新统计和列表，不应刷新浏览器页面，也不应每次把页面打回 loading。
+多人同时提交、点赞、更新状态的留言板 / 投票墙 / 任务看板，需要轮询让不同用户看到同一份状态。轮询更新统计和列表，保留当前页面和已加载数据状态。
 
 ```jsx
 var POLL_INTERVAL_MS = 5000;
@@ -263,7 +263,7 @@ function YidaComp() {
       setLoading(true);
     }
 
-    // ⚠️ 直连 searchFormDatas.json 必须 GET + query（见下文「直连内部端点」红线）：
+    // 直连 searchFormDatas.json 必须 GET + query（见下文请求契约）：
     // formUuid/appType 放 URL query，分页参数名是 currentPage（不是 pageNumber）。
     var qs = new URLSearchParams({
       formUuid: '<FORM_UUID>',
@@ -307,18 +307,18 @@ function YidaComp() {
 }
 ```
 
-排序也要按用户语义明确：如果页面是“最新建议”，按 `gmtCreate` / 提交日期倒序；如果页面是“排行榜”，先按点赞数倒序，再用创建时间做 tie-break。不要因为按点赞排序，就误判新增的 0 赞数据“没有同步”。
+排序也要按用户语义明确：页面是“最新建议”时，按 `gmtCreate` / 提交日期倒序；页面是“排行榜”时，先按点赞数倒序，再用创建时间做 tie-break。验收时同时看总数和排序规则，确认新增记录是否进入正确位置。
 
-## 直连内部端点 `searchFormDatas.json` 红线（已验证，看板/列表最常踩）
+## 直连内部端点 `searchFormDatas.json` 请求契约
 
-不方便配连接器、只需读本应用表单数据时，可同源直连内部端点 `searchFormDatas.json`。三个**踩过坑、务必照做**的点，写错任意一个都会「看板全 0」或报「参数校验失败formUuid」，且三个请求会一起 reject：
+不方便配连接器、只需读本应用表单数据时，可同源直连内部端点 `searchFormDatas.json`。必须遵守三点请求契约，写错任意一个都会导致列表为空或接口报「参数校验失败formUuid」：
 
 1. **必须 `GET` + query 参数**，`formUuid`/`appType` 放 **URL query**。若用 `POST` 把 `formUuid` 塞进 body，后端从 query 读不到 → 直接报 **`参数校验失败formUuid`**。
 2. **分页参数名是 `currentPage`**（不是 `pageNumber`）；`searchFieldJson` 传 `'{}'` 表示不过滤。
 3. **返回列表在 `content.data`**，不是顶层 `data`。响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。（注意：openyida CLI `data query` 会**归一化**把 `data` 提到顶层，你用 CLI 抽查看到的是顶层 `data`，别被误导——浏览器直连拿到的是 `content.data`。）每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
 
 ```jsx
-// 已验证：GET + query，读一个表单的数据
+// GET + query，读一个表单的数据
 function fetchFormData(appType, formUuid, signal) {
   var qs = new URLSearchParams({
     formUuid: formUuid,
@@ -337,20 +337,11 @@ function fetchFormData(appType, formUuid, signal) {
 function fieldOf(row, fieldId) { return (row.formData || row)[fieldId]; }
 ```
 
-## 本次故障复盘：为什么页面会一直拿不到最新表单数据
-
-1. **把 Code Canvas 当普通自定义页面写**：Canvas 没有 `this.utils.yida.*` / `dataSourceMap`，必须自写 HTTP 桥。
-2. **CSRF 来源取错**：只从 `document.cookie` 找 token 会失败，因为 Cookie 可能是 HttpOnly；应从 `window.g_config` 取页面上下文 token。
-3. **响应结构只解析一层**：表单查询可能返回 `content.result.data` 这类多层包裹，页面只读 `json.data` 就会显示 0 条。
-4. **Demo 数据掩盖真实错误**：seed 数据让页面看起来“有内容”，但没有证明接口数据真的接入；真实数据页必须用 `totalCount` 做保护，接口异常或未接 dataBinding 时展示错误/空态，不回退成漂亮 demo 列表。
-5. **刷新策略不对**：多人状态同步需要 5 秒左右轮询，但轮询只能刷新数值和列表，不能整页 reload，也不能首屏之后反复清空旧数据。
-6. **排序口径混淆**：数据存在但按点赞排行时，0 赞新数据可能排在后面；验收时要同时看总数和列表排序规则。
-
-交付验收清单：
+## 数据接入验收清单
 
 - 已确认 appType、formUuid 和字段 ID 来自真实表单 Schema。
 - 页面首屏接口返回后，统计总数与数据管理页 / `openyida data query form` 的总数一致。
-- 真实接口异常时显示错误原因，不静默回退成“暂无数据”。
+- 真实接口异常时显示错误原因和重试入口。
 - 提交、点赞等写操作成功后调用 silent reload，只更新统计和列表。
 - 轮询 `setInterval` 有 cleanup，页面隐藏时暂停请求。
 
@@ -358,5 +349,5 @@ function fieldOf(row, fieldId) { return (row.formData || row)[fieldId]; }
 
 - **确认再写**：删除、批量更新等不可逆操作，先让用户在 UI 里显式确认，不在 `useEffect` 里静默触发。
 - **幂等**：提交按钮加 loading 锁与去重键，避免重复写入。
-- **权限**：写操作是否允许由平台权限决定，浏览器侧不要伪造身份；失败按后端返回的 `errorMsg` 提示，不吞错。
-- **不硬编码密钥**：任何 `appSecret` / 签名逻辑都必须留在服务端 / 连接器，Canvas 源码里只出现同源相对路径与业务参数。
+- **权限**：写操作是否允许由平台权限决定；失败按后端返回的 `errorMsg` 提示。
+- **密钥位置**：任何 `appSecret` / 签名逻辑都留在服务端 / 连接器，Canvas 源码里只出现同源相对路径与业务参数。

@@ -4,24 +4,24 @@
 
 ## 首次生成模板路由
 
-用户通常不会直接说模板名，Agent 需要按自然语言选择模板。
+用户描述页面目标后，按下表把自然语言需求路由到确定模板。
 
-`generate-page` 的模板只用于选定运行时契约、数据桥、主题变量和首版 primitives；它不是最终视觉稿。生成真实页面时，必须结合 `yida-page-uiux` 的视觉方向决策块重写区块顺序、信息层级、局部构图、文案和样式节奏。可以保留模板的编译安全结构和必要 primitive class，但不要照搬默认 Hero、卡片网格、三段式卖点或库存文案。
+`generate-page` 的模板提供运行时契约、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
 
-页面生成路径必须二选一：走模板路径时，先写业务化 `page-spec.json` 并执行 `openyida generate-page ... --spec ... --compile`，之后只读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；不要立刻 Read 大段源码后全量 Write 覆盖同一路径。若已经明确最终页面结构、数据桥和视觉细节，走手写路径，跳过 `generate-page`，直接 Write 最终 `.canvas.jsx`。
+页面生成路径二选一：走模板路径时，先写业务化 `page-spec.json` 并执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；已经明确最终页面结构、数据桥和视觉细节时，走手写路径，直接 Write 最终 `.canvas.jsx`。
 
 生成器会在 `.openyida-page.json` 中写入 `domainFidelity`，并在 CLI 输出中提示当前页面是否还依赖 sample fallback：
 
 - `domain-ready`：主要业务语义已覆盖，sample 只剩编译骨架。
 - `draft-needs-domain-spec`：用户已有业务要求，但 page spec 仍缺业务对象、指标、交互或视觉方向；继续补 spec 或改源码。
-- `sample-reference`：基本没有业务化输入，结果只能当 sample 参考，不能交付为真实应用页面。
+- `sample-reference`：业务化输入不足，结果定位为 sample 参考；继续补业务对象、字段、指标、视觉方向和数据绑定后再作为真实应用页面交付。
 
-真实业务页的 `page-spec.json` 不能只写 `template/title/output`。至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；看板/列表/详情如果本轮已经创建或解析业务表单，必须写 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，官网/品牌页优先写 `assets` 或素材缺口。`sample` 是例子，不是框架；如果 `domainFidelity.sampleFallbacks` 里还出现 `features`、`metrics`、`roadmap`、`heroText` 等关键项，必须继续定制。
+真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页优先写 `assets` 或素材缺口。`domainFidelity.sampleFallbacks` 里出现 `features`、`metrics`、`roadmap`、`heroText` 等关键项时，继续补齐业务化规格。
 
 数据真实性边界：
 
 - `openyida sample` 或模板原样发布可以展示 sample/seed 数据，但页面必须标注 sample/seed。
-- 完整应用或真实交付页不能用前端 seedRows 冒充业务记录；需要演示数据时，先把 demo/mock records 写入真实宜搭表单，再由 Canvas 读取。
+- 完整应用或真实交付页使用真实业务记录；需要演示数据时，先把 demo/mock records 写入真实宜搭表单，再由 Canvas 读取。
 - 未写入 demo records 且没有真实数据时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
 
 | 用户需求 | CLI 模板 | scene | 视觉要点 |
@@ -43,7 +43,7 @@
 
 命中 `official-homepage` 时，写代码前先形成轻量设计规格和素材清单。
 
-强视觉品牌先读 `yida-page-uiux/references/landing/realistic-brand-homepage.md`。不要把“有 heroImage”当作官网完成条件：至少规划场景 Hero、产品/服务、过程/空间三类素材，并给出从真实材质推导的页面级品牌 token、不同 section 的构图节奏和一个明确 CTA。
+强视觉品牌先读 `yida-page-uiux/references/landing/realistic-brand-homepage.md`。官网完成条件包括：场景 Hero、产品/服务、过程/空间三类素材，从真实材质推导的页面级品牌 token，不同 section 的构图节奏，以及一个明确 CTA。
 
 素材清单至少包含：
 
@@ -65,9 +65,9 @@
 2. AI 生成图片。先生成本地图片，再确认 CDN 配置，之后上传并回填 URL。
 3. 公开图库。只使用可公开访问且通过 HTTP 200 校验的图片 URL；生产交付优先转存到自有 CDN。
 
-若 `openyida cdn-config --show` 显示缺少 `accessKeyId/accessKeySecret/cdnDomain/ossBucket`，不要承诺已完成上传，可先用已验证公开 URL 测试，或提示用户补 CDN 配置。
+若 `openyida cdn-config --show` 显示缺少 `accessKeyId/accessKeySecret/cdnDomain/ossBucket`，交付状态标为“素材待上传”；可先用已验证公开 URL 测试，或提示用户补 CDN 配置。
 
-官方 Sample / 离线展示在无 CDN 时允许内嵌经过压缩的 JPEG/WebP data URI，保证源码原样发布也有真实图片；建议 3-5 张、单张不超过 250 KB、总量不超过 800 KB。生产页面不要沿用该兜底，应迁移到稳定 CDN。
+官方 Sample / 离线展示在无 CDN 时允许内嵌经过压缩的 JPEG/WebP data URI，保证源码原样发布也有真实图片；建议 3-5 张、单张不超过 250 KB、总量不超过 800 KB。生产页面使用稳定 CDN 素材 URL。
 
 ## 主题作用域
 

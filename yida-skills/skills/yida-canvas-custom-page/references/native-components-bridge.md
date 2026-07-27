@@ -4,7 +4,7 @@
 
 ## 核心策略
 
-Code Canvas 源码通过运行时桥接接入 `@ali/deep`、`@ali/vc-deep-yida` 或 `@ali/yida-ui` 已挂载到宿主 `window` 的组件。当前 Code Canvas 依赖白名单只负责加载通用前端包，这类宜搭运行态组件应保持在宿主桥接层，而不是进入 `importedModules`。本方案不要求修改 `vc-deep-yida`，以当前宿主已经存在的 `window.Deep` / `window.DeepYida` 探测为主。
+Code Canvas 里的宜搭运行态组件按“先探测、可用再增强、不可用就 fallback”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 白名单内的通用前端包。
 
 推荐方式是运行时桥接：
 
@@ -28,7 +28,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 | --- | --- |
 | `window.Deep[name]` | `@ali/deep` 基础字段/组件全局 |
 | `window.DeepYida.default` 或 bundle 数组 | `vc-deep-yida` 运行包组件集合，按 `displayName` 匹配 |
-| `window.YidaNativeComponents[name]` | 可选兼容入口；存在时读取，不作为本方案前置条件 |
+| `window.YidaNativeComponents[name]` | 可选兼容入口；存在时读取，不作为前置条件 |
 
 业务代码统一走桥接函数读取宿主组件，便于隔离不同运行态差异。
 
@@ -47,17 +47,17 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 - Banner 只传 `mainTitle`、`subTitle`、`bannerHeight`、`textPosition` 等稳定展示 props。
 - QuickEntry 只传静态 `content`、`titleConfig`、`themeConfig`。
-- 点击跳转由 Canvas 自己控制，避免依赖门户上下文隐式行为。
+- 点击跳转由 Canvas 自己控制，目标 URL 和打开方式写在页面代码里。
 
 ### QuickAccessCard / RecentlyUsedCard（可用，但 `theme` 必传）
 
-这两个是**容器型组件**：`componentDidMount` 时自己调用门户接口拉取应用列表（`QuickAccessCard` → 应用快捷入口，`RecentlyUsedCard` → 最近访问应用），再逐项渲染应用卡片。它们的 `renderItem` 内部执行 `this.props.theme.includes('column')` 决定卡片排布，而 **`theme` 在容器层没有默认值**——不传 `theme` 时，只要拉到的列表非空（真实登录态下几乎必然非空）就会抛 `Cannot read properties of undefined (reading 'includes')` 崩溃白屏。
+这两个是**容器型组件**，会在运行态自行拉取应用列表并渲染卡片。`theme` 是必传运行时契约；页面始终传入 `theme="row-white"` 或 `theme="column"`。
 
 必传 / 建议 props：
 
 | prop | 必要性 | 说明 |
 | --- | --- | --- |
-| `theme` | **必传** | 字符串。含 `column` → 纵向排布，否则横向。传 `'row-white'`（横排，与组件内层默认一致）或 `'column'`；**切勿留空** |
+| `theme` | **必传** | 字符串。含 `column` → 纵向排布，否则横向。推荐 `'row-white'`（横排）或 `'column'` |
 | `maxItems` | 建议 | 展示数量上限，缺省 8 |
 | `showAppDescription` | 可选 | 是否显示应用描述 |
 | `containerPrefix` | 可选 | 容器 className 前缀 |
@@ -66,21 +66,21 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 使用要求：
 
-- **一定要传 `theme`**（如 `'row-white'`），这是这两个组件能否在 Canvas 里正常渲染的分水岭。
-- 列表数据由组件自取（依赖当前登录用户 + 门户接口），Canvas 既不需要、也无法通过 props 塞列表数据。
-- 组件缺失或无门户接口权限时，回退 Canvas 自绘应用入口卡片。
+- **始终传 `theme`**（如 `'row-white'`）。
+- 列表数据由组件自取（依赖当前登录用户 + 门户接口），Canvas 只负责容器 props、布局和 fallback。
+- 组件缺失或无门户接口权限时，渲染 Canvas 自绘应用入口卡片。
 
-> 崩溃根因核实自运行态 `@ali/vc-deep-yida` 异步 chunk（`QuickAccessCard` = chunk 53 / `RecentlyUsedCard` = chunk 52）：容器类 `renderItem` 里 `this.props.theme.includes('column')` 未做空值兜底，容器层 `theme` 亦无 `defaultProps`（仅内层展示组件默认 `'row-white'`，renderItem 绕过了它）。上游正确修复方向：容器补 `defaultProps.theme` 或改写为 `(theme||'').includes(...)`；页面侧无需改 `vc-deep-yida`，传 `theme` 即可。
+> 页面侧遵守必传 props 约束并做好局部降级：`theme` 有值，组件缺失或运行态不兼容时展示 Canvas fallback。
 
-### DataCard（暂不支持）
+### DataCard 使用边界
 
-`DataCard` 依赖数据卡片配置、图表上下文和门户变量，在 Code Canvas 无门户宿主上下文下无法有效工作：裸渲染只会显示「请选择要嵌入的数据卡片」空占位，无法真正承载数据。**当前暂不支持在 Canvas 页面复用 `DataCard`**。需要数据卡片时，用 Canvas 自绘卡片 + `fetch`/连接器/`yida-report` 取数据。
+数据卡片采用 Canvas 自绘卡片 + `fetch`/连接器/`yida-report` 取数。`DataCard` 需要完整门户数据卡片上下文，只有目标运行态已经验证该上下文可用时才接入。
 
-如果页面只是要「门户风格」，优先用 Canvas 自绘卡片并通过 fetch/连接器取数据；只有确实需要复用宜搭门户内置的快捷/最近应用卡片时，再按上面方式启用 `QuickAccessCard` / `RecentlyUsedCard`。
+页面只需要「门户风格」时，使用 Canvas 自绘卡片并通过 fetch/连接器取数据；需要复用宜搭门户内置的快捷/最近应用卡片时，按上面方式启用 `QuickAccessCard` / `RecentlyUsedCard`。
 
 ## 数据管理视图怎么用
 
-需要在自定义页面中嵌入门户里那块「数据管理视图」时，优先探测 `DataManageViews`。它来自 `@ali/vc-deep-yida` 的 `vc-data-manage-views`，门户中使用的就是这个组件；它只接收 `form` 配置，内部通过 `useFormInfo(form)` 请求 `getFormSchemaInfo.json`，再把 `multiViewInfos` 中非 `form` 类型的视图传给 `YidaFormManage` 渲染。`YidaFormManage` 是内部承载，不应作为门户数据管理视图的首选桥接入口。
+需要在自定义页面中嵌入门户里那块「数据管理视图」时，优先探测 `DataManageViews`，并把它当作黑盒组件使用。页面侧只传稳定的 `form` 配置，不自行构造底层数据管理 props。
 
 适用场景：
 
@@ -127,14 +127,14 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 使用要求：
 
-- **不要在未指定 `form.value/formUuid` 时试渲染**，否则可能触发无效数据管理视图接口请求。
-- 组件依赖宿主运行态、登录态、权限、CSRF、`vc-deep-yida` 与 `yc-data-manage` 样式，找不到组件或权限不足时必须保留 Canvas fallback。
-- `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧不要绕过它直接拼内部 `YidaFormManage` props。
-- 如果只需要展示少量业务数据，用 Canvas 自绘表格 + `this.dataSourceMap`/连接器/`openyida data` 更稳；只有需要复用门户数据管理视图时使用 `DataManageViews`。
+- 先拿到 `form.value/formUuid`，再渲染 `DataManageViews`。
+- 组件依赖宿主运行态、登录态、权限、CSRF、`vc-deep-yida` 与 `yc-data-manage` 样式；组件缺失或权限不足时保留 Canvas fallback。
+- `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧统一使用它承载门户数据管理视图。
+- 只需要展示少量业务数据时，用 Canvas 自绘表格 + HTTP 数据桥 / 连接器 / `openyida data`；需要复用门户数据管理视图时使用 `DataManageViews`。
 
 ## 成员组件怎么用
 
-需要成员选择时，优先探测 `EmployeeField`。在 `vc-deep-yida` 中，`EmployeeField` 是对 `@ali/deep.EmployeeField` 的包装，并默认支持部门选择。
+需要成员选择时，优先探测 `EmployeeField`。它属于宿主运行态组件，先验证可用性，再接入业务页面。
 
 使用要求：
 
@@ -158,7 +158,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 ## 部门组件怎么用
 
-需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖 `@ali/deep.SelectField`、`EmployeeSearch`、部门搜索接口和 CSRF 注入，因此要比成员组件更谨慎。
+需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖宿主通讯录能力、搜索接口和权限上下文，因此要比成员组件更谨慎。
 
 使用要求：
 
@@ -190,7 +190,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 使用要求：
 
-- 原生上传只作为增强能力；找不到或失败时 fallback 到链接录入或业务连接器上传。
+- 原生上传作为增强能力；组件不可用或上传失败时，fallback 到链接录入或业务连接器上传。
 - Cookie、CSRF、OSS key 或内部上传密钥由平台、连接器或后端服务管理，Canvas 只消费安全返回结果。
 - 提交数据只使用归一化后的文件数组，`raw` 仅用于调试。
 

@@ -2,7 +2,7 @@
 
 本文件是从零写 Code Canvas 页面的 vetted 模板集。所有示例都遵守运行时事实：`YidaComp` 是普通 React18 函数组件，必须**导出或返回** `YidaComp` / `YidaComp.default`；只 `import` 依赖白名单内的包；副作用在 `useEffect` 里注册并返回 cleanup。
 
-> 白名单、windowAlias、CDN 与 antd/dayjs 陷阱见 [dependencies-and-cdn.md](dependencies-and-cdn.md)；读写宜搭数据见 [data-bridge-guide.md](data-bridge-guide.md)。
+> 白名单、windowAlias 与 CDN 加载契约见 [dependencies-and-cdn.md](dependencies-and-cdn.md)；读写宜搭数据见 [data-bridge-guide.md](data-bridge-guide.md)。
 
 ## 1. 最小可运行组件（入口 + 本地状态）
 
@@ -60,7 +60,7 @@ export default YidaComp;
 
 ## 3. 可视化：recharts 图表
 
-`recharts` 在白名单内（windowAlias `Recharts`）。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，避免 0 高度不渲染。图表颜色是 JS 传给库的字符串，**不能硬编码蓝**——用 `readBrandColor` 读平台品牌色，让线条跟随 App 主题（见 [canvas-design-system.md](canvas-design-system.md)）。
+`recharts` 在白名单内（windowAlias `Recharts`）。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读平台品牌色，让线条跟随 App 主题（见 [canvas-design-system.md](canvas-design-system.md)）。
 
 ```jsx
 import React from 'react';
