@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: 'Gestión unificada de datos (formulario/proceso/tarea/subformulario)',
     cmd_task_center: 'Centro de tareas global (pendiente/procesado/CC etc.)',
     cmd_basic_info: 'Consultar informacion de organizacion, capacidad, cuotas y dominio',
+    cmd_read_dingtalk_doc: 'Obtener contenido Markdown de un documento de DingTalk',
+    cmd_read_dingtalk_tingji: 'Obtener detalles de DingTalk Tingji por UUID de tarea',
     cmd_get_permission: 'Consultar configuración de permisos',
     cmd_save_permission: 'Guardar configuración de permisos',
     cmd_corp_manager: 'Gestionar permisos de plataforma',

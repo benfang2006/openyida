@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: 'إدارة البيانات الموحدة (نموذج/عملية/مهمة/نموذج فرعي)',
     cmd_task_center: 'مركز المهام العالمي (معلق/معالج/نسخة إلخ)',
     cmd_basic_info: 'عرض معلومات المؤسسة والسعة والحصص والنطاق',
+    cmd_read_dingtalk_doc: 'جلب محتوى Markdown من مستند DingTalk',
+    cmd_read_dingtalk_tingji: 'جلب تفاصيل DingTalk Tingji بواسطة UUID للمهمة',
     cmd_get_permission: 'استعلام إعدادات أذونات النموذج',
     cmd_save_permission: 'حفظ إعدادات أذونات النموذج',
     cmd_corp_manager: 'إدارة أذونات منصة المؤسسة',

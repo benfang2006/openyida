@@ -90,6 +90,30 @@
       ]
     },
     {
+      "name": "yida-document-markdown",
+      "path": "skills/yida-document-markdown/SKILL.md",
+      "display_name": "钉钉文档 Markdown",
+      "description": "获取钉钉文档、钉钉在线文档或知识库文档的完整 Markdown 内容。用户提供文档链接并要求读取、提取、总结或继续处理文档内容时使用。",
+      "category": "yida-skills/agent",
+      "tags": ["钉钉文档", "Markdown", "文档链接", "内容提取"],
+      "aliases": ["读取钉钉文档", "文档转 Markdown"],
+      "command_ids": ["read-dingtalk-doc"],
+      "done_when": "命令成功返回真实 Markdown 内容，或成功写入指定文件。",
+      "requires_login": true
+    },
+    {
+      "name": "yida-tingji",
+      "path": "skills/yida-tingji/SKILL.md",
+      "display_name": "钉钉听记详情",
+      "description": "按 taskUuid 获取钉钉听记、会议录音转写、会议纪要或 AI 听记的完整详情。用户提供听记任务 ID 并要求读取、整理、总结或转 PRD 时使用。",
+      "category": "yida-skills/agent",
+      "tags": ["钉钉听记", "会议纪要", "taskUuid", "语音转写"],
+      "aliases": ["读取听记", "获取会议记录"],
+      "command_ids": ["read-dingtalk-tingji"],
+      "done_when": "命令成功返回指定 taskUuid 对应的真实听记详情。",
+      "requires_login": true
+    },
+    {
       "name": "yida-business-rule",
       "path": "skills/yida-business-rule/SKILL.md",
       "display_name": "业务关联规则",
@@ -1159,6 +1183,11 @@
       "description": "非宜搭业务资源本身的 agent 辅助能力：导出对话、会议/闪记转 PRD。",
       "signals": [
         "导出对话",
+        "钉钉文档",
+        "读取文档",
+        "Markdown 内容",
+        "钉钉听记",
+        "taskUuid",
         "会议纪要",
         "闪记",
         "PRD"

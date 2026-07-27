@@ -553,6 +553,23 @@ describe('CLI offline smoke', () => {
       mutates_local: true,
       action_dependent: true,
     });
+    expect(commandById['read-dingtalk-doc'].side_effect).toMatchObject({
+      kind: 'mixed',
+      mutates_yida: false,
+      mutates_local: true,
+      read_actions: ['<docUrl>', '<docUrl> --json'],
+      mutating_actions: ['<docUrl> --output <file>', '<docUrl> -o <file>'],
+    });
+    expect(commandById['read-dingtalk-doc'].permission).toMatchObject({
+      mode: 'allow',
+      effect: 'unknown',
+      action_dependent: true,
+      preauthorized_actions: [
+        '<docUrl> --output <file>',
+        '<docUrl> -o <file>',
+      ],
+      unknown_action_mode: 'ask',
+    });
     expect(commandById.export.side_effect).toMatchObject({
       kind: 'local_write',
       mutates_yida: false,

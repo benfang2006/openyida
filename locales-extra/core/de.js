@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: 'Einheitliche Datenverwaltung (Formular/Prozess/Aufgabe/Unterformular)',
     cmd_task_center: 'Globales Aufgabenzentrum (Aufgaben/Bearbeitet/CC etc.)',
     cmd_basic_info: 'Organisationsinfos, Kapazitaeten, Quoten und Domain-Einstellungen abfragen',
+    cmd_read_dingtalk_doc: 'Markdown-Inhalt eines DingTalk-Dokuments abrufen',
+    cmd_read_dingtalk_tingji: 'DingTalk-Tingji-Details per Aufgaben-UUID abrufen',
     cmd_get_permission: 'Formularberechtigungen abfragen',
     cmd_save_permission: 'Formularberechtigungen speichern',
     cmd_corp_manager: 'Plattformberechtigungen verwalten',

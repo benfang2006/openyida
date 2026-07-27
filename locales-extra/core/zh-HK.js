@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: '統一資料管理（表單/流程/任務/子表單）',
     cmd_task_center: '全域任務中心（待辦/已處理/抄送等）',
     cmd_basic_info: '查詢組織基本資訊、容量、額度和域名設定',
+    cmd_read_dingtalk_doc: '取得釘釘文件的 Markdown 內容',
+    cmd_read_dingtalk_tingji: '按任務 UUID 取得釘釘聽記詳情',
     cmd_get_permission: '查詢表單權限設定',
     cmd_save_permission: '儲存表單權限設定',
     cmd_corp_manager: '管理平台管理員與通訊錄權限',

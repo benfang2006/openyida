@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: 'Quản lý dữ liệu thống nhất (biểu mẫu/quy trình/tác vụ/biểu mẫu con)',
     cmd_task_center: 'Trung tâm tác vụ toàn cầu (cần làm/đã xử lý/CC v.v.)',
     cmd_basic_info: 'Truy van thong tin to chuc, dung luong, han muc va mien',
+    cmd_read_dingtalk_doc: 'Lấy nội dung Markdown từ tài liệu DingTalk',
+    cmd_read_dingtalk_tingji: 'Lấy chi tiết DingTalk Tingji theo UUID tác vụ',
     cmd_get_permission: 'Truy vấn cấu hình quyền biểu mẫu',
     cmd_save_permission: 'Lưu cấu hình quyền biểu mẫu',
     cmd_corp_manager: 'Quản lý quyền nền tảng',
