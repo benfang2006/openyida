@@ -45,6 +45,8 @@ module.exports = {
     cmd_data: '統合データ管理（フォーム/プロセス/タスク/サブフォーム）',
     cmd_task_center: 'グローバルタスクセンター（未処理/処理済/CC等）',
     cmd_basic_info: '組織の基本情報、容量、クォータ、ドメイン設定を照会',
+    cmd_read_dingtalk_doc: 'DingTalk ドキュメントの Markdown 内容を取得',
+    cmd_read_dingtalk_tingji: 'タスク UUID で DingTalk Tingji の詳細を取得',
     cmd_get_permission: 'フォーム権限設定を照会',
     cmd_save_permission: 'フォーム権限設定を保存',
     cmd_corp_manager: 'プラットフォーム権限を管理',

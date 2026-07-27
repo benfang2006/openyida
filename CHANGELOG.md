@@ -11,6 +11,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.7.27-beta.1] - 2026-07-27
+
+### Added
+- 新增 `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]`，通过当前 OAuth token 登录态读取钉钉在线文档并返回 Markdown，支持原文输出、JSON 输出和文件落盘。
+- 新增 `openyida read-dingtalk-tingji <taskUuid> [--json]`，按听记任务 ID 读取钉钉听记详情。
+- 新增 `yida-document-markdown` 与 `yida-tingji` 两个 Agent skill，并同步技能索引、命令清单、中英文文档及可选语言包。
+
+### Changed
+- HTTP GET 请求工具支持显式读取文本响应，以兼容文档 Markdown 接口。
+- 文档读取命令自动识别并解包 tianshu 返回的 JSON 文本响应，同时保留对直接 Markdown 和 JSON 形态文档正文的兼容。
+
+### Tests
+- 新增文档与听记 CLI 单元测试，覆盖接口路径和参数、文档 URL 与听记 ID 校验、Markdown 响应解包、失败响应及听记结构解析。
+- 使用真实钉钉文档链接与听记任务 ID 完成接口联调，两个只读命令均返回 HTTP 200 和有效内容。
+
+
 ## [2026.7.19] - 2026-07-20
 
 ### Highlights

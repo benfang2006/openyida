@@ -167,13 +167,15 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 | `yida-skills/integration` | 连接器、外部 API、执行动作、设计器数据源、集成自动化、逻辑流 | `yida-integration`、`yida-connector`、`yida-connector-safe-actions`、`yida-data-source-connectors` |
 | `yida-skills/access` | 平台/应用/表单/页面权限、公开访问、分享 | `yida-corp-manager`、`yida-app-permission`、`yida-form-permission`、`yida-page-config` |
 | `yida-skills/ops` | Sequence、主键冲突、VOC 反馈 | `yida-db-seq-fix`、`yida-voc` |
-| `yida-skills/agent` | 导出对话、会议纪要/闪记转 PRD | `yida-export-conversation`、`yida-flash-note-to-prd` |
+| `yida-skills/agent` | 导出对话、读取钉钉文档/听记、会议纪要/闪记转 PRD | `yida-export-conversation`、`yida-document-markdown`、`yida-tingji`、`yida-flash-note-to-prd` |
 
 ### 高频分歧
 
 | 用户意图 | 选哪个 |
 |------|------|
 | 从零搭一个完整应用/系统 | `yida-app`；默认 `fast_build`，不要自动升级到深度设计 |
+| 读取钉钉在线文档正文 | `yida-document-markdown`，使用登录态接口获取 Markdown |
+| 按 taskUuid 读取钉钉听记 | `yida-tingji`，将听记任务 ID 原样传入命令 |
 | 只创建应用壳并拿 appType | `yida-create-app` |
 | 创建自定义展示页资源 | `yida-create-page`，之后默认接 `yida-canvas-custom-page` 和 `yida-publish-page` |
 | 开发表单字段结构 / 增删改字段 | `yida-create-form-page` |
