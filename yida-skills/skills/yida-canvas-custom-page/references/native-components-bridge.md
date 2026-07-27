@@ -74,7 +74,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 ### DataCard 使用边界
 
-数据卡片采用 Canvas 自绘卡片 + `fetch`/连接器/`yida-report` 取数。`DataCard` 需要完整门户数据卡片上下文，只有目标运行态已经验证该上下文可用时才接入。
+数据卡片采用 Canvas 自绘卡片 + `fetch`/连接器/`yida-report` 取数。`DataCard` 需要完整门户数据卡片上下文，只有目标运行态确认该上下文可用时才接入。
 
 页面只需要「门户风格」时，使用 Canvas 自绘卡片并通过 fetch/连接器取数据；需要复用宜搭门户内置的快捷/最近应用卡片时，按上面方式启用 `QuickAccessCard` / `RecentlyUsedCard`。
 
@@ -192,7 +192,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 - 原生上传作为增强能力；组件不可用或上传失败时，fallback 到链接录入或业务连接器上传。
 - Cookie、CSRF、OSS key 或内部上传密钥由平台、连接器或后端服务管理，Canvas 只消费安全返回结果。
-- 提交数据只使用归一化后的文件数组，`raw` 仅用于调试。
+- 提交数据只使用归一化后的文件数组，`raw` 仅用于检查。
 
 推荐归一化结构：
 
@@ -234,4 +234,4 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 - 上传组件尚未完成 OSS 签名或上传权限校验。
 - 移动端组件形态与 PC 不一致且未适配。
 
-fallback 不是失败路径，而是 Canvas 页面的稳定基线；原生组件是增强体验。
+Canvas 自绘 fallback 是页面稳定基线；原生组件是增强体验。

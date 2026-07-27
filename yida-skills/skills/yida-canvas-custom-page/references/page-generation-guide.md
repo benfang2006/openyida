@@ -35,7 +35,7 @@
 | 主从分栏、工单处理台、左列表右详情 | `split-pane-detail` | `list` | 左侧队列、右侧详情、时间线、动作区 |
 | 页面内门户壳、多入口门户、隐藏导航门户 | `portal-shell-home` | `workbench` | 自绘门户导航、角色入口、常用应用、动态摘要 |
 
-如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接方案。
+如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接规则。
 
 当模板本身包含页面内应用导航（如 `workbench-home` 的侧边导航、`portal-shell-home` 的门户导航）时，生成的 `.openyida-page.json` 会默认写入 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。发布后必须用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏宜搭原应用导航，避免双导航。
 

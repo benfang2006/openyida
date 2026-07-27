@@ -113,7 +113,7 @@ function useBrandColor(level, fallback) {
 }
 ```
 
-> ⚠️ **变量作用域**：若平台把 `--color-brand1-*` 定义在某个容器而非 `:root`，`document.documentElement` 可能读到空串 → 命中 fallback。更稳的做法是给组件根节点挂 `ref`，在 `useEffect` 里读 `getComputedStyle(rootRef.current)`（组件节点一定在变量作用域内），读到后 `setState` 触发一次重渲染。先用 `documentElement` 同步取，空串再降级到 ref 方案即可。
+> **变量作用域**：平台把 `--color-brand1-*` 定义在页面容器时，给组件根节点挂 `ref`，在 `useEffect` 里读 `getComputedStyle(rootRef.current)`，读到后 `setState` 触发一次重渲染。默认先用 `documentElement` 同步取值，空串时再用根节点 ref 读取。
 
 ## antd：ConfigProvider 注入 colorPrimary
 

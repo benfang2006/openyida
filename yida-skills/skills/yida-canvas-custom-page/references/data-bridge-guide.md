@@ -195,7 +195,7 @@ function normalizeFormRow(row) {
 保护规则：
 
 - 首屏只有 sample/离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
-- 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，展示“接口返回结构未识别”，并保留原始错误状态供排查。
+- 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，展示“接口返回结构未识别”，并保留原始错误状态供定位。
 - 用 `openyida data query form <appType> <formUuid> --size 20` 或数据管理页核对总数，页面统计必须和真实表单一致。
 
 ## 在组件里用

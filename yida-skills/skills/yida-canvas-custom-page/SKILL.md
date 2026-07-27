@@ -98,7 +98,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 1. **数据桥显式化**：通过 fetch、连接器或开放 API 读写数据；Cookie、CSRF、密钥和签名留在平台、连接器或后端服务侧。
 2. **组件增强可降级**：门户、成员、部门、上传组件都做 feature detect 和 fallback；组件缺失时页面仍展示 Canvas 自绘基线。
-3. **值先归一化**：成员、部门、文件的原始返回值只作为 `raw` 调试，业务 payload 使用统一结构。
+3. **值先归一化**：成员、部门、文件的原始返回值只作为 `raw` 检查信息，业务 payload 使用统一结构。
 4. **业务页主色跟随应用主题，sample 例外**：真实业务页默认读取 `--color-brand1-*` 与 `--color-group`；`lib/samples/**` 和官方 sample 展示应用自带页面级固定主题（`followRuntimeTheme: false` 或等价 CSS 变量），每个 sample 使用不同色相。
 5. **先验证再扩展业务**：原生组件、上传、组织搜索、弹层类能力先做 smoke 页面，确认 PC/移动端都可用后再承载复杂业务。
 6. **模板占位符必须可直发**：Canvas sample / generate-page 模板同时支持“生成器替换变量”和“sample 原样发布”。JSON 占位符用 `parseTemplateJson(raw, fallback)`，展示文案占位符用 `withFallback` / `applyPageFallbacks` 兜底，未替换时页面继续可运行，并显示业务化 fallback 文案。
@@ -138,11 +138,10 @@ Canvas 模板有两条真实使用链路：
 npx jest tests/canvas-compile.test.js tests/generate-page.test.js --runInBand
 ```
 
-## Sample 改造沉淀纪律
+## Sample 质量规则
 
-批量优化 `lib/samples/**` 或官方 sample 展示应用时，每个 sample 都要形成可复用经验：
+批量优化 `lib/samples/**` 或官方 sample 展示应用时，按以下质量规则执行：
 
-- **先读复盘规范**：如果用户要求总结上轮经验、继续优化官方 sample、同步到官方 Samples 应用，或多次基于截图纠正页面质量，先读全局 [任务复盘与沉淀规范](../../references/task-retrospective.md)，再判断要补模板、测试、CLI 还是 skill。
 - **先看参考再动手**：用户要求“高级、Dribbble、好看、像产品/官网/详情页/数据表”时，先参考 Dribbble 的同类构图和免费可商用素材站的真实图片，再抽象成布局、层次、色彩和数据密度原则，并转译为当前业务页面。
 - **说清参考转译**：交付 sample 改造时要用 1-2 句话说明参考被转译成了什么，例如“详情页采用对象 hero + sticky 元信息 + 时间线结构”、“数据管理页采用多维表工具栏 + 分组行 + 彩色标签密集表格”。
 - **每页独立主题**：sample 页默认 `themeScope=page` 或等价固定 CSS 变量；业务列表、详情、门户、工作台、官网、数据管理、大屏要有不同色相和不同信息节奏，不被宿主应用主题统一染色。
@@ -150,11 +149,11 @@ npx jest tests/canvas-compile.test.js tests/generate-page.test.js --runInBand
 - **Sample 数据要像真实业务，真实交付要接真实数据**：列表、详情、数据管理、工作台、大屏 sample 模拟足够丰富的数据、状态、筛选、趋势、分组、时间线或指标；完整应用/真实交付页优先接 `dataBinding.mode=form`，未接入时展示真实空态。
 - **工作台使用真实产品首页结构**：工作台页面铺满应用内容区，侧栏/导航/主面板形成真实产品首页；设计过程词不出现在可见页面。
 - **数据大屏地图要稳定**：大屏中心态势图如果是地图，优先探测宜搭宿主地图组件（如 `YoushuMap` / `ChinaMap` / `MapChart` 等），并提供内置区域地图组件兜底；正常展示态呈现地图、区域态势或业务空态。
-- **截图问题要反哺模板**：用户指出导航未覆盖、地图抽象、颜色不好、内容不丰富、产品首页不像首页等问题时，不只修当前 JSX；如果属于模板共性，补到 sample 模板、测试或本技能规则。
+- **截图验收要覆盖模板共性**：导航覆盖、地图表现、配色、内容丰富度、产品首页结构等属于模板共性时，同步补 sample 模板、测试或本技能规则。
 - **官网实景化覆盖完整品牌旅程**：强视觉官网至少形成“场景 Hero + 产品/服务 + 过程/空间”的摄影故事，品牌色从真实材质提取，section 覆盖真实产品、制作/服务过程与到店/使用情境。具体按 `yida-page-uiux/references/landing/realistic-brand-homepage.md` 执行。
 - **交互要真的联动数据**：改完带筛选/搜索/切换的 sample，实际验证“改筛选 → 下方列表/表格/卡片数据发生变化”。控件使用受控状态、`onChange`/`onClick` 和派生数据源。
 - **线上发布后回读**：发布到官方 sample 应用后，用 `get-schema` 回读确认 `YidaCodeCanvas/runtimeCode` 已更新，必要时检查页面 class/关键文案/关键区块存在。
-- **CLI 缺口要落盘**：如果改造过程中发现 CLI 行为“回包成功但未生效”、缺少 sample 注册、缺少模板类型或测试覆盖，应优先补 CLI/测试，而不是只用一次性脚本绕过。
+- **CLI 能力缺口要补齐**：sample 注册、模板类型、发布生效、测试覆盖等 CLI 共性缺口优先补 CLI/测试。
 
 ## 开发流程
 
@@ -211,11 +210,10 @@ openyida get-schema <appType> <formUuid> --field-map-json
 | --- | --- | --- |
 | [page-generation-guide.md](references/page-generation-guide.md) | 模板路由、官网素材、themeScope、Page Spec、primitives | 生成页面前必读 |
 | [native-components-bridge.md](references/native-components-bridge.md) | 门户、成员、部门、上传组件桥接和值归一化 | 需要宜搭运行态组件时必读 |
-| [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 依赖白名单、windowAlias、CDN 加载契约 | 新增依赖或排查依赖加载时必读 |
+| [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 依赖白名单、windowAlias、CDN 加载契约 | 新增依赖或验证依赖加载时必读 |
 | [employeefield-verification.md](references/employeefield-verification.md) | 运行时事实、原生组件验证、EmployeeField 验收 | 验证成员/字段组件时阅读 |
 | [data-bridge-guide.md](references/data-bridge-guide.md) | Canvas 内自建 HTTP 数据桥 | 接入真实数据时阅读 |
 | [canvas-design-system.md](references/canvas-design-system.md) | App 主题色、antd token、控件焦点/下拉 reset、图表配色 | 写样式和主题时阅读 |
 | [component-library-guide.md](references/component-library-guide.md) | 开源组件库推荐组合和禁用清单 | 选择 UI/图表依赖时阅读 |
 | [canvas-authoring-examples.md](references/canvas-authoring-examples.md) | 最小组件、hooks、副作用、图表示例 | 手写 Canvas 代码时阅读 |
 | [真实品牌官网 Playbook](../yida-page-uiux/references/landing/realistic-brand-homepage.md) | 实景素材组、材质配色、品牌旅程、Sample 无 CDN 兜底和视觉验收 | 生成或改造强视觉官网时必读 |
-| [任务复盘与沉淀规范](../../references/task-retrospective.md) | 官方 sample 改造经验、Dribbble 转译、页面级主题、发布回读、CLI/skill 反哺 | sample 批量优化、截图纠错、用户要求总结经验时阅读 |
