@@ -155,7 +155,7 @@ export default YidaComp;
 
 **要点**：`ConfigProvider` 包在组件最外层，页面内所有 antd 组件统一吃到品牌色。主色统一从 `colorPrimary` 注入，组件级颜色只保留必要的业务语义色。
 
-## 默认 light 模式
+## 默认 light 模式避免灰黑主题
 
 业务列表、协同表、数据管理页、工作台和门户默认都是 light 模式。正文使用深色保证可读性；主操作、选中态、筛选焦点、批量操作和信息标签使用品牌色或 sample 自带主题色；卡片边框、表格分割线和下拉浮层边框使用浅色品牌混合，例如 `#DCE6F2`、`color-mix(in srgb, var(--oy-brand) 16%, #DDE8F4)`。用户明确要求暗色大屏、夜间模式或高对比风格时使用深色主视觉。
 
@@ -168,7 +168,7 @@ Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本�
 - `ConfigProvider` 增加 `getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}`，让 antd Select / DatePicker 等弹层留在当前页面作用域，避免浮层脱离页面样式。
 - 页面根节点使用 `oy-*` 根类，并在 `<style>` 顶部放 `OPENYIDA_CANVAS_CONTROL_CSS` 同款 reset。
 - 控件默认边框使用浅灰蓝，hover 使用品牌色低饱和混合，focus 使用浅品牌描边 + 3px 柔和 ring。
-- 下拉浮层统一 10px 圆角、浅边框、柔和阴影，active / selected 选项使用品牌浅底。
+- 下拉浮层统一 10px 圆角、浅边框、柔和阴影，active / selected 选项使用品牌浅底，不用黑色描边或浏览器原生 select。
 
 最小片段：
 
@@ -266,9 +266,9 @@ export default YidaComp;
 
 ## 自查清单（主色相关）
 
-- 页面最外层有 `ConfigProvider` 且 `token.colorPrimary` 来自 `readBrandColor`；硬编码主色已替换为运行态品牌色。
-- 有输入/筛选/下拉/日期/运行态字段组件时，已注入控件 focus/dropdown reset，focus 后保持浅品牌描边和柔和 ring。
-- Tailwind 主色类用 `var(--color-brand1-*)`；默认蓝类和默认蓝色值已替换为运行态品牌色。
+- 页面最外层有 `ConfigProvider` 且 `token.colorPrimary` 来自 `readBrandColor`，不是硬编码色值。
+- 有输入/筛选/下拉/日期/运行态字段组件时，已注入控件 focus/dropdown reset，focus 后没有黑色粗边或突兀加粗。
+- Tailwind 主色类用 `var(--color-brand1-*)`，没有散落的 `#1677ff` / `bg-blue-500`。
 - 图表 / canvas 绘制颜色走 `readBrandColor` 或 `--color-group`，无硬编码蓝。
 - 语义色（成功/警告/错误）保持 antd 默认或平台语义变量，未被主色覆盖。
 - 视觉方向已按 `yida-page-uiux` 决策：配色、圆角、图标和文案都完成业务化处理。

@@ -141,7 +141,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 **默认链路**：`fast_build` 必须只做 `resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接`。若需要首页/工作台/智能助手/门户门面且主页面缺失，先创建空 display page 占位，再建表单，最后回填发布；不要因此默认执行导航重排。不要因为应用名里有“看板 / 系统 / 管理”就升级到 `deep_design` 或 `full_demo`。
 
-**fast_build 默认加载边界**：只加载 `yida-app` 和当前阶段必需的子技能。`yida-create-app`、`yida-create-page`、`yida-create-form-page` 只有在目标资源缺失且本次意图允许创建时才加载；已有资源时进入对应 update / publish 分支。页面默认走 Code Canvas；当用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥（`this.$(fieldId)` / `this.utils.yida.*` / `this.dataSourceMap` / 表单提交或字段双向绑定深度耦合）时，选择 `yida-custom-page`。不要默认加载 `yida-page-uiux`、`yida-data-source-connectors`、`yida-data-management`、`yida-nav-group`、`yida-dashboard`，也不要默认深读 `references/`。
+**fast_build 默认加载边界**：只加载 `yida-app` 和当前阶段必需的子技能。`yida-create-app`、`yida-create-page`、`yida-create-form-page` 只有在目标资源缺失且本次意图允许创建时才加载；已有资源时进入对应 update / publish 分支。页面实现前默认加载 `yida-page-uiux` 做一次轻量 UI 引导（页面类型、模板路由、`visualProfile`、去 sample 化检查），再交给页面实现技能；这不等于升级 `deep_design`，不得顺带做长 PRD、应用蓝图、导航整理或截图验收。页面默认走 Code Canvas；当用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥（`this.$(fieldId)` / `this.utils.yida.*` / `this.dataSourceMap` / 表单提交或字段双向绑定深度耦合）时，选择 `yida-custom-page`。不要默认加载 `yida-app-uiux`、`yida-data-source-connectors`、`yida-data-management`、`yida-nav-group`、`yida-dashboard`，也不要默认深读 `references/`。
 
 **Canvas 数据边界**：完整应用/真实交付页如果展示列表、看板或详情记录，必须优先把本轮真实 `appType/formUuid/fieldId` 写入 `page-spec.json` 的 `dataBinding.mode=form`；需要演示记录时先写入真实表单再读取。未接真实表单且未写入 demo records 时，页面展示空态/入口，不用前端 seedRows 冒充业务数据。
 
@@ -151,7 +151,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 **doneWhen**：`yida-app` 发布主页面成功并输出可访问 URL。到这里默认完成；不要发布后继续 TaskCreate、重复读技能或继续规划。
 
-**optionalAfterDone**：导航整理、示例数据、公开访问、截图验证、深度视觉方向、数据源/连接器深度接入、报表/大屏，只在用户明确要求或 `yida-app` 模式为 `full_demo` / `deep_design` 时执行。
+**optionalAfterDone**：导航整理、示例数据、公开访问、截图验证、应用级体验蓝图、深度视觉扩展、数据源/连接器深度接入、报表/大屏，只在用户明确要求或 `yida-app` 模式为 `full_demo` / `deep_design` 时执行。
 
 ---
 
@@ -239,7 +239,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 1. **按阶段加载必要技能**：按意图选 1 个主技能；完整应用按阶段加载当下唯一需要的子技能，禁止并发批量读取多个 `SKILL.md` 或预读未来阶段技能。
 2. **Resource-First**：任何写操作前先解析本轮显式资源、agent bound context、workspace cache/config、历史上下文；已有目标资源时默认修改/补齐/发布，只有目标缺失且意图允许创建时才加载 create 类技能。
 3. **优先复用本地 ID 映射**：已有 `.cache/<项目名>-schema.json` 中可确认新鲜的 `appType`/`formUuid`/`fieldId` 可复用；该文件不是远端真相。字段级表单操作优先交给 `create-form update/add-option/bind-datasource/validation/rule` 的 schema-aware 解析，不要求先外部 `get-schema`；若 CLI 返回字段不存在/重名/歧义 diagnostics，再按 candidates、`tableLabel`、已知 `fieldId` 或 `get-schema --compact --resolve-fields` 收敛。页面代码、数据、流程、公式等确实需要多字段/多表单映射时，每表单一次性执行 `get-schema --field-map-json` 并缓存完整字段摘要。不得猜测字段 ID，也不要用 `head`/`tail`/`grep` 截断 schema stdout 当证据。
-4. **模板优先**：复杂产物先用 `openyida sample` 或现有示例生成骨架，再做最小改动。
+4. **模板骨架优先，业务化先行**：复杂产物可用 `openyida sample` 或 `generate-page` 生成可编译骨架，但真实业务页必须先有业务化 `page-spec.json` 和 `yida-page-uiux` 视觉方向决策；sample 的品牌、文案、指标、图片和 section 顺序不得直接作为最终页。
 5. **配置承载优先于代码**：字段/公式/联动/报表/审批/集成交给对应技能，自定义页面只做展示与胶水。
 6. **数据性能优先**：统计聚合用 `yida-report` 服务端聚合，不在前端拉全量后自行聚合。
 7. **避免无效重试**：失败先查登录态/组织/参数/字段 ID，无修改不连续重试超 1 次。
@@ -248,7 +248,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 10. **报表美化先分流**：标准统计与原生报表用 `yida-report`；定制图表页面默认用 `yida-rechart`；只有明确 ECharts、维护旧 ECharts 页面或复杂 option 超出 Recharts 能力时用 `yida-chart`。
 11. **按 schema 证据选技能**：先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能。
 12. **官方示例范式优先**：蒸馏官方示例时先理解脱敏 schema 承载方式，不凭截图/标题/视觉判断。
-13. **默认完成即停止**：完整应用默认以发布成功并输出 URL 为 doneWhen；UIUX、数据源深读、示例数据、导航、截图、TaskCreate 和深度设计都是 optionalAfterDone。
+13. **默认完成即停止**：完整应用默认以发布成功并输出 URL 为 doneWhen；`fast_build` 的轻量页面 UI 引导只服务于本轮主页面生成。应用级 UIUX、数据源深读、示例数据、导航、截图、TaskCreate 和深度设计都是 optionalAfterDone。
 14. **主题技能优先**：涉及应用主题色、品牌色、全局换肤或 `--color-brand1-*` 时先读 `yida-theme`；表单和页面只消费主题，不要在局部 Schema/JSX 中随意写死蓝色/紫色等品牌色。
 15. **任务复盘沉淀**：任务完成前判断是否有可复用经验需要落盘到 CLI、测试、sample 或 skill。用户多次纠正、平台接口假成功、sample 共性质量问题、线上回读验收方法、一次性脚本可产品化等情况必须沉淀；详见 `references/task-retrospective.md`。
 

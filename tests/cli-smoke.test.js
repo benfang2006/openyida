@@ -416,6 +416,7 @@ describe('CLI offline smoke', () => {
     expect(parsed.summary.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
       default_page_skill_id: 'yida-canvas-custom-page',
+      default_ui_guidance_skill_id: 'yida-page-uiux',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
@@ -425,16 +426,18 @@ describe('CLI offline smoke', () => {
         'publish',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-page-uiux',
+        'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
       ]),
+      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
+    expect(parsed.summary.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
     expect(commands).toContain('env');
     expect(commands).not.toContain('env-management');
     expect(commands).toContain('login');
@@ -921,6 +924,7 @@ describe('CLI offline smoke', () => {
     expect(parsed.commands.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
       default_page_skill_id: 'yida-canvas-custom-page',
+      default_ui_guidance_skill_id: 'yida-page-uiux',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
@@ -929,16 +933,18 @@ describe('CLI offline smoke', () => {
         'publish',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-page-uiux',
+        'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
       ]),
+      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
+    expect(parsed.commands.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
     expect(parsed.recommended.default_full_app_workflow).toMatchObject({
       mode: 'fast_build',
       completion_contract: expect.stringContaining('Create app'),
