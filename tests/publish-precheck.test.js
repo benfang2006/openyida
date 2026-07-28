@@ -281,10 +281,6 @@ describe('publish prechecks', () => {
         importedModules: '["react"]',
       },
     });
-    expect(schema.pages[0].componentsTree[0].css).toContain('.vc-deep-container-entry.vc-rootcontent');
-    expect(schema.pages[0].componentsTree[0].css).toContain('[tabindex]');
-    expect(schema.pages[0].componentsTree[0].css).toContain('.ant-segmented-item');
-    expect(schema.pages[0].componentsTree[0].css).toContain(':focus-visible');
   });
 
   test('publish schema builders reject emoji in stored page source', () => {

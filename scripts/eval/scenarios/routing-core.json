@@ -119,13 +119,13 @@
     "expectedSkill": "yida-app",
     "expectedMode": "fast_build",
     "forbiddenDefaultSkills": [
-      "yida-app-uiux",
+      "yida-page-uiux",
       "yida-data-source-connectors",
       "yida-data-management",
       "yida-nav-group",
       "yida-dashboard"
     ],
-    "note": "默认方案/不要追问/直接创建 → yida-app fast_build；默认页面实现先用 yida-page-uiux 做轻量 UI 引导再走 Canvas，但应用蓝图、数据源深接、示例数据、导航整理均为 optionalAfterDone"
+    "note": "默认方案/不要追问/直接创建 → yida-app fast_build；默认页面实现走 Canvas，但 UIUX、数据源深接、示例数据、导航整理均为 optionalAfterDone"
   },
   {
     "id": "table-form",

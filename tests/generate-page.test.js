@@ -478,10 +478,6 @@ describe('generate-page command', () => {
       expect(source).toContain(item.marker);
       expect(source).toContain(item.primitive);
       expect(source).toContain('--oy-control-focus-ring');
-      expect(source).toContain('appearance: none');
-      expect(source).toContain('[tabindex]');
-      expect(source).toContain('.ant-segmented-item');
-      expect(source).toContain(':focus-visible');
       expect(source).toContain('getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}');
       expect(source).toContain('.ant-select-dropdown');
       expect(source).not.toContain('{{OPENYIDA_CANVAS_CONTROL_CSS}}');

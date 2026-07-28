@@ -161,13 +161,12 @@ export default YidaComp;
 
 ## 控件焦点态与下拉浮层 reset
 
-Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本输入、成员/部门/上传等运行态控件，就使用双层样式护栏统一输入框、下拉触发器、focus ring 和字体粗细。
+Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本输入、成员/部门/上传等运行态控件，就在页面 `<style>` 顶部注入控件 reset，统一输入框、下拉触发器、focus ring 和字体粗细。
 
 实现规则：
 
-- `openyida publish` 写入的 Canvas Schema 已带 Page 级 host reset，用来兜住 Canvas runtime 挂载前后的首屏/刷新恢复焦点阶段；这层只做早期、低侵入的 focus/reset，不替代页面自身视觉样式。
-- `ConfigProvider` 增加 `getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}`，让 antd Select / DatePicker 等弹层留在当前页面作用域。
-- 页面根节点使用 `oy-*` 根类，并在 `<style>` 顶部放 `OPENYIDA_CANVAS_CONTROL_CSS` 同款 reset。手写非模板根类时，复制同等 scoped reset，让首屏和刷新恢复焦点阶段都具备样式护栏。
+- `ConfigProvider` 增加 `getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}`，让 antd Select / DatePicker 等弹层留在当前页面作用域，避免浮层脱离页面样式。
+- 页面根节点使用 `oy-*` 根类，并在 `<style>` 顶部放 `OPENYIDA_CANVAS_CONTROL_CSS` 同款 reset。
 - 控件默认边框使用浅灰蓝，hover 使用品牌色低饱和混合，focus 使用浅品牌描边 + 3px 柔和 ring。
 - 下拉浮层统一 10px 圆角、浅边框、柔和阴影，active / selected 选项使用品牌浅底。
 
@@ -187,18 +186,9 @@ Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本�
       }
       .oy-business-list :where(input, textarea, select, .ant-input, .ant-select-selector, .ant-picker) {
         border-color: var(--oy-control-border) !important;
-        appearance: none;
-        -webkit-appearance: none;
         font-weight: 400;
         outline: none !important;
         box-shadow: none !important;
-      }
-      .oy-business-list :where(button, [role="button"], [tabindex], .ant-btn, .ant-segmented-item, .ant-tabs-tab):focus {
-        outline: none !important;
-      }
-      .oy-business-list :where(button, [role="button"], [tabindex], .ant-btn, .ant-segmented-item, .ant-tabs-tab):focus-visible {
-        outline: 2px solid var(--oy-control-focus-ring) !important;
-        outline-offset: 2px;
       }
       .oy-business-list :where(input, textarea, select, .ant-input, .ant-select-focused .ant-select-selector, .ant-picker-focused):focus,
       .oy-business-list :where(.ant-select-focused .ant-select-selector, .ant-picker-focused) {
@@ -277,7 +267,7 @@ export default YidaComp;
 ## 自查清单（主色相关）
 
 - 页面最外层有 `ConfigProvider` 且 `token.colorPrimary` 来自 `readBrandColor`；硬编码主色已替换为运行态品牌色。
-- 有输入/筛选/下拉/日期/运行态字段组件时，Schema host reset + 页面 scoped reset 都保留，focus 后保持浅品牌描边和柔和 ring。
+- 有输入/筛选/下拉/日期/运行态字段组件时，已注入控件 focus/dropdown reset，focus 后保持浅品牌描边和柔和 ring。
 - Tailwind 主色类用 `var(--color-brand1-*)`；默认蓝类和默认蓝色值已替换为运行态品牌色。
 - 图表 / canvas 绘制颜色走 `readBrandColor` 或 `--color-group`，无硬编码蓝。
 - 语义色（成功/警告/错误）保持 antd 默认或平台语义变量，未被主色覆盖。

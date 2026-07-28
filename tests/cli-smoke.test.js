@@ -99,9 +99,15 @@ function runAny(args) {
     encoding: 'utf8',
     timeout: 10000,
   });
+  const output = `${result.stdout || ''}${result.stderr || ''}`;
   return {
     status: result.status,
-    output: `${result.stdout || ''}${result.stderr || ''}`,
+    stdout: result.stdout || '',
+    stderr: result.stderr || '',
+    output,
+    jsonOutput: output
+      .replace(/^\(node:\d+\) ExperimentalWarning:.*\n?/gm, '')
+      .replace(/^\(Use `node --trace-warnings \.\.\.` to show where the warning was created\)\n?/gm, ''),
   };
 }
 
@@ -290,7 +296,7 @@ describe('CLI offline smoke', () => {
   test('removed legacy login flags support JSON error output', () => {
     const result = runAny(['login', '--browser', '--json']);
     expect(result.status).toBe(1);
-    expect(JSON.parse(result.output)).toMatchObject({
+    expect(JSON.parse(result.jsonOutput)).toMatchObject({
       success: false,
       errorCode: 'INVALID_ARGUMENTS',
       errorMsg: expect.stringContaining('--browser'),
@@ -410,7 +416,6 @@ describe('CLI offline smoke', () => {
     expect(parsed.summary.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
       default_page_skill_id: 'yida-canvas-custom-page',
-      default_ui_guidance_skill_id: 'yida-page-uiux',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
@@ -420,18 +425,16 @@ describe('CLI offline smoke', () => {
         'publish',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-app-uiux',
+        'yida-page-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
       ]),
-      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
-    expect(parsed.summary.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
     expect(commands).toContain('env');
     expect(commands).not.toContain('env-management');
     expect(commands).toContain('login');
@@ -918,7 +921,6 @@ describe('CLI offline smoke', () => {
     expect(parsed.commands.core_workflows.full_app_fast_build).toMatchObject({
       mode: 'fast_build',
       default_page_skill_id: 'yida-canvas-custom-page',
-      default_ui_guidance_skill_id: 'yida-page-uiux',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
@@ -927,18 +929,16 @@ describe('CLI offline smoke', () => {
         'publish',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-app-uiux',
+        'yida-page-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
         'yida-nav-group',
       ]),
-      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
-    expect(parsed.commands.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
     expect(parsed.recommended.default_full_app_workflow).toMatchObject({
       mode: 'fast_build',
       completion_contract: expect.stringContaining('Create app'),
@@ -1492,7 +1492,7 @@ describe('CLI offline smoke', () => {
   test('route-level failures support JSON error output', () => {
     const result = runAny(['unknown-command', '--json']);
     expect(result.status).toBe(1);
-    expect(JSON.parse(result.output)).toMatchObject({
+    expect(JSON.parse(result.jsonOutput)).toMatchObject({
       success: false,
       errorCode: 'INVALID_ARGUMENTS',
       errorMsg: expect.stringContaining('未知命令'),
@@ -1509,7 +1509,7 @@ describe('CLI offline smoke', () => {
 
     const getApp = runAny(['get-app', '--json']);
     expect(getApp.status).toBe(1);
-    const parsed = JSON.parse(getApp.output);
+    const parsed = JSON.parse(getApp.jsonOutput);
     expect(parsed.errorMsg).toContain('openyida app-list [--size N]');
     expect(parsed.errorMsg).toContain('`get-app` 含义不明确');
     expect(parsed.errorMsg).not.toContain('is ambiguous');
@@ -1568,7 +1568,7 @@ describe('CLI offline smoke', () => {
       ].join('\n'), 'utf8');
 
       const result = runAny(['publish', sourcePath, 'APP_TEST', 'FORM-TEST', '--no-open', '--json']);
-      const parsed = JSON.parse(result.output);
+      const parsed = JSON.parse(result.jsonOutput);
 
       expect(result.status).toBe(1);
       expect(parsed).toMatchObject({
