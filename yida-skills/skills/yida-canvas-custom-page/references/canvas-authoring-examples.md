@@ -1,12 +1,12 @@
 # Code Canvas 编写示例 / 脚手架
 
-本文件是从零写 Code Canvas 页面的 vetted 模板集。所有示例都遵守运行时事实：`YidaComp` 是普通 React18 函数组件，必须**导出或返回** `YidaComp` / `YidaComp.default`；只 `import` 可用资源清单内的包；副作用在 `useEffect` 里注册并返回 cleanup。
+从零写 Code Canvas 页面时，入口使用普通 React18 函数组件 `YidaComp`，源码导出或返回 `YidaComp` / `YidaComp.default`；`import` 使用可用资源清单内的包；副作用在 `useEffect` 里注册并返回 cleanup。
 
 > 可用资源、import 写法与运行时加载契约见 [dependencies-and-cdn.md](dependencies-and-cdn.md)；读写宜搭数据见 [data-bridge-guide.md](data-bridge-guide.md)。
 
 ## 1. 最小可运行组件（入口 + 本地状态）
 
-最小骨架：明确入口导出、用 `useState` 管本地状态，不写任何普通页面契约（无 `renderJsx` / `didMount` / `this.*`）。
+最小骨架：明确入口导出，用 `useState` 管本地状态，生命周期和事件都写在 React hooks 内。
 
 ```jsx
 import React, { useState } from 'react';
@@ -155,7 +155,7 @@ export default YidaComp;
 
 ## 通用自查清单
 
-- 入口：源码有 `export default YidaComp`（或返回组件函数），不是只定义局部组件。
+- 入口：源码有 `export default YidaComp`（或返回组件函数），主组件已完成默认导出。
 - 依赖：所有 `import` 都在可用资源清单内，能出现在编译结果 `dependencies` 里。
 - 副作用：每个 `useEffect` 的定时器 / 监听 / 图表实例都有 cleanup。
 - 数据：读写走同源 `fetch` + `credentials: 'include'`，无硬编码 Cookie / CSRF / appSecret。

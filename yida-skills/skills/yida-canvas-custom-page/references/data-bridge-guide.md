@@ -1,14 +1,14 @@
-# Code Canvas 数据桥指南（自写 HTTP 读写宜搭数据）
+# Code Canvas 数据桥
 
-Code Canvas 运行时**没有** `this.utils.yida.*` / `dataSourceMap` / `this.$(fieldId)` 实例数据桥；`YidaComp` 是普通 React 函数组件。因此 `YidaComp` 要读写宜搭数据，只能在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。本文件给出干净、可复用、合规的写法。
+Code Canvas 运行时提供 React 函数组件上下文；`YidaComp` 读写宜搭数据时，在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。`this.utils.yida.*` / `dataSourceMap` / `this.$(fieldId)` 属于普通自定义页面实例桥能力。
 
 ## 三条数据路径，先选对
 
 | 路径 | 是否可在浏览器（Canvas）直接调 | 说明 |
 | --- | --- | --- |
-| 宜搭开放 API（OpenAPI，`appKey`/`appSecret` 签名） | **不可** | 需服务端签名；在浏览器里必然泄露 secret。只能由后端 / 连接器代理调，Canvas 不直连。 |
+| 宜搭开放 API（OpenAPI，`appKey`/`appSecret` 签名） | 服务端 / 连接器代理 | 需服务端签名；浏览器直连会泄露 secret。由后端 / 连接器代理调用。 |
 | 平台已配置**连接器**（HTTP 连接器暴露的同源代理端点） | **推荐** | 同源 `fetch(url, { credentials: 'include' })` 带 cookie 即可，鉴权与密钥留在平台侧，符合数据源治理。 |
-| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 可，但要谨慎 | 与普通自定义页面 `this.utils.yida.searchFormDatas` 命中的是同类端点；使用同源相对路径、`credentials: 'include'` 和运行态 CSRF token。 |
+| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 受控可用 | 与普通自定义页面 `this.utils.yida.searchFormDatas` 命中的是同类端点；使用同源相对路径、`credentials: 'include'` 和运行态 CSRF token。 |
 
 选路原则：优先走连接器代理，让鉴权、密钥和数据源治理留在平台侧。真需要直连内部端点时，使用**同源相对路径** + `credentials: 'include'`，Cookie / CSRF / appSecret 由平台上下文或后端服务提供。
 
@@ -127,7 +127,7 @@ function useYidaFetch(buildRequest, deps) {
 
 - `credentials: 'include'` 让浏览器带上同源登录态；Cookie 由浏览器和平台管理。
 - 如需 CSRF，优先从 `window.g_config._csrf_token` / `window.g_config.csrfToken` 动态读取，按接口要求放入 `_csrf_token` 请求参数和 / 或 `global_csrf_token` 头。
-- 用 `AbortController` 在卸载 / 依赖变化时取消，避免 setState-after-unmount（对应编码规则 #5 副作用清理）。
+- 用 `AbortController` 在卸载 / 依赖变化时取消请求，保证副作用清理完整（对应编码规则 #5）。
 - 解析响应按**真实返回结构**处理；不同端点和运行态会出现 `data`、`result.data`、`content.data`、`content.result.data`、`list`、`values`、`records` 等包装。
 
 ## 表单查询返回体必须递归解析
@@ -235,7 +235,7 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-`url`、`body` 字段按你实际接的连接器 / 端点契约填；上面是结构示意，不是可直接跑的真实端点。
+`url`、`body` 字段按实际连接器 / 端点契约填写；示例结构用于说明数据桥写法。
 
 ## 轮询只刷新数据，不刷新整页
 
@@ -264,7 +264,7 @@ function YidaComp() {
     }
 
     // 直连 searchFormDatas.json 必须 GET + query（见下文请求契约）：
-    // formUuid/appType 放 URL query，分页参数名是 currentPage（不是 pageNumber）。
+    // formUuid/appType 放 URL query，分页参数名是 currentPage。
     var qs = new URLSearchParams({
       formUuid: '<FORM_UUID>',
       appType: '<APP_TYPE>',
@@ -311,11 +311,11 @@ function YidaComp() {
 
 ## 直连内部端点 `searchFormDatas.json` 请求契约
 
-不方便配连接器、只需读本应用表单数据时，可同源直连内部端点 `searchFormDatas.json`。必须遵守三点请求契约，写错任意一个都会导致列表为空或接口报「参数校验失败formUuid」：
+不方便配连接器、只需读本应用表单数据时，可同源直连内部端点 `searchFormDatas.json`。请求契约如下：
 
-1. **必须 `GET` + query 参数**，`formUuid`/`appType` 放 **URL query**。若用 `POST` 把 `formUuid` 塞进 body，后端从 query 读不到 → 直接报 **`参数校验失败formUuid`**。
-2. **分页参数名是 `currentPage`**（不是 `pageNumber`）；`searchFieldJson` 传 `'{}'` 表示不过滤。
-3. **返回列表在 `content.data`**，不是顶层 `data`。响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。（注意：openyida CLI `data query` 会**归一化**把 `data` 提到顶层，你用 CLI 抽查看到的是顶层 `data`，别被误导——浏览器直连拿到的是 `content.data`。）每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
+1. **`GET` + query 参数**：`formUuid`/`appType` 放 URL query。
+2. **分页参数名是 `currentPage`**；`searchFieldJson` 传 `'{}'` 表示不过滤。
+3. **返回列表在 `content.data`**：响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
 
 ```jsx
 // GET + query，读一个表单的数据
@@ -347,7 +347,7 @@ function fieldOf(row, fieldId) { return (row.formData || row)[fieldId]; }
 
 ## 写数据（新增 / 更新 / 删除）额外红线
 
-- **确认再写**：删除、批量更新等不可逆操作，先让用户在 UI 里显式确认，不在 `useEffect` 里静默触发。
-- **幂等**：提交按钮加 loading 锁与去重键，避免重复写入。
+- **确认再写**：删除、批量更新等不可逆操作，先让用户在 UI 里显式确认，严禁在 `useEffect` 里静默触发。
+- **幂等**：提交按钮加 loading 锁与去重键，拦截重复写入。
 - **权限**：写操作是否允许由平台权限决定；失败按后端返回的 `errorMsg` 提示。
 - **密钥位置**：任何 `appSecret` / 签名逻辑都留在服务端 / 连接器，Canvas 源码里只出现同源相对路径与业务参数。

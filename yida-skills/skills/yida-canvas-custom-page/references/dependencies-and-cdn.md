@@ -1,6 +1,6 @@
 # Code Canvas 可用资源与加载契约
 
-本文件承载 Code Canvas 可直接使用的前端资源、页面源码 import 写法与运行时加载契约。依赖加载细节以当前宜搭物料运行时为准；页面作者按下表 import，不自行注入 CDN script。核实自 `vc-deep-yida/src/components/yida-code-canvas` 源码（`dependencies.ts` / `factory.tsx`）。
+Code Canvas 页面按下表 import 前端资源，运行时由 `YidaCodeCanvas` 按 `importedModules` 加载。依赖加载契约核实自 `vc-deep-yida/src/components/yida-code-canvas` 源码（`dependencies.ts` / `factory.tsx`）。
 
 ## 可用前端资源
 
@@ -16,16 +16,16 @@
 | `recharts` | 折线、柱状、面积、饼图等 React 图表 | `import { LineChart, Line } from 'recharts'` | g.alicdn.com recharts 2.15.0 |
 | `d3` | 自定义关系图、力导向、桑基、特殊坐标系 | `import * as d3 from 'd3'` | g.alicdn.com d3 7.9.0 |
 | `@radix-ui/themes` | 少量轻量主题组件 | `import { Button } from '@radix-ui/themes'` | `${cdn}/.../radix.js` + `radix.css` |
-| `lucide-react` | 线性功能图标 | `import { Search } from 'lucide-react'`；动态名称用 `import DynamicIcon from 'lucide-react'` | `${cdn}/.../lucideReact.js` |
+| `lucide-react` | 线性功能图标 | `import { Search, RefreshCw } from 'lucide-react'`；动态配置用页面内图标映射表 | `${cdn}/.../lucideReact.js` |
 | `framer-motion` | 抽屉、折叠、局部状态切换动效 | `import { motion } from 'framer-motion'` | `${cdn}/.../framerMotion.js` |
 | `yida-plugin-markdown` | PRD、公告、帮助文档、AI 输出内容展示 | `import Markdown from 'yida-plugin-markdown'` | moduleFederation 0.0.4 |
 
 ## 资源使用约定
 
-- 页面源码只从上表资源 import；不要自行写 `<script>`、`loadScript` 或外链 CDN。
-- 宜搭运行态组件和平台能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等宿主对象探测，不从 `@ali/deep`、`vc-deep-yida`、`yida-utils` 直接 import。
+- 页面源码只从上表资源 import；第三方资源加载交给 Code Canvas runtime。
+- 宜搭运行态组件和平台能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等宿主对象探测。
 - 真实表单数据绑定使用页面内本地 `useYidaData(binding)`、`DataBridge` 与同源 `fetch` 实现。
-- 组件库怎么选见 [component-library-guide.md](component-library-guide.md)；本文件只维护“能 import 什么”和“运行时如何加载”的事实。
+- 组件库选型见 [component-library-guide.md](component-library-guide.md)。
 
 ## 编译运行契约
 

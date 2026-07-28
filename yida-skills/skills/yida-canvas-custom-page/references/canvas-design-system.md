@@ -1,9 +1,9 @@
 # Code Canvas 主色对齐与视觉落地
 
-本文件是 Code Canvas 页面的**实现层**引导：真实业务页跟随宿主 App 的品牌主题色；官方 sample / 示例展示应用自带页面级固定主题和差异化色盘。视觉方向（页面类型、差异化、去 AI 味）走共用的决策层技能 `yida-page-uiux`，本文件只讲 Canvas（React18 + antd + Tailwind）这套栈怎么把主色落地。
+真实业务页跟随宿主 App 品牌主题色；官方 sample / 示例展示应用使用页面级固定主题和差异化色盘。`yida-page-uiux` 负责确定页面类型、差异化和去 AI 味方向；Code Canvas 实现层负责把这些决策落到 antd token、Tailwind、图表和控件状态。
 
-> 决策层：需要视觉方向时先遵循 `yida-page-uiux` 技能（先做 Step 0 导航形态判定，再定工作台/仪表盘/列表/详情、5 维差异化、去 AI 味、禁 emoji）。
-> 实现层：本文件负责把「真实业务页主色跟随 App 品牌」和「sample 页面级独立主题」落到 antd token / Tailwind / 图表。
+> 决策层：`yida-page-uiux` 负责页面类型、导航形态、5 维差异化、去 AI 味和禁 emoji。
+> 实现层：Code Canvas 负责把真实业务页跟随 App 品牌、sample 页面独立主题落到 antd token / Tailwind / 图表 / 控件状态。
 
 > **前提是导航可见且是真实业务页**：跟随品牌主色是为了跟应用框架融合。页面隐藏应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏，由 `yida-page-uiux` Step 0 判定）时，主色相可自立。`lib/samples/**` 或官方 sample 展示应用也使用自立主色相：`followRuntimeTheme: false`，antd `colorPrimary` / 图表色 / CSS 变量都喂页面自己的固定色盘，语义色保持固定。
 
@@ -74,9 +74,9 @@ React.useEffect(function () {
 | 整个应用统一、全局换肤、系统整体主题、应用主题也改 | `{ "themeScope": "app" }` |
 | 左侧导航/菜单/顶部壳层也一起变色，导航和内容区同色 | `{ "themeScope": "app" }` |
 | 只说某个页面/首页/看板/自定义页变好看或换色 | `{ "themeScope": "page" }` |
-| 明确说不要影响导航、不要改其他页面、只改当前页 | `{ "themeScope": "page" }` |
+| 明确说保持导航不变、其他页面不变、只改当前页 | `{ "themeScope": "page" }` |
 
-同一句话同时出现“整体应用”和“不要影响导航”这类冲突时，以限制更强的 `page` 为准，或者简短确认一次。
+同一句话同时出现“整体应用”和“保持导航不变”这类冲突时，以限制更强的 `page` 为准，或者简短确认一次。
 
 ## 核心事实：CSS 变量直接级联，antd token 使用解析色值
 
@@ -153,9 +153,9 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-**要点**：`ConfigProvider` 包在组件最外层，页面内所有 antd 组件才统一吃到品牌色。只设 `colorPrimary` 一个入口，不要逐组件手写颜色。
+**要点**：`ConfigProvider` 包在组件最外层，页面内所有 antd 组件统一吃到品牌色。主色统一从 `colorPrimary` 注入，组件级颜色只保留必要的业务语义色。
 
-## 默认 light 模式避免灰黑主题
+## 默认 light 模式
 
 业务列表、协同表、数据管理页、工作台和门户默认都是 light 模式。正文使用深色保证可读性；主操作、选中态、筛选焦点、批量操作和信息标签使用品牌色或 sample 自带主题色；卡片边框、表格分割线和下拉浮层边框使用浅色品牌混合，例如 `#DCE6F2`、`color-mix(in srgb, var(--oy-brand) 16%, #DDE8F4)`。用户明确要求暗色大屏、夜间模式或高对比风格时使用深色主视觉。
 
@@ -166,10 +166,10 @@ Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本�
 实现规则：
 
 - `openyida publish` 写入的 Canvas Schema 已带 Page 级 host reset，用来兜住 Canvas runtime 挂载前后的首屏/刷新恢复焦点阶段；这层只做早期、低侵入的 focus/reset，不替代页面自身视觉样式。
-- `ConfigProvider` 增加 `getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}`，让 antd Select / DatePicker 等弹层留在当前页面作用域，避免浮层脱离页面样式。
-- 页面根节点使用 `oy-*` 根类，并在 `<style>` 顶部放 `OPENYIDA_CANVAS_CONTROL_CSS` 同款 reset。手写非模板根类时，复制同等 scoped reset，不要只靠 `useEffect` 后置注入。
+- `ConfigProvider` 增加 `getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}`，让 antd Select / DatePicker 等弹层留在当前页面作用域。
+- 页面根节点使用 `oy-*` 根类，并在 `<style>` 顶部放 `OPENYIDA_CANVAS_CONTROL_CSS` 同款 reset。手写非模板根类时，复制同等 scoped reset，让首屏和刷新恢复焦点阶段都具备样式护栏。
 - 控件默认边框使用浅灰蓝，hover 使用品牌色低饱和混合，focus 使用浅品牌描边 + 3px 柔和 ring。
-- 下拉浮层统一 10px 圆角、浅边框、柔和阴影，active / selected 选项使用品牌浅底，不用黑色描边或浏览器原生 select。
+- 下拉浮层统一 10px 圆角、浅边框、柔和阴影，active / selected 选项使用品牌浅底。
 
 最小片段：
 
@@ -272,13 +272,13 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-多色系列需要区分时，用 `--color-group` + 语义色，不要整排饱和撞色（见 `yida-page-uiux` 去 AI 味清单）。
+多色系列需要区分时，用 `--color-group` + 语义色，保持低饱和、分层明确的图表色组（见 `yida-page-uiux` 去 AI 味清单）。
 
 ## 自查清单（主色相关）
 
-- 页面最外层有 `ConfigProvider` 且 `token.colorPrimary` 来自 `readBrandColor`，不是硬编码色值。
-- 有输入/筛选/下拉/日期/运行态字段组件时，Schema host reset + 页面 scoped reset 都保留，focus 后没有黑色粗边、突兀加粗或刷新一闪而过的原生 outline。
-- Tailwind 主色类用 `var(--color-brand1-*)`，没有散落的 `#1677ff` / `bg-blue-500`。
+- 页面最外层有 `ConfigProvider` 且 `token.colorPrimary` 来自 `readBrandColor`；硬编码主色已替换为运行态品牌色。
+- 有输入/筛选/下拉/日期/运行态字段组件时，Schema host reset + 页面 scoped reset 都保留，focus 后保持浅品牌描边和柔和 ring。
+- Tailwind 主色类用 `var(--color-brand1-*)`；默认蓝类和默认蓝色值已替换为运行态品牌色。
 - 图表 / canvas 绘制颜色走 `readBrandColor` 或 `--color-group`，无硬编码蓝。
 - 语义色（成功/警告/错误）保持 antd 默认或平台语义变量，未被主色覆盖。
-- 视觉方向已按 `yida-page-uiux` 决策：不是默认蓝 + 大圆角 + emoji 的 AI 味套版。
+- 视觉方向已按 `yida-page-uiux` 决策：配色、圆角、图标和文案都完成业务化处理。

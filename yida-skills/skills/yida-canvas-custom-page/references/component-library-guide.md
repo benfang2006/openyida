@@ -1,14 +1,12 @@
 # Code Canvas 组件库选型
 
-本文件回答「生成 Code Canvas 页面时该选哪些组件库」。结论先行：页面默认从 [dependencies-and-cdn.md](dependencies-and-cdn.md) 的可用前端资源中选择；未在资源清单里的 npm 包不进入默认生成建议。
-
-资源版本、import 写法和运行时加载契约以 [dependencies-and-cdn.md](dependencies-and-cdn.md) 为准；本文件只做产品化选型和页面组合建议。
+Code Canvas 页面从 [dependencies-and-cdn.md](dependencies-and-cdn.md) 的可用前端资源中选择组件库。资源版本、import 写法和运行时加载契约以资源清单为准；页面选型按下列组合落地。
 
 ## 推荐组合
 
-| 场景 | 推荐库 | 何时使用 | 注意事项 |
+| 场景 | 推荐库 | 何时使用 | 使用要点 |
 | --- | --- | --- | --- |
-| B 端业务界面 | `antd` | 表格、表单控件、按钮、弹窗、Tabs、Tag、Dropdown、分页 | 最外层包 `ConfigProvider`，主色用 `readBrandColor` 注入；按可用资源清单 import，不自行注入依赖脚本 |
+| B 端业务界面 | `antd` | 表格、表单控件、按钮、弹窗、Tabs、Tag、Dropdown、分页 | 最外层包 `ConfigProvider`，主色用 `readBrandColor` 注入；资源加载交给 Code Canvas runtime |
 | 图表看板 | `recharts` | 折线、柱状、面积、饼图、简单仪表盘 | 容器必须有稳定高度；颜色用品牌色和语义色，不硬编码默认蓝 |
 | 复杂可视化 | `d3` | 自定义关系图、力导向、桑基、特殊坐标系 | 只在 Recharts 覆盖不了时使用；自己管理 DOM/cleanup |
 | 图标 | 内联 SVG 语义集 | 按钮、操作、状态、导航等功能性图标 | 默认选择，零依赖、运行稳定 |
@@ -22,15 +20,15 @@
 1. **普通业务页默认 `antd + ahooks + 内联 SVG 图标`**：这是最稳的 B 端组合，适合列表、工作台、详情、审批辅助页。
 2. **看板默认 `antd + recharts + ahooks + 内联 SVG 图标`**：KPI、筛选、图表和明细表都能覆盖；只有 Recharts 做不了的图才引入 `d3`。
 3. **需要去 antd 味时，少量使用 `@radix-ui/themes`**：适合展示页、门户页、较轻的工具页；同一页面选一个主视觉语言，另一套组件只做局部补充。
-4. **动效只作为状态反馈**：`framer-motion` 用在抽屉、折叠、局部切换，不用于整页炫酷入场。
+4. **动效服务状态反馈**：`framer-motion` 用在抽屉、折叠、局部切换，服务用户理解状态变化。
 5. **图标只作功能用途**：默认内联 SVG；需要统一开源图标库时按下方 `lucide-react` 用法引入。
 
 ## lucide-react 用法
 
-Code Canvas 支持在页面源码中使用 `lucide-react`。固定图标优先用 named import：
+Code Canvas 支持在页面源码中使用 `lucide-react`。从常用图标列表里选择具体组件，用 named import 引入：
 
 ```jsx
-import { Search, RefreshCw, ChevronDown, Settings } from 'lucide-react';
+import { Search, RefreshCw, ChevronDown, Settings, Plus } from 'lucide-react';
 
 function Toolbar() {
   return (
@@ -39,18 +37,27 @@ function Toolbar() {
       <RefreshCw size={16} />
       <ChevronDown size={16} />
       <Settings size={16} />
+      <Plus size={16} />
     </div>
   );
 }
 ```
 
-图标名称来自数据或配置时，用 `DynamicIcon`：
+图标名称来自数据或配置时，在页面内写映射表，映射值仍然是 named import 得到的组件：
 
 ```jsx
-import DynamicIcon from 'lucide-react';
+import { AlertCircle, Check, Clock, Search } from 'lucide-react';
+
+const ICONS = {
+  alert: AlertCircle,
+  check: Check,
+  clock: Clock,
+  search: Search,
+};
 
 function StatusIcon(props) {
-  return <DynamicIcon name={props.iconName || 'search'} size={16} />;
+  const Icon = ICONS[props.type] || Search;
+  return <Icon size={16} />;
 }
 ```
 
