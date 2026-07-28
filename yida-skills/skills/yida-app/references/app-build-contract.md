@@ -80,7 +80,7 @@ PRD 只记录业务语义，不记录 `formUuid`、`fieldId` 等 Schema ID；真
 
 - 默认使用 `yida-canvas-custom-page`：现代 React 交互、hooks、可视化、开放 API 读数据、AI 生成页面。
 - 仅当强依赖原生实例数据桥时使用 `yida-custom-page`：`this.$(fieldId)`、`this.utils.yida.*`、`dataSourceMap`、提交流程或设计器数据源深度耦合。
-- 视觉方向、密度、看板技能只在用户要求深度设计、看板产品化或 `deep_design` 时加载。
+- `fast_build` 页面阶段默认先加载 `yida-page-uiux` 做轻量视觉方向决策；密度、看板产品化、应用蓝图、主题深设等技能只在用户要求深度设计、看板产品化或 `deep_design` 时加载。
 
 ## 常用 URL
 

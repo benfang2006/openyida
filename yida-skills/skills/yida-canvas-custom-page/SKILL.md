@@ -105,9 +105,11 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 7. **light 页面使用清爽业务色**：业务列表、协同表、数据管理页、工作台和门户默认使用 light 模式；主操作、选中态、筛选焦点和批量操作使用品牌色或 sample 自带主题色，边框用浅色品牌混合。用户明确要求暗色大屏/夜间模式/高对比风格时使用深色主视觉。
 8. **门户运行态组件要补必需 props 和局部降级**：`QuickAccessCard` / `RecentlyUsedCard` 传 `theme="row-white"` 等必需 props；所有门户/字段/上传增强组件外层加局部 ErrorBoundary，单个组件不兼容时只降级该块，整页保持可用。
 9. **自定义主题必须页面内注入**：`--theme` 只接受平台预置 key；页面设计使用非预置主题（例如活力橙、深玫红、自定义暗黑金）时，在 Canvas 源码中注入 `style#yida-global-theme` 或等价 scoped CSS vars，并在根节点设置 `data-theme-scope="page"`。官方 sample 每个页面都做页面级主题注入。
-10. **真实交付使用真实数据源**：`openyida sample` 原样发布可以保留 sample/seed 数据，并在页面上标注为 sample/seed。完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；没有真实数据时展示空态、表单入口、刷新/登记按钮。
-11. **页面生成二选一**：模板路径先写 `page-spec.json`，执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json` 判断 `domainFidelity` / dataBinding，并对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
-12. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、模板 spec 会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。`generate-page --compile`、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。
+10. **双层样式护栏**：`openyida publish` 写入的 Canvas Schema 会带 Page 级 host reset，兜住首屏/刷新恢复焦点阶段；源码仍必须保留根节点 `oy-*` class、`OPENYIDA_CANVAS_CONTROL_CSS` 和 `ConfigProvider.getPopupContainer`，不要在后续编辑中删掉。手写非模板根类时，要复制同等 scoped reset，避免刷新时出现黑色粗边、浏览器原生 outline 或脱离页面作用域的下拉浮层。
+11. **真实交付使用真实数据源**：`openyida sample` 原样发布可以保留 sample/seed 数据，并在页面上标注为 sample/seed。完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；没有真实数据时展示空态、表单入口、刷新/登记按钮。
+12. **UI 决策块必须进入 page spec**：完整应用 `fast_build` 和真实交付页在生成页面前，先消费 `yida-page-uiux` 的视觉方向决策块，把页面类型、推荐模板、`visualProfile`、素材/图标策略、去 sample 化检查写进 `page-spec.json` 或手写实现备注。缺少决策块时，先用当前业务语义补一个紧凑决策；不要让模板默认 tone、section 顺序、sample 品牌名或 sample 指标直接成为最终业务页。
+13. **页面生成二选一**：模板路径先写 `page-spec.json`，执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json` 判断 `domainFidelity` / dataBinding，并对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
+14. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、模板 spec 会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。`generate-page --compile`、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。
 
 ## 数据真实性边界
 
