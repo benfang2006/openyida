@@ -136,10 +136,10 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 > 📌 仅当第二步判定为「完整搭建 / 补齐」时进入；单一/增量任务请跳「技能路由」。
 > 加载子技能 `yida-app`，由它负责完整应用 workflow、阶段子技能加载、关键 ID 流转、PRD 与 schema cache 约束。
-> 用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，`yida-app` 选择 `fast_build`：先解析并复用已有资源，只创建缺失且允许创建的应用/表单/页面，最后发布并输出链接。
+> 用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，`yida-app` 选择 `fast_build`：先解析并复用已有资源，只创建缺失且允许创建的应用/表单/页面，最后发布并输出链接；链接较多时用表格集中展示。
 > `yida-app fast_build` 使用常规 OpenYida 命令编排。
 
-**默认链路**：`fast_build` 必须只做 `resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接`。若需要首页/工作台/智能助手/门户门面且主页面缺失，先创建空 display page 占位，再建表单，最后回填发布；不要因此默认执行导航重排。不要因为应用名里有“看板 / 系统 / 管理”就升级到 `deep_design` 或 `full_demo`。
+**默认链路**：`fast_build` 必须只做 `resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接/资源表格`。若需要首页/工作台/智能助手/门户门面且主页面缺失，先创建空 display page 占位，再建表单，最后回填发布；不要因此默认执行导航重排。不要因为应用名里有“看板 / 系统 / 管理”就升级到 `deep_design` 或 `full_demo`。
 
 **fast_build 默认加载边界**：只加载 `yida-app` 和当前阶段必需的子技能。`yida-create-app`、`yida-create-page`、`yida-create-form-page` 只有在目标资源缺失且本次意图允许创建时才加载；已有资源时进入对应 update / publish 分支。主页面生成阶段包含一次 `yida-page-uiux` 轻量 UI 引导（页面类型、模板路由、`visualProfile`、去 sample 化检查），再交给页面实现技能；这不等于升级 `deep_design`，不得顺带做长 PRD、应用蓝图、导航整理或截图验收。页面默认走 Code Canvas；当用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥（`this.$(fieldId)` / `this.utils.yida.*` / `this.dataSourceMap` / 表单提交或字段双向绑定深度耦合）时，选择 `yida-custom-page`。不要默认加载 `yida-app-uiux`、`yida-data-source-connectors`、`yida-data-management`、`yida-nav-group`、`yida-dashboard`，也不要默认深读 `references/`。
 
@@ -250,7 +250,8 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 12. **官方示例范式优先**：蒸馏官方示例时先理解脱敏 schema 承载方式，不凭截图/标题/视觉判断。
 13. **默认完成即停止**：完整应用默认以发布成功并输出 URL 为 doneWhen；默认轻量页面 UI 引导只服务于本轮主页面生成。应用级 UIUX、数据源深读、示例数据、导航、截图、TaskCreate 和深度设计都是 optionalAfterDone。
 14. **主题技能优先**：涉及应用主题色、品牌色、全局换肤或 `--color-brand1-*` 时先读 `yida-theme`；表单和页面只消费主题，不要在局部 Schema/JSX 中随意写死蓝色/紫色等品牌色。
-15. **任务复盘沉淀**：任务完成前判断是否有可复用经验需要落盘到 CLI、测试、sample 或 skill。用户多次纠正、平台接口假成功、sample 共性质量问题、线上回读验收方法、一次性脚本可产品化等情况必须沉淀；详见 `references/task-retrospective.md`。
+15. **链接多时表格输出**：最终结果里 3 个及以上资源或链接时，用 Markdown 表格集中展示（资源类型、名称/用途、链接、状态），不要连续堆 URL。
+16. **任务复盘沉淀**：任务完成前判断是否有可复用经验需要落盘到 CLI、测试、sample 或 skill。用户多次纠正、平台接口假成功、sample 共性质量问题、线上回读验收方法、一次性脚本可产品化等情况必须沉淀；详见 `references/task-retrospective.md`。
 
 > 📖 每条规则的完整说明、PRD 质量门槛、临时文件路径规范、报表美化话术 → [references/development-rules.md](references/development-rules.md)
 

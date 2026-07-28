@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；主页面生成默认包含 yida-page-uiux 轻量 UI 引导，绑定或预创建应用只复用不改名；不默认使用未绑定 dataSourceMap，导航、示例数据和深度设计按需后置。",
-      "done_when": "若本轮 Write/Edit 页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回访问 URL；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；主页面生成默认包含 yida-page-uiux 轻量 UI 引导，绑定或预创建应用只复用不改名；结果链接较多时表格输出，不默认使用未绑定 dataSourceMap，导航、示例数据和深度设计按需后置。",
+      "done_when": "若本轮 Write/Edit 页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回访问 URL；3 个及以上资源或链接必须用 Markdown 表格输出；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",

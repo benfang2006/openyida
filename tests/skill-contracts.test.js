@@ -150,6 +150,8 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('`this.utils.yida.searchFormDatas`');
     expect(skill).toContain('发布输出出现 `No custom page data sources to preserve`');
     expect(skill).toContain('`yida-data-source-connectors`');
+    expect(skill).toContain('3 个及以上资源或链接：必须用 Markdown 表格');
+    expect(skill).toContain('资源类型 | 名称/用途 | 链接 | 状态');
   });
 
   test('yida-custom-page fast_build uses compact native defaults and reads references on demand', () => {
@@ -235,6 +237,7 @@ describe('OpenYida skill contracts', () => {
     expect(publish).toContain('发布了其他文件或其他目标页面，不满足本轮源码修改的 doneWhen');
 
     expect(byName.get('yida-app').done_when).toContain('没有 publish 证据只能声明源码已修改，尚未发布');
+    expect(byName.get('yida-app').done_when).toContain('3 个及以上资源或链接必须用 Markdown 表格输出');
     expect(byName.get('yida-canvas-custom-page').done_when).toContain('openyida publish <source> <appType> <displayPageFormUuid>');
     expect(byName.get('yida-custom-page').done_when).toContain('openyida publish <source> <appType> <displayPageFormUuid>');
     expect(byName.get('yida-publish-page').done_when).toContain('本地文件编辑、diff、check-page 或 compile 不能证明远端页面已更新');

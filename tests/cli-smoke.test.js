@@ -432,6 +432,7 @@ describe('CLI offline smoke', () => {
         'yida-nav-group',
       ]),
       ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
+      completion_contract: expect.stringContaining('Markdown table'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
@@ -939,6 +940,7 @@ describe('CLI offline smoke', () => {
         'yida-nav-group',
       ]),
       ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
+      completion_contract: expect.stringContaining('Markdown table'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
@@ -949,6 +951,7 @@ describe('CLI offline smoke', () => {
       mode: 'fast_build',
       completion_contract: expect.stringContaining('Create app'),
     });
+    expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('Markdown table');
     expect(parsed.builder_fast_path.bound_context).toMatchObject({
       existing_app_type_policy: 'do_not_call_app_list_by_default',
       skip_app_list_when: expect.arrayContaining([
@@ -1036,6 +1039,7 @@ describe('CLI offline smoke', () => {
     expect(parsed.sideEffects.read_only_preflight).toContain('openyida agent-capabilities --summary-json');
     expect(parsed.sideEffects.read_only_preflight).not.toContain('openyida agent-capabilities --json');
     expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating the app');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('Markdown table');
     expect(parsed.sideEffects.fast_build_data_contract).toContain('this.dataSourceMap');
     const commandIds = parsed.command_manifest.commands.map(entry => entry.id);
     const commandById = Object.fromEntries(parsed.command_manifest.commands.map(entry => [entry.id, entry]));

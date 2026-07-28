@@ -1,6 +1,6 @@
 ---
 name: yida-app
-description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；默认走 fast_build，先解析资源上下文，再创建缺失资源、更新主页面并发布输出链接。
+description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；默认走 fast_build，先解析资源上下文，再创建缺失资源、更新主页面并发布；结果链接较多时用表格输出。
 ---
 
 # yida-app — 完整应用编排契约
@@ -13,7 +13,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 用户说“按默认方案”“不要追问”“直接创建”“尽快搭建”等，必须选择 `fast_build`，用合理 MVP 假设直接执行，不展开深度 PRD 讨论。
 
-**默认判定**：完整应用搭建或补齐时，用户表达“默认方案 / 不要追问 / 直接创建 / 尽快搭建”等快速交付信号，就命中 `fast_build`。默认链路：`resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接`。
+**默认判定**：完整应用搭建或补齐时，用户表达“默认方案 / 不要追问 / 直接创建 / 尽快搭建”等快速交付信号，就命中 `fast_build`。默认链路：`resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接/资源表格`。
 
 > 资源边界：本技能是默认完整应用编排。目标不明时先只读确认或询问用户。
 
@@ -91,7 +91,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
               ↓
 [Step 7] 发布页面 → use_skill("yida-publish-page", "发布主页面") → openyida publish <源文件路径> <appType> <formUuid> [--health-check]
               ↓
-[Step 8] 输出访问链接和资源摘要 → 默认完成
+[Step 8] 输出访问链接/资源表格和资源摘要 → 默认完成
 ```
 
 `full_demo` / `deep_design` 才在 Step 7 后追加导航整理、示例数据、公开访问、截图验收、报表/大屏、数据桥深度接入等动作。
@@ -178,9 +178,15 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 | 4. resolve forms | `yida-create-form-page` | 已有目标表单时 update/patch/rule/bind-datasource；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json` | 拿到或确认表单 `formUuid`，并在需要时拿到真实 `fieldId` |
 | 5. 编写/更新页面 | 主页面生成阶段包含 `yida-page-uiux` 轻量 UI 引导，再 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 先产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，再生成或修改主页面源码；只实现 MVP 首屏和核心操作。可用已解析表单链接、真实空态、表单入口和轻量指标口径完成主页面；若展示业务列表/看板/详情记录，必须接本轮真实表单 `dataBinding.mode=form`，或先写入 demo records 后再读取；不要加载密度/报表/数据源等额外技能 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
 | 6. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid>` 发布主页面 | 发布成功并获得可访问 URL |
-| 7. 输出结果 | 无 | 返回应用链接、主页面链接、复用/创建/更新的资源摘要、后续可选项 | 用户拿到 URL |
+| 7. 输出结果 | 无 | 返回应用链接、主页面链接、复用/创建/更新的资源摘要、后续可选项；若本轮输出 3 个及以上资源或链接，必须用 Markdown 表格集中展示 | 用户能一眼区分每个链接用途 |
 
 主页面生成默认包含一次轻量 `yida-page-uiux` 页面引导；除此之外不默认执行：`yida-app-uiux`、`yida-canvas-data-binding`、`yida-data-source-connectors`、`yida-data-management`、`yida-nav-group`、`yida-dashboard`、导航重排、示例数据、截图验收、公开访问配置、深度 UI 设计、长 PRD、TaskCreate / 继续规划任务，也不默认读取 `references/app-build-contract.md`。
+
+## 结果输出格式
+
+- 1-2 个链接：可用简短列表输出，但要标清资源类型和用途。
+- 3 个及以上资源或链接：必须用 Markdown 表格，建议列为 `资源类型 | 名称/用途 | 链接 | 状态`，不要把 URL 连续堆成多行纯文本。
+- 表格里只放真实命令返回或已验证推导的链接；不确定、未发布或仅本地修改的资源，在 `状态` 列标注“未发布 / 待验证 / 本地已修改”。
 
 ## 关键决策树
 
