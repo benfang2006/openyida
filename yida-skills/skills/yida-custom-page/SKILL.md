@@ -43,7 +43,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 影响代码质量和用户体验：
 
-0. **视觉方向按需加载**：单点页面美化、用户明确要求好看/去 AI 味，或 `yida-app` 进入 `deep_design` 时，调用 `use_skill("yida-page-uiux", "确定自定义页面视觉方向")` 完成「视觉方向决策」。`yida-app fast_build` 默认不加载该技能，直接使用克制的 MVP 工作台/列表/入口布局，禁 emoji、少装饰、真实业务页主色跟随 App 品牌即可；`lib/samples/**` 和官方 sample 展示应用例外，必须使用页面级独立主题。
+0. **视觉方向先于编码**：单点页面美化、用户明确要求好看/去 AI 味，或完整应用进入页面实现阶段时，调用 `use_skill("yida-page-uiux", "确定自定义页面视觉方向")` 完成「视觉方向决策」。默认轻量 UI 引导只产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，不升级为应用蓝图或深度设计；`lib/samples/**` 和官方 sample 展示应用例外，必须使用页面级独立主题。
 1. **代码生成前确认功能摘要**：详见 [编码指南 编注 0](references/coding-guide.md)
 2. **pageSize 推荐 50，最大 100**：列表/看板默认 `pageSize: 50`；分页接口 `searchFormDatas` 等的 `pageSize` 最大 100
 3. **didUnmount 清理定时器**：在 `didUnmount` 中清理所有 `setInterval`/`setTimeout`，防止内存泄漏
@@ -61,7 +61,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 15. **发布前必须跑检查链路**：先执行 `openyida check-page <file>` 和 `openyida compile <file>`；若出现 warning/error，按规则修复后再发布
 16. **源码修改发布闭环**：只要本轮 Write/Edit/Create 了 `project/pages/src/*.{oyd.jsx,jsx,tsx}` 普通自定义页面源码，`check-page` / `compile` 只证明源码可发布，不等于远端页面已更新；final 前必须看到成功的 `openyida publish <source> <appType> <displayPageFormUuid>`。没有 publish 成功证据时，只能说“源码已修改，尚未发布”，不能说“页面已更新 / 已重新发布”。
 
-> 每条规则的代码示例、反模式和常见错误见 [编码指南](references/coding-guide.md)；`fast_build` 默认先遵守本技能正文，不预读长 reference，只有 check-page 报错、复杂交互、`deep_design` 或正文覆盖不了的问题时才读取。
+> 每条规则的代码示例、反模式和常见错误见 [编码指南](references/coding-guide.md)；`fast_build` 默认先遵守 `yida-page-uiux` 决策块和本技能正文，不预读长 reference，只有 check-page 报错、复杂交互、`deep_design` 或正文覆盖不了的问题时才读取。
 > 运行时易错点、`check-page` 规则和兼容层自动修复边界见 [运行时护栏](references/runtime-guardrails.md)，按需读取。
 > 表单类 JSX 控件、筛选栏、表格、成员/附件等组件写法见 [组件指南](references/component-jsx-guide.md)，涉及这些复杂组件时读取；未验证的平台组件能力不得编造。
 
@@ -164,7 +164,7 @@ export function loadVisitorList() {
 
 ## 开发规范
 
-> `fast_build` 默认不读取长 reference，直接遵守本技能正文的核心规则和模板。只有 check-page 报错、复杂交互/复杂组件、`deep_design`、或正文覆盖不了的运行时问题，才读取下方 Available Files。
+> `fast_build` 默认不读取长 reference，直接遵守 `yida-page-uiux` 决策块、本技能正文的核心规则和模板。只有 check-page 报错、复杂交互/复杂组件、`deep_design`、或正文覆盖不了的运行时问题，才读取下方 Available Files。
 > 涉及输入控件、日期、选择、成员/部门、附件、表格或筛选栏时，读取 [组件指南](references/component-jsx-guide.md)。
 
 ## 官方示例模板与编码注意事项
@@ -243,7 +243,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | 文档 | 覆盖范围 | 何时阅读 |
 |------|---------|---------|
 | **本技能文档** | | |
-| `yida-page-uiux` 子技能 | 页面类型 playbook、5 维差异化引擎、去 AI 味黑名单/8 问自检、图标策略 | 用户明确要求好看/去 AI 味或 `deep_design` 时加载；`fast_build` 不默认加载 |
+| `yida-page-uiux` 子技能 | 页面类型 playbook、5 维差异化引擎、去 AI 味黑名单/8 问自检、图标策略 | 页面实现前加载；`fast_build` 用轻量决策块，用户明确要求好看/去 AI 味或 `deep_design` 时可读更多 workflow/reference |
 | [编码指南](references/coding-guide.md) | 文件结构模板、状态管理、生命周期、19 条编码规范 | check-page 报错、复杂交互、状态管理问题或 `deep_design` 时阅读 |
 | [运行时护栏](references/runtime-guardrails.md) | pageSize、loading 恢复、ECharts DOM 时序、setState 约束、check-page 规则映射 | 页面运行时报错、check-page 规则不清或编译兼容边界不清时阅读 |
 | [设计规范](references/design-system.md) | 色彩/圆角/字体/间距系统、7 类组件样式模板、8 条反模式 | 用户明确要求视觉细化，或已进入 `deep_design` / `yida-page-uiux` 后阅读 |

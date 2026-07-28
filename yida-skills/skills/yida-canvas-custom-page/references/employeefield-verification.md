@@ -1,6 +1,6 @@
 # Code Canvas 运行时事实与 EmployeeField 验证
 
-本文件承载 `yida-canvas-custom-page` 的运行时边界与 EmployeeField 验证示例，SKILL.md 只保留摘要与链接。
+Code Canvas 接入 `EmployeeField` 前，先确认运行时边界、组件探测结果和值结构。
 
 ## 运行时事实
 
@@ -9,7 +9,7 @@
 - 代码执行后必须返回 `YidaComp`、`YidaComp.default` 或组件函数。
 - Canvas 要读写宜搭数据，只能在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。如果用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥，选择 `yida-custom-page`。
 
-> 依赖白名单表、windowAlias 映射与编译端点已拆到 [dependencies-and-cdn.md](dependencies-and-cdn.md)。
+> 可用资源清单、import 写法与运行时加载契约已拆到 [dependencies-and-cdn.md](dependencies-and-cdn.md)。
 
 ## 宜搭原生组件判断
 
@@ -19,7 +19,7 @@
 - 组件所需 CSS、页面上下文、组织权限、弹层容器、移动端版本均可用。
 - `onChange` 返回值结构能被后续数据保存或查询逻辑消费。
 
-这些原生组件从宿主 `window` 探测，不从 `@ali/deep` 等裸包 import。确认条件齐全时渲染原生组件；确认条件不足时使用普通 UI：用 antd 或自定义控件选择候选用户，值只存已知 userId / unionId / 文本快照。
+这些原生组件从宿主 `window` 探测。确认条件齐全时渲染原生组件；确认条件不足时使用普通 UI：用 antd 或自定义控件选择候选用户，值只存已知 userId / unionId / 文本快照。
 
 ## EmployeeField 验证示例
 
@@ -59,7 +59,7 @@ function YidaComp(props) {
       <div style={{ padding: 16 }}>
         <label style={{ display: 'block', marginBottom: 8 }}>负责人</label>
         <input
-          placeholder="EmployeeField 不可用，使用文本 fallback"
+          placeholder="未探测到 EmployeeField，使用文本 fallback"
           onChange={function (event) {
             setValue([{ name: event.target.value, raw: { fallback: true } }]);
           }}
@@ -91,7 +91,7 @@ export default YidaComp;
 验收点：
 
 - 组件探测结果能明确显示可用或缺失，不因缺失组件白屏。
-- 页面控制台没有 `EmployeeField is not defined`、样式缺失、弹层挂载错误。
+- 页面控制台保持干净，无 `EmployeeField is not defined`、样式缺失、弹层挂载错误。
 - 成员弹层能打开、搜索、选择、清空。
 - PC 和移动端都能完成选择。
 - `onChange` 输出的值结构被记录下来，后续代码按真实结构处理。

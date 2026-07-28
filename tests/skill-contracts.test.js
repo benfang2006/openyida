@@ -88,6 +88,8 @@ describe('OpenYida skill contracts', () => {
 
     const uiux = byName.get('yida-page-uiux');
     expect(uiux.done_when).toContain('视觉方向');
+    expect(uiux.tags).toEqual(expect.arrayContaining(['fast_build', 'ui_skill']));
+    expect(uiux.positive_signals).toEqual(expect.arrayContaining(['主页面 UI 引导', 'ui_skill']));
   });
 
   test('specialized Canvas-first skills keep native compatibility routes explicit', () => {
@@ -141,10 +143,15 @@ describe('OpenYida skill contracts', () => {
   test('yida-app fast_build forbids unbound dataSourceMap by default', () => {
     const skill = readSkill('yida-skills/skills/yida-app/SKILL.md');
 
+    expect(skill).toContain('use_skill("yida-page-uiux", "主页面 UI 引导")');
+    expect(skill).toContain('主页面生成默认包含一次轻量 `yida-page-uiux` 页面引导');
+    expect(skill).toContain('不默认执行：`yida-app-uiux`');
     expect(skill).toContain('默认页面源码不得使用 `this.dataSourceMap.*`');
     expect(skill).toContain('`this.utils.yida.searchFormDatas`');
     expect(skill).toContain('发布输出出现 `No custom page data sources to preserve`');
     expect(skill).toContain('`yida-data-source-connectors`');
+    expect(skill).toContain('3 个及以上资源或链接：必须用 Markdown 表格');
+    expect(skill).toContain('资源类型 | 名称/用途 | 链接 | 状态');
   });
 
   test('yida-custom-page fast_build uses compact native defaults and reads references on demand', () => {
@@ -152,6 +159,7 @@ describe('OpenYida skill contracts', () => {
 
     expect(skill).toContain('`fast_build` 默认不得生成依赖 dataSourceMap 的代码');
     expect(skill).toContain('不得在 fast_build 里写 `this.dataSourceMap.<name>.load()`');
+    expect(skill).toContain('默认轻量 UI 引导只产出页面类型、模板路由、`visualProfile` 和去 sample 化检查');
     expect(skill).toContain('## Available Files');
     expect(skill).toContain('check-page 报错、复杂交互、状态管理问题、`deep_design`');
     expect(skill).not.toContain('编写页面代码前**必须完整阅读**');
@@ -229,6 +237,7 @@ describe('OpenYida skill contracts', () => {
     expect(publish).toContain('发布了其他文件或其他目标页面，不满足本轮源码修改的 doneWhen');
 
     expect(byName.get('yida-app').done_when).toContain('没有 publish 证据只能声明源码已修改，尚未发布');
+    expect(byName.get('yida-app').done_when).toContain('3 个及以上资源或链接必须用 Markdown 表格输出');
     expect(byName.get('yida-canvas-custom-page').done_when).toContain('openyida publish <source> <appType> <displayPageFormUuid>');
     expect(byName.get('yida-custom-page').done_when).toContain('openyida publish <source> <appType> <displayPageFormUuid>');
     expect(byName.get('yida-publish-page').done_when).toContain('本地文件编辑、diff、check-page 或 compile 不能证明远端页面已更新');

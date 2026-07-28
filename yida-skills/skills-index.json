@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；绑定或预创建应用只复用不改名；不默认使用未绑定 dataSourceMap，导航、示例数据和深度设计按需后置。",
-      "done_when": "若本轮 Write/Edit 页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回访问 URL；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；主页面生成默认包含 yida-page-uiux 轻量 UI 引导，绑定或预创建应用只复用不改名；结果链接较多时表格输出，不默认使用未绑定 dataSourceMap，导航、示例数据和深度设计按需后置。",
+      "done_when": "若本轮 Write/Edit 页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回访问 URL；3 个及以上资源或链接必须用 Markdown 表格输出；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",
@@ -886,10 +886,12 @@
       "name": "yida-page-uiux",
       "path": "skills/yida-page-uiux/SKILL.md",
       "display_name": "页面视觉方向决策",
-      "description": "单页自定义页面 UI/UX 视觉方向决策：页面实现前按工作台/看板/大屏/列表/详情/官网等类型产出视觉方向决策块，覆盖布局骨架、信息密度、视觉风格、素材图标、模板路由和去 AI 味自检。用户明确要美化、好看、高级、品牌化、UI 视觉、页面太丑/不够惊艳或进入深度视觉设计阶段时触发。",
+      "description": "单页自定义页面 UI/UX 视觉方向决策：页面实现前按工作台/看板/大屏/列表/详情/官网等类型产出视觉方向决策块，覆盖布局骨架、信息密度、视觉风格、素材图标、模板路由和去 AI 味自检。用户明确要美化、好看、高级、品牌化、UI 视觉、页面太丑/不够惊艳，或完整应用进入主页面实现阶段时触发。",
       "category": "yida-skills/page",
       "tags": [
         "UIUX",
+        "ui_skill",
+        "fast_build",
         "视觉方向",
         "去 AI 味",
         "页面类型"
@@ -899,6 +901,8 @@
       ],
       "positive_signals": [
         "页面美化",
+        "主页面 UI 引导",
+        "ui_skill",
         "视觉方向",
         "去 AI 味",
         "高级感",

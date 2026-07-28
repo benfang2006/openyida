@@ -1,6 +1,6 @@
-# Code Canvas 页面生成与视觉路由指南
+# Code Canvas 页面生成与视觉路由
 
-本文承载 `yida-canvas-custom-page` 的页面类型路由、主题作用域、官网素材流程和 Page Spec 字段说明。SKILL.md 只保留摘要和命令入口。
+Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定和素材来源，再写 `page-spec.json` 或直接手写 `.canvas.jsx`。
 
 ## 首次生成模板路由
 
@@ -22,7 +22,7 @@
 
 - `openyida sample` 或模板原样发布可以展示 sample/seed 数据，但页面必须标注 sample/seed。
 - 完整应用或真实交付页使用真实业务记录；需要演示数据时，先把 demo/mock records 写入真实宜搭表单，再由 Canvas 读取。
-- 未写入 demo records 且没有真实数据时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
+- 真实数据暂未接入时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
 
 | 用户需求 | CLI 模板 | scene | 视觉要点 |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@
 
 如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接规则。
 
-当模板本身包含页面内应用导航（如 `workbench-home` 的侧边导航、`portal-shell-home` 的门户导航）时，生成的 `.openyida-page.json` 会默认写入 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。发布后必须用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏宜搭原应用导航，避免双导航。
+当模板本身包含页面内应用导航（如 `workbench-home` 的侧边导航、`portal-shell-home` 的门户导航）时，生成的 `.openyida-page.json` 会默认写入 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。发布后必须用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏宜搭原应用导航，保持页面单导航。
 
 ## 官网与品牌页素材流程
 
@@ -87,7 +87,7 @@
 | “整个应用统一风格 / 全局换肤 / 应用主题也改一下” | `themeScope: app` |
 | “左侧导航也一起变色 / 菜单也跟着主题走” | `themeScope: app` |
 | “页面好看一点 / 这个自定义页换主题 / 首页美化” | `themeScope: page` |
-| “只改当前页 / 不影响导航 / 不要改其他页面” | `themeScope: page` |
+| “只改当前页 / 保持导航不变 / 其他页面不变” | `themeScope: page` |
 
 显式覆盖色只在用户给定品牌色、色值或明确要求覆盖当前应用主题时使用。
 

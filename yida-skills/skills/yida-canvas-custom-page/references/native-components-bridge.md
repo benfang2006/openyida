@@ -1,12 +1,12 @@
-# Code Canvas 原生组件桥接指南
+# Code Canvas 原生组件桥
 
-本文说明在 Code Canvas 自定义页面中接入宜搭运行态组件的推荐做法，覆盖门户组件、数据管理视图、成员、部门、附件上传和图片上传。
+Code Canvas 接入宜搭运行态组件时，统一使用运行时桥接。覆盖门户组件、数据管理视图、成员、部门、附件上传和图片上传。
 
 ## 核心策略
 
-Code Canvas 里的宜搭运行态组件按“先探测、可用再增强、不可用就 fallback”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 白名单内的通用前端包。
+Code Canvas 里的宜搭运行态组件按“先探测、可用增强、fallback 保底”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 可用资源清单内的通用前端包。
 
-推荐方式是运行时桥接：
+运行时桥接步骤：
 
 1. 从 `window.Deep`、`window.DeepYida` 探测组件；若环境已有 `window.YidaNativeComponents`，作为兼容入口读取。
 2. 找到组件后渲染原生组件。
@@ -32,7 +32,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 业务代码统一走桥接函数读取宿主组件，便于隔离不同运行态差异。
 
-## 门户组件怎么用
+## 门户组件接入规则
 
 ### TopBanner / QuickEntry
 
@@ -49,7 +49,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 - QuickEntry 只传静态 `content`、`titleConfig`、`themeConfig`。
 - 点击跳转由 Canvas 自己控制，目标 URL 和打开方式写在页面代码里。
 
-### QuickAccessCard / RecentlyUsedCard（可用，但 `theme` 必传）
+### QuickAccessCard / RecentlyUsedCard（`theme` 必传）
 
 这两个是**容器型组件**，会在运行态自行拉取应用列表并渲染卡片。`theme` 是必传运行时契约；页面始终传入 `theme="row-white"` 或 `theme="column"`。
 
@@ -67,7 +67,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 使用要求：
 
 - **始终传 `theme`**（如 `'row-white'`）。
-- 列表数据由组件自取（依赖当前登录用户 + 门户接口），Canvas 只负责容器 props、布局和 fallback。
+- 列表数据由组件自取（依赖当前登录用户 + 门户接口），Canvas 提供容器 props、布局和 fallback。
 - 组件缺失或无门户接口权限时，渲染 Canvas 自绘应用入口卡片。
 
 > 页面侧遵守必传 props 约束并做好局部降级：`theme` 有值，组件缺失或运行态不兼容时展示 Canvas fallback。
@@ -78,7 +78,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 页面只需要「门户风格」时，使用 Canvas 自绘卡片并通过 fetch/连接器取数据；需要复用宜搭门户内置的快捷/最近应用卡片时，按上面方式启用 `QuickAccessCard` / `RecentlyUsedCard`。
 
-## 数据管理视图怎么用
+## 数据管理视图接入规则
 
 需要在自定义页面中嵌入门户里那块「数据管理视图」时，优先探测 `DataManageViews`，并把它当作黑盒组件使用。页面侧只传稳定的 `form` 配置，不自行构造底层数据管理 props。
 
@@ -129,10 +129,10 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 - 先拿到 `form.value/formUuid`，再渲染 `DataManageViews`。
 - 组件依赖宿主运行态、登录态、权限、CSRF、`vc-deep-yida` 与 `yc-data-manage` 样式；组件缺失或权限不足时保留 Canvas fallback。
-- `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧统一使用它承载门户数据管理视图。
+- `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧统一使用它渲染门户数据管理视图。
 - 只需要展示少量业务数据时，用 Canvas 自绘表格 + HTTP 数据桥 / 连接器 / `openyida data`；需要复用门户数据管理视图时使用 `DataManageViews`。
 
-## 成员组件怎么用
+## 成员组件接入规则
 
 需要成员选择时，优先探测 `EmployeeField`。它属于宿主运行态组件，先验证可用性，再接入业务页面。
 
@@ -156,9 +156,9 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 }
 ```
 
-## 部门组件怎么用
+## 部门组件接入规则
 
-需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖宿主通讯录能力、搜索接口和权限上下文，因此要比成员组件更谨慎。
+需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖宿主通讯录能力、搜索接口和权限上下文，先完成 smoke 验证再接入业务页面。
 
 使用要求：
 
@@ -179,7 +179,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 }
 ```
 
-## 上传组件怎么用
+## 上传组件接入规则
 
 需要上传时，优先探测：
 
@@ -190,7 +190,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 使用要求：
 
-- 原生上传作为增强能力；组件不可用或上传失败时，fallback 到链接录入或业务连接器上传。
+- 原生上传作为增强能力；组件缺失或上传失败时，fallback 到链接录入或业务连接器上传。
 - Cookie、CSRF、OSS key 或内部上传密钥由平台、连接器或后端服务管理，Canvas 只消费安全返回结果。
 - 提交数据只使用归一化后的文件数组，`raw` 仅用于检查。
 
@@ -223,9 +223,9 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 | 值归一化 | 提交 payload 不依赖 raw 原始对象 |
 | fallback | 任何原生组件缺失时页面仍可完成核心流程 |
 
-## 什么时候使用普通 Canvas fallback
+## Fallback 稳定基线
 
-以下情况应主动使用 fallback：
+满足任一条件时直接渲染 Canvas fallback，保证页面主流程可用：
 
 - 运行态找不到目标组件。
 - 未指定数据管理视图的 `form.value/formUuid`。
