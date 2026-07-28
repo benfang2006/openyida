@@ -101,7 +101,7 @@ describe('eval routing', () => {
     expect(r.status).toBe('ok');
   });
 
-  test('evaluateScenario 校验默认建访客系统走 yida-app fast_build 且加载轻量 UI 引导', () => {
+  test('evaluateScenario 校验默认建访客系统走 yida-app fast_build 且包含轻量 UI 引导', () => {
     const scenario = {
       id: 'visitor-fast-build',
       prompt: '帮我搭建一个访客系统，按默认方案搭建，不要追问，直接创建',

@@ -43,7 +43,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 影响代码质量和用户体验：
 
-0. **视觉方向先于编码**：单点页面美化、用户明确要求好看/去 AI 味，或 `yida-app` 进入页面实现阶段时，调用 `use_skill("yida-page-uiux", "确定自定义页面视觉方向")` 完成「视觉方向决策」。`yida-app fast_build` 默认使用该技能做轻量 UI 引导：只产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，不升级为应用蓝图或深度设计；`lib/samples/**` 和官方 sample 展示应用例外，必须使用页面级独立主题。
+0. **视觉方向先于编码**：单点页面美化、用户明确要求好看/去 AI 味，或完整应用进入页面实现阶段时，调用 `use_skill("yida-page-uiux", "确定自定义页面视觉方向")` 完成「视觉方向决策」。默认轻量 UI 引导只产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，不升级为应用蓝图或深度设计；`lib/samples/**` 和官方 sample 展示应用例外，必须使用页面级独立主题。
 1. **代码生成前确认功能摘要**：详见 [编码指南 编注 0](references/coding-guide.md)
 2. **pageSize 推荐 50，最大 100**：列表/看板默认 `pageSize: 50`；分页接口 `searchFormDatas` 等的 `pageSize` 最大 100
 3. **didUnmount 清理定时器**：在 `didUnmount` 中清理所有 `setInterval`/`setTimeout`，防止内存泄漏

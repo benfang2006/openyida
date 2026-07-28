@@ -89,7 +89,7 @@ describe('OpenYida skill contracts', () => {
     const uiux = byName.get('yida-page-uiux');
     expect(uiux.done_when).toContain('视觉方向');
     expect(uiux.tags).toEqual(expect.arrayContaining(['fast_build', 'ui_skill']));
-    expect(uiux.positive_signals).toEqual(expect.arrayContaining(['fast_build UI 引导', 'ui_skill']));
+    expect(uiux.positive_signals).toEqual(expect.arrayContaining(['主页面 UI 引导', 'ui_skill']));
   });
 
   test('specialized Canvas-first skills keep native compatibility routes explicit', () => {
@@ -143,8 +143,8 @@ describe('OpenYida skill contracts', () => {
   test('yida-app fast_build forbids unbound dataSourceMap by default', () => {
     const skill = readSkill('yida-skills/skills/yida-app/SKILL.md');
 
-    expect(skill).toContain('use_skill("yida-page-uiux", "fast_build 主页面 UI 引导")');
-    expect(skill).toContain('默认执行一次轻量 `yida-page-uiux` 页面引导');
+    expect(skill).toContain('use_skill("yida-page-uiux", "主页面 UI 引导")');
+    expect(skill).toContain('主页面生成默认包含一次轻量 `yida-page-uiux` 页面引导');
     expect(skill).toContain('不默认执行：`yida-app-uiux`');
     expect(skill).toContain('默认页面源码不得使用 `this.dataSourceMap.*`');
     expect(skill).toContain('`this.utils.yida.searchFormDatas`');
@@ -157,7 +157,7 @@ describe('OpenYida skill contracts', () => {
 
     expect(skill).toContain('`fast_build` 默认不得生成依赖 dataSourceMap 的代码');
     expect(skill).toContain('不得在 fast_build 里写 `this.dataSourceMap.<name>.load()`');
-    expect(skill).toContain('`yida-app fast_build` 默认使用该技能做轻量 UI 引导');
+    expect(skill).toContain('默认轻量 UI 引导只产出页面类型、模板路由、`visualProfile` 和去 sample 化检查');
     expect(skill).toContain('## Available Files');
     expect(skill).toContain('check-page 报错、复杂交互、状态管理问题、`deep_design`');
     expect(skill).not.toContain('编写页面代码前**必须完整阅读**');
