@@ -665,6 +665,43 @@ describe('compileCanvasLocal', () => {
     expect(runtimeCode).not.toMatch(/\bexport\s/);
   });
 
+  test('compiles the Canvas-first Recharts trend sample', () => {
+    const samplePath = path.join(
+      __dirname,
+      '..',
+      'lib',
+      'samples',
+      'yida-rechart',
+      'trend-combo.canvas.jsx'
+    );
+    const src = fs.readFileSync(samplePath, 'utf8');
+    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: samplePath });
+
+    expect(JSON.parse(importedModules)).toEqual(['antd', 'react', 'recharts']);
+    expect(runtimeCode).toMatch(/window\.Recharts/);
+    expect(runtimeCode).toMatch(/window\.antd/);
+    expectCanvasEntry(runtimeCode);
+  });
+
+  test('compiles the Canvas-first table form without a native page bridge', () => {
+    const samplePath = path.join(
+      __dirname,
+      '..',
+      'lib',
+      'samples',
+      'yida-canvas-table-form',
+      'table-form-batch-submit.canvas.jsx'
+    );
+    const src = fs.readFileSync(samplePath, 'utf8');
+    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: samplePath });
+
+    expect(JSON.parse(importedModules)).toEqual(['antd', 'dayjs', 'react']);
+    expect(runtimeCode).toMatch(/window\.dayjs/);
+    expect(runtimeCode).toMatch(/window\.antd/);
+    expect(runtimeCode).not.toMatch(/this\.utils\.yida/);
+    expectCanvasEntry(runtimeCode);
+  });
+
   test('compiles the portal native components bridge sample', () => {
     const samplePath = path.join(
       __dirname,
@@ -1103,10 +1140,38 @@ describe('compileCanvas (async wrapper)', () => {
   });
 
   test('rejects on empty source', async () => {
-    await expect(compileCanvas('   ')).rejects.toThrow(/源码为空/);
+    await expect(compileCanvas('   ')).rejects.toMatchObject({
+      code: 'OPENYIDA_CANVAS_COMPILE_EMPTY_SOURCE',
+    });
   });
 
   test('rejects with friendly message on invalid syntax', async () => {
-    await expect(compileCanvas('export default function( {')).rejects.toThrow(/本地编译失败/);
+    await expect(compileCanvas('export default function( {')).rejects.toMatchObject({
+      code: 'OPENYIDA_CANVAS_COMPILE_FAILED',
+      message: expect.stringMatching(/本地编译失败/),
+    });
+  });
+
+  test('preserves emoji CliError code and details from local compile', async () => {
+    await expect(compileCanvas(`
+      import React from 'react';
+      export default function Page() {
+        return <div>Menu ☰</div>;
+      }
+    `, {
+      sourcePath: 'pages/src/emoji.canvas.jsx',
+    })).rejects.toMatchObject({
+      code: 'OPENYIDA_CANVAS_SOURCE_EMOJI_FORBIDDEN',
+      details: {
+        artifact: 'pages/src/emoji.canvas.jsx',
+        issues: [
+          expect.objectContaining({
+            line: 4,
+            column: expect.any(Number),
+            emoji: '☰',
+          }),
+        ],
+      },
+    });
   });
 });

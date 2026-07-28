@@ -78,10 +78,66 @@ describe('OpenYida skill contracts', () => {
     const canvas = byName.get('yida-canvas-custom-page');
     expect(canvas.negative_signals).toEqual(expect.arrayContaining(['强依赖 this.$']));
 
+    const rechart = byName.get('yida-rechart');
+    expect(rechart.positive_signals).toEqual(expect.arrayContaining(['高级图表', 'Recharts']));
+    expect(rechart.negative_signals).toEqual(expect.arrayContaining(['明确指定 ECharts']));
+
+    const canvasTable = byName.get('yida-canvas-table-form');
+    expect(canvasTable.positive_signals).toEqual(expect.arrayContaining(['批量录入', 'antd Table']));
+    expect(canvasTable.negative_signals).toEqual(expect.arrayContaining(['this.utils.yida.saveFormData']));
+
     const uiux = byName.get('yida-page-uiux');
     expect(uiux.done_when).toContain('视觉方向');
     expect(uiux.tags).toEqual(expect.arrayContaining(['fast_build', 'ui_skill']));
     expect(uiux.positive_signals).toEqual(expect.arrayContaining(['fast_build UI 引导', 'ui_skill']));
+  });
+
+  test('specialized Canvas-first skills keep native compatibility routes explicit', () => {
+    const root = readSkill('yida-skills/SKILL.md');
+    const rechart = readSkill('yida-skills/skills/yida-rechart/SKILL.md');
+    const canvasTable = readSkill('yida-skills/skills/yida-canvas-table-form/SKILL.md');
+    const nativeChart = readSkill('yida-skills/skills/yida-chart/SKILL.md');
+    const nativeTable = readSkill('yida-skills/skills/yida-table-form/SKILL.md');
+
+    expect(root).toContain('默认 `yida-rechart`（Code Canvas + Recharts）');
+    expect(root).toContain('默认 `yida-canvas-table-form`');
+    expect(rechart).toContain('禁止前端全量聚合');
+    expect(rechart).toContain('`yida-report`');
+    expect(rechart).toContain('`yida-canvas-data-binding`');
+    expect(canvasTable).toContain('Canvas 没有普通页面实例桥');
+    expect(canvasTable).toContain('未验证不得伪装闭环');
+    expect(canvasTable).toContain('Promise.all');
+    expect(nativeChart).toContain('# 宜搭 ECharts 高级报表技能');
+    expect(nativeTable).toContain('saveFormData');
+  });
+
+  test('deprecated yida-ppt routes through yida-ppt-slider only', () => {
+    const root = readSkill('yida-skills/SKILL.md');
+    const slider = readSkill('yida-skills/skills/yida-ppt-slider/SKILL.md');
+    const index = JSON.parse(readSkill('yida-skills/skills-index.json'));
+    const byName = new Map(index.skills.map((skill) => [skill.name, skill]));
+
+    expect(byName.has('yida-ppt')).toBe(false);
+    expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-ppt', 'SKILL.md'))).toBe(false);
+    expect(root).toContain('`yida-ppt-slider`');
+    expect(root).not.toContain('`yida-ppt` |');
+    expect(byName.get('yida-ppt-slider').aliases).toEqual(expect.arrayContaining(['yida-ppt']));
+    expect(byName.get('yida-ppt-slider').positive_signals).toEqual(expect.arrayContaining(['yida-ppt', 'PPT']));
+    expect(slider).toContain('"yida-ppt"');
+  });
+
+  test('tingji reads taskUuid before flash-note PRD generation', () => {
+    const root = readSkill('yida-skills/SKILL.md');
+    const tingji = readSkill('yida-skills/skills/yida-tingji/SKILL.md');
+    const flash = readSkill('yida-skills/skills/yida-flash-note-to-prd/SKILL.md');
+    const index = JSON.parse(readSkill('yida-skills/skills-index.json'));
+    const byName = new Map(index.skills.map((skill) => [skill.name, skill]));
+
+    expect(root).toContain('先用 `yida-tingji` 读取听记内容，再把已有内容交给 `yida-flash-note-to-prd`');
+    expect(tingji).toContain('本技能不直接生成 PRD');
+    expect(flash).toContain('先加载 `yida-tingji` 读取听记内容');
+    expect(byName.get('yida-tingji').description).toContain('只负责读取内容');
+    expect(byName.get('yida-flash-note-to-prd').description).toContain('若用户只给 taskUuid');
   });
 
   test('yida-app fast_build forbids unbound dataSourceMap by default', () => {
@@ -204,5 +260,38 @@ describe('OpenYida skill contracts', () => {
     expect(report).toContain('REPORT_xxx');
     expect(retrospective).toContain('Chart sample / 原生报表绑定经验');
     expect(retrospective).toContain('工作台是操作首页，不是 demo 页面');
+  });
+
+  test('custom-page-dependent skills keep Canvas-first and native fallback boundaries explicit', () => {
+    const dashboard = readSkill('yida-skills/skills/yida-dashboard/SKILL.md');
+    const ppt = readSkill('yida-skills/skills/yida-ppt-slider/SKILL.md');
+    const density = readSkill('yida-skills/skills/yida-density/SKILL.md');
+    const navShell = readSkill('yida-skills/skills/yida-nav-shell/SKILL.md');
+    const pageUiux = readSkill('yida-skills/skills/yida-page-uiux/SKILL.md');
+    const dataSources = readSkill('yida-skills/skills/yida-data-source-connectors/SKILL.md');
+
+    expect(dashboard).toContain('默认实现层是 **Code Canvas**');
+    expect(dashboard).toContain('常规图表：`yida-rechart`');
+    expect(dashboard).toContain('只有用户明确要求 ECharts');
+    expect(dashboard).toContain('## Legacy/native fallback');
+
+    expect(ppt).toContain('新建演示默认走 **Code Canvas**');
+    expect(ppt).toContain('`useEffect` 管键盘、hash、触摸、定时器和 cleanup');
+    expect(ppt).toContain('## Legacy/native fallback');
+
+    expect(density).toContain('实现示例默认使用 **Code Canvas + React hooks**');
+    expect(density).toContain('## Legacy/native fallback');
+
+    expect(navShell).toContain('新建导航壳默认交 **Code Canvas**');
+    expect(navShell).toContain('需要可分享、前进/后退');
+    expect(navShell).toContain('## Legacy/native fallback');
+
+    expect(pageUiux).toContain('默认交 Code Canvas');
+    expect(pageUiux).toContain('常规业务图表交 `yida-rechart`');
+    expect(pageUiux).toContain('ECharts 例外');
+
+    expect(dataSources).toContain('本技能只服务 **普通自定义页面 native 链路**');
+    expect(dataSources).toContain('Code Canvas 组件没有普通页面 `this` 实例，也没有 `dataSourceMap`');
+    expect(dataSources).toContain('use_skill("yida-canvas-data-binding"');
   });
 });
