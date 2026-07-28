@@ -355,6 +355,65 @@ describe('compileCanvasLocal', () => {
     expect(error.message).toContain('OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS');
   });
 
+  test('maps lucide-react named icons to LucideReact and DynamicIcon to its runtime global', () => {
+    const src = `
+      import React from 'react';
+      import { Search, DynamicIcon } from 'lucide-react';
+      export default function App() {
+        return <div><Search /><DynamicIcon name="settings" /></div>;
+      }
+    `;
+
+    const { runtimeCode, importedModules } = compileCanvasLocal(src);
+
+    expect(JSON.parse(importedModules)).toEqual(['lucide-react', 'react']);
+    expect(runtimeCode).toMatch(/window\.LucideReact/);
+    expect(runtimeCode).toMatch(/window\.DynamicIcon/);
+    expect(runtimeCode).not.toMatch(/Search\s*=\s*_[A-Za-z0-9$]*DynamicIcon\.Search/);
+
+    function Search() { return 'search-node'; }
+    function DynamicIcon() { return 'dynamic-node'; }
+    const win = stubReactWindow({
+      LucideReact: { Search },
+      DynamicIcon,
+    });
+    const Comp = assembleRuntime(runtimeCode, win);
+    const tree = Comp({});
+
+    expect(tree.type).toBe('div');
+    expect(tree.children[0].type).toBe('Search');
+    expect(tree.children[1].type).toBe('DynamicIcon');
+  });
+
+  test('maps lucide-react namespace and default imports to the verified canvas globals', () => {
+    const src = `
+      import React from 'react';
+      import DynamicIcon, * as Icons from 'lucide-react';
+      export default function App() {
+        return <section><Icons.RefreshCw /><DynamicIcon name="refresh-cw" /></section>;
+      }
+    `;
+
+    const { runtimeCode, importedModules } = compileCanvasLocal(src);
+
+    expect(JSON.parse(importedModules)).toEqual(['lucide-react', 'react']);
+    expect(runtimeCode).toMatch(/window\.LucideReact/);
+    expect(runtimeCode).toMatch(/window\.DynamicIcon/);
+
+    function RefreshCw() { return 'refresh-node'; }
+    function DynamicIcon() { return 'dynamic-node'; }
+    const win = stubReactWindow({
+      LucideReact: { RefreshCw },
+      DynamicIcon,
+    });
+    const Comp = assembleRuntime(runtimeCode, win);
+    const tree = Comp({});
+
+    expect(tree.type).toBe('section');
+    expect(tree.children[0].type).toBe('RefreshCw');
+    expect(tree.children[1].type).toBe('DynamicIcon');
+  });
+
   test('allows explicit legacy window fallback for runtime alias drift', () => {
     const oldValue = process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS;
     process.env.OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS = '1';

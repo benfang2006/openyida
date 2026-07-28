@@ -9,7 +9,7 @@
 - 代码执行后必须返回 `YidaComp`、`YidaComp.default` 或组件函数。
 - Canvas 要读写宜搭数据，只能在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。如果用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥，选择 `yida-custom-page`。
 
-> 依赖白名单表、windowAlias 映射与编译端点已拆到 [dependencies-and-cdn.md](dependencies-and-cdn.md)。
+> 可用资源清单、import 写法与运行时加载契约已拆到 [dependencies-and-cdn.md](dependencies-and-cdn.md)。
 
 ## 宜搭原生组件判断
 

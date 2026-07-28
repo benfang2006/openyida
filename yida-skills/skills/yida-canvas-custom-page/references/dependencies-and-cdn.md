@@ -1,29 +1,32 @@
-# Code Canvas 依赖白名单与 CDN 加载
+# Code Canvas 可用资源与加载契约
 
-本文件承载 Code Canvas 的依赖白名单、windowAlias 映射与编译改写规则。依赖加载细节以当前宜搭物料运行时为准；本文只保留页面作者需要遵循的 import / CDN 契约。核实自 `vc-deep-yida/src/components/yida-code-canvas` 源码（`dependencies.ts` / `factory.tsx`）。
+本文件承载 Code Canvas 可直接使用的前端资源、页面源码 import 写法与运行时加载契约。依赖加载细节以当前宜搭物料运行时为准；页面作者按下表 import，不自行注入 CDN script。核实自 `vc-deep-yida/src/components/yida-code-canvas` 源码（`dependencies.ts` / `factory.tsx`）。
 
-## 依赖白名单（核实自 `yida-code-canvas/dependencies.ts`）
+## 可用前端资源
 
-编译阶段把 `import` 改写为下列白名单的 `windowAlias` 引用，运行时按 `windowAlias` 加载到 `window` 上。带 `${cdn}` 的资源前缀由平台运行时按当前环境决定。
+编译阶段会把下列资源的 `import` 计入 `importedModules`，运行时按资源表加载。带 `${cdn}` 的资源前缀由平台运行时按当前环境决定。
 
-| 包名 | windowAlias | 资源 |
-| --- | --- | --- |
-| react | `React` | g.alicdn.com react 18.3.1 |
-| react-dom | `ReactDOM` | g.alicdn.com react-dom 18.3.1 |
-| antd | `antd` | g.alicdn.com antd **5.23.3** `antd-with-locales.js` |
-| @ant-design/icons | `icons` | g.alicdn.com ant-design-icons 5.5.1 |
-| ahooks | `ahooks` | `${cdn}/platform/yida-assets/ahooks.js`（默认追加） |
-| d3 | `d3` | g.alicdn.com d3 7.9.0 |
-| recharts | `Recharts` | g.alicdn.com recharts 2.15.0 |
-| @radix-ui/themes | `Radix` | `${cdn}/.../radix.js` + `radix.css` |
-| lucide-react | `DynamicIcon` | `${cdn}/.../lucideReact.js` |
-| framer-motion | `FramerMotion` | `${cdn}/.../framerMotion.js` |
-| yida-plugin-markdown | `YidaMarkdown` | moduleFederation 0.0.4 |
+| 包名 / 资源 | 推荐用途 | 页面源码写法 | 运行时资源 |
+| --- | --- | --- | --- |
+| `react` | React18 运行时 | `import React from 'react'` | g.alicdn.com react 18.3.1 |
+| `react-dom` | React DOM 运行时 | `import ReactDOM from 'react-dom'` | g.alicdn.com react-dom 18.3.1 |
+| `antd` | 表格、表单控件、按钮、弹窗、Tabs、Tag、Dropdown、分页 | `import { Button, Table } from 'antd'` | g.alicdn.com antd **5.23.3** `antd-with-locales.js` |
+| `@ant-design/icons` | Ant Design 图标 | `import { SearchOutlined } from '@ant-design/icons'` | g.alicdn.com ant-design-icons 5.5.1 |
+| `ahooks` | 防抖、请求状态、定时器、列表状态等 hooks | `import { useMemoizedFn } from 'ahooks'` | `${cdn}/platform/yida-assets/ahooks.js`（运行时默认追加） |
+| `recharts` | 折线、柱状、面积、饼图等 React 图表 | `import { LineChart, Line } from 'recharts'` | g.alicdn.com recharts 2.15.0 |
+| `d3` | 自定义关系图、力导向、桑基、特殊坐标系 | `import * as d3 from 'd3'` | g.alicdn.com d3 7.9.0 |
+| `@radix-ui/themes` | 少量轻量主题组件 | `import { Button } from '@radix-ui/themes'` | `${cdn}/.../radix.js` + `radix.css` |
+| `lucide-react` | 线性功能图标 | `import { Search } from 'lucide-react'`；动态名称用 `import DynamicIcon from 'lucide-react'` | `${cdn}/.../lucideReact.js` |
+| `framer-motion` | 抽屉、折叠、局部状态切换动效 | `import { motion } from 'framer-motion'` | `${cdn}/.../framerMotion.js` |
+| `yida-plugin-markdown` | PRD、公告、帮助文档、AI 输出内容展示 | `import Markdown from 'yida-plugin-markdown'` | moduleFederation 0.0.4 |
 
-新增依赖必须同时满足：① 编译能把 import 抽进 `importedModules` 并映射到 windowAlias（见 `canvas-compile.js` 的 `MODULE_ALIAS_MAP`）；② 上表或平台运行时能把依赖加载到 window；③ `runtimeCode` 引用的变量名与 windowAlias 一致；④ CSS 资源可加载。页面源码只 import 白名单包；`yida-utils`、`@ali/deep`、原生字段组件等宜搭运行态能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等 `window.*` 访问。
+## 资源使用约定
 
-当宜搭物料依赖表已经先于 OpenYida CLI 升级，且已确认运行时确实会注入某个新裸包时，可以临时设置 `OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS=1` 退回旧式 `window["pkg"]` 映射发布。该开关只用于白名单漂移期间的发布验证；常规页面仍使用上表白名单和明确的 `windowAlias`。
+- 页面源码只从上表资源 import；不要自行写 `<script>`、`loadScript` 或外链 CDN。
+- 宜搭运行态组件和平台能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等宿主对象探测，不从 `@ali/deep`、`vc-deep-yida`、`yida-utils` 直接 import。
+- 真实表单数据绑定使用页面内本地 `useYidaData(binding)`、`DataBridge` 与同源 `fetch` 实现。
+- 组件库怎么选见 [component-library-guide.md](component-library-guide.md)；本文件只维护“能 import 什么”和“运行时如何加载”的事实。
 
-真实表单数据绑定使用页面内本地 `useYidaData(binding)`、`DataBridge` 与同源 `fetch` 实现。
+## 编译运行契约
 
-编译位置：OpenYida CLI **本地用 Babel** 把源码转译为 `runtimeCode` + `importedModules`（`import`→`window.<别名>`、`export default`→`YidaComp`、依赖名正则抽取），不调用任何在线编译服务，因此不依赖登录态、不经过风控。别名映射逐条镜像自 `dependencies.ts` 的 `getModuleAliasMap()`；运行时消费契约见 `factory.tsx`（`new Function` 执行 `runtimeCode` 取 `YidaComp`）。
+OpenYida CLI **本地用 Babel** 把源码转译为 `runtimeCode` + `importedModules`，不调用在线编译服务。运行时由 `YidaCodeCanvas` 物料按 `importedModules` 加载上表资源，再用 `new Function` 执行 `runtimeCode` 并取回 `YidaComp`。

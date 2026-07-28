@@ -4,7 +4,7 @@
 
 ## 核心策略
 
-Code Canvas 里的宜搭运行态组件按“先探测、可用再增强、不可用就 fallback”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 白名单内的通用前端包。
+Code Canvas 里的宜搭运行态组件按“先探测、可用再增强、不可用就 fallback”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 可用资源清单内的通用前端包。
 
 推荐方式是运行时桥接：
 

@@ -7,7 +7,7 @@ description: 宜搭 Code Canvas / 代码画布自定义页面开发规范，是�
 
 ## 核心定位
 
-Code Canvas 是宜搭的代码画布自定义页面链路：以 `YidaCodeCanvas` 物料为承载，用户写标准 React18 函数组件源码，OpenYida 本地编译为 `runtimeCode` + `importedModules`，运行时按依赖白名单加载资源并执行 `YidaComp`。
+Code Canvas 是宜搭的代码画布自定义页面链路：以 `YidaCodeCanvas` 物料为承载，用户写标准 React18 函数组件源码，OpenYida 本地编译为 `runtimeCode` + `importedModules`，运行时按可用资源清单加载前端资源并执行 `YidaComp`。
 
 相较普通 `.oyd.jsx` 自定义页，Code Canvas 更适合：
 
@@ -26,10 +26,10 @@ Code Canvas 是宜搭的代码画布自定义页面链路：以 `YidaCodeCanvas`
 - `runtimeCode` 在宿主页真实 `window` 中执行，入口必须返回 `YidaComp` / `YidaComp.default` / 组件函数。
 - 推荐入口写法是 `function YidaComp(props) { ... }`，或 `const App = ...; export default App;`。CLI 已兼容 `const/let/class YidaComp; export default YidaComp`，但生成新代码时优先避开同名默认导出，减少不同 Canvas 运行态装配器下的重复声明风险。
 - Canvas 组件没有普通页面实例上下文；数据读写通过 fetch、开放 API、连接器代理或显式 props 数据桥完成。
-- 第三方依赖走白名单；React、antd、ahooks、d3、recharts、Radix、framer-motion 等可按规则 import。
+- 第三方前端资源只从可用资源清单中选择；React、antd、ahooks、d3、recharts、Radix、framer-motion、lucide-react 等可按规则 import。
 - 宜搭运行态组件通过“先探测、可用再增强、不可用就 fallback、值统一归一化”接入；以 `window.Deep` / `window.DeepYida` 探测为主，`window.YidaNativeComponents` 作为兼容入口。嵌入门户数据管理视图时使用 `DataManageViews`，并显式传入目标表单 `form.value/formUuid`。
 
-> 依赖白名单和运行时细节见 [dependencies-and-cdn.md](references/dependencies-and-cdn.md) 与 [employeefield-verification.md](references/employeefield-verification.md)。
+> 可用资源清单和运行时细节见 [dependencies-and-cdn.md](references/dependencies-and-cdn.md) 与 [employeefield-verification.md](references/employeefield-verification.md)。
 
 ## 使用决策
 
@@ -89,7 +89,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 1. **Canvas 入口明确**：源码必须导出或返回 `YidaComp`，并把主组件作为默认导出或 `YidaComp` 暴露。
 2. **发布链路正确**：Canvas 源码使用 `.canvas.jsx` / `.canvas.tsx`，或发布时显式加 `--canvas`。
 3. **源码修改发布闭环**：本轮 Write/Edit/Create 了 `project/pages/src/*.canvas.jsx` 或 `project/pages/src/*.canvas.tsx` 后，final 前需要成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`。有 publish 成功证据时表述为“页面已发布”；只有本地校验证据时表述为“Canvas 源码已修改，尚未发布”。
-4. **依赖可加载**：普通 import 只使用 Code Canvas 白名单依赖；宜搭运行态组件走原生组件桥。
+4. **依赖可加载**：普通 import 只使用 Code Canvas 可用资源清单内的前端资源；宜搭运行态组件走原生组件桥。
 5. **使用 Canvas 函数组件契约**：Canvas 代码写 `YidaComp` React 函数组件；数据、生命周期和渲染都通过 hooks、props、fetch/连接器完成。需要 `renderJsx()`、`didMount()`、`this.forceUpdate()`、`this.utils.yida.*`、`this.dataSourceMap` 时切到 `yida-custom-page`。
 6. **副作用清理**：`useEffect` 注册事件、定时器、图表实例时必须返回 cleanup。
 7. **交互控件必须受控且真正驱动数据**：筛选 `Select`、搜索 `Input`/`Input.Search`、周期切换、`Tabs`/`Segmented`、批量/重置 `Button` 等控件都用 `useState` 建立受控状态，绑定 `onChange`/`onClick`，并让 `Table`/列表/卡片的数据源通过 `useMemo` 按状态派生后渲染。切换筛选后若当前选中项失效，回退选中态（如 `selected < filteredRows.length ? selected : 0`）。
@@ -212,10 +212,10 @@ openyida get-schema <appType> <formUuid> --field-map-json
 | --- | --- | --- |
 | [page-generation-guide.md](references/page-generation-guide.md) | 模板路由、官网素材、themeScope、Page Spec、primitives | 生成页面前必读 |
 | [native-components-bridge.md](references/native-components-bridge.md) | 门户、成员、部门、上传组件桥接和值归一化 | 需要宜搭运行态组件时必读 |
-| [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 依赖白名单、windowAlias、CDN 加载契约 | 新增依赖或验证依赖加载时必读 |
+| [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 可用前端资源、import 写法、运行时加载契约 | 选择或验证前端资源时必读 |
 | [employeefield-verification.md](references/employeefield-verification.md) | 运行时事实、原生组件验证、EmployeeField 验收 | 验证成员/字段组件时阅读 |
 | [data-bridge-guide.md](references/data-bridge-guide.md) | Canvas 内自建 HTTP 数据桥 | 接入真实数据时阅读 |
 | [canvas-design-system.md](references/canvas-design-system.md) | App 主题色、antd token、控件焦点/下拉 reset、图表配色 | 写样式和主题时阅读 |
-| [component-library-guide.md](references/component-library-guide.md) | 开源组件库推荐组合和禁用清单 | 选择 UI/图表依赖时阅读 |
+| [component-library-guide.md](references/component-library-guide.md) | 组件库推荐组合和页面选型建议 | 选择 UI/图表依赖时阅读 |
 | [canvas-authoring-examples.md](references/canvas-authoring-examples.md) | 最小组件、hooks、副作用、图表示例 | 手写 Canvas 代码时阅读 |
 | [真实品牌官网 Playbook](../yida-page-uiux/references/landing/realistic-brand-homepage.md) | 实景素材组、材质配色、品牌旅程、Sample 无 CDN 兜底和视觉验收 | 生成或改造强视觉官网时必读 |
