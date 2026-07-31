@@ -25,10 +25,10 @@ describe('page IR', () => {
       corner: 'layered',
     });
     expect(ir.themeProfile).toMatchObject({
-      name: 'yida-app-theme',
-      followRuntimeTheme: true,
-      themeColorSource: 'runtime-css-vars',
-      themeColor: '#6B7CAB',
+      name: 'blue',
+      followRuntimeTheme: false,
+      themeColorSource: 'basic-token-preset',
+      themeColor: 'rgb(0, 137, 255)',
       mode: 'color_color',
       colorMode: 'gradient',
     });
@@ -142,8 +142,8 @@ describe('page IR', () => {
 
     expect(ir.template).toBe('todo-mvc');
     expect(ir.themeScope).toBe('page');
-    expect(ir.themeProfile.name).toBe('yida-app-theme');
-    expect(ir.themeProfile.followRuntimeTheme).toBe(true);
+    expect(ir.themeProfile.name).toBe('blue');
+    expect(ir.themeProfile.followRuntimeTheme).toBe(false);
     expect(ir.blocks.map((block) => block.type)).toEqual([
       'todo-shell',
       'todo-list',
@@ -159,6 +159,20 @@ describe('page IR', () => {
     expect(variables.TODO_TITLE).toBe('团队待办');
     expect(variables.OPENYIDA_BLOCKS).toBe('todo-shell,todo-list,todo-actions,persistence');
     expect(JSON.parse(variables.TODO_ITEMS_JSON.replace(/\\\\/g, '\\'))).toHaveLength(2);
+  });
+
+  test('keeps runtime app theme profile when explicitly requested', () => {
+    const ir = normalizePageSpec({
+      template: 'product-homepage',
+      themeProfile: 'yida-app-theme',
+    });
+
+    expect(ir.themeProfile).toMatchObject({
+      name: 'yida-app-theme',
+      followRuntimeTheme: true,
+      themeColorSource: 'runtime-css-vars',
+      themeColor: '#6B7CAB',
+    });
   });
 
   test('normalizes official homepage and data screen templates into distinct scenes', () => {
@@ -188,7 +202,16 @@ describe('page IR', () => {
     });
     expect(screen.template).toBe('data-screen');
     expect(screen.scene).toBe('screen');
-    expect(screen.visualProfile.tone).toBe('immersive-command');
+    expect(screen.visualProfile.tone).toBe('light-command');
+    expect(screen.visualProfile.neutral).toBe('light-blue-gray');
+    expect(screen.appBlueprint).toMatchObject({
+      hasPageNavigation: false,
+      hideAppNav: false,
+      renderNav: true,
+      navConfig: {
+        isRenderNav: true,
+      },
+    });
   });
 
   test('normalizes dedicated workbench, dashboard, list and detail templates', () => {
@@ -296,6 +319,9 @@ describe('page IR', () => {
       appName: '奶茶渠道增长应用',
       shell: 'side_nav',
       roles: ['消费者', '经销商'],
+      hasPageNavigation: false,
+      hideAppNav: false,
+      renderNav: true,
     });
     expect(ir.appBlueprint.pages).toHaveLength(2);
     expect(ir.interactionProfile).toMatchObject({

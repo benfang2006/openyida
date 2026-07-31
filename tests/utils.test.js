@@ -521,7 +521,7 @@ describe('loadAuthData', () => {
     expect(loadAuthData(tmpDir)).toBeNull();
   });
 
-  test('YIDA_AUTH_ENABLED=true 时读取宿主注入 token，忽略旧 cookie env', () => {
+  test('YIDA_AUTH_ENABLED=true 时读取运行环境注入 token，忽略旧 cookie env', () => {
     process.env.YIDA_AUTH_ENABLED = 'true';
     process.env.OPENYIDA_ACCESS_TOKEN = 'env-access-token';
     process.env.OPENYIDA_REFRESH_TOKEN = 'env-refresh-token';
@@ -542,7 +542,7 @@ describe('loadAuthData', () => {
     });
   });
 
-  test('YIDA_AUTH_ENABLED=true 且宿主缺 token 时不回退旧 cookies.json 文件', () => {
+  test('YIDA_AUTH_ENABLED=true 且运行环境缺 token 时不回退旧 cookies.json 文件', () => {
     const cacheDir = path.join(tmpDir, '.cache');
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([

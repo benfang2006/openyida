@@ -2,6 +2,9 @@
 
 const {
   assertPresetThemeKey,
+  BASIC_THEME_TOKEN_PRESETS,
+  BASIC_THEME_TOKEN_PRESET_KEYS,
+  getBasicThemeTokenPreset,
   SUPPORTED_THEME_KEYS,
 } = require('../lib/app/theme-presets');
 
@@ -36,6 +39,30 @@ describe('update-app helpers', () => {
     expect(SUPPORTED_THEME_KEYS).toContain('podBlue');
     expect(SUPPORTED_THEME_KEYS).toContain('black');
     expect(() => assertPresetThemeKey('customAmber')).toThrow('Unsupported theme: customAmber');
+  });
+
+  test('basic token presets are separate from --theme platform keys', () => {
+    expect(BASIC_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange']);
+    BASIC_THEME_TOKEN_PRESET_KEYS.forEach((presetKey) => {
+      expect(SUPPORTED_THEME_KEYS).not.toContain(presetKey);
+    });
+    expect(getBasicThemeTokenPreset('blue')).toMatchObject({
+      '--color-brand1-1': 'rgb(51, 160, 255)',
+      '--color-brand1-6': 'rgb(0, 137, 255)',
+      '--color-brand-4': 'rgb(0, 109, 204)',
+    });
+    expect(getBasicThemeTokenPreset('green')).toMatchObject({
+      '--color-brand1-1': 'rgb(60, 190, 113)',
+      '--color-brand1-6': 'rgb(64, 179, 112)',
+      '--color-brand-4': 'rgb(62, 170, 107)',
+    });
+    expect(getBasicThemeTokenPreset('orange')).toMatchObject({
+      '--color-brand1-1': 'rgb(255, 125, 26)',
+      '--color-brand1-6': 'rgb(255, 111, 0)',
+      '--color-brand-4': 'rgb(242, 105, 0)',
+    });
+    expect(BASIC_THEME_TOKEN_PRESETS).toHaveProperty('blue.--color-brand1-10', 'rgba(0, 137, 255, 0.3)');
+    expect(() => assertPresetThemeKey('blue')).toThrow('basic token presets (blue, green, orange)');
   });
 
   test('detects shell updates that need updateApp instead of updateAppName', () => {

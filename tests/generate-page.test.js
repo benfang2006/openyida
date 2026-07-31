@@ -6,6 +6,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { escapeJsStringValue } = require('../lib/app/page-ir');
 const { getCanvasDistPath, inferTemplateName } = require('../lib/app/generate-page');
+const { BASIC_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
 
 const ROOT = path.join(__dirname, '..');
 const BIN = path.join(ROOT, 'bin', 'yida.js');
@@ -178,9 +179,41 @@ describe('generate-page command', () => {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     expect(manifest.visualProfile.name).toBe('custom-theme');
     expect(manifest.themeProfile.name).toBe('custom-theme');
-    expect(manifest.themeProfile.themeColor).toBe('#6B7CAB');
+    expect(manifest.themeProfile.themeColor).toBe('rgb(0, 137, 255)');
     expect(manifest.themeScope).toBe('page');
     expect(manifest.visualProfile.density).toBe('business-compact');
+  });
+
+  test('maps basic theme-profile names to token presets', () => {
+    expect(BASIC_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange']);
+
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      'product-homepage',
+      '--theme-profile',
+      'orange',
+      '--compile',
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'home.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(manifest.themeProfile).toMatchObject({
+      name: 'orange',
+      followRuntimeTheme: false,
+      themeColorSource: 'basic-token-preset',
+      themeColor: 'rgb(255, 111, 0)',
+      themeColorDeep: 'rgb(242, 105, 0)',
+      themeColorSoft: 'rgb(255, 248, 242)',
+      themeColorTint: 'rgba(255, 111, 0, 0.2)',
+    });
+    expect(manifest.themeScope).toBe('page');
   });
 
   test('injects app scoped shell theme bridge when requested', () => {
@@ -245,7 +278,7 @@ describe('generate-page command', () => {
     expect(source).toContain('export default YidaComp');
     expect(source).toContain('@openyida-template product-homepage');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile yida-app-theme');
+    expect(source).toContain('@openyida-theme-profile blue');
     expect(source).toContain('@openyida-theme-scope page');
     expect(source).toContain('oy-hero-grid');
     expect(source).toContain('buildScopedThemeVars');
@@ -258,9 +291,9 @@ describe('generate-page command', () => {
     expect(manifest.scene).toBe('workbench');
     expect(manifest.visualProfile.name).toBe('yida-app-theme');
     expect(manifest.visualProfile.density).toBe('business-compact');
-    expect(manifest.themeProfile.name).toBe('yida-app-theme');
-    expect(manifest.themeProfile.followRuntimeTheme).toBe(true);
-    expect(manifest.themeProfile.themeColorSource).toBe('runtime-css-vars');
+    expect(manifest.themeProfile.name).toBe('blue');
+    expect(manifest.themeProfile.followRuntimeTheme).toBe(false);
+    expect(manifest.themeProfile.themeColorSource).toBe('basic-token-preset');
     expect(manifest.themeScope).toBe('page');
   });
 
@@ -353,7 +386,7 @@ describe('generate-page command', () => {
     expect(manifest.assets.materialGaps.join('\n')).toMatch(/未经校验/);
   });
 
-  test('generates an immersive data screen with a stable Yida map component', () => {
+  test('generates a light data screen with a stable Yida map component', () => {
     execFileSync(process.execPath, [
       BIN,
       'generate-page',
@@ -381,6 +414,8 @@ describe('generate-page command', () => {
     expect(source).toContain('@openyida-scene screen');
     expect(source).toContain("from 'recharts'");
     expect(source).toContain('oy-map');
+    expect(source).toContain('oy-screen-light');
+    expect(source).toContain('isDarkScreenProfile');
     expect(source).toContain('YidaMapComponent');
     expect(source).toContain('YoushuMap');
     expect(source).toContain('BuiltInChinaRegionMap');
@@ -391,7 +426,8 @@ describe('generate-page command', () => {
     expect(compiled).toContain('window.Recharts');
     expect(manifest.template).toBe('data-screen');
     expect(manifest.scene).toBe('screen');
-    expect(manifest.visualProfile.tone).toBe('immersive-command');
+    expect(manifest.visualProfile.tone).toBe('light-command');
+    expect(manifest.visualProfile.neutral).toBe('light-blue-gray');
   });
 
   test('generates dedicated workbench, dashboard, list and detail canvas templates', () => {
@@ -484,7 +520,7 @@ describe('generate-page command', () => {
       expect(source).not.toContain("JSON.parse('{{");
       expect(compiled).not.toContain("JSON.parse('{{");
       if (item.template === 'split-pane-detail') {
-        expect(source).toContain('@openyida-theme-profile yida-app-theme');
+        expect(source).toContain('@openyida-theme-profile blue');
         expect(source).toContain("const THEME_SCOPE = withFallback('page', 'page')");
         expect(source).toContain('function parseTemplateJson');
         expect(source).toContain('const DATA_BINDING = parseTemplateJson');
@@ -828,7 +864,7 @@ describe('generate-page command', () => {
     expect(manifest.blocks[2].items[1].label).toBe('需补货门店');
   });
 
-  test('marks generated pages with page-level app navigation to hide Yida app nav by default', () => {
+  test('keeps Yida app navigation visible by default for generated workbench pages', () => {
     const specPath = path.join(tmpDir, 'app-home.json');
     fs.writeFileSync(specPath, JSON.stringify({
       template: 'workbench-home',
@@ -860,6 +896,47 @@ describe('generate-page command', () => {
 
     expect(source).toContain('oy-sidebar');
     expect(source).toContain('oy-nav-item');
+    expect(source).toContain('shouldRenderPageNavigation');
+    expect(source).toContain('is-platform-nav');
+    expect(manifest.appBlueprint).toMatchObject({
+      hasPageNavigation: false,
+      hideAppNav: false,
+      renderNav: true,
+      navConfig: {
+        isRenderNav: true,
+      },
+    });
+  });
+
+  test('hides Yida app navigation only when page-level navigation is explicit', () => {
+    const specPath = path.join(tmpDir, 'app-home-explicit-nav.json');
+    fs.writeFileSync(specPath, JSON.stringify({
+      template: 'workbench-home',
+      output: 'pages/src/app-home-explicit-nav.canvas.jsx',
+      scene: 'workbench',
+      appBlueprint: {
+        appName: '采购协同应用',
+        shell: 'side_nav',
+        hasPageNavigation: true,
+        navigation: ['采购首页', '采购申请', '供应商管理'],
+      },
+    }, null, 2), 'utf8');
+
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      '--spec',
+      specPath,
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'app-home-explicit-nav.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
     expect(manifest.appBlueprint).toMatchObject({
       hasPageNavigation: true,
       hideAppNav: true,
@@ -1066,7 +1143,7 @@ describe('generate-page command', () => {
     expect(source).toContain('@openyida-template todo-mvc');
     expect(source).toContain('@openyida-scene list');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile yida-app-theme');
+    expect(source).toContain('@openyida-theme-profile blue');
     expect(source).toContain('@openyida-theme-scope page');
     expect(source).toContain('NATIVE_CONTROL_RESET_CSS');
     expect(source).toContain('--oyd-control-focus-ring');
@@ -1084,7 +1161,7 @@ describe('generate-page command', () => {
     expect(manifest.scene).toBe('list');
     expect(manifest.visualProfile.name).toBe('yida-app-theme');
     expect(manifest.visualProfile.density).toBe('business-compact');
-    expect(manifest.themeProfile.name).toBe('yida-app-theme');
+    expect(manifest.themeProfile.name).toBe('blue');
     expect(manifest.themeScope).toBe('page');
     expect(manifest.blocks.map((block) => block.type)).toEqual([
       'todo-shell',

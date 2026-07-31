@@ -8,7 +8,7 @@ description: >
 
 # 宜搭应用开发指南
 
-通过具备代码生成能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。所有操作通过 **`openyida`** CLI 统一执行。登录态分流必须以 `openyida agent-capabilities --summary-json` 或 `openyida login --check-only --json` 返回的 OpenYida auth snapshot 为准；只有 snapshot 明确返回 `login.auth_source=env` 或 `failure_reason=env_token_missing` 时，才按宿主注入 token 模式处理。其他未登录 token 场景走默认 OAuth token 登录，不要根据 agent 名称、宿主类型或手写环境判断自行分流；禁止读取 `.cache/cookies*.json`。
+通过具备代码生成能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。所有操作通过 **`openyida`** CLI 统一执行。登录态分流必须以 `openyida agent-capabilities --summary-json` 或 `openyida login --check-only --json` 返回的 OpenYida auth snapshot 为准；只有 snapshot 明确返回 `login.auth_source=env` 或 `failure_reason=env_token_missing` 时，才按运行环境注入 token 模式处理。其他未登录 token 场景走默认 OAuth token 登录，不要根据 agent 名称、运行环境类型或手写环境判断自行分流；禁止读取 `.cache/cookies*.json`。
 
 ---
 
@@ -42,9 +42,9 @@ description: >
 | 检测结果 | 处理 |
 |---------|------|
 | 命令跑不了（`command not found`） | openyida 未安装 → `npm install -g openyida` |
-| Node/npm 版本不达标 | 先升级 Node（≥16）再装/升级 openyida |
+| Node/npm 版本不达标 | 先升级 Node（≥18）再装/升级 openyida |
 | `login.auth_mode=token` 且 `status=ok` / `can_auto_use=true` | 继续执行业务命令 |
-| snapshot 返回 `login.auth_source=env` / `failure_reason=env_token_missing` | STOP；宿主必须注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`；禁止触发 OAuth；禁止读 `.cache/cookies*.json` |
+| snapshot 返回 `login.auth_source=env` / `failure_reason=env_token_missing` | STOP；运行环境必须注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`；禁止触发 OAuth；禁止读 `.cache/cookies*.json` |
 | `login.auth_mode=token` 且未登录，且 snapshot 未返回 env 注入模式 | `openyida login`（指定入口带 URL 或 flag），完成后再 `openyida login --check-only --json` 验证 |
 | `workdir_exists` / `active.projectRootExists` 为 false | 无工作目录 → `openyida copy` 初始化 |
 
@@ -227,7 +227,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 ### 致命规则（FATAL，违反即失败/报错）
 
 1. **技能加载唯一入口**：执行任何子技能前，能调用 `use_skill` 的工具必须用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 SKILL.md 路径，不凭记忆猜参数格式。
-2. **corpId 一致性检查**：创建或发布页面前对比 prd/resource context 与当前 auth snapshot（本地 OAuth token session 或 snapshot 明确返回的宿主注入 env token）中的 corpId，不一致必须询问用户（重新登录到目标组织，或确认在当前组织继续操作已解析资源/缺失资源）。
+2. **corpId 一致性检查**：创建或发布页面前对比 prd/resource context 与当前 auth snapshot（本地 OAuth token session 或 snapshot 明确返回的运行环境注入 env token）中的 corpId，不一致必须询问用户（重新登录到目标组织，或确认在当前组织继续操作已解析资源/缺失资源）。
 3. **发布前本地校验**：普通自定义页面 `.oyd.jsx` / `.jsx` 发布前跑 `openyida check-page` + `openyida compile`；Code Canvas `.canvas.jsx` 不跑这两个普通自定义页面检查，改由 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检校验；JSON 配置写盘后先解析校验，再调用平台命令。OpenYida 生成产物硬禁 emoji：页面源码、Canvas 源码、表单 Schema、发布 Schema 和产物文件路径出现 emoji 时必须改源码/字段 JSON/路径，不得用 `--skip-lint` 或重复发布绕过。
 4. **页面源码修改必须发布闭环**：只要本轮 Write/Edit/Create 了页面源码 `project/pages/src/*.{canvas.jsx,canvas.tsx,oyd.jsx,jsx,tsx}`（含完整搭建、补齐、已有页面 update path、单点优化），final 前必须看到成功的 `openyida publish <source> <appType> <displayPageFormUuid>` 命令结果；本地文件编辑、diff、本地校验或编译只证明源码可发布，不等于远端页面已更新。若没有 publish 成功证据，final 只能说“源码已修改，尚未发布”，禁止说“页面已更新 / 已重新发布 / 已上线”。
 5. **命令输入文件禁止 shell 写入**：当 OpenYida 命令需要 JSON/YAML/CSV/config/script 文件参数时，先使用当前 agent 运行时提供的结构化文件写入工具（如 create_file / Write / file edit tool）创建文件，再把路径传给命令；禁止用 shell heredoc、`cat`/`echo`/`printf`/`tee` 加输出重定向，或把命令 stdout 重定向成业务文件。

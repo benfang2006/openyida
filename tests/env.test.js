@@ -110,7 +110,7 @@ describe('detectLoginStatus', () => {
     expect(result.diagnostics.tokenFound).toBe(true);
   });
 
-  test('YIDA_AUTH_ENABLED=true 时返回宿主注入 token 状态', () => {
+  test('YIDA_AUTH_ENABLED=true 时返回运行环境注入 token 状态', () => {
     process.env.YIDA_AUTH_ENABLED = 'true';
     process.env.OPENYIDA_ACCESS_TOKEN = 'env-access-token';
     process.env.OPENYIDA_ENDPOINT = 'https://env-token.example.com';

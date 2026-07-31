@@ -48,9 +48,9 @@ const CANVAS_CONTROL_RESET_CSS = `
 const TARGETS = [
   { name: 'PortalTopBanner', group: 'portal', groupLabel: '门户组件', level: 'preferred', desc: '首屏公告、品牌横幅和入口上下文。' },
   { name: 'PortalQuickEntry', group: 'portal', groupLabel: '门户组件', level: 'preferred', desc: '高频入口网格，适合事项、资料和流程直达。' },
-  { name: 'QuickAccessCard', group: 'portal', groupLabel: '门户组件', level: 'verify', desc: '宿主门户的快捷收藏容器。' },
+  { name: 'QuickAccessCard', group: 'portal', groupLabel: '门户组件', level: 'verify', desc: '门户快捷收藏容器。' },
   { name: 'RecentlyUsedCard', group: 'portal', groupLabel: '门户组件', level: 'verify', desc: '最近访问入口，用于验证门户运行态。' },
-  { name: 'DataCard', group: 'portal', groupLabel: '门户组件', level: 'verify', desc: '数据卡片容器，依赖宿主配置上下文。' },
+  { name: 'DataCard', group: 'portal', groupLabel: '门户组件', level: 'verify', desc: '数据卡片容器，依赖页面配置上下文。' },
   { name: 'DataManageViews', group: 'data', groupLabel: '数据管理', level: 'preferred', desc: '多维表式数据管理视图，需 URL 指定 formUuid。' },
   { name: 'EmployeeField', group: 'field', groupLabel: '字段组件', level: 'preferred', desc: '成员选择与用户值归一化。' },
   { name: 'DepartmentSelectField', group: 'field', groupLabel: '字段组件', level: 'verify', desc: '部门树选择与部门值归一化。' },
@@ -185,7 +185,7 @@ function getProbeProps(name, onChange) {
   if (name === 'PortalTopBanner') {
     return {
       mainTitle: '门户组件 Smoke 验证',
-      subTitle: '验证宿主运行态是否可以渲染 PortalTopBanner',
+      subTitle: '验证运行态是否可以渲染 PortalTopBanner',
       bannerHeight: 160,
       textPosition: 'left',
     };
@@ -216,7 +216,7 @@ function getProbeProps(name, onChange) {
   }
 
   if (name === 'DataCard') {
-    // 暂不支持：Canvas 无门户宿主上下文，裸渲染只会显示「请选择要嵌入的数据卡片」空占位。
+    // 暂不支持：Canvas 无门户页面上下文，裸渲染只会显示「请选择要嵌入的数据卡片」空占位。
     return {
       title: `${name} Smoke`,
       content: SAMPLE_ENTRIES,
@@ -366,7 +366,7 @@ function RuntimeSummary({ probes }) {
         <p className="oy-smoke-eyebrow">Native Component Lab</p>
         <h1>宜搭原生组件实验室</h1>
         <p>
-          把组件探测、试渲染、事件载荷和宿主来源放进同一个可演示的实验台，方便判断当前环境可增强到哪一层原生体验。
+          把组件探测、试渲染、事件载荷和运行环境来源放进同一个可演示的实验台，方便判断当前环境可增强到哪一层原生体验。
         </p>
       </div>
       <div className="oy-smoke-score">

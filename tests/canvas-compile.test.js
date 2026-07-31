@@ -776,6 +776,35 @@ describe('compileCanvasLocal', () => {
     expectCanvasEntry(runtimeCode);
   });
 
+  test('form dataBinding Canvas templates carry CSRF in query and headers', () => {
+    const filenames = [
+      'business-list.canvas.jsx',
+      'dashboard-overview.canvas.jsx',
+      'data-management.canvas.jsx',
+      'split-pane-detail.canvas.jsx',
+    ];
+
+    filenames.forEach((filename) => {
+      const samplePath = path.join(
+        __dirname,
+        '..',
+        'lib',
+        'samples',
+        'yida-canvas-custom-page',
+        filename
+      );
+      const source = fs.readFileSync(samplePath, 'utf8');
+
+      expect(source).toContain('window.pageConfig');
+      expect(source).toContain("getCookieValue('tianshu_csrf_token')");
+      expect(source).toContain("params.set('_csrf_token', csrfToken)");
+      expect(source).toContain('headers.global_csrf_token = csrfToken');
+      expect(source).toContain("headers['x-csrf-token'] = csrfToken");
+      expect(source).toContain("credentials: 'include'");
+      expect(source).toContain('TIANSHU_000030');
+    });
+  });
+
   test('business-list raw sample renders marked seed rows', () => {
     const samplePath = path.join(
       __dirname,

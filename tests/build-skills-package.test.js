@@ -73,9 +73,9 @@ describe('build-skills-package', () => {
         path.join(outDir, 'references', 'setup-and-env.md'),
         'utf8'
       );
-      expect(generatedSetupGuide).toContain('host-injected token mode');
-      expect(generatedSetupGuide).toContain('STOP and ask host to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`');
-      expect(generatedSetupGuide).toContain('Never run `openyida login` after the snapshot reports host-injected token mode');
+      expect(generatedSetupGuide).toContain('runtime-environment injected token mode');
+      expect(generatedSetupGuide).toContain('STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`');
+      expect(generatedSetupGuide).toContain('Never run `openyida login` after the snapshot reports runtime-environment injected token mode');
       expect(generatedSetupGuide).not.toContain('auth_mode=cookie');
       const generatedLoginSkill = fs.readFileSync(
         path.join(outDir, 'references', 'subskills', 'yida-login', 'README.md'),
