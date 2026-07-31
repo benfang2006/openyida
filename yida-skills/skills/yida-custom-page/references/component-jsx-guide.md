@@ -79,7 +79,7 @@ var self = this;
 视觉契约：
 - 触发器必须有 `.oyd-select-arrow` 下箭头，打开时旋转并跟随主题色。
 - 选中项必须有 `.oyd-select-check` 或等效选中标记，不能只靠加粗文字。
-- light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 或等效低透明度浅色 token；不要直接用 `--color-brand1-1`，部分宿主主题会把它解析成过深的品牌底色。
+- light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 或等效低透明度浅色 token；不要直接用 `--color-brand1-1`，部分应用全局主题会把它解析成过深的品牌底色。
 - `.oyd-select-arrow` 和 `.oyd-select-check` 必须显式设置 `width/height/flex/display`，必要时加 `!important`，避免 reset 未生效时 SVG 使用浏览器默认大尺寸。
 - 控件必须被 `openyida-native-control-reset` 或等效样式覆盖，避免 focus 时出现浏览器黑色粗边。
 - 如果页面用 `.oyd-grade-page`、`.oyd-data-page` 等自定义作用域，reset 的 style id 必须页面专属；不要检测到全局 `openyida-native-control-reset` 就跳过注入，否则多页面切换后菜单项和 SVG 样式可能丢失。

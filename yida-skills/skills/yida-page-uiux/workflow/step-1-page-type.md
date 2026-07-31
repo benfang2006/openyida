@@ -7,7 +7,7 @@
 | 页面类型 | 路由到 | 布局骨架 | 信息密度 | 焦点元素 |
 |---|---|---|---|---|
 | 工作台 / 门户首页 | `references/scenes/workbench.md` | 欢迎区 + 核心指标 + 快捷入口 + 我的待办 | 中 | 指标 + 快捷入口 |
-| 页面内门户壳 / 多入口门户 | `references/scenes/workbench.md` + `portal-shell-home` 模板 | 自绘导航壳 + 角色入口 + 常用应用 + 动态摘要 | 中 | 入口导航 |
+| 页面内门户壳 / 多入口门户 | 仅用户明确要求页面内导航、独立门户壳或隐藏平台导航时用 `references/scenes/workbench.md` + `portal-shell-home` 模板 | 自绘导航壳 + 角色入口 + 常用应用 + 动态摘要 | 中 | 入口导航 |
 | 数据看板 / 驾驶舱 | `references/scenes/dashboard.md` | KPI 卡组 + 图表 + 排行/明细 | 高 | 关键 KPI |
 | 列表 / 管理页 | `references/scenes/list.md` | 筛选栏 + 表格/卡片 + 分页 + 详情抽屉 | 高 | 数据表 |
 | 详情 / 展示页 | `references/scenes/detail.md` | 单对象深度展示，叙事编排 | 低-中 | 主图/主对象 |
@@ -27,7 +27,7 @@
 
 - Kanban、日历、日志监控 → list 变体；主从分栏/处理台直接使用 `split-pane-detail`。
 - 地图运营、区域态势、对比分析 → dashboard 变体；投屏/监控大屏改 `screen`。
-- 设置中心、知识门户、AI 助手入口 → workbench 变体；页面内门户壳/多入口门户直接使用 `portal-shell-home`。
+- 设置中心、知识门户、AI 助手入口 → workbench 变体；只有用户明确要求页面内导航、独立门户壳或隐藏平台导航时，页面内门户壳/多入口门户才使用 `portal-shell-home`。
 - 报告、打印单、客户画像、项目履约 → detail 变体。
 - 公开 H5、活动页、招商页、品牌官网 → landing 变体。
 

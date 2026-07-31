@@ -86,7 +86,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 以开发「员工信息查询页」为例，完整流程如下：
 
-下面命令以仓库根为视角；如果当前 cwd 已经是 `<workspace>/project`，把 `project/pages/src/...` 改成 `pages/src/...`。读取生成文件和 Schema 时优先用宿主 Read / Glob / Grep，不要在 CLI 成功后 Bash `cat`/`ls` 复核。
+下面命令以仓库根为视角；如果当前 cwd 已经是 `<workspace>/project`，把 `project/pages/src/...` 改成 `pages/src/...`。读取生成文件和 Schema 时优先用当前工具的 Read / Glob / Grep，不要在 CLI 成功后 Bash `cat`/`ls` 复核。
 
 1. 获取表单 Schema，确认字段 ID：
 
@@ -243,7 +243,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | 文档 | 覆盖范围 | 何时阅读 |
 |------|---------|---------|
 | **本技能文档** | | |
-| `yida-page-uiux` 子技能 | 页面类型 playbook、5 维差异化引擎、去 AI 味黑名单/8 问自检、图标策略 | 页面实现前加载；`fast_build` 用轻量决策块，用户明确要求好看/去 AI 味或 `deep_design` 时可读更多 workflow/reference |
+| `yida-page-uiux` 子技能 | 页面类型 playbook、5 维视觉选择规则、去 AI 味黑名单/8 问自检、图标策略 | 页面实现前加载；`fast_build` 用轻量决策块，用户明确要求好看/去 AI 味或 `deep_design` 时可读更多 workflow/reference |
 | [编码指南](references/coding-guide.md) | 文件结构模板、状态管理、生命周期、19 条编码规范 | check-page 报错、复杂交互、状态管理问题或 `deep_design` 时阅读 |
 | [运行时护栏](references/runtime-guardrails.md) | pageSize、loading 恢复、ECharts DOM 时序、setState 约束、check-page 规则映射 | 页面运行时报错、check-page 规则不清或编译兼容边界不清时阅读 |
 | [设计规范](references/design-system.md) | 色彩/圆角/字体/间距系统、7 类组件样式模板、8 条反模式 | 用户明确要求视觉细化，或已进入 `deep_design` / `yida-page-uiux` 后阅读 |

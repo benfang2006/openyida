@@ -31,7 +31,8 @@ description: 宜搭应用主题色与全局主题变量配置技能。用于应�
 3. 表单与流程表单只消费主题。Divider、ColumnContainer、PageSection 等组件应跟随应用主题变量；普通分组不要单独硬编码色值。
 4. 注入位置越早越好。长期应由平台在页面 layout head 注入 `style#yida-global-theme`；运行时脚本注入只能作为短期兜底。
 5. 保持 `style#yida-global-theme` 的 id 和 `:root { ... }` 结构。页面会读取这个 style 节点解析变量。
-6. 普通应用主题色优先选有明确品牌识别度的蓝、青、绿、紫、橙等色相；黑灰只适合作为文字、分割线、背景层或明确暗色场景的辅助色。
+6. 应用默认主题必须先从基础 token preset `blue`、`green`、`orange` 三选一；只有用户明确说“换成 xxx 应用主题色”或指定平台预置 key 时，才使用 `--theme` / `colour` 的平台主题。
+7. 黑灰只适合作为文字、分割线、背景层或明确暗色场景的辅助色，不作为普通应用默认主题。
 
 ## `--theme` 预置值与自定义主题边界
 
@@ -42,7 +43,7 @@ description: 宜搭应用主题色与全局主题变量配置技能。用于应�
 | key | 颜色倾向 |
 | --- | --- |
 | `deepBlue` | 深蓝 |
-| `podBlue` | 蓝色 |
+| `podBlue` | 其他蓝色 |
 | `royalBlue` | 皇家蓝 |
 | `lightBlue` | 浅蓝 |
 | `teal` | 青色 |
@@ -57,11 +58,29 @@ description: 宜搭应用主题色与全局主题变量配置技能。用于应�
 | `coffee` | 咖啡 |
 | `black` | 黑色 |
 
+注意：`--theme` / `colour` 用上表平台预置 key；页面级 `style#yida-global-theme` 或 `customThemeStyle.tokens` 的基础 token 预设是 `blue`、`green`、`orange`。不要把 `podBlue` 当成基础蓝色 token 预设，它是另一套蓝色应用主题 key。
+
+## 基础 token 预设
+
+默认应用主题先从这三套基础 token 里选一套，完整变量见 [基础 token 预设](references/theme-token-presets.md)：
+
+| preset | 颜色倾向 | 主色 token |
+| --- | --- | --- |
+| `blue` | 基础蓝色 | `--color-brand1-6: rgb(0, 137, 255)` |
+| `green` | 基础绿色 | `--color-brand1-6: rgb(64, 179, 112)` |
+| `orange` | 基础橙色 | `--color-brand1-6: rgb(255, 111, 0)` |
+
+使用方式：
+
+1. 页面局部换色：把对应 preset 的 token 写入页面内 `style#yida-global-theme`。
+2. 整个应用统一换色：默认仍从 `blue`、`green`、`orange` 中选择，把对应 token 写入 `customThemeStyle.tokens`，并按需要同步最接近的 `colour` fallback。
+3. 创建或更新应用时：`--theme` 仍只能传平台预置 key；只有用户明确要求“xxx 应用主题色”或指定平台 key 时才传，不要把 `blue`、`green`、`orange` 直接当作 `--theme` 参数。
+
 如果设计的是“活力橙”“深玫红”“高级暗黑金”“自定义蓝紫渐变”等非预置视觉，处理方式是：
 
-1. **不要把自定义名字传给 `--theme`**。应用 `colour` 仍使用最接近的预置 key 作为 fallback，例如通用展示应用用 `podBlue`。
+1. **不要把自定义名字传给 `--theme`**。应用 `colour` 仍使用最接近的常用预置 key 作为 fallback，例如通用展示应用用 `lightBlue` 或 `deepBlue`。
 2. **每个自定义页面都要注入主题变量**：在 Canvas / 普通自定义页中注入或输出 `style#yida-global-theme`，至少包含 `--color-brand1-6`、`--color-brand1-9`、`--color-brand1-2`、`--color-brand-1` ~ `--color-brand-4`、`--color-group`。
-3. **页面级 sample 默认独立主题**：官方 sample 展示应用、模板画廊、演示页必须在每个页面里带自己的页面级主题 token；否则宿主应用如果是 `black`，所有页面会被全局黑灰变量染黑。
+3. **页面级 sample 默认独立主题**：官方 sample 展示应用、模板画廊、演示页必须在每个页面里带自己的页面级主题 token；否则应用全局主题如果是 `black`，所有页面会被全局黑灰变量染黑。
 4. **应用级自定义主题才写全局 token**：只有用户明确要整个应用统一自定义品牌色时，才规划 `enableCustomThemeStyle/customThemeStyle.tokens`；否则保持页面级注入，避免污染其他页面。
 
 ## 主题变量语义
@@ -119,7 +138,7 @@ description: 宜搭应用主题色与全局主题变量配置技能。用于应�
 | 字段 | 作用 |
 | --- | --- |
 | `enableCustomThemeStyle` | 是否启用自定义主题 style 注入 |
-| `customThemeStyle.themeKey` | 预置主题 key，如 `deepBlue`、`podBlue`、`coffee` |
+| `customThemeStyle.themeKey` | 预置主题 key，如 `deepBlue`、`lightBlue`、`coffee` |
 | `customThemeStyle.tokens` | 最终注入到 `style#yida-global-theme` 的 token map |
 | `customThemeStyle.source` | 来源追踪，如 `openyida`、`ai-agent`、`manual`，不控制能力 |
 | `customThemeStyle.version` | token 结构版本，便于兼容升级 |
@@ -210,14 +229,14 @@ function injectYidaGlobalTheme(tokens) {
 - 需要跨模块统一主题时，应输出一份 `customThemeStyle.tokens`，并说明是否同步 `colour`。
 - 修改已有应用主题时，不要只相信更新接口回包。必须回读 `getAppIncludingAecpInfo`，确认 `colour` 与 `config.COLOUR` 都变为目标主题；页面运行态再刷新检查 `style#yida-global-theme`。
 - `updateAppName` 类轻量接口可能返回成功但忽略 `colour/icon/navTheme/layoutDirection`。涉及主题、图标、导航或布局时，应先回读当前应用详情，再用 `updateApp` 携带现有壳层字段保存；其中接口实际接收字段是 `mode`，即使错误文案写的是 `appMode`。
-- 官方 sample 展示应用如果只是承载样例库，应用全局主题优先用通用蓝色（如 `podBlue`）作为中性底座；每个 sample 页面再用页面级固定主题形成差异化，避免宿主黑灰主题污染所有样例。
+- 官方 sample 展示应用如果只是承载样例库，应用主题默认先选基础 `blue` token 作为中性底座；只有需要同步平台壳层显示时，才用最接近的 `lightBlue` / `deepBlue` 作为 `colour` fallback。每个 sample 页面再用页面级固定主题形成差异化，避免全局黑灰主题污染所有样例。
 
 ### 官方 sample 主题验收纪律
 
 处理官方 Samples 展示应用或模板画廊时，把“应用主题”和“页面主题”分开验收：
 
-1. 应用壳层需要蓝色或中性底座时，使用平台预置值，例如 `openyida update-app <appType> --theme podBlue`。不要把“活力橙”“深玫红”“暗黑金”等自定义名字传给 `--theme`。
-2. 每个 sample 页面必须自带页面级 `style#yida-global-theme` 或等价 scoped tokens，确保页面刷新后不会被宿主应用的 `black` / 灰黑变量污染。
+1. 应用壳层需要蓝色或中性底座时，默认选择基础 `blue` token；只有用户明确要求平台应用主题色，才使用常用平台预置值，例如 `openyida update-app <appType> --theme lightBlue`。不要把“活力橙”“深玫红”“暗黑金”等自定义名字传给 `--theme`。
+2. 每个 sample 页面必须自带页面级 `style#yida-global-theme` 或等价 scoped tokens，确保页面刷新后不会被应用全局的 `black` / 灰黑变量污染。
 3. 页面级自定义主题要覆盖导航、按钮、标签、图表色板和浅背景，不只改 hero 或几张卡片。
 4. 修改应用主题后必须回读应用详情，确认 `colour` 与 `config.COLOUR` 都是目标预置 key；修改页面主题后用 schema / runtimeCode grep 确认 `style#yida-global-theme` 已随页面发布。
 

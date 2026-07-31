@@ -6,7 +6,8 @@
 
 | 功能 | 执行操作 |
 |---|---|
-| 查看当前环境和登录态 | `openyida env` / `openyida env --json` |
+| 检测当前环境和登录态 | `openyida env` / `openyida env --json` |
+| 管理环境 profile（切换目标环境、维护 endpoint/login-url） | `openyida env <setup\|list\|show\|switch\|add\|remove>` |
 | 登录宜搭 | `openyida login` |
 | 指定入口登录 | `openyida login <target-url>` |
 | 只检查是否已登录 | `openyida login --check-only --json` |
@@ -16,7 +17,8 @@
 | 退出登录 | `openyida logout` |
 | 管理 token 登录态 | `openyida auth <status\|login\|refresh\|logout>` |
 | 查看全部命令清单 | `openyida commands --json` |
-| 查看 Agent 一次性能力快照 | `openyida agent-capabilities --json` / `openyida agent-capabilities --summary-json` |
+| 默认轻量预检 | `openyida agent-capabilities --summary-json` |
+| 获取完整 Agent 能力诊断 | `openyida agent-capabilities --json` |
 
 ## 应用与组织管理
 
@@ -186,7 +188,9 @@
 | 启动 A2A adapter 或输出 Agent Card | `openyida a2a <serve\|agent-card> [options]` |
 | 启动本地 Web bridge | `openyida bridge start [--token <pair-token>] [--port 6736]` |
 | 输出机器可读命令清单 | `openyida commands --json` |
-| 输出 Agent 能力快照 | `openyida agent-capabilities --json` |
+| 静默 CLI 装饰输出 | `openyida --quiet ...` 或 `YIDA_QUIET=1` |
+| 禁用更新检查提示 | `OPENYIDA_SKIP_UPDATE_CHECK=1` / `NO_UPDATE_NOTIFIER=1` / `CI=1` |
+| 输出完整 Agent 能力诊断 | `openyida agent-capabilities --json` |
 | 运行技能评测 | `openyida eval --mode <mode> [--skill <name>] [--runs N]` |
 
 ## Agent 能力、评测与安全提示
@@ -194,6 +198,7 @@
 | 功能 | 执行操作 |
 |---|---|
 | 快速判断当前工作区、登录态、组织和命令能力 | `openyida agent-capabilities --summary-json` |
+| 获取完整 Agent 能力诊断（含完整环境、登录状态与命令 Manifest） | `openyida agent-capabilities --json` |
 | 获取完整命令 Manifest、副作用和权限元数据 | `openyida commands --json` |
 | 运行无副作用路由评测 | `openyida eval --mode routing [--skill <name>]` |
 | 运行文档质量 / 安全 / 覆盖率评测 | `openyida eval --mode <doc-quality\|safety\|coverage\|comprehensive>` |

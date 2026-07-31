@@ -5,7 +5,7 @@
 ```markdown
 ### 【视觉方向决策】
 
-- **导航形态**：<导航可见（跟品牌融合）/ 导航隐藏 isRenderNav=false（视觉自立 + 自带导航壳，说明壳型）>
+- **导航形态**：<导航可见（默认，跟平台应用导航融合）/ 导航隐藏 isRenderNav=false（仅显式要求；如需页面内导航再说明壳型）>
 - **页面类型**：<workbench / dashboard / screen / list / detail / landing>（判定依据一句话）
 - **researchLevel**：<none / light / enhanced / deep；官网默认 light，业务页默认 none>
 - **appBlueprint**：<多页面应用写角色、导航分组、入口页、页面组合；来自应用体验蓝图时只摘当前页相关信息；单页写当前页作为 entry>
@@ -18,7 +18,7 @@
 - **布局骨架**：<来自 scene 文件的骨架，按本页信息调整>
 - **信息密度**：<紧凑 / 均衡 / 宽松 + 一句理由>
 - **视觉焦点**：<这页唯一的主角是什么>
-- **场景专项策略**：<landing 写 Section 构图 + 素材锚点 + 转化动作；dashboard 写 Shell + Archetype + 数据洞察落点；screen 写 full-bleed + 中心态势 + 左右信息塔；其他场景按需写导航壳/多视图>
+- **场景专项策略**：<landing 写 Section 构图 + 素材锚点 + 转化动作；dashboard 写 Shell + Archetype + 数据洞察落点；screen 写中心态势 + 左右信息塔；其他场景只有显式要求时才写页面内导航壳/多视图>
 
 ### 【差异化 5 维】
 

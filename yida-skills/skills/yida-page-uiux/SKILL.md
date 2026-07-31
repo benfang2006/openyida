@@ -55,7 +55,7 @@ Step 0 导航形态判定 → Step 1 页面类型 → Step 2 意图解码 → St
 
 | 步骤 | 做什么 | 详细文件 | 产出 |
 |---|---|---|---|
-| **Step 0** 导航形态判定 | 应用导航是否隐藏（`isRenderNav`）？决定要不要跟应用框架融合、要不要自带导航壳 | [workflow/step-0-nav-shape.md](workflow/step-0-nav-shape.md) | 导航形态（可见/隐藏 + 壳型） |
+| **Step 0** 导航形态判定 | 默认保留平台应用导航；只有显式要求隐藏或自绘导航时才建页面内导航壳 | [workflow/step-0-nav-shape.md](workflow/step-0-nav-shape.md) | 导航形态（默认可见 / 显式隐藏 + 壳型） |
 | **Step 1** 页面类型判定 | 锁定属于哪一类（workbench/dashboard/screen/list/detail/landing），决定后续所有决策 | [workflow/step-1-page-type.md](workflow/step-1-page-type.md) | 页面类型 + 判定依据 |
 | **Step 2** 意图解码 | 提取 2-3 个气质关键词 + 3-5 条项目特定设计原则 | [workflow/step-2-intent-decode.md](workflow/step-2-intent-decode.md) | 气质关键词 + 设计原则 |
 | **Step 3** 路由到 scene | 只读命中的那一个 `references/scenes/*.md`，拿骨架/密度/焦点/组件套餐 | [workflow/step-3-scene-routing.md](workflow/step-3-scene-routing.md) | 布局骨架 + 密度 + 焦点 |
@@ -67,13 +67,14 @@ Step 0 导航形态判定 → Step 1 页面类型 → Step 2 意图解码 → St
 ## 核心规则（红线，任何步骤都适用）
 
 - 🚫 **严禁 emoji（FATAL）**：页面渲染的任何位置一律禁止 emoji，需要图标走功能性内联 SVG。详见 [Step 6](workflow/step-6-deai-selfcheck.md)。
-- **主色策略**：真实业务页导航可见时主色跟随平台品牌 `var(--color-brand1-*)`，不自由换主色相；导航隐藏（`isRenderNav=false`）时主色相可自立。官方 sample / 示例展示应用是独立样板库，必须每页自带不同主题色，不被宿主应用主题接管。**语义色（成功/警告/错误）永远固定**。详见 [Step 0](workflow/step-0-nav-shape.md) / [Step 4](workflow/step-4-visual-decision.md)。
+- **主色策略**：真实业务页默认先从基础 token preset `blue`、`green`、`orange` 三选一；用户明确说“采用应用主题风格/应用主题色”时再读取 `yida-app-theme` / `var(--color-brand1-*)`。导航隐藏（`isRenderNav=false`）时主色相可自立。官方 sample / 示例展示应用是独立样板库，必须每页自带不同主题色，不被应用全局主题接管。**语义色（成功/警告/错误）永远固定**。详见 [Step 0](workflow/step-0-nav-shape.md) / [Step 4](workflow/step-4-visual-decision.md)。
 - **不做表单**：见上「重要限制」。
 - **只讲方向不写码**：本技能只产出决策块，不输出 JSX 与像素数值表。
 - **参考不是口号**：用户明确要求参考 Dribbble、优秀案例、免费素材网站或“高级感”时，决策块必须把参考转成可执行选择：主色、背景素材、首屏构图、信息密度、数据丰富度、动线、区块数量和反默认点。禁止只写“参考 Dribbble 风格”这类空话。
 - **素材优先真实可见**：官网、产品首页、品牌页、视觉化工作台默认使用真实图片或生成图片作为视觉锚点；拿不到素材时标注 draft，不要用纯渐变、空白大留白或无内容卡片冒充高级。
 - **截图反馈要归因**：如果用户基于截图指出“不好看、颜色怪、导航没覆盖、内容不丰富、地图问题、详情页不像详情页”，先判断是页面类型误判、主题污染、素材缺失、数据不足、布局断层还是模板缺口，再把结论带回实现 skill 或 CLI。
-- **预置主题与自定义 token 分开**：决策块里如果选择 `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black`，可写 `appThemeKey`；如果是自定义色系，必须写 `themeTokens` / `themeScope=page`，并提示实现阶段为每个页面注入 `style#yida-global-theme`，不要把自定义主题名传给 `--theme`。
+- **预置主题与自定义 token 分开**：决策块默认写基础样式 token preset `blue`、`green`、`orange` 之一，并写入 `themeTokens` / `themeScope=page`；只有用户明确要求“xxx 应用主题色”或指定 `deepBlue`、`podBlue`、`royalBlue`、`lightBlue`、`teal`、`podGreen`、`deepPurple`、`purple`、`podOrange`、`yellow`、`magenta`、`red`、`greyBlue`、`coffee`、`black` 等平台预置 key 时，才写 `appThemeKey`。不要把基础 token preset 当成 `--theme` key；如果是自定义色系，也必须写 `themeTokens` / `themeScope=page`，并提示实现阶段为每个页面注入 `style#yida-global-theme`，不要把自定义主题名传给 `--theme`。
+- **同应用页面入口优先交给导航**：快捷入口目标如果是同应用内页面，默认应放入平台应用导航或导航分组，由应用导航内切换；自定义页面内容区的快捷入口只承载当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式要求隐藏平台导航后的页面内导航壳。
 
 ## Dribbble / 优秀案例参考纪律
 
@@ -93,18 +94,20 @@ Step 0 导航形态判定 → Step 1 页面类型 → Step 2 意图解码 → St
 | 页面类型 | 推荐模板 | 说明 |
 | --- | --- | --- |
 | 官网/落地页/律所官网/茶叶官网/品牌首页 | `official-homepage` | 专门处理首屏叙事、品牌可信感、服务矩阵和信任背书 |
-| 数据大屏/实时监控/预警系统/态势屏 | `data-screen` | 专门处理深色沉浸、中心态势图、左右信息塔、趋势和排名 |
+| 数据大屏/实时监控/预警系统/态势屏 | `data-screen` | 专门处理中心态势图、左右信息塔、趋势和排名；默认浅底业务屏，只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸 |
 | 数据看板/经营看板/驾驶舱 | `dashboard-overview`；若用户强调“大屏/惊艳/指挥舱”则改 `data-screen` | 普通经营看板用 KPI + 图表 + 排行 + 洞察，不再回落通用首页 |
 | 工作台/任务中心/业务首页 | `workbench-home` | 聚焦入口、待办、状态、流程闭环 |
 | 列表/管理页/数据管理页/订单管理 | `business-list` | 筛选、表格、状态标签、详情抽屉、空/载/错态 |
 | 详情/档案/画像/单对象展示 | `detail-profile` | 单对象 hero、摘要指标、章节叙事、侧栏元信息、时间线 |
 | 主从分栏/工单处理台/左列表右详情 | `split-pane-detail` | 保留列表上下文，右侧承载详情、时间线和处理动作 |
-| 页面内门户壳/多入口门户/隐藏导航门户 | `portal-shell-home` | 自带页面内导航、角色入口、常用应用和动态摘要 |
+| 页面内门户壳/多入口门户/隐藏导航门户 | `portal-shell-home` | 仅在用户明确要求页面内门户壳、自绘导航或隐藏平台导航时使用；默认门户/工作台不自建导航 |
 | 日历/排期/地图/看板拖拽/设置/知识库等专项页 | 先用最接近的 `workbench-home` / `business-list` / `detail-profile`，再按场景补模板 | 不要硬套官网或 dashboard，需在决策块标注专项模板缺口 |
 
-如果决策块选择自绘应用级导航（例如工作台侧边导航、页面内门户壳、沉浸式大屏），后续 `generate-page` 产物应带 `appBlueprint.renderNav: false`，发布或更新页面配置时同步设置 `isRenderNav=false`。
+默认页面不要在自定义页面里自建应用级导航，也不要默认写 `appBlueprint.renderNav: false`。只有用户明确要求页面内导航、自绘侧边栏、隐藏平台导航、独立门户壳或无导航全屏体验时，后续 `generate-page` 产物才写 `appBlueprint.hasPageNavigation: true` 或 `appBlueprint.renderNav: false`，发布或更新页面配置时同步设置 `isRenderNav=false`。
 
-用户说“采用宜搭应用主题风格”不是要求所有页面都浅色卡片化。官网可更有品牌叙事，大屏可更沉浸；真实业务页共同点是主色读取 `yida-app-theme` / `--color-brand1-*`，图表和强调色读取 `--color-group`，圆角和信息密度遵循宜搭应用主题风格。官方 sample / 示例展示应用共同点相反：每个页面都要有独立主题和明显差异化色相，不要读取宿主 App 主题。决策块里默认只写 `themeProfile: { "name": "yida-app-theme" }`；不要补固定 `themeColor`，除非用户明确要求某个品牌色、色值覆盖当前应用主题，或正在制作 sample。
+用户说“采用应用主题风格”不是要求所有页面都浅色卡片化。官网可更有品牌叙事，大屏可更沉浸；真实业务页默认共同点是先从基础 token preset `blue`、`green`、`orange` 三选一，图表和强调色读取 `--color-group`，圆角和信息密度遵循应用主题风格。只有用户明确要求“采用应用主题风格/应用主题色”时，决策块才写 `themeProfile: { "name": "yida-app-theme" }`，让主色读取运行态 `--color-brand1-*`。官方 sample / 示例展示应用共同点相反：每个页面都要有独立主题和明显差异化色相，不要读取应用全局主题。不要补固定 `themeColor`，除非用户明确要求某个品牌色、色值覆盖当前应用主题，或正在制作 sample。
+
+需要基础 token 时只选 `blue`、`green`、`orange`，并交给实现层注入页面 token。
 
 官网/品牌首页额外要求：**先跑[素材工作流](references/asset-workflow.md)拿真实图片，再写页面。** 品牌官网默认就应该有大 Hero 图——餐饮、茶饮、零售、美妆、酒店、文旅等强视觉行业尤其如此。取图路径：智能体自己生成，或到免费可商用素材库（Unsplash / Pexels / Pixabay / unDraw）取真实图片直链，再用 `openyida asset verify-url` 校验、写进 `spec.assets.heroImage / productImages`，生成时 `openyida generate-page ... --resolve-assets`（有 CDN 加 `--upload-assets` 转存）。每个 section 至少有图片、图示、图表、产品卡、品牌纹理中的一个视觉锚点。**确实拿不到素材时**才降级：决策块标注“需要补 heroImage / productImages”，页面自动打「素材草稿」水印，**不得声称已交付最终版**；绝不编造未经校验的图片 URL。
 
@@ -114,8 +117,8 @@ Step 0 导航形态判定 → Step 1 页面类型 → Step 2 意图解码 → St
 
 | 文档 | 覆盖范围 | 何时阅读 |
 |------|---------|---------|
-| [视觉决策引擎](references/visual-decision-engine.md) | 5 个风格意图 + 反默认组合表 + 5 个差异化维度 + 强制第二选择 + 差异化自检 | Step 4 做视觉决策时（所有场景共用） |
-| 页面内自绘导航壳（独立 skill） | 页面隐藏应用导航后自建侧边/顶部/混合/浮动/标签导航壳：Canvas hooks 示例优先，普通页作为 legacy fallback | Step 0 判定导航隐藏、需自建导航壳时调用 `use_skill("yida-nav-shell", "设计页面内自绘导航壳")` |
+| [视觉选择规则](references/visual-decision-engine.md) | 5 个风格意图 + 反默认组合表 + 5 个差异化维度 + 强制第二选择 + 差异化自检 | Step 4 选择视觉方向时（所有场景共用） |
+| 页面内自绘导航壳（独立 skill） | 页面隐藏应用导航后自建侧边/顶部/混合/浮动/标签导航壳：Canvas hooks 示例优先，普通页作为 legacy fallback | 只有用户明确要求页面内导航/自绘导航/隐藏平台导航且确需跨视图切换时调用 `use_skill("yida-nav-shell", "设计页面内自绘导航壳")` |
 | [应用蓝图字段](references/app/blueprint.md) | `appBlueprint` 字段、门面页、页面组合 | 当前页面属于多页面应用时 |
 | [应用导航模式](references/app/navigation-patterns.md) | 平台导航 / 页面内导航壳 / 混合导航 | 需要决定导航形态或导航分组时 |
 | [角色旅程](references/app/role-journey.md) | 角色入口、任务和页面映射 | 用户提到多角色时 |

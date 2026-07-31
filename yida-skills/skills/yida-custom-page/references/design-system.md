@@ -24,11 +24,13 @@
 
 在 `renderJsx` 顶部定义语义色彩对象，全页复用：
 
-> **主色说明**：真实业务页宜搭平台已内置品牌色 CSS 变量（色阶 `--color-brand1-1` 最浅 → `--color-brand1-6` 主色 → `--color-brand1-10` 最深）。业务页主色/强调/链接/选中/info/标签系默认走平台变量，不要硬编码蓝色，页面才能跟随 App 主题自动适配。官方 sample / 示例展示应用例外：它是样板库，必须自带页面级固定主题和差异化色盘，不要直接继承宿主 App 主题。只有语义色（成功/警告/错误）固定不随主题变，保证语义稳定。普通 native 自定义页的下拉选中项、提示块这类 light 模式大面积浅底，应优先使用页面级 `--oyd-control-selected-bg` / `--oyd-control-info-bg` 低透明度 token，避免宿主主题把浅色解析成过深背景。
+> **主色说明**：真实业务页平台已内置品牌色 CSS 变量（色阶 `--color-brand1-1` 最浅 → `--color-brand1-6` 主色 → `--color-brand1-10` 最深）。业务页主色/强调/链接/选中/info/标签系默认走平台变量，不要硬编码蓝色，页面才能跟随 App 主题自动适配。官方 sample / 示例展示应用例外：它是样板库，必须自带页面级固定主题和差异化色盘，不要直接继承应用全局主题。只有语义色（成功/警告/错误）固定不随主题变，保证语义稳定。普通 native 自定义页的下拉选中项、提示块这类 light 模式大面积浅底，应优先使用页面级 `--oyd-control-selected-bg` / `--oyd-control-info-bg` 低透明度 token，避免应用全局主题把浅色解析成过深背景。
 >
 > **默认 light 模式不要灰黑主题**：业务协同表、数据管理页、录入表、工作台和门户在用户未说明暗色/高对比时，禁止用 `#111827`、近黑边框、近黑按钮、灰黑大阴影作为主题色。正文可以使用深色保证可读性，但强调、选中、按钮、焦点和批量操作必须使用品牌色或 sample 自带主题色，边框使用浅色品牌混合。
 >
-> **前提是导航可见且是真实业务页**：跟随品牌主色是为了跟应用框架融合。若页面隐藏了应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏），主色相可自立、不必严格跟品牌（由 `yida-page-uiux` 的 Step 0 决策）。若是 `lib/samples/**` 或官方 sample 展示应用，也必须自立主色相，不继承宿主 App 主题——但**语义色仍固定、去 AI 味红线仍生效**。
+> **前提是导航可见且是真实业务页**：跟随品牌主色是为了跟应用框架融合。若页面隐藏了应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏），主色相可自立、不必严格跟品牌（由 `yida-page-uiux` 的 Step 0 决策）。若是 `lib/samples/**` 或官方 sample 展示应用，也必须自立主色相，不继承应用全局主题——但**语义色仍固定、去 AI 味红线仍生效**。
+>
+> **基础 token preset**：只有 `blue`、`green`、`orange` 三套。它们用于页面级 `style#yida-global-theme` / scoped token 或应用级 `customThemeStyle.tokens`，不是 `--theme` 参数；完整变量以 `yida-theme/references/theme-token-presets.md` 为准。
 >
 > ⚠️ **常见错误**：把 `primaryHover` 设成 `brand1-1`（最浅档）会让填充主按钮 hover 时「泛白」；把 `hover` 设成 `brand1-9`（深档）当行 hover 底会让行「变暗」。填充按钮 hover 要比主色**亮一档**（`brand1-5`）、按下**深一档**（`brand1-7`）；通用浅色 hover 底用 `brand1-1`。
 
@@ -188,7 +190,7 @@ btnPrimary: {
   justifyContent: 'center',
   padding: '0 16px',
   height: '32px',
-  background: 'var(--color-brand1-6)',  // 主色跟随 App 主题，勿硬编码蓝
+  background: 'var(--color-brand1-6)',  // 主色来自基础 token；显式要求时才跟随应用主题
   color: '#FFFFFF',
   border: 'none',
   borderRadius: '6px',

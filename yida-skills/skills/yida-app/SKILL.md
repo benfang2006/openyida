@@ -21,18 +21,18 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 进入 `fast_build` / `full_demo` / `deep_design` 前，先按根技能的 Resource-First 规则解析本次目标 app/page/form/process：
 
-- 来源优先级：本轮显式 `appType` / `formUuid` / URL → agent bound context → workspace config/cache → 会话历史 → 明确从零创建。
-- agent bound context 只是默认候选，不是锁定目标；如果用户本轮明确提到另一个 app/page/form/process，必须重新解析本轮目标，能唯一解析则切换，不能唯一解析才问用户。
+- 来源优先级：本轮显式 `appType` / `formUuid` / URL → 已绑定资源上下文 → workspace 配置/缓存 → 会话历史 → 明确从零创建。
+- 已绑定资源上下文只是默认候选，不是锁定目标；如果用户本轮明确提到另一个 app/page/form/process，必须重新解析本轮目标，能唯一解析则切换，不能唯一解析才问用户。
 - 已有 app 时在该 app 内补齐资源，不加载 `yida-create-app`；只有无 app 且用户意图允许创建时才创建。
-- 若已有 app 来自 agent 预创建资源，OpenYida 技能侧只复用该 `appType`，不自动修改应用名称；应用名修正由宿主侧负责。
-- 已有主页面 URL / `formUuid` / bound page 时，直接写源码并发布到该页面，不加载 `yida-create-page`；已有页面 update path 也必须在本轮源码 Write/Edit 后执行真实 `openyida publish <source> <appType> <displayPageFormUuid>`，只有缺少 display page 且本次意图允许新增页面时才创建。
+- 若已有 app 来自外部工具预创建资源，OpenYida 技能侧只复用该 `appType`，不自动修改应用名称；应用名修正由外部工具侧负责。
+- 已有主页面 URL / `formUuid` / 已绑定页面时，直接写源码并发布到该页面，不加载 `yida-create-page`；已有页面 update path 也必须在本轮源码 Write/Edit 后执行真实 `openyida publish <source> <appType> <displayPageFormUuid>`，只有缺少 display page 且本次意图允许新增页面时才创建。
 - 已有表单 context 时，字段诉求走 `yida-create-form-page` 的 update/patch/rule/bind-datasource；只有已有 app 但缺少业务数据表时才 create form。
 - 已有流程表单或 `processCode` 时，流程诉求走 `yida-process-rule`；只有没有表单/流程且用户要新建审批表单时才进入 `yida-create-process`。
 - 多个同优先级候选、当前轮显式资源冲突或目标不明时才问用户；不要因为 cache 和历史里同时存在资源就默认打断。
 
 ### 阶段 0 命令选择（不要猜命令）
 
-- 已有显式 `appType`、应用 URL 或 agent bound `appType` 且能唯一解析时，直接复用该 app；不要调用 `app-list` 做存在性确认。
+- 已有显式 `appType`、应用 URL 或已绑定资源上下文中的 `appType` 且能唯一解析时，直接复用该 app；不要调用 `app-list` 做存在性确认。
 - 只有用户只给应用名称、存在多个候选、resource context 冲突，或需要诊断目标 app 访问失败时，才运行 `openyida app-list [--size N]`。
 - 已知 `appType` 后，查询该应用下表单/页面用 `openyida list-forms <appType> [--keyword <text>]`；选择页面发布目标时只用 `formType=display`。
 - 查询表单/页面 Schema、字段 ID 或批量字段摘要用 `openyida get-schema <appType> <formUuid|--all> ...`；简单字段属性更新不要先拉大 schema，直接交给 `create-form update` 的 label-based schema-aware 解析。
@@ -43,7 +43,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 ## 阶段 1：resolve app
 
-完成最小需求分析后，只确认本轮目标 `appType` 是复用已有资源还是允许创建新应用。若目标 app 来自 agent / 宿主预创建资源，也只复用当前 `appType`；不得因为占位名称、页面标题或业务语义推导触发应用名修改。应用名修正如有需要由宿主侧负责。
+完成最小需求分析后，只确认本轮目标 `appType` 是复用已有资源还是允许创建新应用。若目标 app 来自外部工具预创建资源，也只复用当前 `appType`；不得因为占位名称、页面标题或业务语义推导触发应用名修改。应用名修正如有需要由外部工具侧负责。
 
 ## 模式
 
@@ -62,7 +62,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 ## 路径与文件读取口径
 
 - 页面源码路径按当前 Bash cwd 选择：从仓库根执行时用 `project/pages/src/...`；如果 cwd 已是 `<workspace>/project`，用 `pages/src/...`，不要传 `project/pages/src/...` 导致 `project/project`。
-- 读取 PRD、字段 JSON、页面源码或 schema 文件时优先用宿主 Read / Glob / Grep；OpenYida CLI 成功输出已经是操作证据，不要再 Bash `cat`/`ls` 复核。
+- 读取 PRD、字段 JSON、页面源码或 schema 文件时优先用当前工具的 Read / Glob / Grep；OpenYida CLI 成功输出已经是操作证据，不要再 Bash `cat`/`ls` 复核。
 
 ## 标准执行流
 
@@ -105,6 +105,8 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 | `fast_build` | Step 6 包含 `yida-page-uiux` 轻量视觉方向决策块，再通过 Code Canvas 场景模板、`yida-app-theme`、业务化 page spec 和基础工作台/看板/列表布局完成；不做长视觉推演 | 默认加载 `yida-page-uiux` 作为 ui_skill 引导；不默认加载 `yida-app-uiux` / `yida-theme`；页面主色跟随应用主题 token |
 | `full_demo` | 在发布后按用户要求补导航、示例数据、截图、公开访问，让页面可演示 | 只加载命中的后置技能，如 `yida-nav-group`、`yida-data-management`、`yida-page-config` |
 | `deep_design` | 先做应用体验蓝图和页面视觉方向，再生成页面 | 加载 `yida-app-uiux` 规划角色路径/页面组合/导航分组/门面/壳形态；加载 `yida-page-uiux` 产出页面视觉方向决策块；涉及全局主题时加载 `yida-theme` |
+
+主题补充：基础样式 token preset 只有 `blue`、`green`、`orange`。它们用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不是 `create-app/update-app --theme` 参数。
 
 首次生成面向用户的主页面时，默认执行 `use_skill("yida-page-uiux", "主页面 UI 引导")` 产出紧凑决策块，再交给 `yida-canvas-custom-page` 或 `yida-custom-page` 落地。用户明确要求“好看 / 去 AI 味 / 高级视觉 / 品牌化 / 多页面体验”时，可以把该决策块做得更完整；只有用户要求多角色、多页面体验蓝图或深度产品设计时，才升级 `deep_design` 并加载 `yida-app-uiux`。
 
@@ -171,10 +173,10 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 | 阶段 | 子技能 | 必做动作 | doneWhen |
 |------|--------|----------|----------|
-| 0. 解析资源上下文 | 无 | 合并本轮显式资源、agent bound context、workspace config/cache、会话历史；本轮显式目标覆盖 bound context；判定 app/page/form/process 的 `source` 和 `allowCreate` | 明确复用、创建缺口或需要 ask_human |
-| 1. resolve app | `yida-create-app` 仅在 app 缺失且允许创建时加载；不自动修改应用名称 | 已有 `appType`/应用 URL/bound app 时直接复用；否则创建应用并提取真实 `appType` | 拿到真实目标 `appType`，且不会重复创建同类 app |
+| 0. 解析资源上下文 | 无 | 合并本轮显式资源、已绑定资源上下文、workspace 配置/缓存、会话历史；本轮显式目标覆盖已绑定上下文；判定 app/page/form/process 的 `source` 和 `allowCreate` | 明确复用、创建缺口或需要 ask_human |
+| 1. resolve app | `yida-create-app` 仅在 app 缺失且允许创建时加载；不自动修改应用名称 | 已有 `appType`/应用 URL/已绑定 app 时直接复用；否则创建应用并提取真实 `appType` | 拿到真实目标 `appType`，且不会重复创建同类 app |
 | 2. 记录最小需求 | 无 | 写 `prd/<项目名>.md`：只记录 MVP 假设、核心表单/页面、完成标准；写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射；不要写长 PRD | 业务语义和 ID 存储位置明确 |
-| 3. reserve main page | `yida-create-page` 仅在主页面缺失且允许创建时加载 | 已有页面 URL / `formUuid` / bound page 时直接作为主页面；若需要首页/工作台/智能助手/门户门面且缺少主页面，先创建空 display page 占位，暂不写最终源码 | 拿到真实主页面 `formUuid`，且不会重复创建页面 |
+| 3. reserve main page | `yida-create-page` 仅在主页面缺失且允许创建时加载 | 已有页面 URL / `formUuid` / 已绑定页面时直接作为主页面；若需要首页/工作台/智能助手/门户门面且缺少主页面，先创建空 display page 占位，暂不写最终源码 | 拿到真实主页面 `formUuid`，且不会重复创建页面 |
 | 4. resolve forms | `yida-create-form-page` | 已有目标表单时 update/patch/rule/bind-datasource；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json` | 拿到或确认表单 `formUuid`，并在需要时拿到真实 `fieldId` |
 | 5. 编写/更新页面 | 主页面生成阶段包含 `yida-page-uiux` 轻量 UI 引导，再 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 先产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，再生成或修改主页面源码；只实现 MVP 首屏和核心操作。可用已解析表单链接、真实空态、表单入口和轻量指标口径完成主页面；若展示业务列表/看板/详情记录，必须接本轮真实表单 `dataBinding.mode=form`，或先写入 demo records 后再读取；不要加载密度/报表/数据源等额外技能 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
 | 6. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid>` 发布主页面 | 发布成功并获得可访问 URL |
@@ -252,7 +254,7 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 | 数据桥深度接入 | `yida-canvas-data-binding` 或 `yida-data-source-connectors` | 页面真实数据读写稳定，空态/错误态可恢复 |
 | 报表/图表 | `yida-report` 或 `yida-chart` | 报表或图表页面已创建/发布 |
 | 公开访问 | `yida-page-config` | 分享配置保存成功 |
-| 截图/人工验收 | 按宿主能力 | 截图或用户确认通过 |
+| 截图/人工验收 | 按当前工具能力 | 截图或用户确认通过 |
 
 ## deep_design 附加要求
 
@@ -260,7 +262,7 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 - `yida-app-uiux`：多页面应用体验蓝图、角色路径、页面组合、导航分组、应用门面、壳形态、主题策略。
 - `yida-page-uiux`：单点页面视觉方向、去 AI 味、页面类型和模板路由决策；`fast_build` 默认以轻量方式加载，`deep_design` 时可扩展完整决策。
-- `yida-theme`：应用主题色、品牌色、全局换肤和运行态主题 token。
+- `yida-theme`：应用主题色、品牌色、全局换肤、基础 token preset（`blue` / `green` / `orange`）和运行态主题 token。
 - `yida-density`、`yida-dashboard`、`yida-canvas-data-binding`、`yida-data-source-connectors`：仅在具体需求命中时加载。
 
 除 `yida-page-uiux` 的轻量引导外，不要在 `fast_build` 中默认读取这些参考或技能。
@@ -285,8 +287,8 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 - 同一命令失败后，必须改变登录态、组织、参数、输入文件或字段 ID 后才能重试；禁止无修改连续重试。
 - corpId 与目标组织不一致时先停下，让用户选择重新登录或在当前组织继续。
 - 已有目标 app/page/form/process 时默认复用；只有用户明确要求新建另一个同类资源，或目标缺失且本次意图允许创建时，才加载 create 类子技能。
-- 当前轮用户明确指定的资源优先于 agent bound context；例如会话绑定页面 A、用户要求修复页面 B 时，先解析 B，不能唯一解析才问用户，不要默认改 A。
-- agent 预创建 app 只作为默认资源；OpenYida 技能侧只复用该 `appType`，不创建新 app，也不自动修改应用名称。
+- 当前轮用户明确指定的资源优先于已绑定资源上下文；例如会话绑定页面 A、用户要求修复页面 B 时，先解析 B，不能唯一解析才问用户，不要默认改 A。
+- 外部工具预创建 app 只作为默认资源；OpenYida 技能侧只复用该 `appType`，不创建新 app，也不自动修改应用名称。
 - 多个同优先级资源候选或当前轮显式资源冲突时，先问用户确认目标，不要通过重复创建规避冲突。
 - 输入 JSON/YAML/CSV/JSX 等业务文件必须用结构化文件写入工具创建，不用 shell heredoc、`cat`、`echo`、`printf`、`tee` 或重定向。
 - 用户要求删除应用时，必须展示应用名称、应用 ID、影响范围，并等待用户明确回复“确认删除”后才可执行。

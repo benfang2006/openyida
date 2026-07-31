@@ -100,6 +100,7 @@ Divider > Field
 - 普通业务分组：`Divider` 标题跟随应用主题，下面直接接字段或 `ColumnContainer`
 - 默认 `Divider` 不写颜色属性，或保持 `colorType: "theme"`
 - 表单中出现 `Divider` 时，OpenYida 必须注入 `style#yida-global-theme`，并尽可能同步到当前页面和同源 `window.top`
+- 基础样式 token preset 只有 `blue`、`green`、`orange`；本技能只消费注入后的变量，不把它们当作表单 `--theme` 或应用 `--theme` 参数
 - 局部多列容器：保持背景克制，避免给每个列容器单独上色
 - 流程表单：更偏单列和清晰分段，颜色只用于章节识别，不要做大面积品牌色块
 - 自定义色：只有用户明确说“红色警示”“绿色成功态”“品牌色 #xxx”时才写 `colorType: "custom"` 和具体色值

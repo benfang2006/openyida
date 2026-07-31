@@ -15,26 +15,26 @@ openyida login --check-only --json
 
 ## Auth Mode
 
-- Do not infer auth mode from agent name, host product, workspace path, or a guessed environment variable.
-- First use `openyida agent-capabilities --summary-json`; fallback to `openyida login --check-only --json` only when the compact snapshot is unavailable or insufficient.
-- If the snapshot reports `login.auth_source=env` or `failure_reason=env_token_missing`, treat it as host-injected token mode; the host must provide token env such as `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`.
+- Do not infer auth mode from tool name, runtime product, workspace path, or a guessed environment variable.
+- First use `openyida agent-capabilities --summary-json`; fallback to `openyida login --check-only --json` only when the compact preflight result is unavailable or insufficient.
+- If the preflight result reports `login.auth_source=env` or `failure_reason=env_token_missing`, treat it as external-injected token mode; the runtime environment must provide token env such as `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`.
 - Otherwise, `login.auth_mode=token` uses the default OAuth token session flow.
 - NEVER infer auth from `.cache/cookies*.json`.
 
 ## Decision Table
 
-| Snapshot | Next action |
+| Preflight result | Next action |
 |---|---|
 | command not found | install/update `openyida`; do not create resources |
 | `workdir_exists=false` or `active.projectRootExists=false` | run `openyida copy`; do not create resources before workspace exists |
 | `auth_mode=token`, `status=ok` or `can_auto_use=true` | continue |
-| snapshot reports `auth_source=env` / `failure_reason=env_token_missing` | Treat as host-injected token mode; if token is missing, STOP and ask host to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`; do not run OAuth |
-| `auth_mode=token`, not logged in, and snapshot does not report env injection | run `openyida login`; verify with `openyida login --check-only --json` |
-| `auth_mode=token`, access token expired | run `openyida auth refresh`; if still failed and snapshot does not report env injection, run `openyida login` |
+| preflight result reports `auth_source=env` / `failure_reason=env_token_missing` | Treat as external-injected token mode; if token is missing, STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`; do not run OAuth |
+| `auth_mode=token`, not logged in, and the preflight result does not report env injection | run `openyida login`; verify with `openyida login --check-only --json` |
+| `auth_mode=token`, access token expired | run `openyida auth refresh`; if still failed and the preflight result does not report env injection, run `openyida login` |
 
 ## Token Mode Commands
 
-Use OAuth login only when the auth snapshot does not report env injection.
+Use OAuth login only when the auth preflight result does not report env injection.
 
 ```bash
 openyida login
@@ -54,9 +54,9 @@ openyida login --intl
 
 Overseas / international / global / Japan / Global YiDA => add `--intl` or equivalent.
 
-## Host-Injected Token Mode Commands
+## External-Injected Token Mode Commands
 
-Use only after the auth snapshot reports `auth_source=env` or `failure_reason=env_token_missing`.
+Use only after the auth preflight result reports `auth_source=env` or `failure_reason=env_token_missing`.
 
 ```bash
 openyida agent-capabilities --summary-json
@@ -77,17 +77,17 @@ Allowed result:
 }
 ```
 
-If the host did not inject token env, the snapshot includes `failure_reason=env_token_missing`; stop the task and go back to the host. Do not launch OAuth from this mode.
+If the runtime environment did not inject token env, the preflight result includes `failure_reason=env_token_missing`; stop the task and go back to that environment. Do not launch OAuth from this mode.
 
 ## NEVER
 
-- Never run `openyida login` after the snapshot reports host-injected token mode.
-- Never read `.cache/cookies*.json` as host auth.
+- Never run `openyida login` after the preflight result reports external-injected token mode.
+- Never read `.cache/cookies*.json` as injected auth.
 - Never ask the user to export browser Cookie.
 - Never print Cookie, CSRF, `access_token`, or `refresh_token`.
 
 ## Wukong / Codex
 
 - Same auth mode rules as above.
-- Do not special-case Wukong, Codex, or any host identity into an auth branch; follow the OpenYida auth snapshot.
-- Do not create app/page/form/publish until auth snapshot is usable.
+- Do not special-case Wukong, Codex, or any runtime identity into an auth branch; follow the OpenYida auth preflight result.
+- Do not create app/page/form/publish until the auth preflight result is usable.

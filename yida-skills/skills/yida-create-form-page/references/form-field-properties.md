@@ -56,6 +56,7 @@ Divider > Field
 - 不要为了“更好看”给每个 Divider 随机写 `backgroundColor` / `secondaryColor`。
 - 只有用户明确指定颜色时，才使用 `colorType: "custom"` 并写 `backgroundColor`、`secondaryColor`、`titleColor`。
 - 表单中出现 `Divider` 时，OpenYida 会注入 `style#yida-global-theme`，并尽可能同步到当前页面和同源 `window.top`。
+- 基础样式 token preset 只有 `blue`、`green`、`orange`；本参考只消费运行态变量，不把它们当作表单 `--theme` 或应用 `--theme` 参数。
 
 ### Divider
 

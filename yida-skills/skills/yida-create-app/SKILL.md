@@ -12,18 +12,18 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 本技能不是完整搭建的默认第一步，只能在以下条件同时满足时加载/执行：
 
 1. 根技能或 `yida-app` 已完成 `resolve_resource_context`；
-2. 没有从本轮 prompt、应用 URL、agent bound context、workspace config/cache 或会话历史解析到目标 `appType`；
+2. 没有从本轮 prompt、应用 URL、已绑定资源上下文、workspace 配置/缓存或会话历史解析到目标 `appType`；
 3. 用户明确要求从零创建应用，或完整搭建缺少 app 且 `allowCreate=true`。
 
-若已解析到 `appType`、应用 URL、bound app 或 workspace 中可确认的 app，必须复用该 app 并继续后续表单/页面/发布步骤，不得调用 `openyida create-app`。若用户说“新建另一个应用”，先确认目标组织和新应用名，再执行本技能。
+若已解析到 `appType`、应用 URL、已绑定 app 或 workspace 中可确认的 app，必须复用该 app 并继续后续表单/页面/发布步骤，不得调用 `openyida create-app`。若用户说“新建另一个应用”，先确认目标组织和新应用名，再执行本技能。
 
-若该 app 是宿主预创建的 app（context 标记 `source=agent_bound` 或 `precreated=true`），也仍然视为“已有目标 app”：不得调用 `openyida create-app`，也不得在本技能中修改应用名称。本技能只负责在确实没有目标 app 且允许创建时新建应用。
+若该 app 是外部工具预创建的 app（上下文标记 `source=agent_bound` 或 `precreated=true`），也仍然视为“已有目标 app”：不得调用 `openyida create-app`，也不得在本技能中修改应用名称。本技能只负责在确实没有目标 app 且允许创建时新建应用。
 
 ## 严格禁止 (NEVER DO)
 - 不要编造 appType，必须从命令返回的 JSON 中提取
 - 不要在未确认 corpId 的情况下创建应用（先运行 `openyida env` 确认登录态）
 - 不要在同一轮已成功创建应用后重复创建。若接口明确返回名称冲突，单点任务先询问用户；`yida-app fast_build` 可追加短后缀重试一次，不要为了查重额外探测。
-- 已有 `appType`、应用 URL、bound app 或 workspace app 时，不要创建新应用；除非用户明确要求新建另一个应用并确认。
+- 已有 `appType`、应用 URL、已绑定 app 或 workspace app 时，不要创建新应用；除非用户明确要求新建另一个应用并确认。
 
 ## 严格要求 (MUST DO)
 
@@ -53,32 +53,34 @@ openyida create-app <appName> [description] [icon] [iconColor] [colour] [navThem
 | `description` | 否 | 同 appName | 应用描述 |
 | `icon` | 否 | `xian-yingyong` | 图标标识（见下方图标表） |
 | `iconColor` | 否 | `#0089FF` | 图标背景色 |
-| `colour` | 否 | `deepBlue` | 主题色（见下方主题色表） |
+| `colour` | 否 | `deepBlue` | 平台壳层主题 key（见下方主题色表）；设计默认主题仍从基础 token preset 三选一 |
 | `navTheme` | 否 | 不传 | 导航风格：仅用户明确要求时传 `dark`（深色）/ `light`（浅色） |
 | `layoutDirection` | 否 | 不传 | 导航布局：仅用户明确要求时传 `slide`（侧边栏）/ `ver`（L 型顶导） |
 
 ## 行业默认创建建议
 
-如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、主题色和首屏自定义页模板：
+如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、基础 token preset 和首屏自定义页模板；只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动把该 key 作为 `colour` / `--theme`。
 
-| 场景语义 | create-app 推荐参数 | 创建后的首屏页面 |
-|------|------|------|
-| 律所、律师、法律服务、法务合规 | `xian-falv #5C72FF greyBlue` | `official-homepage`，走专业服务官网叙事 |
-| 茶叶、茶园、生态、环保、健康品牌 | `xian-diqiu #00B853 teal` | `official-homepage`，走品牌官网叙事 |
-| 数据大屏、实时监控、预警系统、态势屏、水质/IoT | `xian-baogao #14A9FF greyBlue` | `data-screen`，走沉浸式指挥舱 |
-| 咨询、审计、会计、投顾、企业服务 | `xian-qiye #5C72FF royalBlue` | `official-homepage` 或工作台，按用户目标选择 |
-| 普通内部管理、CRM、OA、项目管理 | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
+| 场景语义 | 默认基础 token preset | create-app 壳层 fallback | 创建后的首屏页面 |
+|------|------|------|------|
+| 律所、律师、法律服务、法务合规 | `blue` | `xian-falv #5C72FF greyBlue` | `official-homepage`，走专业服务官网叙事 |
+| 茶叶、茶园、生态、环保、健康品牌 | `green` | `xian-diqiu #00B853 teal` | `official-homepage`，走品牌官网叙事 |
+| 数据大屏、实时监控、预警系统、态势屏、水质/IoT | `blue` | `xian-baogao #14A9FF greyBlue` | `data-screen`，走沉浸式指挥舱 |
+| 咨询、审计、会计、投顾、企业服务 | `blue` | `xian-qiye #5C72FF royalBlue` | `official-homepage` 或工作台，按用户目标选择 |
+| 普通内部管理、CRM、OA、项目管理 | `blue`，业务强调增长/活力时可选 `orange` | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
 
 CLI 已内置上述行业推断：当用户没有显式传 `icon/iconColor/colour` 时，会根据应用名和描述自动补齐；`navTheme/layoutDirection` 默认不传，只有用户明确要求时才传。显式参数始终优先。
 
 **主题色（colour）可选值**：
 
-默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，优先选择蓝、青、绿、紫、橙等有品牌识别度的主题；`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下使用。
+默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，应用主题默认先从基础 token preset `blue`、`green`、`orange` 三选一；`colour` / `--theme` 只在用户明确要求“xxx 应用主题色”、指定平台 key，或需要壳层 fallback 时使用。`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下作为 fallback。
+
+这里的 `colour` / `--theme` 只能选平台预置 key；基础样式 token preset 是 `blue`、`green`、`orange`，用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不要直接传给 `create-app --theme`。
 
 | 值 | 颜色 | 适合场景 |
 |------|------|------|
 | `deepBlue` | 深蓝 | 政务、金融、法律、企业管理、正式场合 |
-| `podBlue` | 蓝色 | 科技、教育、通用办公、SaaS 应用 |
+| `podBlue` | 其他蓝色 | 科技、教育、通用办公、SaaS 应用 |
 | `royalBlue` | 皇家蓝 | 高端商务、专业服务、企业级应用 |
 | `lightBlue` | 浅蓝 | 清新简约、云服务、通讯社交 |
 | `teal` | 青色 | 医疗健康、环保、清新简洁类应用 |

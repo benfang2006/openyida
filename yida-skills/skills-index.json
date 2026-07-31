@@ -781,7 +781,7 @@
       "name": "yida-login",
       "path": "skills/yida-login/SKILL.md",
       "display_name": "宜搭登录态管理",
-      "description": "宜搭登录态管理。以 OpenYida auth snapshot 为准；默认 OAuth token，snapshot 返回 env 注入状态时使用宿主 token。",
+      "description": "宜搭 登录态管理。以 OpenYida 登录检查结果为准；默认 OAuth token，检查结果返回 env 注入状态时使用外部注入 token。",
       "category": "yida-skills/context",
       "tags": [
         "登录",
@@ -1087,7 +1087,7 @@
       "name": "yida-theme",
       "path": "skills/yida-theme/SKILL.md",
       "display_name": "应用主题与全局换肤",
-      "description": "应用主题色、品牌色、全局换肤、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
+      "description": "应用主题色、品牌色、全局换肤、基础 token 预设 blue/green/orange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
       "category": "yida-skills/app",
       "tags": [
         "主题",
