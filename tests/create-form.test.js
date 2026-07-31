@@ -912,7 +912,7 @@ describe('component alias schema support', () => {
 });
 
 describe('form presentation components', () => {
-  test('buildFormSchema supports Divider, ColumnContainer and PageSection using vc-deep-yida component names', () => {
+  test('buildFormSchema supports Divider, ColumnContainer and PageSection using platform component names', () => {
     const fields = [
       {
         type: 'PageSection',

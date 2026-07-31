@@ -1,6 +1,6 @@
-# 宜搭报表 API 详解与踩坑记录
+# 宜搭报表 API 详解与风险处理
 
-> 本文档是 `yida-report` 技能的参考文档，记录报表 API 调用方式、数据解析、踩坑记录和最佳实践。
+> 本文档是 `yida-report` 技能的参考文档，说明报表 API 调用方式、数据解析、常见风险和处理规则。
 
 ## 报表 API 详解
 
@@ -127,7 +127,7 @@ function parseTableData(responseData) {
 
 ---
 
-## 🔥 踩坑记录
+## 常见风险
 
 ### 坑 1：数值聚合必须使用 NumberField
 

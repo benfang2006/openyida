@@ -57,7 +57,7 @@ function normalizeSkill(name) {
  */
 function buildRoutingPrompt({ request, routingContext, skillNames }) {
   return [
-    '下面是宜搭 AI 应用开发技能（openyida）的路由说明文档。请严格依据它，',
+    '下面是宜搭应用开发技能（openyida）的路由说明文档。请严格依据它，',
     '判断针对用户请求应当选择哪一个**子技能**来处理。如果是完整应用搭建，还要判断 yida-app 的模式。',
     '',
     '=== 路由说明文档开始 ===',

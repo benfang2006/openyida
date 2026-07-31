@@ -129,7 +129,7 @@ function buildBatchRoutingPrompt(options) {
   const skillNames = options.skillNames || [];
 
   const lines = [
-    '下面是宜搭 AI 应用开发技能（openyida）的路由说明文档。',
+    '下面是宜搭应用开发技能（openyida）的路由说明文档。',
     '请严格依据它，对下面每条用户请求分别判断应当选择哪一个子技能来处理。',
     '',
     '=== 路由说明文档开始 ===',

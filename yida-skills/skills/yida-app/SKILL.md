@@ -5,7 +5,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 # yida-app — 完整应用编排契约
 
-本技能只做完整应用流程编排，不承担全局单点任务路由。进入每个阶段前，按根入口的宿主能力适配规则只加载当前阶段唯一需要的子技能；不要预读未来阶段，不要批量加载技能。
+本技能只做完整应用流程编排，不承担全局单点任务路由。进入每个阶段前，按根入口的“不同工具的技能加载方式”只加载当前阶段唯一需要的子技能；不要预读未来阶段，不要批量加载技能。
 
 ## 触发条件
 
@@ -24,7 +24,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 - 来源优先级：本轮显式 `appType` / `formUuid` / URL → agent bound context → workspace config/cache → 会话历史 → 明确从零创建。
 - agent bound context 只是默认候选，不是锁定目标；如果用户本轮明确提到另一个 app/page/form/process，必须重新解析本轮目标，能唯一解析则切换，不能唯一解析才问用户。
 - 已有 app 时在该 app 内补齐资源，不加载 `yida-create-app`；只有无 app 且用户意图允许创建时才创建。
-- 若已有 app 来自 agent 预创建资源，OpenYida 技能侧只复用该 `appType`，不自动修改应用名称；应用名修正由宿主或 yida-agent 侧负责。
+- 若已有 app 来自 agent 预创建资源，OpenYida 技能侧只复用该 `appType`，不自动修改应用名称；应用名修正由宿主侧负责。
 - 已有主页面 URL / `formUuid` / bound page 时，直接写源码并发布到该页面，不加载 `yida-create-page`；已有页面 update path 也必须在本轮源码 Write/Edit 后执行真实 `openyida publish <source> <appType> <displayPageFormUuid>`，只有缺少 display page 且本次意图允许新增页面时才创建。
 - 已有表单 context 时，字段诉求走 `yida-create-form-page` 的 update/patch/rule/bind-datasource；只有已有 app 但缺少业务数据表时才 create form。
 - 已有流程表单或 `processCode` 时，流程诉求走 `yida-process-rule`；只有没有表单/流程且用户要新建审批表单时才进入 `yida-create-process`。
@@ -43,7 +43,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 ## 阶段 1：resolve app
 
-完成最小需求分析后，只确认本轮目标 `appType` 是复用已有资源还是允许创建新应用。若目标 app 来自 agent / 宿主预创建资源，也只复用当前 `appType`；不得因为占位名称、页面标题或业务语义推导触发应用名修改。应用名修正如有需要由宿主或 yida-agent 侧负责。
+完成最小需求分析后，只确认本轮目标 `appType` 是复用已有资源还是允许创建新应用。若目标 app 来自 agent / 宿主预创建资源，也只复用当前 `appType`；不得因为占位名称、页面标题或业务语义推导触发应用名修改。应用名修正如有需要由宿主侧负责。
 
 ## 模式
 
@@ -127,7 +127,7 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 ## Sample 与业务页边界
 
-`openyida sample` 和 `openyida generate-page <模板>` 只能提供可编译骨架、运行时契约和 primitive 结构，不能当成真实业务页面的最终稿。生成应用时必须把用户需求转成业务化 `page-spec.json`，至少覆盖：
+`openyida sample` 和 `openyida generate-page <模板>` 只能提供可编译骨架、运行时结构和 primitive 结构，不能当成真实业务页面的最终稿。生成应用时必须把用户需求转成业务化 `page-spec.json`，至少覆盖：
 
 - `brandName` / `tagline` / `heroText`：使用当前应用的业务名称、角色和问题域，不沿用模板默认标题。
 - `features`：写真实业务对象、模块入口或处理事项，不写“统一入口 / 状态跟进 / 流程闭环”这类通用模板卖点。

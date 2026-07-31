@@ -11,7 +11,7 @@ const {
 } = require('../lib/app/canvas-compile');
 
 /**
- * 模拟 @ali/vc-deep-yida 的 YidaCodeCanvas 运行时装配（factory.tsx）：
+ * 模拟 YidaCodeCanvas 运行时装配：
  * 把 runtimeCode 包进 `new Function`，注入 window 桩，取回 YidaComp。
  */
 function assembleRuntime(runtimeCode, stubWindow) {
@@ -580,7 +580,7 @@ describe('compileCanvasLocal', () => {
     expect(mods).toEqual(expect.arrayContaining(['antd', 'react']));
     expect(mods).not.toContain('./styles.css');
 
-    // 运行时契约：装配后能拿到组件并渲染
+    // 运行时装配后能拿到组件并渲染
     const win = stubReactWindow({
       antd: { Button: function Button() {}, Card: function Card() {} },
     });

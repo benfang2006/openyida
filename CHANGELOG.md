@@ -46,7 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - CLI 发布包默认只内置核心界面语言 `zh` / `en`，降低默认安装体积；其他 CLI UI 语言包不随 npm 包默认分发，运行时按 `OPENYIDA_LANG` + `OPENYIDA_LOCALE_DIR` 加载。
 - 国际化运行时回退链路调整为「目标语言 -> en -> zh」；非中英可选语言包已补齐结构缺失，便于真实用户使用某语种时单独校对和分发。
 - `app-list`、`list-forms`、`create-app`、`create-page`、`get-schema`、`get-form-config`、`i18n-management`、`corp-manager`、`agent-center`、`formula` 等高频业务模块改为抛错交由 CLI 入口统一处理，减少业务层直接退出。
-- `yida-skills/skills-index.json` 补充 `positive_signals`、`negative_signals`、`command_ids`、`done_when` 等机器路由字段，降低表单结构、数据管理、Canvas 页面和 UIUX 等高混淆技能的误路由概率。
+- `yida-skills/skills-index.json` 补充 `positive_signals`、`negative_signals`、`command_ids`、`done_when` 等自动匹配字段，降低表单结构、数据管理、Canvas 页面和 UIUX 等高混淆技能的误选概率。
 - `yida-skills/SKILL.md` 同步补充技能索引读取策略和路由提示，要求先用索引快速判断，再按需读取单个子技能文档。
 - `yida-report/SKILL.md` 从长文档拆为主流程文档 + `references/schema-builder-details.md`，主文档保留路由信号、必要步骤和完成标准。
 - `README.md`、`README_zhCN.md`、`docs/capabilities.md` 补充 CLI 语言包按需加载说明，并对齐当前 OAuth token 登录和功能清单说明。
@@ -65,7 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Tests
 - 新增或扩展 asset、safe-json、generate-page、page-ir、page-linter、canvas-compile、create-form、CLI smoke、package smoke、i18n、skill contract 和 eval 系列测试。
 - 新增 Skill eval CI workflow、命令文档校验、i18n 棘轮校验和发布包体积校验适配，覆盖本次 UI 生成与技能评测链路。
-- 补充业务模块抛错、可选语言加载、技能索引机器路由字段、长技能文档校验、package smoke 和 Jest open-handle 相关回归测试。
+- 补充业务模块抛错、可选语言加载、技能索引自动匹配字段、长技能文档校验、package smoke 和 Jest open-handle 相关回归测试。
 - 验证 `npm test` 默认并行模式下 111 个 suite / 1303 个用例全绿，且不再出现 Jest open-handle 或 worker 退出提示。
 
 ## [2026.7.18-2] - 2026-07-19

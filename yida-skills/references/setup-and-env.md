@@ -82,12 +82,12 @@ If the host did not inject token env, the snapshot includes `failure_reason=env_
 ## NEVER
 
 - Never run `openyida login` after the snapshot reports host-injected token mode.
-- Never read `.cache/cookies*.json` as yida-agent auth.
+- Never read `.cache/cookies*.json` as host auth.
 - Never ask the user to export browser Cookie.
 - Never print Cookie, CSRF, `access_token`, or `refresh_token`.
 
 ## Wukong / Codex
 
 - Same auth mode rules as above.
-- Do not special-case Wukong, Codex, yida-agent, or any host identity into an auth branch; follow the OpenYida auth snapshot.
+- Do not special-case Wukong, Codex, or any host identity into an auth branch; follow the OpenYida auth snapshot.
 - Do not create app/page/form/publish until auth snapshot is usable.

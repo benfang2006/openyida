@@ -1,6 +1,6 @@
 # Code Canvas 组件库选型
 
-Code Canvas 页面从 [dependencies-and-cdn.md](dependencies-and-cdn.md) 的可用前端资源中选择组件库。资源版本、import 写法和运行时加载契约以资源清单为准；页面选型按下列组合落地。
+Code Canvas 页面从 [dependencies-and-cdn.md](dependencies-and-cdn.md) 的可用前端资源中选择组件库。资源版本、import 写法和运行时加载方式以资源清单为准；页面选型按下列组合落地。
 
 ## 推荐组合
 

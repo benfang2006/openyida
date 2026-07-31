@@ -6,7 +6,7 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 用户描述页面目标后，按下表把自然语言需求路由到确定模板。
 
-`generate-page` 的模板提供运行时契约、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
+`generate-page` 的模板提供运行时结构、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
 
 页面生成路径二选一：走模板路径时，先写业务化 `page-spec.json` 并执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；已经明确最终页面结构、数据桥和视觉细节时，走手写路径，直接 Write 最终 `.canvas.jsx`。
 

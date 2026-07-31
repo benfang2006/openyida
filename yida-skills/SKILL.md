@@ -1,14 +1,14 @@
 ---
 name: openyida
 description: >
-  宜搭 AI 应用开发总入口技能。通过有 AI Coding 能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。
+  宜搭应用开发总入口技能。通过具备代码生成能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。
   包含资源上下文解析、应用创建/复用、表单设计/更新、自定义页面开发、页面发布、登录态管理等完整开发流程。
   当用户提到"宜搭"、"yida"、"低代码"、"创建应用"、"创建表单"、"发布页面"、"搭建"、"系统"等关键词时，使用此技能；以下情况不要触发：只是讨论通用前端/后端代码、非宜搭平台产品、或只需要解释概念而不操作宜搭资源。
 ---
 
-# 宜搭 AI 应用开发指南
+# 宜搭应用开发指南
 
-通过有 AI Coding 能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。所有操作通过 **`openyida`** CLI 统一执行。登录态分流必须以 `openyida agent-capabilities --summary-json` 或 `openyida login --check-only --json` 返回的 auth snapshot 为准；只有 snapshot 明确返回 `login.auth_source=env` 或 `failure_reason=env_token_missing` 时，才按宿主注入 token 模式处理。其他未登录 token 场景走默认 OAuth token 登录，不要根据 agent 名称、宿主类型或手写环境判断自行分流；禁止读取 `.cache/cookies*.json`。
+通过具备代码生成能力的智能体（悟空/Claude/Open Code 等）+ 宜搭低代码平台，实现一句话搭建或修改完整应用。所有操作通过 **`openyida`** CLI 统一执行。登录态分流必须以 `openyida agent-capabilities --summary-json` 或 `openyida login --check-only --json` 返回的 auth snapshot 为准；只有 snapshot 明确返回 `login.auth_source=env` 或 `failure_reason=env_token_missing` 时，才按宿主注入 token 模式处理。其他未登录 token 场景走默认 OAuth token 登录，不要根据 agent 名称、宿主类型或手写环境判断自行分流；禁止读取 `.cache/cookies*.json`。
 
 ---
 
@@ -17,13 +17,13 @@ description: >
 - 默认沿用用户语言输出；中文用户用中文。CLI 命令、API 路径、参数名、`fieldId`、`appType`、`formUuid` 等技术标识保持英文原文。
 - 一旦进入写操作任务，必须跑到对应子技能的 `doneWhen` 或验收闭环；只做预检、只读 schema、只写本地文件或只规划下一步，都不能对用户宣称完成。
 
-## 宿主能力适配
+## 不同宿主的技能加载方式
 
-- 如果当前宿主提供 `use_skill` / `search_skills`：必须通过 `use_skill("<技能名>", "<本阶段目的>")` 加载主技能和子技能，禁止用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径；`use_skill` 会稳定返回技能内容和可读取的辅助文件列表。
-- `skills-index.json` 仅供 yida-agent 或同构宿主做机器可读发现；不支持该索引的宿主忽略它，不要把它当作运行前置条件。
-- 支持 `use_skill` / `search_skills` 的宿主只能读取该工具返回的辅助文件；禁止猜测 `.skills`、`skills`、`yida-skills`、插件缓存、workspace/project/.skills 等安装路径。
-- 如果当前宿主没有 `use_skill` / `search_skills`：按本文的技能路由表选定技能名，按 `skills/<技能名>/SKILL.md` 定位当前阶段唯一必要的子技能文档；禁止并发批量读取多个 `SKILL.md`；禁止预读未来阶段技能。
-- `references/`、`scripts/`、`assets/` 等辅助文件只能在已加载对应技能后，读取该技能正文明确列出的相对路径；不要把 yida-agent 的 sandbox 路径当作通用路径。
+- 如果当前 AI 工具提供 `use_skill` / `search_skills`：必须通过 `use_skill("<技能名>", "<本阶段目的>")` 加载主技能和子技能，禁止用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径；`use_skill` 会稳定返回技能内容和可读取的辅助文件列表。
+- `skills-index.json` 是给能读取索引的工具快速找到技能用的；不能读取它的工具直接忽略，不要把它当作运行前置条件。
+- 使用 `use_skill` / `search_skills` 时，只读取该工具返回的辅助文件；禁止猜测 `.skills`、`skills`、`yida-skills`、插件缓存、workspace/project/.skills 等安装路径。
+- 如果当前 AI 工具没有 `use_skill` / `search_skills`：按本文的技能路由表选定技能名，按 `skills/<技能名>/SKILL.md` 定位当前阶段唯一必要的子技能文档；禁止并发批量读取多个 `SKILL.md`；禁止预读未来阶段技能。
+- `references/`、`scripts/`、`assets/` 等辅助文件只能在已加载对应技能后，读取该技能正文明确列出的相对路径；不要把当前工具的 sandbox 路径当作通用路径。
 
 ---
 
@@ -96,7 +96,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 `precreated` 表示该 app 由 agent / 宿主提前创建并绑定到本轮任务。这些字段都是可选提示：缺失时按普通已有资源处理，不作为运行前置。
 
-**绑定 app 只复用不改名**：OpenYida 技能侧不自动修改应用名称；即使目标 app 来自 agent / 宿主预创建资源，也只复用该 `appType` 继续创建、更新或发布资源。应用名修正如有需要由宿主或 yida-agent 侧负责；技能不得因为占位名、页面标题或业务语义推导触发应用名修改。
+**绑定 app 只复用不改名**：OpenYida 技能侧不自动修改应用名称；即使目标 app 来自 agent / 宿主预创建资源，也只复用该 `appType` 继续创建、更新或发布资源。应用名修正如有需要由宿主侧负责；技能不得因为占位名、页面标题或业务语义推导触发应用名修改。
 
 ### create-or-update 判定
 
@@ -157,9 +157,9 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 ## 技能路由（单一 / 增量任务）
 
-先按用户任务命中一个**大类目录**，再在该目录内选定 1 个最匹配的子技能。支持 `search_skills` 的宿主可优先用用户原话搜索；支持 `use_skill` 的宿主用 `use_skill("<技能名>", "<本阶段目的>")` 加载。`skills-index.json` 中的 `route_groups` 与下表保持一致，供 yida-agent 或同构宿主做机器路由。
+先按用户任务命中一个**大类目录**，再在该目录内选定 1 个最匹配的子技能。如果当前工具支持 `search_skills`，可优先用用户原话搜索；如果支持 `use_skill`，用 `use_skill("<技能名>", "<本阶段目的>")` 加载。`skills-index.json` 中的 `route_groups` 与下表保持一致，给能读取索引的工具做自动匹配。
 
-**机器路由推荐顺序**：先用 `route_groups[].signals` 命中 `yida-skills/<area>` 大类；只在该 `category` 下用 skill 的 `description`、`tags`、`aliases`、`positive_signals` 精排；命中 `negative_signals` 的候选降权或剔除；再用下方“高频分歧”覆盖易混场景；最后调用 `use_skill`。`command_ids` 只用于解释该技能可能调用哪些 CLI，不要替代技能加载；`done_when` 只用于判断完成条件。`category` 是路由目录，不是技能路径，必须保持 `yida-skills/<简名>` 格式。
+**如果工具能读取索引，按这个顺序匹配**：先用 `route_groups[].signals` 命中 `yida-skills/<area>` 大类；只在该 `category` 下用 skill 的 `description`、`tags`、`aliases`、`positive_signals` 精排；命中 `negative_signals` 的候选降权或剔除；再用下方“高频分歧”覆盖易混场景；最后调用 `use_skill`。`command_ids` 只用于解释该技能可能调用哪些 CLI，不要替代技能加载；`done_when` 只用于判断完成条件。`category` 是路由目录，不是技能路径，必须保持 `yida-skills/<简名>` 格式。
 
 | 大类目录 | 第一层意图信号 | 子技能 |
 |------|------|------|
@@ -226,7 +226,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 
 ### 致命规则（FATAL，违反即失败/报错）
 
-1. **技能加载唯一入口**：执行任何子技能前，支持 `use_skill` 的宿主必须调用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 SKILL.md 路径，不凭记忆猜参数格式。
+1. **技能加载唯一入口**：执行任何子技能前，能调用 `use_skill` 的工具必须用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 SKILL.md 路径，不凭记忆猜参数格式。
 2. **corpId 一致性检查**：创建或发布页面前对比 prd/resource context 与当前 auth snapshot（本地 OAuth token session 或 snapshot 明确返回的宿主注入 env token）中的 corpId，不一致必须询问用户（重新登录到目标组织，或确认在当前组织继续操作已解析资源/缺失资源）。
 3. **发布前本地校验**：普通自定义页面 `.oyd.jsx` / `.jsx` 发布前跑 `openyida check-page` + `openyida compile`；Code Canvas `.canvas.jsx` 不跑这两个普通自定义页面检查，改由 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检校验；JSON 配置写盘后先解析校验，再调用平台命令。OpenYida 生成产物硬禁 emoji：页面源码、Canvas 源码、表单 Schema、发布 Schema 和产物文件路径出现 emoji 时必须改源码/字段 JSON/路径，不得用 `--skip-lint` 或重复发布绕过。
 4. **页面源码修改必须发布闭环**：只要本轮 Write/Edit/Create 了页面源码 `project/pages/src/*.{canvas.jsx,canvas.tsx,oyd.jsx,jsx,tsx}`（含完整搭建、补齐、已有页面 update path、单点优化），final 前必须看到成功的 `openyida publish <source> <appType> <displayPageFormUuid>` 命令结果；本地文件编辑、diff、本地校验或编译只证明源码可发布，不等于远端页面已更新。若没有 publish 成功证据，final 只能说“源码已修改，尚未发布”，禁止说“页面已更新 / 已重新发布 / 已上线”。
@@ -282,4 +282,4 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / generate
 | [查询条件构造](references/query-condition-guide.md) | 数据查询条件写法 | 数据查询/筛选时 |
 | [报表字段配置](references/report-field-config-guide.md) | 报表字段配置规范 | 配置报表时 |
 | [版本功能差异](references/edition-features-guide.md) | 各版本能力差异 | 版本能力查询时 |
-| [模型 API](references/model-api.md) | AI 模型接口 | 调用宜搭 AI 模型时 |
+| [模型 API](references/model-api.md) | 宜搭模型接口 | 调用宜搭模型能力时 |
