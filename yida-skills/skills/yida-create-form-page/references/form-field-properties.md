@@ -20,7 +20,15 @@
 
 ## 表单展示/布局组件
 
-展示/布局组件按 `vc-deep-yida` 表单版原型中的真实字段生成，不使用未确认的组件名。默认用 `Divider` 做章节标题和分隔，用 `ColumnContainer` 做左右/多列布局；普通分组不要使用 `GroupContainer` / `PageSection`，只有需要折叠、边框、整块隐藏、整块权限或平台分组容器语义时再使用。
+字段 JSON 中可使用的展示/布局组件如下；生成表单时只从这张清单里选择，不要编造新的布局组件名。
+
+| 组件 | 用法 | 典型场景 |
+| --- | --- | --- |
+| `Divider` | 作为独立字段插入字段数组，用 `title` 表达章节标题，默认生成 `props.type: "bold-with-thin"` | 普通业务分组、章节分隔、字段较多时提升可读性 |
+| `ColumnContainer` | 用二维 `children` 表达多列，每个子数组是一列；内部字段仍按普通字段 JSON 写 | 开始/结束日期、姓名/工号、部门/岗位、金额/币种、联系人/电话等短字段成组 |
+| `GroupContainer` / `PageSection` | 作为容器包住一整块 `children`，标题写 `title`，映射到 `PageSection` | 需要折叠、边框、整块隐藏、整块权限或平台分组容器语义的少量特殊分组 |
+
+默认结构是 `Divider` 做章节标题和分隔，`ColumnContainer` 做局部左右/多列布局。普通业务分组不要用 `GroupContainer` / `PageSection`，它们不是普通章节标题的替代品。
 
 ### 布局决策规则
 
@@ -53,13 +61,13 @@ Divider > Field
 
 映射到 `componentName: "Divider"`。
 
-样式推荐顺序以宜搭历史 AI 应用工具 `dingtalk-ai-app` 的企业表单建议为优先，再按当前 CLI 支持的 `Divider.props.type` 白名单生成：
+样式推荐顺序以企业表单通用建议为优先，再按当前 CLI 支持的 `Divider.props.type` 白名单生成：
 
 1. 默认推荐 `bold-with-thin`，适合企业级业务表单的章节标题。普通场景不要写 `dividerType`，OpenYida 会默认写入 `props.type: "bold-with-thin"`。
 2. `double-color-trapezoid`，适合需要更强品牌识别和区块视觉权重的表单。
 3. `left-dot-title`，适合轻量分组、字段较密但不希望分割线太重的表单。
 4. `solid` / `dashed` / `thick` / `dotted` 等纯线型样式只用于低调分隔、兼容兜底或用户明确指定线型。
-5. `multi-parallelograms-end` 来自 `dingtalk-ai-app` 的门户/强分区场景经验，只在用户明确要求门户、强分区、流程阶段强调或已有线上表单已使用该样式时显式使用。
+5. `multi-parallelograms-end` 只用于用户明确要求门户、强分区、流程阶段强调，或已有线上表单已使用该样式且需要保持一致的场景。
 
 生成 Schema 时默认写入 `props.type: "bold-with-thin"`。只有在用户明确指定样式时才通过 `dividerType` 覆盖 `props.type`。同一张表单中的 `Divider` 必须保持同一个 `props.type`，避免章节样式跳变。如果是修改已有表单，先看线上 Schema 中 Divider 的原始 `props.type`，属于上述支持清单或强分区特殊值时优先复用。
 
@@ -68,7 +76,7 @@ Divider > Field
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
 | `behavior` | `"NORMAL"` | 默认状态，支持 `"NORMAL"` / `"HIDDEN"` |
-| `dividerType` | `"bold-with-thin"` | 写入 vc 的 `props.type`；优先级：`bold-with-thin` → `double-color-trapezoid` → `left-dot-title` → `solid` / `dashed` / `thick` / `dotted`；强分区特殊场景可显式用 `multi-parallelograms-end` |
+| `dividerType` | `"bold-with-thin"` | 写入 Schema 的 `props.type`；优先级：`bold-with-thin` → `double-color-trapezoid` → `left-dot-title` → `solid` / `dashed` / `thick` / `dotted`；强分区特殊场景可显式用 `multi-parallelograms-end` |
 | `showTitle` | `true` | 是否显示标题 |
 | `title` | `"标题"` | 分割线标题，写入 `props.title` |
 | `description` | `""` | 标题描述，写入 `props.description` |

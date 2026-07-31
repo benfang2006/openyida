@@ -111,7 +111,7 @@ export default YidaComp;
 
 ## Legacy/native fallback
 
-历史样本：
+维护旧页面样例：
 
 - `project/pages/src/supply-chain-dashboard.js`
 - `project/pages/src/shangri-la-executive-dashboard.js`

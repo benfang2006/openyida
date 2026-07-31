@@ -59,7 +59,7 @@ metadata:
 | 维护已有 `.oyd.jsx`、`renderJsx`、`didMount` 页面 | legacy `yida-custom-page` + `yida-chart` |
 | 单个原生统计报表 | `yida-report` |
 
-不得因为历史样本是普通自定义页面，就把新看板降级为 `.oyd.jsx`。
+不得因为维护旧页面时看到普通自定义页面样例，就把新看板降级为 `.oyd.jsx`。
 
 ## Canvas-first 交付流程
 
@@ -161,7 +161,7 @@ use_skill("yida-chart", "实现明确要求的 ECharts 或维护旧 native 图�
 - 页面规范交 `yida-custom-page`。
 - 旧 ECharts 图表交 `yida-chart`。
 - 本地使用 `.oyd.jsx`、`openyida check-page`、`openyida compile`。
-- 历史样本和本技能 references 中的 `renderJsx` / `didMount` 片段仅供维护旧页面，不代表新建默认。
+- references 中的 `renderJsx` / `didMount` 片段仅供维护旧页面，不代表新建默认。
 
 ## 严格禁止
 

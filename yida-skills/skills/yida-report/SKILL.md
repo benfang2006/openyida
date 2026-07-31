@@ -62,7 +62,7 @@ description: "创建宜搭原生报表。"
 
 ## 概述
 
-本技能记录了通过宜搭原生报表（YoushuTable）的聚合数据驱动 ECharts 图表看板的完整实践经验，包含 API 调用方式、数据解析、踩坑记录和最佳实践。
+本技能用于通过宜搭原生报表（YoushuTable）的聚合数据驱动 ECharts 图表看板，覆盖 API 调用方式、数据解析、常见风险和处理规则。
 
 ---
 
@@ -117,7 +117,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 | `className` | String | 是 | 组件类名（如 `"YoushuTable"`、`"YoushuSimpleIndicatorCard"`） |
 | `dataSetKey` | String | 是 | 数据集 key（表格用 `"table"`，指标卡用 `"youshuData"`） |
 
-> 📖 请求示例、返回数据结构、数据解析方法、踩坑记录（8条）、聚合函数、常见问题详见 [references/report-api-guide.md](references/report-api-guide.md)，按需读取。
+> 📖 请求示例、返回数据结构、数据解析方法、常见风险（8条）、聚合函数、常见问题详见 [references/report-api-guide.md](references/report-api-guide.md)，按需读取。
 
 ---
 

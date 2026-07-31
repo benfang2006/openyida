@@ -65,7 +65,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 ### 2. 成员、部门、上传组件
 
-需要数据管理视图、成员、部门、附件上传、图片上传时，使用原生组件桥从宿主运行态探测 `@ali/deep` / `vc-deep-yida` 已挂载组件：
+需要数据管理视图、成员、部门、附件上传、图片上传时，使用原生组件桥从宿主 `window.Deep` / `window.DeepYida` 探测已挂载组件：
 
 ```bash
 openyida sample yida-canvas-custom-page native-components-smoke --output project/pages/src/native-components-smoke.canvas.jsx

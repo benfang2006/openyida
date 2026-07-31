@@ -396,7 +396,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida feedback <setup\|url\|dismiss\|status> [options]` | 配置体验反馈表单和本地提醒状态 |
 | `openyida batch <file>\|--commands "cmd1 ; cmd2" [--stop-on-error] [--json]` | 批量执行 OpenYida 命令 |
 | `openyida flash-to-prd --file <path> --name "<project>"` | 闪记 / 会议纪要转 PRD prompt |
-| `openyida ai <text\|image> [options]` | 调用宜搭 AI 文生文和识图能力 |
+| `openyida ai <text\|image> [options]` | 调用 AI 文生文和识图能力 |
 | `openyida asset <status\|verify-url\|resolve\|generate> [options]` | 检测素材能力 / 校验图片 URL / 解析回填素材 |
 | `openyida cdn-config [options]` | 配置 CDN / OSS 上传 |
 | `openyida cdn-upload <image-path>` | 上传图片到 CDN |

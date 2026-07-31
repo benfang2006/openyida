@@ -105,7 +105,7 @@ self.utils.yida.saveFormData({
 // ❌ 错：集成自动化没发布（status != 'y'）
 ```
 
-历史方案曾建议把待办连接器绑成页面数据源 `createDingTodo` 再前端调用 `this.dataSourceMap.createDingTodo.load(payload)`，此方案已废弃（AI 无法 CLI 闭环页面数据源绑定）。
+不要把待办连接器绑成页面数据源 `createDingTodo` 后再由前端调用 `this.dataSourceMap.createDingTodo.load(payload)`；页面数据源绑定无法形成稳定的 CLI 闭环。
 
 ---
 
@@ -150,7 +150,7 @@ var normalizeUserCandidate = function(user) {
 };
 ```
 
-> 历史版本曾要求同时保留 `todoUserId` 和 `userId`（旧的 `this.dataSourceMap.createDingTodo` 链路需要），当前集成自动化链路下只需要 `userId` 一个。
+> 当前集成自动化链路下只需要 `userId` 一个，不要为了页面数据源直连链路额外保留 `todoUserId`。
 
 ---
 
@@ -495,7 +495,7 @@ self.utils.toast({ title: '已创建待办', type: 'success' });
 
 **命名规范**（避免下次切流误伤）：
 - 创建时用 `--name "<看板>-派单钉钉待办-v<N>"`
-- 历史版本在宜搭后台备注加 `-deprecated`
+- 停用版本在宜搭后台备注加 `-deprecated`
 - `processCode` 登记在 PRD 的「钉钉待办联动」节，包含 v0/v1/v2 全部三个版本
 
 ---

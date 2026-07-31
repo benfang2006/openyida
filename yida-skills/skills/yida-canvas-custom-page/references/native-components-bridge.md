@@ -26,8 +26,8 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 | 来源 | 说明 |
 | --- | --- |
-| `window.Deep[name]` | `@ali/deep` 基础字段/组件全局 |
-| `window.DeepYida.default` 或 bundle 数组 | `vc-deep-yida` 运行包组件集合，按 `displayName` 匹配 |
+| `window.Deep[name]` | `window.Deep` 上的基础字段/组件 |
+| `window.DeepYida.default` 或 bundle 数组 | `window.DeepYida` 上的运行态组件集合，按 `displayName` 匹配 |
 | `window.YidaNativeComponents[name]` | 可选兼容入口；存在时读取，不作为前置条件 |
 
 业务代码统一走桥接函数读取宿主组件，便于隔离不同运行态差异。
@@ -84,7 +84,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 适用场景：
 
-- AI 宜搭 / Pod / 宜搭 AI 创建的应用，需要让自定义页复用门户数据管理视图。
+- 页面需要使用门户组件（快捷入口 `QuickAccessCard`、最近使用应用卡片 `RecentlyUsedCard`、数据管理视图 `DataManageViews` 等），让自定义页直接复用门户里的对应组件。
 - 页面需要保持与门户磁贴、左侧导航、数据管理页、权限与视图配置一致。
 - 目标表单已经存在，页面能明确拿到表单 `formUuid`，并能构造 `form` 配置。
 
@@ -128,7 +128,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 使用要求：
 
 - 先拿到 `form.value/formUuid`，再渲染 `DataManageViews`。
-- 组件依赖宿主运行态、登录态、权限、CSRF、`vc-deep-yida` 与 `yc-data-manage` 样式；组件缺失或权限不足时保留 Canvas fallback。
+- 组件依赖宿主页面的登录态、权限、CSRF 和平台数据管理样式；组件缺失或权限不足时保留 Canvas fallback。
 - `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧统一使用它渲染门户数据管理视图。
 - 只需要展示少量业务数据时，用 Canvas 自绘表格 + HTTP 数据桥 / 连接器 / `openyida data`；需要复用门户数据管理视图时使用 `DataManageViews`。
 

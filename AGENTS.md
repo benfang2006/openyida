@@ -56,7 +56,7 @@ openyida/
 │   │   └── api.js           # 代理人 API 请求封装
 │   ├── aggregate-table/     # 聚合表管理（虚拟视图 / 聚合表单）
 │   │   └── aggregate-table.js # 聚合表创建与配置
-│   ├── ai/                  # 宜搭 AI 能力（文生文 / 识图）
+│   ├── ai/                  # AI 能力（文生文 / 识图）
 │   │   └── ai.js            # AI 命令入口（txtFromAI / 图片识别）
 │   ├── app/                 # 应用 / 表单 / 页面管理
 │   │   ├── app-list.js      # yida-app-list：查询我的应用列表（名称/appType/地址）

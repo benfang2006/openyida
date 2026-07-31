@@ -318,7 +318,7 @@ this.forceUpdate();
 
 业务态由 `setCustomState()` 写入 `_customState`；`this.state` 里**只有** `forceUpdate()` 写的 `{ timestamp }`。因此 `this.state.<业务字段>` 恒为 `undefined`，页面无任何报错，却渲染成"数据全为占位符、图表全空"的空壳页——极难排查。
 
-`this.state` 仅允许读两个运行时契约字段：`this.state.timestamp`（重渲染标记）和 `this.state.urlParams`（URL 参数）。其余一律走 `getCustomState()`。
+`this.state` 仅允许读两个运行时保留字段：`this.state.timestamp`（重渲染标记）和 `this.state.urlParams`（URL 参数）。其余一律走 `getCustomState()`。
 
 ```javascript
 // ✅ 正确：业务态用 getCustomState 读
@@ -330,7 +330,7 @@ export function renderJsx() {
   return (
     <div>
       <div>{agg ? agg.totalGmv : '-'}</div>
-      {/* timestamp 仍从 this.state 读，这是运行时契约字段 */}
+      {/* timestamp 仍从 this.state 读，这是运行时保留字段 */}
       <div style={{ display: 'none' }}>{this.state && this.state.timestamp}</div>
     </div>
   );

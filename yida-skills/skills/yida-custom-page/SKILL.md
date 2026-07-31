@@ -36,7 +36,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 10. **禁止 ES6 计算属性名**：不要写 `{ [key]: value }`、`{ [FIELDS.xxx]: value }` 或 `setCustomState({ [key]: value })`；宜搭运行时可能静默白屏，`check-page` 会以 `computed-property` error 阻塞。改用 `var obj = {}; obj[key] = value;`
 11. **生命周期名称大小写固定**：只允许 `export function didMount()` 与 `export function didUnmount()`；`didmount`、`componentDidMount`、`componentWillUnmount` 会被 `check-page` 阻塞
 12. **按钮必须真的绑定事件**：禁止 `onclick` 小写属性、`onClick={self.save()}`、`onClick={(e) => self.save}`、`<button>静态标签</button>` 等看起来有按钮但不会正确绑定的写法；统一使用 `onClick={(e) => { self.save(e); }}`。如果只是状态标签/截图标记，用 `span`/`div`，不要用 `button`
-13. **业务状态禁止直接 `this.setState`**：业务态只写 `_customState`，通过 `setCustomState()` / `forceUpdate()` 触发重渲染；`this.setState` 只允许写 `timestamp` 等运行时契约字段
+13. **业务状态禁止直接 `this.setState`**：业务态只写 `_customState`，通过 `setCustomState()` / `forceUpdate()` 触发重渲染；`this.setState` 只允许写 `timestamp` 等运行时保留字段
 14. **读状态只能用 `getCustomState()`，禁止读 `this.state.<业务字段>`**：`this.state` 里只有 `timestamp`（重渲染标记）和 `urlParams`，业务态在 `_customState`。读 `this.state.agg`、`this.state.loading` 等恒为 `undefined`，页面无报错却渲染成"数据全占位、图表全空"的空壳页，极难排查。`renderJsx`/`renderCharts` 等所有读状态处一律 `this.getCustomState()`；遇到状态同步问题时再读 [编码指南 · 状态管理](references/coding-guide.md)
 
 ### 重要规则（IMPORTANT）

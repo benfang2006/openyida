@@ -156,8 +156,8 @@
 
 | 功能 | 执行操作 |
 |---|---|
-| 宜搭 AI 文生文 | `openyida ai text [options]` |
-| 宜搭 AI 识图 | `openyida ai image [options]` |
+| AI 文生文 | `openyida ai text [options]` |
+| AI 识图 | `openyida ai image [options]` |
 | 检测素材能力 | `openyida asset status [options]` |
 | 校验图片 URL | `openyida asset verify-url <url> [options]` |
 | 解析并回填页面素材 | `openyida asset resolve [options]` |

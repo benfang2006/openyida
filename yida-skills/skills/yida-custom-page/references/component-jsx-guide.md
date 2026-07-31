@@ -4,7 +4,7 @@
 
 ## 先说清楚边界
 
-- 不要假设自定义页面能直接 `import` 宜搭内部表单组件；当前规范下应使用原生 JSX 元素、Tailwind `className` 和必要的内联兜底样式组合。
+- 不要假设自定义页面能通过 `import` 获取 `window.Deep` 上的表单组件；当前规范下应使用原生 JSX 元素、Tailwind `className` 和必要的内联兜底样式组合。
 - Code Canvas 是自定义页面的默认链路（现代 React/hooks/可视化/AI）；本指南服务普通自定义页面 JSX/Jsx 组件链路，例如明确要求 `Jsx` 组件、`renderJsx`、或强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交/字段双向绑定深度耦合。用户要代码画布、`YidaCodeCanvas`、`runtimeCode`、`importedModules` 时，切换到 `yida-canvas-custom-page`。
 - 不要把字段中文名当作 `fieldId`；字段 ID 必须来自 `openyida get-schema`。
 - 不要把原生表单页面的组件配置 JSON 直接复制到自定义页面 JSX；两者不是同一个运行面。
@@ -296,7 +296,7 @@ var self = this;
 
 ## EmployeeField / DepartmentSelectField
 
-普通自定义页面 JSX 里不能直接把表单设计器字段当 React 组件渲染。不要写未验证的 `<EmployeeField />`、`<DepartmentSelectField />`、`<AttachmentField />`、`<ImageField />`，也不要假设可以从 `@ali/deep` import。自定义页面只负责交互 UI 和数据提交；真正的字段组件优先放在表单页面里。
+普通自定义页面 JSX 里不能直接把表单设计器字段当 React 组件渲染。不要写未验证的 `<EmployeeField />`、`<DepartmentSelectField />`、`<AttachmentField />`、`<ImageField />`，也不要假设可以通过 `import` 获取 `window.Deep` 上的组件。自定义页面只负责交互 UI 和数据提交；真正的字段组件优先放在表单页面里。
 
 按场景选择：
 
