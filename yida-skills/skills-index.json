@@ -781,7 +781,7 @@
       "name": "yida-login",
       "path": "skills/yida-login/SKILL.md",
       "display_name": "宜搭登录态管理",
-      "description": "宜搭 登录态管理。以 OpenYida 登录检查结果为准；默认 OAuth token，检查结果返回 env 注入状态时使用外部注入 token。",
+      "description": "宜搭登录态管理。以 OpenYida auth snapshot 为准；默认 OAuth token，snapshot 返回 env 注入状态时使用运行环境注入 token。",
       "category": "yida-skills/context",
       "tags": [
         "登录",

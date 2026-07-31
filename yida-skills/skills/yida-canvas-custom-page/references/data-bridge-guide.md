@@ -50,13 +50,26 @@ OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `da
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 function getCsrfToken() {
-  if (window.g_config && window.g_config._csrf_token) {
-    return window.g_config._csrf_token;
+  var yida = window.__YIDA__ || {};
+  var sources = [
+    window.g_config,
+    window.pageConfig,
+    window.YIDA_CONFIG,
+    yida,
+    yida.config,
+    yida.pageConfig,
+    yida.runtimeConfig
+  ];
+  var keys = ['_csrf_token', 'csrfToken', 'csrf_token', 'global_csrf_token', '_tb_token_', 'csrf'];
+  for (var i = 0; i < sources.length; i += 1) {
+    var source = sources[i] || {};
+    for (var j = 0; j < keys.length; j += 1) {
+      if (source[keys[j]]) return source[keys[j]];
+    }
   }
-  if (window.g_config && window.g_config.csrfToken) {
-    return window.g_config.csrfToken;
-  }
-  return '';
+  var cookie = typeof document !== 'undefined' && document.cookie ? document.cookie : '';
+  var match = cookie.match(/(?:^|;\s*)(tianshu_csrf_token|aliwork_csrf_token|XSRF-TOKEN|_csrf_token|csrfToken|_tb_token_)=([^;]+)/);
+  return match ? decodeURIComponent(match[2]) : '';
 }
 
 function requestJson(url, options) {
@@ -65,6 +78,7 @@ function requestJson(url, options) {
   var headers = { 'Content-Type': 'application/json' };
   if (csrfToken) {
     headers.global_csrf_token = csrfToken;
+    headers['x-csrf-token'] = csrfToken;
   }
 
   return fetch(url, {
@@ -126,7 +140,7 @@ function useYidaFetch(buildRequest, deps) {
 要点：
 
 - `credentials: 'include'` 让浏览器带上同源登录态；Cookie 由浏览器和平台管理。
-- 如需 CSRF，优先从 `window.g_config._csrf_token` / `window.g_config.csrfToken` 动态读取，按接口要求放入 `_csrf_token` 请求参数和 / 或 `global_csrf_token` 头。
+- 如需 CSRF，优先从 `window.g_config`、`window.pageConfig`、`window.__YIDA__` 等运行态配置动态读取；预览域名缺少注入字段时，兜底读取 meta 或同源 cookie（如 `tianshu_csrf_token`）。内部端点同时放入 `_csrf_token` query 和 `global_csrf_token` 头。
 - 用 `AbortController` 在卸载 / 依赖变化时取消请求，保证副作用清理完整（对应编码规则 #5）。
 - 解析响应按**真实返回结构**处理；不同端点和运行态会出现 `data`、`result.data`、`content.data`、`content.result.data`、`list`、`values`、`records` 等包装。
 
@@ -271,7 +285,9 @@ function YidaComp() {
       currentPage: '1',
       pageSize: '50',
       searchFieldJson: '{}',
-    }).toString();
+    });
+    var csrfToken = getCsrfToken();
+    if (csrfToken) qs.set('_csrf_token', csrfToken);
     return requestJson('/dingtalk/web/<APP_TYPE>/v1/form/searchFormDatas.json?' + qs, {
       method: 'GET',
     }).then(function (json) {
@@ -326,7 +342,9 @@ function fetchFormData(appType, formUuid, signal) {
     currentPage: '1',
     pageSize: '100',
     searchFieldJson: '{}',
-  }).toString();
+  });
+  var csrfToken = getCsrfToken();
+  if (csrfToken) qs.set('_csrf_token', csrfToken);
   var url = '/dingtalk/web/' + appType + '/v1/form/searchFormDatas.json?' + qs;
   return requestJson(url, { method: 'GET', signal: signal }).then(function (json) {
     return unwrapRows(json); // content.data 由 unwrapRows 递归兜底

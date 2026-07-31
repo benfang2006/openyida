@@ -1,10 +1,10 @@
 # Code Canvas 原生组件桥
 
-Code Canvas 接入宜搭运行态组件时，统一使用运行时桥接。覆盖门户组件、数据管理视图、成员、部门、附件上传和图片上传。
+Code Canvas 接入平台运行态组件时，统一使用运行时桥接。覆盖门户组件、数据管理视图、成员、部门、附件上传和图片上传。
 
 ## 核心策略
 
-Code Canvas 里的宜搭运行态组件按“先探测、可用增强、fallback 保底”的方式接入。字段、门户、数据管理视图等运行态组件统一从宿主 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 可用资源清单内的通用前端包。
+Code Canvas 里的平台运行态组件按“先探测、可用增强、fallback 保底”的方式接入。字段、门户、数据管理视图等运行态组件统一从页面 `window.Deep` / `window.DeepYida` / `window.YidaNativeComponents` 查找；页面源码只 `import` Code Canvas 可用资源清单内的通用前端包。
 
 运行时桥接步骤：
 
@@ -30,7 +30,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 | `window.DeepYida.default` 或 bundle 数组 | `window.DeepYida` 上的运行态组件集合，按 `displayName` 匹配 |
 | `window.YidaNativeComponents[name]` | 可选兼容入口；存在时读取，不作为前置条件 |
 
-业务代码统一走桥接函数读取宿主组件，便于隔离不同运行态差异。
+业务代码统一走桥接函数读取运行态组件，便于隔离不同运行态差异。
 
 ## 门户组件接入规则
 
@@ -51,7 +51,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 ### QuickAccessCard / RecentlyUsedCard（`theme` 必传）
 
-这两个是**容器型组件**，会在运行态自行拉取应用列表并渲染卡片。`theme` 是必传运行时契约；页面始终传入 `theme="row-white"` 或 `theme="column"`。
+这两个是**容器型组件**，会在运行态自行拉取应用列表并渲染卡片。`theme` 是必传运行参数；页面始终传入 `theme="row-white"` 或 `theme="column"`。
 
 必传 / 建议 props：
 
@@ -128,13 +128,13 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 使用要求：
 
 - 先拿到 `form.value/formUuid`，再渲染 `DataManageViews`。
-- 组件依赖宿主页面的登录态、权限、CSRF 和平台数据管理样式；组件缺失或权限不足时保留 Canvas fallback。
+- 组件依赖页面运行环境的登录态、权限、CSRF 和平台数据管理样式；组件缺失或权限不足时保留 Canvas fallback。
 - `DataManageViews` 会自动过滤 `viewType === 'form'` 的视图，并关闭导入、导出、批量操作等门户不需要的能力；页面侧统一使用它渲染门户数据管理视图。
 - 只需要展示少量业务数据时，用 Canvas 自绘表格 + HTTP 数据桥 / 连接器 / `openyida data`；需要复用门户数据管理视图时使用 `DataManageViews`。
 
 ## 成员组件接入规则
 
-需要成员选择时，优先探测 `EmployeeField`。它属于宿主运行态组件，先验证可用性，再接入业务页面。
+需要成员选择时，优先探测 `EmployeeField`。它属于平台运行态组件，先验证可用性，再接入业务页面。
 
 使用要求：
 
@@ -158,7 +158,7 @@ openyida sample yida-canvas-custom-page native-components-smoke --output project
 
 ## 部门组件接入规则
 
-需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖宿主通讯录能力、搜索接口和权限上下文，先完成 smoke 验证再接入业务页面。
+需要部门选择时，优先探测 `DepartmentSelectField`。该组件依赖页面运行环境的通讯录能力、搜索接口和权限上下文，先完成 smoke 验证再接入业务页面。
 
 使用要求：
 

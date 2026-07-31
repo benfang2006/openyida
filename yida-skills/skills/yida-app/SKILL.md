@@ -84,7 +84,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 [Step 6] 编写自定义页面代码 → 默认 use_skill("yida-page-uiux", "主页面 UI 引导")
               ↓      产出简短视觉方向决策块：页面类型、模板路由、visualProfile、去 sample 化检查
               ↓      再 use_skill("yida-canvas-custom-page", "生成 Code Canvas 主页面")
-              ↓      先把视觉方向和业务对象写入 page-spec.json，再 openyida generate-page <模板> --theme-profile yida-app-theme --theme-scope page --spec <page-spec.json> --compile
+              ↓      先把视觉方向、业务对象和基础主题 preset 写入 page-spec.json，再 openyida generate-page <模板> --theme-profile <blue|green|orange> --theme-scope page --spec <page-spec.json> --compile
               ↓      字段映射优先来自 create/update 命令输出和 `.cache/<项目名>-schema.json`；同一表单不要重复 get-schema，除非页面/数据链路确实需要 fieldId 且缓存不完整
               ↓      本轮已创建/解析业务表单且页面需要列表/看板/详情数据时，必须在 spec.dataBinding 写 mode=form + 真实 appType/formUuid/fieldId；深度接入再加载 yida-canvas-data-binding
               ↓      明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖 this.$ / this.utils.yida.* / this.dataSourceMap 等实例桥时选择 yida-custom-page
@@ -102,11 +102,11 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 | 模式 | UI/体验怎么集成 | 加载策略 |
 |------|----------------|----------|
-| `fast_build` | Step 6 包含 `yida-page-uiux` 轻量视觉方向决策块，再通过 Code Canvas 场景模板、`yida-app-theme`、业务化 page spec 和基础工作台/看板/列表布局完成；不做长视觉推演 | 默认加载 `yida-page-uiux` 作为 ui_skill 引导；不默认加载 `yida-app-uiux` / `yida-theme`；页面主色跟随应用主题 token |
+| `fast_build` | Step 6 包含 `yida-page-uiux` 轻量视觉方向决策块，再通过 Code Canvas 场景模板、基础 token preset、业务化 page spec 和基础工作台/看板/列表布局完成；不做长视觉推演 | 默认加载 `yida-page-uiux` 作为 ui_skill 引导；不默认加载 `yida-app-uiux` / `yida-theme`；页面主色默认从 `blue`、`green`、`orange` 三选一 |
 | `full_demo` | 在发布后按用户要求补导航、示例数据、截图、公开访问，让页面可演示 | 只加载命中的后置技能，如 `yida-nav-group`、`yida-data-management`、`yida-page-config` |
 | `deep_design` | 先做应用体验蓝图和页面视觉方向，再生成页面 | 加载 `yida-app-uiux` 规划角色路径/页面组合/导航分组/门面/壳形态；加载 `yida-page-uiux` 产出页面视觉方向决策块；涉及全局主题时加载 `yida-theme` |
 
-主题补充：基础样式 token preset 只有 `blue`、`green`、`orange`。它们用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不是 `create-app/update-app --theme` 参数。
+主题补充：应用默认主题先从基础样式 token preset `blue`、`green`、`orange` 三选一。它们用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不是 `create-app/update-app --theme` 参数；只有用户明确要求“xxx 应用主题色”或指定平台 key 时，才改用平台应用主题。
 
 首次生成面向用户的主页面时，默认执行 `use_skill("yida-page-uiux", "主页面 UI 引导")` 产出紧凑决策块，再交给 `yida-canvas-custom-page` 或 `yida-custom-page` 落地。用户明确要求“好看 / 去 AI 味 / 高级视觉 / 品牌化 / 多页面体验”时，可以把该决策块做得更完整；只有用户要求多角色、多页面体验蓝图或深度产品设计时，才升级 `deep_design` 并加载 `yida-app-uiux`。
 
