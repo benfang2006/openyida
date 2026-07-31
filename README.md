@@ -96,7 +96,7 @@ Build an IPD workflow for chip production, including approval nodes and dashboar
 Generate a public landing page and publish it to my Yida app.
 ```
 
-The agent can then call OpenYida commands to create the application, generate source files, publish pages, and return the final Yida URLs. In Codex, QoderWork, Qoder, and Wukong environments, successful creation and publish commands also include a browser handoff so the agent can open the resulting Yida page in the in-app browser. Use `--open` to force this handoff or `--no-open` to suppress it.
+The agent can then call OpenYida commands to create the application, generate source files, publish pages, and return the final Yida URLs. In Codex, QwenWork, QoderWork, Qoder, and Wukong environments, successful creation and publish commands also include a browser handoff so the agent can open the resulting Yida page in the in-app browser. Use `--open` to force this handoff or `--no-open` to suppress it.
 
 ## Wukong Installation
 
@@ -123,6 +123,7 @@ export PATH="$HOME/.real/.bin/node/bin:$PATH"
 | [OpenCode](https://opencode.ai) | Full support |
 | [Cursor](https://cursor.com/) | Full support |
 | [Visual Studio Code](https://code.visualstudio.com/) | Full support |
+| QwenWork（千问办公） | Full support |
 | [QoderWork](https://qoder.com) | Full support |
 | [Qoder](https://qoder.com) | Full support |
 | [Wukong](https://dingtalk.com/wukong) | Full support |
@@ -547,6 +548,8 @@ The `yida-skills/` directory is the source skill library used by OpenYida during
 When OpenYida is used inside a supported AI coding environment, these skills help the agent choose the right command sequence and file conventions.
 
 For Wukong manual import, upload the generated `openyida-skills.zip`. The package follows Wukong's custom skill rules: folder name and `frontmatter.name` are both `openyida`, root frontmatter only contains `name` and `description`, and long references live under `references/`.
+
+For QwenWork, use the same user-level global skills layout as QoderWork: `~/.qwenworkcn/skills/yida-skills/`. Skip QwenWork setup when `~/.qwenworkcn` is not present.
 
 For Codex, `npm install -g openyida` additionally creates a local plugin marketplace under `~/.openyida/codex-plugin` and enables `openyida@openyida` in `~/.codex/config.toml` when Codex is detected. This makes OpenYida show up in Codex's `@` plugin menu as **宜搭** after Codex reloads.
 

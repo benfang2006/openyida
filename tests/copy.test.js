@@ -187,6 +187,8 @@ describe('detectActiveTool Windows 路径兼容', () => {
     delete process.env.QODER_IDE;
     delete process.env.QODER_AGENT;
     delete process.env.QODERCLI_INTEGRATION_MODE;
+    delete process.env.QWENWORK_INTEGRATION_MODE;
+    delete process.env.QWENWORKCN_INTEGRATION_MODE;
     delete process.env.CODEX_SHELL;
     delete process.env.CODEX_CI;
     delete process.env.CODEX_THREAD_ID;
@@ -209,6 +211,8 @@ describe('detectActiveTool Windows 路径兼容', () => {
     delete process.env.QODER_IDE;
     delete process.env.QODER_AGENT;
     delete process.env.QODERCLI_INTEGRATION_MODE;
+    delete process.env.QWENWORK_INTEGRATION_MODE;
+    delete process.env.QWENWORKCN_INTEGRATION_MODE;
     delete process.env.CODEX_SHELL;
     delete process.env.CODEX_CI;
     delete process.env.CODEX_THREAD_ID;

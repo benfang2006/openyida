@@ -57,6 +57,28 @@ describe('OpenYida skill contracts', () => {
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
+  test('QwenWork install guidance aligns with QoderWork user-level skills layout', () => {
+    const docs = [
+      'README.md',
+      'README_zhCN.md',
+      'yida-skills/SKILL.md',
+      'scripts/postinstall.js',
+    ].map(readSkill).join('\n');
+
+    expect(docs).toContain('~/.qwenworkcn/skills/yida-skills/');
+    expect(docs).toContain('~/.qoderwork/skills/yida-skills/');
+    expect(docs).toContain('未检测到 `~/.qwenworkcn` 时');
+    expect(docs).toContain('folderName');
+    expect(docs).toContain('QwenWork（千问办公）');
+    expect(docs).not.toContain('project/.qwenworkcn/skills/');
+    expect(docs).not.toContain('不要把 OpenYida skill 放到项目根目录');
+    expect(docs).not.toContain('不会自动加载');
+    expect(docs).not.toContain('project-root `.qwenworkcn/skills/`');
+    expect(docs).not.toContain('not auto-loaded');
+    expect(docs).not.toContain('特定项目生效');
+    expect(docs).not.toContain('trigger conditions');
+  });
+
   test('skills index carries machine routing hints for high-confusion skills', () => {
     const index = JSON.parse(readSkill('yida-skills/skills-index.json'));
     const byName = new Map(index.skills.map((skill) => [skill.name, skill]));

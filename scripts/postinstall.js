@@ -14,6 +14,8 @@
  *   ~/.opencode/skills/yida-skills/        ← <package>/yida-skills (copy)
  *   ~/.aone_copilot/skills/yida-skills/    ← <package>/yida-skills (copy)
  *   ~/.cursor/skills/yida-skills/          ← <package>/yida-skills (copy)
+ *   ~/.qwenworkcn/skills/yida-skills/      ← <package>/yida-skills (copy)
+ *   ~/.qoderwork/skills/yida-skills/       ← <package>/yida-skills (copy)
  *   ~/.qoder/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.mulerun/skills/yida-skills/          ← <package>/yida-skills (copy)
  *
@@ -436,6 +438,20 @@ safeExec(() => {
 safeExec(() => {
   if (fs.existsSync(path.join(HOME_DIR, '.cursor'))) {
     installSkillsToTool(path.join(HOME_DIR, '.cursor'));
+  }
+});
+
+// QwenWork（千问办公）— 仅在已安装时安装到全局 skills 目录
+safeExec(() => {
+  if (fs.existsSync(path.join(HOME_DIR, '.qwenworkcn'))) {
+    installSkillsToTool(path.join(HOME_DIR, '.qwenworkcn'));
+  }
+});
+
+// QoderWork — 仅在已安装时安装
+safeExec(() => {
+  if (fs.existsSync(path.join(HOME_DIR, '.qoderwork'))) {
+    installSkillsToTool(path.join(HOME_DIR, '.qoderwork'));
   }
 });
 
