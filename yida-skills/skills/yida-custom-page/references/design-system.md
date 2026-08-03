@@ -30,7 +30,7 @@
 >
 > **前提是导航可见且是真实业务页**：跟随品牌主色是为了跟应用框架融合。若页面隐藏了应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏），主色相可自立、不必严格跟品牌（由 `yida-page-uiux` 的 Step 0 决策）。若是 `lib/samples/**` 或官方 sample 展示应用，也必须自立主色相，不继承应用全局主题——但**语义色仍固定、去 AI 味红线仍生效**。
 >
-> **基础 token preset**：只有 `blue`、`green`、`orange` 三套。它们用于页面级 `style#yida-global-theme` / scoped token 或应用级 `customThemeStyle.tokens`，不是 `--theme` 参数；完整变量以 `yida-theme/references/theme-token-presets.md` 为准。
+> **推荐应用主题**：新页面默认使用 `podBlue`、`podGreen`、`podOrange`。它们既是平台应用主题 key，也可用于页面级 `style#yida-global-theme` / scoped token 或应用级 `customThemeStyle.tokens`；`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。完整变量以 `yida-theme/references/theme-token-presets.md` 为准。
 >
 > ⚠️ **常见错误**：把 `primaryHover` 设成 `brand1-1`（最浅档）会让填充主按钮 hover 时「泛白」；把 `hover` 设成 `brand1-9`（深档）当行 hover 底会让行「变暗」。填充按钮 hover 要比主色**亮一档**（`brand1-5`）、按下**深一档**（`brand1-7`）；通用浅色 hover 底用 `brand1-1`。
 
@@ -190,7 +190,7 @@ btnPrimary: {
   justifyContent: 'center',
   padding: '0 16px',
   height: '32px',
-  background: 'var(--color-brand1-6)',  // 主色来自基础 token；显式要求时才跟随应用主题
+  background: 'var(--color-brand1-6)',  // 主色来自 应用主题 token；显式要求时才跟随运行态应用主题
   color: '#FFFFFF',
   border: 'none',
   borderRadius: '6px',

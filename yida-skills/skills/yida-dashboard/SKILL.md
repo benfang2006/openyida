@@ -39,7 +39,7 @@ metadata:
 
 1. 单屏控制塔结构，见 `references/structure-and-layout.md`。
 2. 真实数据绑定：聚合指标走报表/聚合结果，明细走分页查询；禁止前端拉全量后聚合。
-3. 视觉主题和信息层级，见 `references/theme-presets.md`。基础样式 token preset 只有 `blue`、`green`、`orange`，用于页面 token，不是 `--theme` 参数。
+3. 视觉主题和信息层级，见 `references/theme-presets.md`。默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择，用同名 profile 注入页面 token 并可同步应用 `--theme`。
 4. 筛选与图表联动；控件必须受控并真实改变下方数据。
 5. 每元素可派单：`saveFormData → 集成自动化 → 待办2.0 ConnectorCall`。
 6. 卡片截图分享：真实可点击，截图时排除截图按钮本身。
@@ -87,11 +87,11 @@ Canvas 模板入口：
 
 ```bash
 openyida generate-page dashboard-overview --spec <page-spec.json> \
-  --theme-profile blue \
+  --theme-profile podBlue \
   --output project/pages/src/<name>.canvas.jsx --compile
 ```
 
-默认主题从基础 token preset `blue`、`green`、`orange` 三选一；用户明确要求应用主题风格/应用主题色时，才把示例里的 `blue` 换成 `yida-app-theme`。用户强调“大屏 / 指挥舱 / 实时监控”时使用 `data-screen` 模板。Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
+默认主题从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题风格/应用主题色时，才把示例里的 `podBlue` 换成 `yida-app-theme`。用户强调“大屏 / 指挥舱 / 实时监控”时使用 `data-screen` 模板。Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
 
 ## 数据与派单边界
 
