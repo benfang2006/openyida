@@ -6,7 +6,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { escapeJsStringValue } = require('../lib/app/page-ir');
 const { getCanvasDistPath, inferTemplateName } = require('../lib/app/generate-page');
-const { BASIC_THEME_TOKEN_PRESET_KEYS, POD_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
+const { APP_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
 
 const ROOT = path.join(__dirname, '..');
 const BIN = path.join(ROOT, 'bin', 'yida.js');
@@ -180,14 +180,13 @@ describe('generate-page command', () => {
     expect(manifest.visualProfile.name).toBe('custom-theme');
     expect(manifest.themeProfile.name).toBe('custom-theme');
     expect(manifest.themeProfile.themeColor).toBe('rgb(0, 137, 255)');
-    expect(manifest.themeProfile.themeColorSource).toBe('platform-pod-theme');
+    expect(manifest.themeProfile.themeColorSource).toBe('application-theme');
     expect(manifest.themeScope).toBe('page');
     expect(manifest.visualProfile.density).toBe('business-compact');
   });
 
-  test('maps pod theme-profile names to platform theme presets', () => {
-    expect(POD_THEME_TOKEN_PRESET_KEYS).toEqual(['podBlue', 'podGreen', 'podOrange']);
-    expect(BASIC_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange']);
+  test('maps application theme-profile names to platform theme presets', () => {
+    expect(APP_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange', 'podBlue', 'podGreen', 'podOrange']);
 
     execFileSync(process.execPath, [
       BIN,
@@ -210,7 +209,7 @@ describe('generate-page command', () => {
       name: 'podOrange',
       appThemeKey: 'podOrange',
       followRuntimeTheme: false,
-      themeColorSource: 'platform-pod-theme',
+      themeColorSource: 'application-theme',
       themeColor: 'rgb(255, 111, 0)',
       themeColorDeep: 'rgb(242, 105, 0)',
       themeColorSoft: 'rgb(255, 248, 242)',
@@ -219,7 +218,7 @@ describe('generate-page command', () => {
     expect(manifest.themeScope).toBe('page');
   });
 
-  test('keeps legacy basic theme-profile names compatible without recommending them by default', () => {
+  test('keeps exact application theme profile names without rewriting them', () => {
     execFileSync(process.execPath, [
       BIN,
       'generate-page',
@@ -240,7 +239,7 @@ describe('generate-page command', () => {
     expect(manifest.themeProfile).toMatchObject({
       name: 'orange',
       followRuntimeTheme: false,
-      themeColorSource: 'legacy-basic-token-preset',
+      themeColorSource: 'application-theme',
       themeColor: 'rgb(255, 111, 0)',
     });
     expect(manifest.themeProfile).not.toHaveProperty('appThemeKey');
@@ -324,7 +323,7 @@ describe('generate-page command', () => {
     expect(manifest.themeProfile.name).toBe('podBlue');
     expect(manifest.themeProfile.appThemeKey).toBe('podBlue');
     expect(manifest.themeProfile.followRuntimeTheme).toBe(false);
-    expect(manifest.themeProfile.themeColorSource).toBe('platform-pod-theme');
+    expect(manifest.themeProfile.themeColorSource).toBe('application-theme');
     expect(manifest.themeScope).toBe('page');
   });
 

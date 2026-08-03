@@ -51,19 +51,22 @@ description: 创建自定义展示页面（display 类型）并返回 formUuid�
 ## 命令
 
 ```bash
-openyida create-page <appType> <pageName> [--mode dashboard]
+openyida create-page <appType> <pageName> [--mode dashboard] [--hide-nav]
 ```
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `appType` | 是 | 应用 ID，如 `APP_XXX` |
 | `pageName` | 是 | 页面名称 |
-| `--mode dashboard` | 否 | 看板/驾驶舱页面推荐使用；创建后自动隐藏顶部导航，并输出无左侧工作台栏的 `custom/{formUuid}?isRenderNav=false` URL |
+| `--mode dashboard` | 否 | 看板/驾驶舱页面推荐使用；只表达页面模式，不会自动隐藏导航 |
+| `--hide-nav` | 否 | 仅当用户显式要求隐藏导航 / 无导航 / 全屏无框时使用；创建后隐藏顶部导航，并输出无左侧工作台栏的 `custom/{formUuid}?isRenderNav=false` URL |
+
+默认生成页面导航可见；仅说“看板 / 驾驶舱 / 首页 / 门户 / 工作台”不等于隐藏导航。
 
 ## 输出
 
 ```json
-{"success":true,"pageId":"FORM-XXX","pageName":"驾驶舱","appType":"APP_XXX","mode":"dashboard","chromeless":true,"url":"{base_url}/APP_XXX/custom/FORM-XXX?isRenderNav=false","workbenchUrl":"{base_url}/APP_XXX/workbench/FORM-XXX"}
+{"success":true,"pageId":"FORM-XXX","pageName":"驾驶舱","appType":"APP_XXX","mode":"dashboard","hideNav":false,"chromeless":false,"url":"{base_url}/APP_XXX/workbench/FORM-XXX","workbenchUrl":"{base_url}/APP_XXX/workbench/FORM-XXX"}
 ```
 
 > 创建后根据用户意图选择并列链路：Code Canvas 链路编写 `.canvas.jsx` 并发布为 `YidaCodeCanvas`；普通自定义页面 JSX/Jsx 组件链路编写 `.oyd.jsx` / `.jsx`，发布为平台 `Jsx` 组件，并执行 `openyida check-page` / `openyida compile` / `openyida publish`。

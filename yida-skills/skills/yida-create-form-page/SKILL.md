@@ -1,6 +1,6 @@
 ---
 name: yida-create-form-page
-description: 表单页面创建与更新，支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。适用于新建表单、设计表单结构、添加或修改表单字段。
+description: 表单页面创建与更新，默认加载 yida-form-detail 作为表单视觉引导，并合并 Divider 分割线语义分组；支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。
 ---
 
 # 表单页面创建与更新
@@ -29,6 +29,7 @@ description: 表单页面创建与更新，支持 19 种业务字段和 Divider�
 
 ## 严格要求 (MUST DO)
 
+- 表单页开发默认先加载 `yida-form-detail` 作为视觉引导，再由本技能落地字段 JSON；视觉引导必须和 `Divider` 分割线语义分组合并执行。
 - create 成功后，将 formUuid 记录到 `.cache/<项目名>-schema.json`
 - update / add-option / bind-datasource / validation / rule 等字段级操作不要求先执行外部 `get-schema`；直接提交 compact JSON 或字段 label/fieldId，CLI 会内部读取 schema、定位字段，并在成功 JSON 中输出 compact `resolved`/`updatedProps` evidence。字段解析失败/歧义时按 `diagnostics[].candidates` 补 `tableLabel`、修正 label 或再执行一次 compact `get-schema`。
 - 字段定义或变更定义需要落盘时，必须使用 agent 的结构化文件写入工具创建到 `<projectRoot>/.cache/openyida/<项目名或任务名>/`，例如 `<projectRoot>/.cache/openyida/pm/pm-fields-team.json`
@@ -65,13 +66,14 @@ description: 表单页面创建与更新，支持 19 种业务字段和 Divider�
 
 ## 布局决策规则
 
-默认表单是单列。不要为了“更高级”默认把整表改成双列，也不要用 `GroupContainer` / `PageSection` 做普通分组。
+默认表单是单列。表单页开发必须先按 `yida-form-detail` 的视觉引导确定填写路径、字段密度和分组结构，再用 `Divider` / `ColumnContainer` / 标准字段表达。不要为了“更高级”默认把整表改成双列，也不要用 `GroupContainer` / `PageSection` 做普通分组。
 
 - 默认单列：字段较少、流程表单、移动端优先、长文本、说明、附件、地址、子表、审批意见、需要逐项认真填写的字段。
 - 局部多列：短字段且天然成对或成组时使用 `ColumnContainer`，例如开始/结束日期、姓名/工号、部门/岗位、金额/币种、联系人/电话。
 - 全局 `--layout double`：只有用户明确要求“整个表单双列”时才使用；一般更推荐在字段 JSON 内用 `ColumnContainer` 做局部多列。
 - 语义分组：按业务含义分段，不按字段数量平均分。常见分组包括“基本信息”“业务信息”“时间计划”“补充材料”“审批信息”。
 - Divider 样式：默认 `bold-with-thin`；显式样式按 `bold-with-thin` → `double-color-trapezoid` → `left-dot-title` → `solid` / `dashed` / `thick` / `dotted` 优先级选择；门户/强分区场景可统一显式使用 `multi-parallelograms-end`。
+- formDetail CSS 注入不是字段 JSON 的默认副作用；只有用户明确要求详情页美化、交付模式要求统一详情页风格，或已有 `formUuid` 后进入 `yida-form-detail` 样式注入阶段时才执行。
 
 推荐结构：
 
@@ -100,7 +102,7 @@ Divider > Field
 - 普通业务分组：`Divider` 标题跟随应用主题，下面直接接字段或 `ColumnContainer`
 - 默认 `Divider` 不写颜色属性，或保持 `colorType: "theme"`
 - 表单中出现 `Divider` 时，OpenYida 必须注入 `style#yida-global-theme`，并尽可能同步到当前页面和同源 `window.top`
-- 基础样式 token preset 只有 `blue`、`green`、`orange`；本技能只消费注入后的变量，不把它们当作表单 `--theme` 或应用 `--theme` 参数
+- 新表单页默认消费`podBlue`、`podGreen`、`podOrange` 等应用主题对应 token；`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。本技能只消费注入后的变量，不把 legacy 名称当作表单 `--theme` 或应用 `--theme` 参数
 - 局部多列容器：保持背景克制，避免给每个列容器单独上色
 - 流程表单：更偏单列和清晰分段，颜色只用于章节识别，不要做大面积品牌色块
 - 自定义色：只有用户明确说“红色警示”“绿色成功态”“品牌色 #xxx”时才写 `colorType: "custom"` 和具体色值
@@ -237,6 +239,7 @@ openyida create-form rule <appType> <formUuid> <rulesJsonOrFile>
 | [field-definition-guide.md](references/field-definition-guide.md) | 需要完整字段属性、布局组件、update changes 或字段类型表时 |
 | [advanced-form-modes.md](references/advanced-form-modes.md) | 使用 patch / rule / validation / bind-datasource 高级模式前必须读取 |
 | [form-field-properties.md](references/form-field-properties.md) | 需要字段属性细节或平台属性映射时 |
+| `yida-form-detail` | 表单页开发默认加载；产出表单视觉引导、Divider 分组策略和可选 formDetail 样式注入边界 |
 | [employee-field.md](references/employee-field.md) | 成员字段配置 |
 | [association-form-field.md](references/association-form-field.md) | 关联表单字段配置 |
 | [serial-number-field.md](references/serial-number-field.md) | 流水号字段配置 |

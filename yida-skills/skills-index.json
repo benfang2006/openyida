@@ -1090,7 +1090,7 @@
       "name": "yida-theme",
       "path": "skills/yida-theme/SKILL.md",
       "display_name": "应用主题与全局换肤",
-      "description": "应用主题色、品牌色、全局换肤、推荐 pod 主题 podBlue/podGreen/podOrange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
+      "description": "应用主题色、品牌色、全局换肤、推荐应用主题 podBlue/podGreen/podOrange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
       "category": "yida-skills/app",
       "tags": [
         "主题",

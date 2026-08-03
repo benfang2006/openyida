@@ -27,7 +27,7 @@ Code Canvas 是宜搭的代码画布自定义页面链路：用户写标准 Reac
 - 推荐入口写法是 `function YidaComp(props) { ... }`，或 `const App = ...; export default App;`。CLI 已兼容 `const/let/class YidaComp; export default YidaComp`，但生成新代码时优先避开同名默认导出，减少不同 Canvas 运行态装配器下的重复声明风险。
 - Canvas 组件使用 React 函数组件上下文；数据读写通过 fetch、开放 API、连接器代理或显式 props 数据桥完成。
 - 第三方前端资源只从可用资源清单中选择；React、antd、ahooks、d3、recharts、Radix、framer-motion、lucide-react 等可按规则 import。
-- 宜搭运行态组件按“先探测、可用增强、fallback 保底、值统一归一化”接入；以 `window.Deep` / `window.DeepYida` 探测为主，`window.YidaNativeComponents` 作为兼容入口。嵌入门户数据管理视图时使用 `DataManageViews`，并显式传入目标表单 `form.value/formUuid`。
+- 宜搭运行态组件按“先探测、可用增强、fallback 保底、值统一归一化”接入；以 `window.Deep` / `window.DeepYida` 探测为主，`window.YidaNativeComponents` 作为可用主题。嵌入门户数据管理视图时使用 `DataManageViews`，并显式传入目标表单 `form.value/formUuid`。
 
 > 可用资源清单和运行时细节见 [dependencies-and-cdn.md](references/dependencies-and-cdn.md) 与 [employeefield-verification.md](references/employeefield-verification.md)。
 
@@ -99,12 +99,12 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 1. **数据桥显式化**：通过 fetch、连接器或开放 API 读写数据；Cookie、CSRF、密钥和签名留在平台、连接器或后端服务侧。
 2. **组件增强可降级**：门户、成员、部门、上传组件都做 feature detect 和 fallback；组件缺失时页面仍展示 Canvas 自绘基线。
 3. **值先归一化**：成员、部门、文件的原始返回值保留到 `raw` 用于检查，业务 payload 使用统一结构。
-4. **业务页默认基础 token，sample 例外**：真实业务页默认从基础 token preset `blue`、`green`、`orange` 三选一，并读取对应 `--color-brand1-*` 与 `--color-group`；只有用户明确要求应用主题风格/应用主题色时才跟随运行态主题。`lib/samples/**` 和官方 sample 展示应用自带页面级固定主题（`followRuntimeTheme: false` 或等价 CSS 变量），每个 sample 使用不同色相。
+4. **业务页默认应用主题，sample 例外**：真实业务页默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择，并读取对应 `--color-brand1-*` 与 `--color-group`；只有用户明确要求应用主题风格/应用主题色时才跟随运行态主题。`lib/samples/**` 和官方 sample 展示应用自带页面级固定主题（`followRuntimeTheme: false` 或等价 CSS 变量），每个 sample 使用不同色相。
 5. **先验证再扩展业务**：原生组件、上传、组织搜索、弹层类能力先做 smoke 页面，确认 PC/移动端都可用后再进入复杂业务页面。
 6. **模板占位符必须可直发**：Canvas sample / generate-page 模板同时支持“生成器替换变量”和“sample 原样发布”。JSON 占位符用 `parseTemplateJson(raw, fallback)`，展示文案占位符用 `withFallback` / `applyPageFallbacks` 兜底，未替换时页面继续可运行，并显示业务化 fallback 文案。
 7. **light 页面使用清爽业务色**：业务列表、协同表、数据管理页、工作台和门户默认使用 light 模式；主操作、选中态、筛选焦点和批量操作使用品牌色或 sample 自带主题色，边框用浅色品牌混合。用户明确要求暗色大屏/夜间模式/高对比风格时使用深色主视觉。
 8. **门户运行态组件要补必需 props 和局部降级**：`QuickAccessCard` / `RecentlyUsedCard` 传 `theme="row-white"` 等必需 props；所有门户/字段/上传增强组件外层加局部 ErrorBoundary，单个组件不兼容时只降级该块，整页保持可用。
-9. **自定义主题必须页面内注入**：`--theme` 只接受平台预置 key；基础样式 token preset 只有 `blue`、`green`、`orange`，它们写入 `style#yida-global-theme` / scoped vars，不直接传给 `--theme`。页面设计使用非预置主题（例如活力橙、深玫红、自定义暗黑金）时，在 Canvas 源码中注入 `style#yida-global-theme` 或等价 scoped CSS vars，并在根节点设置 `data-theme-scope="page"`。官方 sample 每个页面都做页面级主题注入。
+9. **自定义主题必须页面内注入**：`--theme` 只接受平台预置 key；默认推荐 `podBlue`、`podGreen`、`podOrange`，它们既能作为平台主题 key，也能写入 `style#yida-global-theme` / scoped vars。页面设计使用非预置主题（例如活力橙、深玫红、自定义暗黑金）时，在 Canvas 源码中注入 `style#yida-global-theme` 或等价 scoped CSS vars，并在根节点设置 `data-theme-scope="page"`。官方 sample 每个页面都做页面级主题注入。
 10. **真实交付使用真实数据源**：`openyida sample` 原样发布可以保留 sample/seed 数据，并在页面上标注为 sample/seed。完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；真实数据暂未接入时展示空态、表单入口、刷新/登记按钮。
 11. **UI 决策块必须进入 page spec**：完整应用 `fast_build` 和真实交付页在生成页面前，先消费 `yida-page-uiux` 的视觉方向决策块，把页面类型、推荐模板、`visualProfile`、素材/图标策略、去 sample 化检查写进 `page-spec.json` 或手写实现备注。缺少决策块时，先用当前业务语义补一个紧凑决策；模板默认 tone、section 顺序、sample 品牌名和 sample 指标必须被当前业务语义替换。
 12. **页面生成二选一**：模板路径先写 `page-spec.json`，执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json` 判断 `domainFidelity` / dataBinding，并对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
@@ -147,7 +147,7 @@ npx jest tests/canvas-compile.test.js tests/generate-page.test.js --runInBand
 - **先看参考再动手**：用户要求“高级、Dribbble、好看、像产品/官网/详情页/数据表”时，先参考 Dribbble 的同类构图和免费可商用素材站的真实图片，再抽象成布局、层次、色彩和数据密度原则，并转译为当前业务页面。
 - **说清参考转译**：交付 sample 改造时要用 1-2 句话说明参考被转译成了什么，例如“详情页采用对象 hero + sticky 元信息 + 时间线结构”、“数据管理页采用多维表工具栏 + 分组行 + 彩色标签密集表格”。
 - **每页独立主题**：sample 页默认 `themeScope=page` 或等价固定 CSS 变量；业务列表、详情、门户、工作台、官网、数据管理、大屏要有不同色相和不同信息节奏，不被应用全局主题统一染色。
-- **非预置主题不走 `--theme`**：`deepBlue`、`podBlue`、`royalBlue`、`lightBlue`、`teal`、`podGreen`、`deepPurple`、`purple`、`podOrange`、`yellow`、`magenta`、`red`、`greyBlue`、`coffee`、`black` 等平台预置 key 才能传给 `--theme`；基础样式 token preset 是 `blue` / `green` / `orange`，自己设计的主题色或这三套基础 token 都要写到页面 `style#yida-global-theme` / scoped token 中，并确保每个 sample 页面都有这段注入。
+- **非预置主题不走 `--theme`**：`deepBlue`、`podBlue`、`royalBlue`、`lightBlue`、`teal`、`podGreen`、`deepPurple`、`purple`、`podOrange`、`yellow`、`magenta`、`red`、`greyBlue`、`coffee`、`black` 等平台预置 key 才能传给 `--theme`；新应用默认优先 `podBlue` / `podGreen` / `podOrange`。自己设计的主题色要写到页面 `style#yida-global-theme` / scoped token 中，并确保每个 sample 页面都有这段注入。
 - **Sample 数据要像真实业务，真实交付要接真实数据**：列表、详情、数据管理、工作台、大屏 sample 模拟足够丰富的数据、状态、筛选、趋势、分组、时间线或指标；完整应用/真实交付页优先接 `dataBinding.mode=form`，未接入时展示真实空态。
 - **工作台使用真实产品首页结构**：工作台页面铺满应用内容区，侧栏/导航/主面板形成真实产品首页；设计过程词不出现在可见页面。
 - **数据大屏地图要稳定**：大屏中心态势图如果是地图，优先探测平台地图组件（如 `YoushuMap` / `ChinaMap` / `MapChart` 等），并提供内置区域地图组件兜底；正常展示态呈现地图、区域态势或业务空态。
@@ -170,7 +170,7 @@ openyida login --check-only --json
 openyida create-page <appType> "<页面名>"
 
 # 3. 生成或编写 Canvas 源码
-# 模板路径：默认主题从 blue/green/orange 三选一；生成后基于 manifest/摘要和小范围 patch 演进，不全量覆盖生成文件。
+# 模板路径：默认主题从 podBlue/podGreen/podOrange 三选一；生成后基于 manifest/摘要和小范围 patch 演进，不全量覆盖生成文件。
 openyida generate-page workbench-home --theme-profile blue --theme-scope page --output project/pages/src/workbench-home.canvas.jsx --compile
 openyida generate-page dashboard-overview --theme-profile blue --theme-scope page --output project/pages/src/dashboard-overview.canvas.jsx --compile
 openyida generate-page portal-shell-home --theme-profile blue --theme-scope page --output project/pages/src/portal-shell-home.canvas.jsx --compile

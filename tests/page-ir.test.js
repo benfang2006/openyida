@@ -28,7 +28,7 @@ describe('page IR', () => {
       name: 'podBlue',
       appThemeKey: 'podBlue',
       followRuntimeTheme: false,
-      themeColorSource: 'platform-pod-theme',
+      themeColorSource: 'application-theme',
       themeColor: 'rgb(0, 137, 255)',
       mode: 'color_color',
       colorMode: 'gradient',

@@ -8,7 +8,7 @@ Code Canvas 里的平台运行态组件按“先探测、可用增强、fallback
 
 运行时桥接步骤：
 
-1. 从 `window.Deep`、`window.DeepYida` 探测组件；若环境已有 `window.YidaNativeComponents`，作为兼容入口读取。
+1. 从 `window.Deep`、`window.DeepYida` 探测组件；若环境已有 `window.YidaNativeComponents`，作为可用主题读取。
 2. 找到组件后渲染原生组件。
 3. 找不到时渲染 Canvas 自绘 fallback。
 4. 对成员、部门、文件值做统一归一化，再进入页面状态和提交 payload。
@@ -28,7 +28,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 | --- | --- |
 | `window.Deep[name]` | `window.Deep` 上的基础字段/组件 |
 | `window.DeepYida.default` 或 bundle 数组 | `window.DeepYida` 上的运行态组件集合，按 `displayName` 匹配 |
-| `window.YidaNativeComponents[name]` | 可选兼容入口；存在时读取，不作为前置条件 |
+| `window.YidaNativeComponents[name]` | 可选可用主题；存在时读取，不作为前置条件 |
 
 业务代码统一走桥接函数读取运行态组件，便于隔离不同运行态差异。
 

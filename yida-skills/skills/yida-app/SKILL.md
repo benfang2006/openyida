@@ -1,6 +1,6 @@
 ---
 name: yida-app
-description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；默认走 fast_build，先解析资源上下文，再创建缺失资源、更新主页面并发布；结果链接较多时用表格输出。
+description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；默认走 fast_build，先解析资源上下文，再创建缺失资源、更新主页面并发布；最终只输出一个主访问链接，其他资源做摘要。
 ---
 
 # yida-app — 完整应用编排契约
@@ -13,7 +13,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 用户说“按默认方案”“不要追问”“直接创建”“尽快搭建”等，必须选择 `fast_build`，用合理 MVP 假设直接执行，不展开深度 PRD 讨论。
 
-**默认判定**：完整应用搭建或补齐时，用户表达“默认方案 / 不要追问 / 直接创建 / 尽快搭建”等快速交付信号，就命中 `fast_build`。默认链路：`resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 → 返回访问链接/资源表格`。
+**默认判定**：完整应用搭建或补齐时，用户表达“默认方案 / 不要追问 / 直接创建 / 尽快搭建”等快速交付信号，就命中 `fast_build`。默认链路：`resolve app → reserve main page → resolve forms → 编写/更新主页面源码 → 发布 + 轻量导航排序 → 返回一个主访问链接 + 资源摘要`。
 
 > 资源边界：本技能是默认完整应用编排。目标不明时先只读确认或询问用户。
 
@@ -49,11 +49,11 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 | 模式 | 何时使用 | 目标 |
 |------|----------|------|
-| `fast_build` | 默认；用户要求不追问/直接创建 | 复用已解析资源，只创建缺失且允许创建的应用/表单/页面，发布并输出访问 URL |
-| `full_demo` | 用户明确要演示完整、示例数据、导航整理、可点验收 | 在 `fast_build` 后补导航、示例数据、公开访问或截图 |
-| `deep_design` | 用户明确要深度产品设计、视觉方向、多角色、多页面、复杂流程 | 先做详细 PRD/应用体验蓝图/视觉决策，再执行多阶段搭建 |
+| `fast_build` | 默认；用户要求不追问/直接创建 | 复用已解析资源，只创建缺失且允许创建的应用/表单/页面，发布后立即轻量整理导航并输出访问 URL |
+| `full_demo` | 用户明确要演示完整、示例数据、精细导航整理、可点验收 | 在 `fast_build` 后补精细导航整理、示例数据、公开访问或截图 |
+| `deep_design` | 用户明确要深度产品设计、完整 PRD、非最小 MVP、多角色、多页面、复杂流程 | 先写完整低代码 PRD（非最小 MVP），再做应用体验蓝图/视觉决策并执行多阶段搭建 |
 
-默认不要把 `full_demo` / `deep_design` 的动作塞进 `fast_build`。主页面生成链路固定包含 `yida-page-uiux` 轻量 UI 引导，只用于页面类型、模板路由、`visualProfile` 和去 sample 化检查；不要因为用户说“看板”“系统”“管理”就自动加载应用蓝图、数据源、示例数据、导航整理或截图验收。
+默认不要把 `full_demo` / `deep_design` 的动作塞进 `fast_build`。主页面生成链路固定包含 `yida-page-uiux` 轻量 UI 引导，只用于页面类型、模板路由、`visualProfile` 和去 sample 化检查；发布主页面后固定执行一次轻量导航排序，默认优先级为门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单。不要因为用户说“看板”“系统”“管理”就自动加载应用蓝图、数据源、示例数据、精细导航分组或截图验收。
 
 ## 预检
 
@@ -70,10 +70,10 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 [Step 1] 创建应用 → use_skill("yida-create-app", "创建应用并获取 appType") → openyida create-app
               ↓
 [Step 2] 需求分析 → 写入 prd/<项目名>.md
-              ↓      fast_build 只记录 MVP 假设、核心表单/页面、完成标准；deep_design 才补应用体验蓝图
+              ↓      所有模式的 PRD 都必须写入视觉规范（推荐主题、主题色来源、明暗模式、导航视觉、页面气质/布局）；fast_build 只做轻量 MVP PRD，deep_design 写完整低代码 PRD（应用基本信息、整体结构、视觉规范、数据结构、页面与功能、业务逻辑、交互与状态、验收标准）
               ↓
-[Step 3] 创建必要表单 → use_skill("yida-create-form-page", "创建核心表单字段结构")
-              ↓      生成表单 schema 前必须先加载该技能；字段配置文件写入 .cache/openyida/<项目名>/
+[Step 3] 创建必要表单 → use_skill("yida-form-detail", "表单视觉引导") → use_skill("yida-create-form-page", "创建核心表单字段结构")
+              ↓      生成表单 schema 前先用 yida-form-detail 合并 Divider 分割线语义分组，再加载 yida-create-form-page 落地字段 JSON；字段配置文件写入 .cache/openyida/<项目名>/
               ↓
 [Step 4] 创建自定义页面 → use_skill("yida-create-page", "创建主入口自定义页面") → openyida create-page
               ↓      创建页面前必须做 corpId 一致性检查
@@ -84,17 +84,18 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 [Step 6] 编写自定义页面代码 → 默认 use_skill("yida-page-uiux", "主页面 UI 引导")
               ↓      产出简短视觉方向决策块：页面类型、模板路由、visualProfile、去 sample 化检查
               ↓      再 use_skill("yida-canvas-custom-page", "生成 Code Canvas 主页面")
-              ↓      先把视觉方向、业务对象和基础主题 preset 写入 page-spec.json，再 openyida generate-page <模板> --theme-profile <blue|green|orange> --theme-scope page --spec <page-spec.json> --compile
+              ↓      先把视觉方向、业务对象和 应用主题 写入 page-spec.json，再 openyida generate-page <模板> --theme-profile <podBlue|podGreen|podOrange> --theme-scope page --spec <page-spec.json> --compile
               ↓      字段映射优先来自 create/update 命令输出和 `.cache/<项目名>-schema.json`；同一表单不要重复 get-schema，除非页面/数据链路确实需要 fieldId 且缓存不完整
               ↓      本轮已创建/解析业务表单且页面需要列表/看板/详情数据时，必须在 spec.dataBinding 写 mode=form + 真实 appType/formUuid/fieldId；深度接入再加载 yida-canvas-data-binding
               ↓      明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖 this.$ / this.utils.yida.* / this.dataSourceMap 等实例桥时选择 yida-custom-page
               ↓
-[Step 7] 发布页面 → use_skill("yida-publish-page", "发布主页面") → openyida publish <源文件路径> <appType> <formUuid> [--health-check]
+[Step 7] 发布页面 → use_skill("yida-publish-page", "发布主页面") → openyida publish <源文件路径> <appType> <formUuid> --auto-nav-order [--health-check]
+              ↓      发布成功后立刻轻量整理导航：门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单
               ↓
-[Step 8] 输出访问链接/资源表格和资源摘要 → 默认完成
+[Step 8] 输出一个主访问链接和资源摘要 → 默认完成
 ```
 
-`full_demo` / `deep_design` 才在 Step 7 后追加导航整理、示例数据、公开访问、截图验收、报表/大屏、数据桥深度接入等动作。
+`full_demo` / `deep_design` 才在 Step 7 后追加精细导航整理、示例数据、公开访问、截图验收、报表/大屏、数据桥深度接入等动作。
 
 ## UI/体验集成点
 
@@ -102,11 +103,11 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 | 模式 | UI/体验怎么集成 | 加载策略 |
 |------|----------------|----------|
-| `fast_build` | Step 6 包含 `yida-page-uiux` 轻量视觉方向决策块，再通过 Code Canvas 场景模板、基础 token preset、业务化 page spec 和基础工作台/看板/列表布局完成；不做长视觉推演 | 默认加载 `yida-page-uiux` 作为 ui_skill 引导；不默认加载 `yida-app-uiux` / `yida-theme`；页面主色默认从 `blue`、`green`、`orange` 三选一 |
-| `full_demo` | 在发布后按用户要求补导航、示例数据、截图、公开访问，让页面可演示 | 只加载命中的后置技能，如 `yida-nav-group`、`yida-data-management`、`yida-page-config` |
+| `fast_build` | Step 6 包含 `yida-page-uiux` 轻量视觉方向决策块，再通过 Code Canvas 场景模板、应用主题、业务化 page spec 和基础工作台/看板/列表布局完成；不做长视觉推演 | 默认加载 `yida-page-uiux` 作为 ui_skill 引导；不默认加载 `yida-app-uiux` / `yida-theme`；页面主色默认从 `podBlue`、`podGreen`、`podOrange` 三选一 |
+| `full_demo` | 在发布后按用户要求补精细导航分组、示例数据、截图、公开访问，让页面可演示 | 只加载命中的后置技能，如 `yida-nav-group`、`yida-data-management`、`yida-page-config` |
 | `deep_design` | 先做应用体验蓝图和页面视觉方向，再生成页面 | 加载 `yida-app-uiux` 规划角色路径/页面组合/导航分组/门面/壳形态；加载 `yida-page-uiux` 产出页面视觉方向决策块；涉及全局主题时加载 `yida-theme` |
 
-主题补充：应用默认主题先从基础样式 token preset `blue`、`green`、`orange` 三选一。它们用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不是 `create-app/update-app --theme` 参数；只有用户明确要求“xxx 应用主题色”或指定平台 key 时，才改用平台应用主题。
+主题补充：应用默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。它们既是平台 `create-app/update-app --theme` 可用 key，也可作为页面级 token profile 写入 `style#yida-global-theme` / `customThemeStyle.tokens`；`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新默认优先推荐 `podBlue`、`podGreen`、`podOrange`。
 
 首次生成面向用户的主页面时，默认执行 `use_skill("yida-page-uiux", "主页面 UI 引导")` 产出紧凑决策块，再交给 `yida-canvas-custom-page` 或 `yida-custom-page` 落地。用户明确要求“好看 / 去 AI 味 / 高级视觉 / 品牌化 / 多页面体验”时，可以把该决策块做得更完整；只有用户要求多角色、多页面体验蓝图或深度产品设计时，才升级 `deep_design` 并加载 `yida-app-uiux`。
 
@@ -167,7 +168,7 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 4. 以模板为基础扩展交互和真实数据；
 5. 验证所有参数名称与 CLI 一致。
 
-表单详情页视觉优化不走 `openyida publish`。当用户要求“详情页美化 / formDetail 样式优化”时，改由单点任务加载 `use_skill("yida-form-detail", "优化表单详情页样式")`，通过表单 Schema 注入 Html 组件承载 CSS。
+表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；当用户要求“详情页美化 / formDetail 样式优化”或交付模式要求统一详情页风格时，再由 `yida-form-detail` 通过表单 Schema 注入 Html 组件承载 CSS。
 
 ## fast_build 阶段
 
@@ -175,20 +176,22 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 |------|--------|----------|----------|
 | 0. 解析资源上下文 | 无 | 合并本轮显式资源、已绑定资源上下文、workspace 配置/缓存、会话历史；本轮显式目标覆盖已绑定上下文；判定 app/page/form/process 的 `source` 和 `allowCreate` | 明确复用、创建缺口或需要 ask_human |
 | 1. resolve app | `yida-create-app` 仅在 app 缺失且允许创建时加载；不自动修改应用名称 | 已有 `appType`/应用 URL/已绑定 app 时直接复用；否则创建应用并提取真实 `appType` | 拿到真实目标 `appType`，且不会重复创建同类 app |
-| 2. 记录最小需求 | 无 | 写 `prd/<项目名>.md`：只记录 MVP 假设、核心表单/页面、完成标准；写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射；不要写长 PRD | 业务语义和 ID 存储位置明确 |
+| 2. 记录最小需求 | 无 | 写 `prd/<项目名>.md`：记录 MVP 假设、核心表单/页面、完成标准和视觉规范；视觉规范至少包含 `themeProfile`、主题色来源、明暗模式、导航视觉、页面气质/布局。写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射；不要写长 PRD | 业务语义、视觉规范和 ID 存储位置明确 |
 | 3. reserve main page | `yida-create-page` 仅在主页面缺失且允许创建时加载 | 已有页面 URL / `formUuid` / 已绑定页面时直接作为主页面；若需要首页/工作台/智能助手/门户门面且缺少主页面，先创建空 display page 占位，暂不写最终源码 | 拿到真实主页面 `formUuid`，且不会重复创建页面 |
-| 4. resolve forms | `yida-create-form-page` | 已有目标表单时 update/patch/rule/bind-datasource；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json` | 拿到或确认表单 `formUuid`，并在需要时拿到真实 `fieldId` |
+| 4. resolve forms | `yida-form-detail` 视觉引导，再 `yida-create-form-page` | 已有目标表单时 update/patch/rule/bind-datasource；创建或更新字段结构前先用 `yida-form-detail` 确定表单视觉引导、填写路径和 Divider 分割线语义分组，再由 `yida-create-form-page` 写字段 JSON；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json`；formDetail CSS 注入只在用户明确要求或交付模式要求统一详情页风格时执行 | 拿到或确认表单 `formUuid`，字段结构有 Divider 分组，必要时拿到真实 `fieldId` |
 | 5. 编写/更新页面 | 主页面生成阶段包含 `yida-page-uiux` 轻量 UI 引导，再 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 先产出页面类型、模板路由、`visualProfile` 和去 sample 化检查，再生成或修改主页面源码；只实现 MVP 首屏和核心操作。可用已解析表单链接、真实空态、表单入口和轻量指标口径完成主页面；若展示业务列表/看板/详情记录，必须接本轮真实表单 `dataBinding.mode=form`，或先写入 demo records 后再读取；不要加载密度/报表/数据源等额外技能 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
-| 6. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid>` 发布主页面 | 发布成功并获得可访问 URL |
-| 7. 输出结果 | 无 | 返回应用链接、主页面链接、复用/创建/更新的资源摘要、后续可选项；若本轮输出 3 个及以上资源或链接，必须用 Markdown 表格集中展示 | 用户能一眼区分每个链接用途 |
+| 6. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid> --auto-nav-order` 发布主页面，并在发布成功后立即执行轻量导航排序：门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单 | 发布成功、获得可访问 URL，且自动导航排序已执行或给出明确 warning |
+| 7. 输出结果 | 无 | 只返回一个主访问链接：若本轮意图是新增/修改/发布某个具体页面，输出当前页面 URL；其他完整应用、建表单、建流程、权限、主题、导航或批量资源场景，输出应用首页 `{base_url}/{appType}/workbench`。复用/创建/更新的资源只做 ID/状态摘要，不把每个资源 URL 都列出来 | 用户一眼看到下一步该打开哪里，不被静态资源或管理链接干扰 |
 
-主页面生成默认包含一次轻量 `yida-page-uiux` 页面引导；除此之外不默认执行：`yida-app-uiux`、`yida-canvas-data-binding`、`yida-data-source-connectors`、`yida-data-management`、`yida-nav-group`、`yida-dashboard`、导航重排、示例数据、截图验收、公开访问配置、深度 UI 设计、长 PRD、TaskCreate / 继续规划任务，也不默认读取 `references/app-build-contract.md`。
+主页面生成默认包含一次轻量 `yida-page-uiux` 页面引导；发布主页面成功后默认只做一次 `nav-group auto-order` 等价轻量排序，确保门户/首页/工作台入口在前，其次自定义页面、流程表单、普通表单。除此之外不默认执行：`yida-app-uiux`、`yida-canvas-data-binding`、`yida-data-source-connectors`、`yida-data-management`、`yida-dashboard`、精细导航分组、示例数据、截图验收、公开访问配置、深度 UI 设计、长 PRD、TaskCreate / 继续规划任务，也不默认读取 `references/app-build-contract.md`。
 
 ## 结果输出格式
 
-- 1-2 个链接：可用简短列表输出，但要标清资源类型和用途。
-- 3 个及以上资源或链接：必须用 Markdown 表格，建议列为 `资源类型 | 名称/用途 | 链接 | 状态`，不要把 URL 连续堆成多行纯文本。
-- 表格里只放真实命令返回或已验证推导的链接；不确定、未发布或仅本地修改的资源，在 `状态` 列标注“未发布 / 待验证 / 本地已修改”。
+- **主链接只保留一个**：新增/修改/发布单个页面时输出当前页面 URL；其他情况输出应用首页 `{base_url}/{appType}/workbench`。
+- **不要输出静态资源清单**：不要把 `g.alicdn.com` 的 `index.css`、`index.js`、`index.html`、`locales/*.json`、构建产物 URL、CDN 资源 URL 或中间文件链接当成最终结果展示。
+- **资源摘要不放链接**：资源较多时可用 Markdown 表格，但列为 `资源类型 | 名称/用途 | ID | 状态`；只放 appType、formUuid、pageId、reportId、流程名等 ID/状态。
+- **管理态链接默认隐藏**：不要默认输出 `/admin`、配置页、Schema 页、分享配置页等管理链接；只有用户明确要管理后台、配置入口或排障证据时才提供。
+- 未发布或仅本地修改的资源，在 `状态` 列标注“未发布 / 待验证 / 本地已修改”，不要附访问 URL。
 
 ## 关键决策树
 
@@ -249,7 +252,7 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 | 可选项 | 子技能 | doneWhen |
 |--------|--------|----------|
-| 导航整理 | `yida-nav-group` | 主页面/核心表单顺序符合业务入口 |
+| 精细导航整理 | `yida-nav-group` | 主页面/核心表单顺序符合业务入口 |
 | 示例数据 | `yida-data-management` | 写入少量示例记录并 query 抽查成功 |
 | 数据桥深度接入 | `yida-canvas-data-binding` 或 `yida-data-source-connectors` | 页面真实数据读写稳定，空态/错误态可恢复 |
 | 报表/图表 | `yida-report` 或 `yida-chart` | 报表或图表页面已创建/发布 |
@@ -258,12 +261,14 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 
 ## deep_design 附加要求
 
-进入 `deep_design` 时，可以读取 [详细编排参考](references/app-build-contract.md)，并按需加载：
+进入 `deep_design` 时，必须读取 [详细编排参考](references/app-build-contract.md) 的“完整低代码 PRD 模板（非最小 MVP）”，先写/更新 `prd/<项目名>.md`，再按需加载：
 
 - `yida-app-uiux`：多页面应用体验蓝图、角色路径、页面组合、导航分组、应用门面、壳形态、主题策略。
 - `yida-page-uiux`：单点页面视觉方向、去 AI 味、页面类型和模板路由决策；`fast_build` 默认以轻量方式加载，`deep_design` 时可扩展完整决策。
-- `yida-theme`：应用主题色、品牌色、全局换肤、基础 token preset（`blue` / `green` / `orange`）和运行态主题 token。
+- `yida-theme`：应用主题色、品牌色、全局换肤、应用主题（`podBlue` / `podGreen` / `podOrange`）和运行态主题 token。
 - `yida-density`、`yida-dashboard`、`yida-canvas-data-binding`、`yida-data-source-connectors`：仅在具体需求命中时加载。
+
+完整低代码 PRD 至少包含：应用基本信息、整体结构、视觉规范、数据结构、页面与功能、业务逻辑、交互与状态、验收标准。PRD 仍只记录业务语义、视觉规范、页面/表单/流程设计和字段定义，不记录 `formUuid`、`fieldId` 等运行后 ID；真实 ID 继续写入 `.cache/<项目名>-schema.json`。
 
 除 `yida-page-uiux` 的轻量引导外，不要在 `fast_build` 中默认读取这些参考或技能。
 
@@ -274,11 +279,12 @@ UI 不是独立替代主流程的步骤，而是按模式插入到页面生成�
 1. 主页面发布成功；
 2. 输出可访问 URL；
 3. 输出真实 `appType`、页面 `formUuid`、核心表单 `formUuid` 摘要，并标明关键资源是复用、创建还是更新；
-4. 未继续执行可选后置动作。
+4. 轻量导航自动排序已执行；若排序失败，必须给出明确 warning，不能静默跳过；
+5. 未继续执行可选后置动作。
 
 若本轮修改过页面源码但没有成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`，完整应用仍未达到 doneWhen；只能交付本地源码修改说明和未发布原因，不能宣称远端主页面已更新。
 
-发布成功并拿到访问 URL 后即完成，不要继续 TaskCreate、重复读技能、重复规划后续阶段。
+发布成功、完成轻量导航自动排序（或给出明确 warning）并拿到访问 URL 后即完成，不要继续 TaskCreate、重复读技能、重复规划后续阶段。
 
 ## 错误处理
 

@@ -37,7 +37,7 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接规则。
 
-默认生成页保留平台应用导航，不在自定义页面里自建同级导航，也不默认写 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。只有用户明确要求页面内导航、自绘侧边栏、隐藏平台导航、独立门户壳或无导航全屏体验时，才在 spec 里写 `appBlueprint.hasPageNavigation: true` 或 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
+默认生成页保留平台应用导航，不在自定义页面里自建同级导航，也不默认写 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，但仍保持平台导航可见；只有用户明确要求隐藏平台导航、无导航全屏体验或 `isRenderNav=false` 时，才在 spec 里写 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
 
 快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；不要在默认工作台或门户内容区再生成同级页面入口卡。`quickEntries` 更适合当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。
 
@@ -73,9 +73,9 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 ## 主题作用域
 
-默认主题先从基础 token preset `blue`、`green`、`orange` 三选一。`themeProfile: { "name": "yida-app-theme" }` 只在用户明确要求应用主题风格/应用主题色时使用，表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
+默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。`themeProfile: { "name": "yida-app-theme" }` 只在用户明确要求应用主题风格/应用主题色时使用，表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
 
-基础样式 token preset 只有 `blue`、`green`、`orange`。生成页可用 `--theme-profile blue|green|orange` 形成页面级 token profile；它们不是 `create-app/update-app --theme` 参数。
+生成页默认用 `--theme-profile podBlue|podGreen|podOrange` 形成页面级 token profile；其中 `podBlue|podGreen|podOrange` 也是平台主题 key。`blue|green|orange` 仅作为旧 spec 可用主题，不再作为新页面默认推荐。
 
 `themeScope` 决定主题影响范围：
 

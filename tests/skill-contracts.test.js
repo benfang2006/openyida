@@ -232,7 +232,7 @@ describe('OpenYida skill contracts', () => {
     expect(contract).toContain('## 6. 业务逻辑（低代码动作）');
     expect(contract).toContain('## 7. 交互与状态');
     expect(contract).toContain('## 8. 验收标准');
-    expect(contract).toContain('| 主题 profile | 默认 `podBlue` / `podGreen` / `podOrange`');
+    expect(contract).toContain('| 推荐主题 | 默认 `podBlue` / `podGreen` / `podOrange`');
     expect(contract).toContain('| 明暗模式 | 默认 `light`');
     expect(contract).toContain('| 导航视觉 | 默认平台导航可见');
     expect(guidance).toContain('写回 PRD 的视觉规范');
@@ -358,7 +358,7 @@ describe('OpenYida skill contracts', () => {
 
     expect(pageUiux).toContain('参考 Dribbble');
     expect(pageUiux).toContain('参考转成可执行选择');
-    expect(theme).toContain('`--theme` 预置值与自定义主题边界');
+    expect(theme).toContain('应用主题与自定义主题边界');
     expect(theme).toContain('官方 sample 主题验收纪律');
     expect(theme).toContain('style#yida-global-theme');
     expect(chart).toContain('已有 chart sample / 跨应用迁移修复流程');
@@ -370,7 +370,7 @@ describe('OpenYida skill contracts', () => {
     expect(retrospective).toContain('工作台是操作首页，不是 demo 页面');
   });
 
-  test('yida-theme recommends pod theme token presets and keeps legacy aliases explicit', () => {
+  test('yida-theme centralizes application theme token presets and keeps application theme profiles explicit', () => {
     const theme = readSkill('yida-skills/skills/yida-theme/SKILL.md');
     const app = readSkill('yida-skills/skills/yida-app/SKILL.md');
     const createApp = readSkill('yida-skills/skills/yida-create-app/SKILL.md');
@@ -415,13 +415,29 @@ describe('OpenYida skill contracts', () => {
       },
     };
 
-    expect(presets).toContain('默认推荐使用平台 pod 主题 profile：`podBlue`、`podGreen`、`podOrange`');
-    expect(presets).toContain('legacy `blue`、`green`、`orange` 只用于兼容旧 spec 和旧页面 token，不再作为新应用或 fast-build 的默认推荐');
-    expect(theme).toContain('应用默认主题优先推荐平台 `pod` 系主题：`podBlue`、`podGreen`、`podOrange`');
-    expect(app).toContain('应用默认主题先从平台 pod 主题 `podBlue`、`podGreen`、`podOrange` 三选一');
+    expect(presets).toContain('默认推荐使用 `podBlue`、`podGreen`、`podOrange` 等应用主题');
+    expect(presets).toContain('本文件是 OpenYida 应用主题的统一参考');
+    expect(presets).toContain('## 应用主题 key 清单');
+    expect(presets).toContain('## 应用主题 token profile');
+    expect(presets).toContain('`blue`、`green`、`orange` 也是应用主题 token profile，保留原名，不自动改写成其他主题名');
+    expect(theme).toContain('应用默认主题优先推荐 `podBlue`、`podGreen`、`podOrange` 等应用主题');
+    expect(theme).toContain('其他 skill 不重复维护完整清单');
+    expect(app).toContain('应用默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择');
     expect(createApp).toContain('应用主题默认先从 `podBlue`、`podGreen`、`podOrange` 三选一');
-    expect(pageUiux).toContain('真实业务页默认先从平台 pod 主题 `podBlue`、`podGreen`、`podOrange` 三选一');
-    expect(presets).toContain('| `blue` | `podBlue` |');
+    expect(createApp).toContain('完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-theme/references/theme-token-presets.md`');
+    expect(createApp).not.toContain('| `deepBlue` | 深蓝 |');
+    expect(theme).not.toContain('| `deepBlue` | 深蓝 |');
+    expect(pageUiux).toContain('真实业务页默认先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择');
+    expect(presets).toContain('## blue');
+    expect(presets).toContain('## podBlue');
+    expect(presets).not.toContain('| `blue` | `podBlue` |');
+    expect([
+      theme,
+      app,
+      createApp,
+      pageUiux,
+      presets,
+    ].join('\n')).not.toMatch(/pod 主题|pod主题|平台 pod|推荐 pod|pod theme|pod 系主题|应用主题别名|legacy application theme alias|legacy-basic/);
 
     Object.entries(expectedPresets).forEach(([preset, tokens]) => {
       expect(presets).toContain(`## ${preset}`);
@@ -444,7 +460,7 @@ describe('OpenYida skill contracts', () => {
     expect(pageUiux).toContain('视觉方向决策块必须写明 `themeProfile.name`、`themeScope`、`navTheme=light`、`themeColorSource`');
     expect(pageUiux).toContain('工作台、门户、列表、详情、普通看板和数据大屏默认都是浅底 / light 模式');
     expect(step4).toContain('视觉方向不能只写“高级 / 简洁 / 商务”');
-    expect(step4).toContain('`themeProfile.name`：默认从平台 pod 主题 `podBlue`、`podGreen`、`podOrange` 三选一');
+    expect(step4).toContain('`themeProfile.name`：默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择');
     expect(step4).toContain('明暗模式：默认 `light`，并保持 `themeProfile.navTheme=light`');
     expect(step4).toContain('`themeProfile.colorMode` 是宜搭配色模式');
     expect(outputBlock).toContain('**明暗模式**：<light（默认');
@@ -452,7 +468,7 @@ describe('OpenYida skill contracts', () => {
     expect(outputBlock).toContain('themeProfile.colorMode 可为宜搭配色模式如 gradient，不表示暗黑');
     expect(outputBlock).toContain('**主题色说明**：<采用哪个主色或主题色来源');
     expect(visualEngine).toContain('默认 light，不默认暗黑');
-    expect(fastGuidance).toContain('themeProfile: podBlue（平台 pod 主题，themeColorSource=platform-pod-theme，themeScope=page，navTheme=light）');
+    expect(fastGuidance).toContain('themeProfile: podBlue（应用主题，themeColorSource=应用主题，themeScope=page，navTheme=light）');
     expect(pageUiux).toContain('默认浅底业务屏，只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸');
     expect(screenScene).toContain('默认使用浅底业务屏');
     expect(screenScene).toContain('不要默认深色或暗黑');

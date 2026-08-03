@@ -53,52 +53,36 @@ openyida create-app <appName> [description] [icon] [iconColor] [colour] [navThem
 | `description` | 否 | 同 appName | 应用描述 |
 | `icon` | 否 | `xian-yingyong` | 图标标识（见下方图标表） |
 | `iconColor` | 否 | `#0089FF` | 图标背景色 |
-| `colour` | 否 | `deepBlue` | 平台壳层主题 key（见下方主题色表）；设计默认主题仍从基础 token preset 三选一 |
+| `colour` | 否 | `podBlue` | 平台壳层应用主题 key；完整主题清单见 `yida-theme/references/theme-token-presets.md`，设计默认主题优先从 `podBlue`、`podGreen`、`podOrange` 三选一 |
 | `navTheme` | 否 | 不传 | 导航风格：仅用户明确要求时传 `dark`（深色）/ `light`（浅色） |
 | `layoutDirection` | 否 | 不传 | 导航布局：仅用户明确要求时传 `slide`（侧边栏）/ `ver`（L 型顶导） |
 
 ## 行业默认创建建议
 
-如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、基础 token preset 和首屏自定义页模板；只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动把该 key 作为 `colour` / `--theme`。
+如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、应用主题 key 和首屏自定义页模板；完整应用主题 key 只查 `yida-theme/references/theme-token-presets.md`。只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动切到该 key。
 
-| 场景语义 | 默认基础 token preset | create-app 壳层 fallback | 创建后的首屏页面 |
+| 场景语义 | 推荐应用主题 | create-app 壳层 fallback | 创建后的首屏页面 |
 |------|------|------|------|
-| 律所、律师、法律服务、法务合规 | `blue` | `xian-falv #5C72FF greyBlue` | `official-homepage`，走专业服务官网叙事 |
-| 茶叶、茶园、生态、环保、健康品牌 | `green` | `xian-diqiu #00B853 teal` | `official-homepage`，走品牌官网叙事 |
-| 数据大屏、实时监控、预警系统、态势屏、水质/IoT | `blue` | `xian-baogao #14A9FF greyBlue` | `data-screen`，走沉浸式指挥舱 |
-| 咨询、审计、会计、投顾、企业服务 | `blue` | `xian-qiye #5C72FF royalBlue` | `official-homepage` 或工作台，按用户目标选择 |
-| 普通内部管理、CRM、OA、项目管理 | `blue`，业务强调增长/活力时可选 `orange` | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
+| 律所、律师、法律服务、法务合规 | `podBlue` | `xian-falv #5C72FF podBlue` | `official-homepage`，走专业服务官网叙事 |
+| 茶叶、茶园、生态、环保、健康品牌 | `podGreen` | `xian-diqiu #00B853 podGreen` | `official-homepage`，走品牌官网叙事 |
+| 数据大屏、实时监控、预警系统、态势屏、水质/IoT | `podBlue` | `xian-baogao #14A9FF podBlue` | `data-screen`，走沉浸式指挥舱 |
+| 咨询、审计、会计、投顾、企业服务 | `podBlue` | `xian-qiye #5C72FF podBlue` | `official-homepage` 或工作台，按用户目标选择 |
+| 普通内部管理、CRM、OA、项目管理 | `podBlue`，业务强调增长/活力时可选 `podOrange` | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
 
 CLI 已内置上述行业推断：当用户没有显式传 `icon/iconColor/colour` 时，会根据应用名和描述自动补齐；`navTheme/layoutDirection` 默认不传，只有用户明确要求时才传。显式参数始终优先。
 
-**主题色（colour）可选值**：
+**应用主题（colour）口径**：
 
-默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，应用主题默认先从基础 token preset `blue`、`green`、`orange` 三选一；`colour` / `--theme` 只在用户明确要求“xxx 应用主题色”、指定平台 key，或需要壳层 fallback 时使用。`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下作为 fallback。
+默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，应用主题默认先从 `podBlue`、`podGreen`、`podOrange` 三选一；`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下作为 fallback。
 
-这里的 `colour` / `--theme` 只能选平台预置 key；基础样式 token preset 是 `blue`、`green`、`orange`，用于 `style#yida-global-theme` / `customThemeStyle.tokens`，不要直接传给 `create-app --theme`。
+这里的 `colour` / `--theme` 只能选平台预置 key；默认优先用 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新应用默认仍优先推荐 `podBlue`、`podGreen`、`podOrange`。
 
-| 值 | 颜色 | 适合场景 |
-|------|------|------|
-| `deepBlue` | 深蓝 | 政务、金融、法律、企业管理、正式场合 |
-| `podBlue` | 其他蓝色 | 科技、教育、通用办公、SaaS 应用 |
-| `royalBlue` | 皇家蓝 | 高端商务、专业服务、企业级应用 |
-| `lightBlue` | 浅蓝 | 清新简约、云服务、通讯社交 |
-| `teal` | 青色 | 医疗健康、环保、清新简洁类应用 |
-| `podGreen` | 绿色 | 农业、环保、健康、生态 |
-| `deepPurple` | 深紫 | 创意设计、艺术、高端品牌 |
-| `purple` | 紫色 | 女性用户、美妆、时尚、创新科技 |
-| `podOrange` | 橙色 | 活力、电商、餐饮、娱乐、社交 |
-| `yellow` | 黄色 | 儿童教育、阳光活力、警示提醒 |
-| `magenta` | 玖红色 | 时尚、创意、社交、娱乐类应用 |
-| `red` | 红色 | 党建、政务、新闻、紧急类应用 |
-| `greyBlue` | 灰蓝 | 稳重商务、工业制造、技术工程 |
-| `coffee` | 咖啡 | 传统行业、文化教育、复古风格 |
-| `black` | 黑色 | 极简设计、奢侈品牌、科技前沿 |
+完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-theme/references/theme-token-presets.md`，本技能不重复维护完整清单。
 
 ## 输出
 
 ```json
-{"success":true,"appType":"APP_XXX","appName":"考勤管理","url":"{base_url}/APP_XXX/admin"}
+{"success":true,"appType":"APP_XXX","appName":"考勤管理","url":"{base_url}/APP_XXX/workbench"}
 ```
 
 ## 图标列表

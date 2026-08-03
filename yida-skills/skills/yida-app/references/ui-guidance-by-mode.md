@@ -13,6 +13,7 @@
 | `navPolicy` | 使用平台导航、页面内导航壳或混合导航 |
 | `quickEntryPolicy` | 应用内入口走导航内切换；外部链接才新开 |
 | `visualProfile` | 信息密度、构图节奏、强调色来源、列表/图表/队列母题 |
+| `themeProfile` | 采用的应用主题、主题色来源、`navTheme=light`、宜搭配色模式 |
 | `interactionProfile` | 主操作、下钻方式、批量动作、空/载/错状态 |
 | `dataBinding` | 真实表单/连接器/空态策略 |
 
@@ -22,8 +23,8 @@
 
 执行口径：
 
-- 只做一次 `yida-page-uiux` 轻量引导，输出 6-8 行决策块，不做长 PRD、不加载 `yida-app-uiux`。
-- 默认导航可见，主色默认从基础 token preset `blue`、`green`、`orange` 三选一；只有用户明确要求应用主题风格/应用主题色时才跟随 `yida-app-theme`。只有用户明确要求隐藏平台导航、无导航全屏大屏、独立门户壳或生成器已选择自绘导航壳时，才隐藏应用导航。
+- 只做一次 `yida-page-uiux` 轻量引导，输出 6-8 行决策块，并把推荐主题、主题色来源、明暗模式、导航视觉、页面气质/布局写回 PRD 的视觉规范；不做长 PRD、不加载 `yida-app-uiux`。
+- 默认导航可见，主色默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；只有用户明确要求应用主题风格/应用主题色时才跟随 `yida-app-theme`。只有用户明确要求隐藏平台导航、无导航全屏大屏或 `isRenderNav=false` 时，才隐藏应用导航；独立门户壳或自绘导航壳不自动等于隐藏导航。
 - 快捷入口先分成 `page/app/submission/detail/url`。`page/app` 指向应用内导航路径，`url` 才新开。
 - 主页面只实现 MVP 首屏、核心入口、真实空态和必要指标；没有真实记录时展示登记入口、刷新按钮和数据接入提示。
 - 不默认执行导航整理、示例数据、截图验收、公开访问、深度主题设计或多页面蓝图。
@@ -35,6 +36,9 @@ fast 决策块示例：
 - uiGuidanceLevel: fast
 - 导航形态: 导航可见，跟随应用主题
 - 页面类型: workbench，模板 workbench-home
+- 明暗模式: light（默认），不采用暗黑/深色/黑金，除非用户显式要求
+- themeProfile: podBlue（应用主题，themeColorSource=应用主题，themeScope=page，navTheme=light）
+- 主题色说明: 采用宜搭基础蓝作为主操作和选中态，辅助色用于状态/图表区分，不硬编码暗黑背景
 - quickEntryPolicy: 应用内页面走 /{appType}/workbench/{formUuid} 导航内切换；外部链接才新开
 - visualProfile: 中密度业务工作台，左侧状态摘要 + 中部快捷入口 + 右侧待办动态
 - dataBinding: 已有客户表单则 mode=form；无记录时展示空态和新增入口

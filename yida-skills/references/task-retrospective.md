@@ -38,7 +38,7 @@ OpenYida 任务完成后，除了交付当前结果，还要判断是否有可�
    官方 sample 展示应用是样板库，每个页面都应自带独立主题 token。不要被应用全局主题统一染色，尤其全局主题是 `black` 时会把页面变成黑灰。
 
 3. **`--theme` 只能填平台预置 key**
-   `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black` 才能作为 app `colour`。基础样式 token preset 只有 `blue`、`green`、`orange`；自定义“活力橙”“深玫红”“暗黑金”等设计主题，应在每个页面注入 `style#yida-global-theme` 或 scoped tokens。
+   `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black` 才能作为 app `colour`。默认优先使用 `podBlue`、`podGreen`、`podOrange`；自定义“活力橙”“深玫红”“暗黑金”等设计主题，应在每个页面注入 `style#yida-global-theme` 或 scoped tokens，`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。
 
 4. **CLI 成功不等于线上生效**
    修改应用主题后必须回读 `getAppIncludingAecpInfo`，确认 `colour` 和 `config.COLOUR`。如果接口回包成功但字段没变，要修 CLI 链路和测试，而不是只用一次性脚本绕过。

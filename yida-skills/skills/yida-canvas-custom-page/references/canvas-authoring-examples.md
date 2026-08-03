@@ -60,13 +60,13 @@ export default YidaComp;
 
 ## 3. 可视化：recharts 图表
 
-`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读取当前基础 token；用户明确要求应用主题风格时才跟随运行态应用主题（见 [canvas-design-system.md](canvas-design-system.md)）。
+`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读取当前应用主题 token；用户明确要求应用主题风格时才跟随运行态应用主题（见 [canvas-design-system.md](canvas-design-system.md)）。
 
 ```jsx
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// 读当前品牌色 token（跑在真 window，getComputedStyle 可直接解析），缺失时退基础 blue token 主色
+// 读当前品牌色 token（跑在真 window，getComputedStyle 可直接解析），缺失时退`podBlue` 应用主题 主色
 function readBrandColor(level, fallback) {
   try {
     var v = getComputedStyle(document.documentElement)

@@ -269,7 +269,7 @@ fast_build 创建/解析多个表单后，页面阶段需要字段映射时，�
 
 Canvas 页面实现二选一：走模板路径时先写业务化 \`page-spec.json\` 再 \`openyida generate-page ... --spec ... --compile\`，之后只做必要小范围 Edit/patch；如果已经明确最终页面结构，跳过 \`generate-page\`，直接 Write 最终 \`.canvas.jsx\`。不要 generate-page 后马上 Read 大段源码并全量 Write 覆盖同一路径。
 
-所有模式的 PRD 都必须写入视觉规范（主题 profile、主题色来源、明暗模式、导航视觉、页面气质/布局）；fast_build 只写轻量视觉规范，不升级成长 PRD。完整应用主页面生成默认包含 \`yida-page-uiux\` 轻量 ui_skill 引导，产出页面类型、模板路由、\`visualProfile\` 和去 sample 化检查，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。这不等于 \`deep_design\`。
+所有模式的 PRD 都必须写入视觉规范（推荐主题、主题色来源、明暗模式、导航视觉、页面气质/布局）；fast_build 只写轻量视觉规范，不升级成长 PRD。完整应用主页面生成默认包含 \`yida-page-uiux\` 轻量 ui_skill 引导，产出页面类型、模板路由、\`visualProfile\` 和去 sample 化检查，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。这不等于 \`deep_design\`。
 
 不要默认加载 \`yida-app-uiux\`、\`yida-data-source-connectors\`、\`yida-data-management\`、\`yida-dashboard\`，也不要默认做示例数据、精细导航分组、截图验收、公开访问、长 PRD、深度 UI 设计或深读 references；这些只在用户明确要求或 \`full_demo\` / \`deep_design\` 时执行。发布后的轻量导航排序是 fast_build 默认收尾，不等于 full_demo 导航整理。
 
