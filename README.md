@@ -1,6 +1,6 @@
 <div align="center">
 
-![OpenYida](https://img.alicdn.com/imgextra/i3/O1CN01SKWbWu1aPzGXh293W_!!6000000003323-2-tps-1672-941.png)
+![OpenYida](https://img.alicdn.com/imgextra/i2/O1CN01wTOPxK1nEA3rWDp6I_!!6000000005057-2-tps-1672-941.png)
 
 # OpenYida
 
@@ -387,7 +387,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida create-form create <appType> ... [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a form page |
+| `openyida create-form create <appType> "<formTitle>" <fieldsJsonFile> [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a form page |
 | `openyida create-form validate-fields <fieldsJsonOrFile> [--json]` | Validate form field JSON locally |
 | `openyida create-form update <appType> ... [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Update a form page |
 | `openyida create-form patch <appType> <formUuid> <patchJsonOrFile> [--open\|--no-open]` | Update a form page |
