@@ -16,7 +16,7 @@ OpenYida connects AI coding agents with Yida's low-code platform, so developers 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**Documentation:** [English](https://openyida.ai/docs/en) · [简体中文](https://openyida.ai/docs) · [繁體中文](https://openyida.ai/docs/zh-Hant/) · [日本語](https://openyida.ai/docs/ja/) · [한국어](https://openyida.ai/docs/ko/) · [Français](https://openyida.ai/docs/fr/) · [Deutsch](https://openyida.ai/docs/de/) · [Español](https://openyida.ai/docs/es/) · [Português](https://openyida.ai/docs/pt/) · [Tiếng Việt](https://openyida.ai/docs/vi/) · [हिन्दी](https://openyida.ai/docs/hi/) · [العربية](https://openyida.ai/docs/ar/)
+**Documentation:** [English](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [简体中文](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [繁體中文](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [日本語](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [한국어](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [Français](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [Deutsch](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [Español](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [Português](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [हिन्दी](https://xmtrf1.aliwork.com/o/openyida_heplcenter) · [العربية](https://xmtrf1.aliwork.com/o/openyida_heplcenter)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 
