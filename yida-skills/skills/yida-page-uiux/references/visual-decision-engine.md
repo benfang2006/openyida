@@ -8,6 +8,7 @@
 2. **字体不可用 Google Fonts**：禁 `fonts.googleapis.com`（大陆不可达）。放弃「Inter vs Plus Jakarta」这类字体选型，改用**系统中文字体栈** + 字重/字号对比/字间距/`tabular-nums` 造性格。仅允许 `g.alicdn.com` 上已验证的字体。
 3. **B 端为主**：自定义页多为看板/列表/工具/详情，不是营销落地页。装饰要克制、服务于信息，不堆砌。
 4. **纯方向**：本文档只帮你选方向，不产出 JSX。Code Canvas 落地时，具体 token 和组件实现到 `../../yida-canvas-custom-page/references/canvas-design-system.md` 取；普通自定义页面 JSX/Jsx 组件链路读 `../../yida-custom-page/references/design-system.md`。
+5. **默认 light，不默认暗黑**：工作台、门户、列表、详情、普通看板和数据大屏默认是浅底业务风；“高级 / 酷炫 / 大屏 / 驾驶舱”不等于暗色。只有用户明确说暗色、深色、暗黑、夜间、高对比、黑金或暗色科技风，才允许深色沉浸。
 
 ---
 

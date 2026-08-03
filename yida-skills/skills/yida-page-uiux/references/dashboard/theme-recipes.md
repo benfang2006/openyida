@@ -5,8 +5,8 @@
 - 主色来自 `--color-brand1-*`。
 - 图表色组来自 `--color-group`。
 - 成功/警告/错误保持语义色，不跟随品牌色漂移。
-- 普通 dashboard 和数据大屏默认都使用浅底业务风；只有用户明确说暗色、深色、暗黑、夜间、高对比或暗色科技风时，数据大屏才使用深色沉浸，且光效和主色仍从运行态主题或基础 token 派生。
-- 需要基础样式 token preset 时只使用 `blue`、`green`、`orange`，并写入页面级 `style#yida-global-theme` 或 `customThemeStyle.tokens`；不要把它们当成 `--theme` 参数。
+- 普通 dashboard 和数据大屏默认都使用浅底业务风；只有用户明确说暗色、深色、暗黑、夜间、高对比或暗色科技风时，数据大屏才使用深色沉浸，且光效和主色仍从运行态主题或应用主题 token 派生。
+- 新看板默认使用 `podBlue`、`podGreen`、`podOrange`，并写入页面级 `style#yida-global-theme` 或 `customThemeStyle.tokens`；它们也可同步为应用 `--theme`。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。
 
 ## 主题强度
 

@@ -83,7 +83,7 @@ openyida get-page-config <appType> <formUuid>
 openyida update-form-config <appType> <formUuid> false "<页面标题>"
 ```
 
-> 看板/驾驶舱新建页面优先使用 `openyida create-page <appType> "<页面名>" --mode dashboard`，会一步完成导航隐藏并输出无左侧工作台栏的沉浸式 URL。
+> 看板/驾驶舱新建页面默认导航可见；只有用户显式要求隐藏导航 / 无导航 / 全屏无框时，才使用 `openyida create-page <appType> "<页面名>" --mode dashboard --hide-nav` 一步完成导航隐藏并输出无左侧工作台栏的沉浸式 URL。
 > 若页面内使用 `yida-nav-shell` 自绘导航壳，本命令是发布后的必做配置；同时导航壳里的自定义页目标 URL 必须追加 `?isRenderNav=false`，否则切到目标页时会重新出现宜搭原导航。
 
 ## URL 格式

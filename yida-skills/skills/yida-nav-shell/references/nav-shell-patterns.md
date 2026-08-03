@@ -1,6 +1,6 @@
 # B 端导航壳形态目录
 
-当页面隐藏了应用导航（`isRenderNav=false`，见 [yida-page-uiux Step 0 导航形态判定](../../yida-page-uiux/workflow/step-0-nav-shape.md)），页面要**自带导航壳**接管应用级导航。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
+当页面被用户显式要求隐藏应用导航（`isRenderNav=false`，见 [yida-page-uiux Step 0 导航形态判定](../../yida-page-uiux/workflow/step-0-nav-shape.md)），页面要**自带导航壳**接管应用级导航。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
 
 > 这里给**方向 + 骨架 + 可直接改的代码示例**。默认先用 Code Canvas（React hooks + antd/自绘组件）；文中 `_customState`、`renderJsx`、`this.utils.isMobile()` 代码统一视为 **legacy/native 示例**，只用于维护普通自定义页面。
 
@@ -21,7 +21,7 @@
 - **不做营销脸**：没有巨 Logo Hero、没有渐变横幅。顶部条左侧放「应用名/模块名 + 面包屑」，右侧放「用户/操作」，克制。
 - **密度可偏高**：B 端导航允许信息密集，但要有主次；分组用小标题或分隔线，不要一长串平铺。
 - **主色策略**：导航隐藏时主色相可自立（见 yida-page-uiux Step 0）；仍要么走品牌 `var(--color-brand1-*)`、要么用自定主色一以贯之，语义色固定。
-- **先关原导航**：使用本导航壳时，发布目标页面必须配置 `isRenderNav=false`，不要让平台原导航和自绘导航同时出现。
+- **先关原导航**：只有用户显式要求隐藏平台导航时，发布目标页面才配置 `isRenderNav=false`；不要因为普通页面内 tab / 内容区导航默认关闭平台导航。
 - **URL 参数不丢失**：跨页导航项要保存 `params` 并统一构造 URL；自定义页目标至少带 `isRenderNav=false`，需要跨组织或深链时合并 `corpid`、`tab`、`view` 等白名单参数。
 
 ## 多视图切换机制（导航壳的核心）

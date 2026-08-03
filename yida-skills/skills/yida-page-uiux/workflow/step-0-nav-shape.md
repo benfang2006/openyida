@@ -2,12 +2,13 @@
 
 > 决定是否沿用平台应用导航。这是页面类型之上的**前置条件**，先于 Step 1。
 
-默认自定义页**保留平台应用导航**，不要在页面里再自建同级导航。只有用户明确要求隐藏平台导航或页面内自绘导航时，才进入导航隐藏分支。
+默认自定义页**保留平台应用导航**，不要在页面里再自建同级应用导航。只有用户明确要求隐藏平台导航、无导航或 `isRenderNav=false` 时，才进入导航隐藏分支；页面内 tab / 分段导航 / 自绘导航不自动等于隐藏平台导航。
 
 ## 怎么判定
 
 - 页面配置为隐藏导航：发布时用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"`（第 3 参 `isRenderNav=false`），或访问地址带 `?isRenderNav=false`。
-- 用户明确说「隐藏平台导航 / 页面内导航 / 自绘导航 / 自建侧边栏 / 独立导航壳 / 不要宜搭那圈框 / 全屏独立页 / 沉浸式投屏 / 分享页无导航」时，才判定为导航隐藏或页面内导航。
+- 用户明确说「隐藏平台导航 / 不要宜搭导航 / 无导航 / 不要宜搭那圈框 / 全屏无框 / 全屏独立页 / 沉浸式投屏 / 分享页无导航 / `isRenderNav=false`」时，才判定为导航隐藏。
+- 用户只说「页面内导航 / 自绘导航 / 自建侧边栏 / 独立导航壳」时，可以生成内容区导航或页面壳，但平台导航仍默认可见；只有同时明确隐藏平台导航，才同步设置 `isRenderNav=false`。
 - 仅说「工作台 / 门户 / 看板 / 大屏 / 首页」不等于要自建页面内导航；不确定时按「导航可见」走，并在决策块里标注假设。
 - 用户说“加快捷入口/常用入口”时，先判断目标类型：快捷入口目标是同应用内页面时，优先在平台应用导航内切换，不要为了页面跳转在自定义页内容区再做一组同级入口卡。
 
@@ -25,11 +26,11 @@
 - **先确认必要性**：只有跨模块、多视图、隐藏平台导航后的独立入口需要页面内导航；普通工作台、门户、看板默认不自建。
 - **壳型选择**：顶部标签栏 / 左侧边栏 / 顶部条 + 面包屑——按信息广度选，别只堆一个孤零零的返回按钮。
 - **多视图切换**：默认 Canvas 用 `useState`，需要可分享/可后退时用 URL hash + `useEffect` cleanup；普通页 `_customState.activeView` 仅作 legacy fallback。
-- **跨页跳转**：需要跳到别的自定义页/表单时，用 [field-and-url-reference.md](../../../references/field-and-url-reference.md) 的地址模板拼完整 URL，并把导航项参数合并进去；跳目标自定义页必须带 `?isRenderNav=false` 保持沉浸，不要用会丢参数的裸 `router.push(formUuid)`。
-- **配置闭环**：只要页面内自绘应用级导航，发布后必须执行 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏宜搭原导航，并验证最终 URL 仍带 `isRenderNav=false`。
+- **跨页跳转**：需要跳到别的自定义页/表单时，用 [field-and-url-reference.md](../../../references/field-and-url-reference.md) 的地址模板拼完整 URL，并把导航项参数合并进去；只有显式隐藏导航的沉浸页，目标自定义页才带 `?isRenderNav=false`，不要用会丢参数的裸 `router.push(formUuid)`。
+- **配置闭环**：只有显式隐藏平台导航时，发布后才执行 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 并验证最终 URL 仍带 `isRenderNav=false`。
 - **移动端**：侧边栏在窄屏要能收起为抽屉/底部标签；Canvas 默认走 CSS media query/`matchMedia` hook，legacy 普通页才用 `this.utils.isMobile()`。
 
-**导航壳形态选型**：侧边栏 / 顶部 / 顶部+侧边混合 / 浮动胶囊 / 标签页——按顶级模块数量和是否常驻选。只有显式需要页面内导航时，才调用 `use_skill("yida-nav-shell", "设计页面内自绘导航壳")`。
+**导航壳形态选型**：侧边栏 / 顶部 / 顶部+侧边混合 / 浮动胶囊 / 标签页——按顶级模块数量和是否常驻选。只有显式需要页面内导航时，才调用 `use_skill("yida-nav-shell", "设计页面内自绘导航壳")`；是否隐藏平台导航仍必须由用户显式表达。
 
 > 导航壳的**视觉方向**仍走 Step 1–6；形态与实现调用 `yida-nav-shell`，默认交 `yida-canvas-custom-page`。仅实例桥依赖或维护旧 `.oyd.jsx` 时交 `yida-custom-page`。
 

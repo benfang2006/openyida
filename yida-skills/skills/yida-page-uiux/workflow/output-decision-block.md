@@ -8,6 +8,9 @@
 - **导航形态**：<导航可见（默认，跟平台应用导航融合）/ 导航隐藏 isRenderNav=false（仅显式要求；如需页面内导航再说明壳型）>
 - **页面类型**：<workbench / dashboard / screen / list / detail / landing>（判定依据一句话）
 - **researchLevel**：<none / light / enhanced / deep；官网默认 light，业务页默认 none>
+- **明暗模式**：<light（默认，themeProfile.navTheme=light）/ dark（仅用户显式暗色、夜间、高对比、黑金、暗色科技风）>
+- **主题策略**：<themeProfile.name=podBlue/podGreen/podOrange（默认三选一）/ yida-app-theme（仅显式应用主题色）/ 用户指定品牌色；themeScope=page 默认；themeColorSource=应用主题/运行态应用主题/用户指定色；themeProfile.colorMode 可为宜搭配色模式如 gradient，不表示暗黑>
+- **主题色说明**：<采用哪个主色或主题色来源 + 为什么适合当前业务；默认不要采用暗黑、黑色、近黑背景或深色科技风>
 - **appBlueprint**：<多页面应用写角色、导航分组、入口页、页面组合；来自应用体验蓝图时只摘当前页相关信息；单页写当前页作为 entry>
 - **archetype**：<dashboard: overview/analysis/monitor/report/compare/operation；其他场景写 profile/table-management/operation/brand-home 等>
 - **interactionProfile**：<primaryAction、detailMode(drawer/page/iframe/none)、bulkActions、empty/loading/error 状态>
@@ -51,6 +54,14 @@
   "scene": "dashboard",
   "researchLevel": "none",
   "archetype": "overview",
+  "themeProfile": {
+    "name": "podBlue",
+    "appThemeKey": "podBlue",
+    "themeColorSource": "application-theme",
+    "navTheme": "light",
+    "colorMode": "gradient"
+  },
+  "themeScope": "page",
   "appBlueprint": {
     "appName": "应用名称",
     "entry": "首页",
