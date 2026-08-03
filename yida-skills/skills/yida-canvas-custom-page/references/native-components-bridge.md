@@ -32,6 +32,8 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 
 业务代码统一走桥接函数读取运行态组件，便于隔离不同运行态差异。
 
+桥接函数只返回可被 React 渲染的组件：函数组件、class 组件、带 `render()` 的对象，或运行态包装对象里的 `component` / `Component` / `default` 字段。`window.DeepYida` 数组里只带 `displayName/name` 的描述对象不能直接作为 JSX 组件渲染，必须判为不可用并走 fallback；否则生产环境会出现 `Minified React error #130`。
+
 ## 门户组件接入规则
 
 ### TopBanner / QuickEntry

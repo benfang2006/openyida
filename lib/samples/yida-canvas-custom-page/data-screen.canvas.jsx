@@ -313,10 +313,21 @@ function getDeepYidaBundle() {
 
 function findFromBundle(bundle, name) {
   if (!bundle) return null;
-  if (bundle[name]) return bundle[name];
+  if (bundle[name]) return normalizeYidaComponentCandidate(bundle[name]);
   if (Array.isArray(bundle)) {
-    return bundle.find((item) => item && (item.displayName === name || item.name === name)) || null;
+    const match = bundle.find((item) => item && (item.displayName === name || item.name === name));
+    return normalizeYidaComponentCandidate(match);
   }
+  return null;
+}
+
+function normalizeYidaComponentCandidate(candidate) {
+  if (!candidate) return null;
+  if (typeof candidate === 'function') return candidate;
+  if (candidate.Component) return normalizeYidaComponentCandidate(candidate.Component);
+  if (candidate.component) return normalizeYidaComponentCandidate(candidate.component);
+  if (candidate.default) return normalizeYidaComponentCandidate(candidate.default);
+  if (candidate.render && typeof candidate.render === 'function') return candidate;
   return null;
 }
 

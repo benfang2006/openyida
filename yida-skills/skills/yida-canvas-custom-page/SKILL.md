@@ -108,8 +108,9 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 10. **真实交付使用真实数据源**：`openyida sample` 原样发布可以保留 sample/seed 数据，并在页面上标注为 sample/seed。完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；真实数据暂未接入时展示空态、表单入口、刷新/登记按钮。
 11. **UI 决策块必须进入 page spec**：完整应用 `fast_build` 和真实交付页在生成页面前，先消费 `yida-page-uiux` 的视觉方向决策块，把页面类型、推荐模板、`visualProfile`、素材/图标策略、去 sample 化检查写进 `page-spec.json` 或手写实现备注。缺少决策块时，先用当前业务语义补一个紧凑决策；模板默认 tone、section 顺序、sample 品牌名和 sample 指标必须被当前业务语义替换。
 12. **页面生成二选一**：模板路径先写 `page-spec.json`，执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json` 判断 `domainFidelity` / dataBinding，并对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
-13. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、模板 spec 会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。`generate-page --compile`、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。
-14. **同应用页面入口归入导航**：快捷入口目标如果是同应用内页面，优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换；自定义页内容区的 `quickEntries` 只放当前页动作、表单新建/查看、外部链接、跨应用资源，或显式隐藏平台导航后的页面内导航壳入口。
+13. **sample 只学 UI，不继承业务内容**：命中 `official-homepage`、`product-homepage`、`workbench-home`、`business-list` 等 sample 时，只借鉴布局节奏、组件密度、层级和交互模式；品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明必须来自当前业务 spec。`generate-page` 对 `domain-ready` 产物会扫描源码级 sample 残留；若 CLI 报“仍残留 sample 内容”，必须补齐/改写 spec 或 patch 源码后重新生成/编译，不能发布。
+14. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、模板 spec 会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。`generate-page --compile`、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。
+15. **同应用页面入口归入导航**：快捷入口目标如果是同应用内页面，优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换；自定义页内容区的 `quickEntries` 只放当前页动作、表单新建/查看、外部链接、跨应用资源，或显式隐藏平台导航后的页面内导航壳入口。
 
 ## 数据真实性边界
 

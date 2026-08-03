@@ -44,6 +44,14 @@ function findEmployeeField() {
     if (source && source.EmployeeField) {
       return source.EmployeeField;
     }
+    if (Array.isArray(source)) {
+      var match = source.find(function(item) {
+        return item && (item.displayName === 'EmployeeField' || item.name === 'EmployeeField');
+      });
+      if (match) {
+        return match.component || match.Component || match.default || null;
+      }
+    }
   }
   return null;
 }

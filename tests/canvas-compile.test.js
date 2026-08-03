@@ -230,6 +230,54 @@ function renderCanvasSample(filename, transformSource) {
   return { source, runtimeCode, rendered, visibleText: collectVisibleStrings(rendered).join('\n') };
 }
 
+function renderCanvasSampleWithWindow(filename, extraWindow) {
+  const samplePath = path.join(
+    __dirname,
+    '..',
+    'lib',
+    'samples',
+    'yida-canvas-custom-page',
+    filename
+  );
+  const source = fs.readFileSync(samplePath, 'utf8');
+  const { runtimeCode } = compileCanvasLocal(source);
+  const stubWindow = Object.assign(stubCanvasSampleWindow(), extraWindow || {});
+  stubWindow.React.createElement = (type, props, ...children) => ({
+    type,
+    props: props || {},
+    children,
+  });
+  const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
+  const expanded = expandFunctionComponents(rendered);
+  return { source, runtimeCode, rendered: expanded, visibleText: collectVisibleStrings(expanded).join('\n') };
+}
+
+function expandFunctionComponents(node, depth = 0) {
+  if (depth > 20 || node === null || node === undefined || typeof node === 'boolean') {
+    return node;
+  }
+  if (typeof node === 'string' || typeof node === 'number') {
+    return node;
+  }
+  if (Array.isArray(node)) {
+    return node.map((item) => expandFunctionComponents(item, depth + 1));
+  }
+  if (typeof node === 'object') {
+    if (typeof node.type === 'function') {
+      const props = Object.assign({}, node.props || {}, { children: node.children });
+      if (node.type.prototype && typeof node.type.prototype.render === 'function') {
+        const instance = new node.type(props);
+        return expandFunctionComponents(instance.render(), depth + 1);
+      }
+      return expandFunctionComponents(node.type(props), depth + 1);
+    }
+    return Object.assign({}, node, {
+      children: expandFunctionComponents(node.children || [], depth + 1),
+    });
+  }
+  return node;
+}
+
 function renderCanvasSampleWithDataState(filename, transformSource, dataState) {
   const samplePath = path.join(
     __dirname,
@@ -750,6 +798,36 @@ describe('compileCanvasLocal', () => {
     expect(runtimeCode).not.toMatch(/\bexport\s/);
     expect(runtimeCode).not.toMatch(/@ali\/deep/);
     expect(runtimeCode).not.toMatch(/@ali\/vc-deep-yida/);
+  });
+
+  test('native component samples unwrap DeepYida descriptor objects before rendering', () => {
+    function EmployeeField() { return 'employee-node'; }
+    function QuickAccessCard() { return 'quick-node'; }
+
+    const portal = renderCanvasSampleWithWindow('portal-native-components.canvas.jsx', {
+      DeepYida: [
+        { displayName: 'EmployeeField', component: EmployeeField },
+        { displayName: 'QuickAccessCard', default: QuickAccessCard },
+        { displayName: 'DepartmentSelectField' },
+      ],
+    });
+
+    expect(portal.visibleText).toContain('employee-node');
+    expect(portal.visibleText).toContain('quick-node');
+    expect(portal.visibleText).not.toContain('[object Object]');
+    expect(portal.visibleText).toContain('DepartmentSelectField');
+
+    const smoke = renderCanvasSampleWithWindow('native-components-smoke.canvas.jsx', {
+      DeepYida: [
+        { displayName: 'EmployeeField', component: EmployeeField },
+        { displayName: 'DepartmentSelectField' },
+      ],
+    });
+
+    expect(smoke.visibleText).toContain('1');
+    expect(smoke.visibleText).toContain('window.DeepYida');
+    expect(smoke.visibleText).toContain('EmployeeField, DepartmentSelectField');
+    expect(smoke.visibleText).not.toContain('[object Object]');
   });
 
   test('keeps the official homepage sample self-contained and photographic', () => {

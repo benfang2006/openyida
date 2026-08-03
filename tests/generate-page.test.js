@@ -5,7 +5,7 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { escapeJsStringValue } = require('../lib/app/page-ir');
-const { getCanvasDistPath, inferTemplateName } = require('../lib/app/generate-page');
+const { getCanvasDistPath, inferTemplateName, findSampleResidues } = require('../lib/app/generate-page');
 const { APP_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
 
 const ROOT = path.join(__dirname, '..');
@@ -85,6 +85,38 @@ describe('generate-page command', () => {
     expect(inferTemplateName({ template: null }, {
       requirement: '补一个数据管理多维表页面，包含字段管理、分组、筛选和表格视图。',
     })).toBe('data-management');
+  });
+
+  test('detects source-level sample residue across curated templates', () => {
+    expect(findSampleResidues(
+      '<main>Visit Luma Roast with Seasonal roast cards</main>',
+      'official-homepage',
+      { brandName: '星航手机', requirement: '手机品牌官网' }
+    )).toEqual(expect.arrayContaining(['Luma Roast', 'Luma', 'Seasonal roast', 'Visit Luma']));
+
+    expect(findSampleResidues(
+      '<section>线索表单、产品演示和客户回访已接入同一条增长链路。</section>',
+      'product-homepage',
+      { brandName: '智慧硬件官网', requirement: '新品官网首页' }
+    )).toEqual(expect.arrayContaining(['线索表单、产品演示和客户回访']));
+
+    expect(findSampleResidues(
+      '<ul><li>清理高优先级待办</li><li>核对客户回访结果</li></ul>',
+      'workbench-home',
+      { brandName: '研发交付工作台', requirement: '研发排期首页' }
+    )).toEqual(expect.arrayContaining(['清理高优先级待办', '核对客户回访结果']));
+
+    expect(findSampleResidues(
+      '<div>SO-240716-001</div><div>PRJ-240716-006</div>',
+      'business-list',
+      { brandName: '售后配件台账', requirement: '售后配件处理列表' }
+    )).toEqual(expect.arrayContaining(['SO-240716', 'PRJ-240716']));
+
+    expect(findSampleResidues(
+      '<main>Nova One 旗舰手机官网</main>',
+      'official-homepage',
+      { brandName: 'Nova One', requirement: '旗舰手机品牌官网' }
+    )).toEqual([]);
   });
 
   test('writes canvas dist next to arbitrary output folders outside pages/src', () => {
@@ -361,6 +393,93 @@ describe('generate-page command', () => {
     expect(manifest.template).toBe('official-homepage');
     expect(manifest.scene).toBe('landing');
     expect(manifest.visualProfile.tone).toBe('editorial-trust');
+  });
+
+  test('generates a phone brand official homepage without copying the reference sample content', () => {
+    const spec = {
+      template: 'official-homepage',
+      output: 'pages/src/nova-phone-home.canvas.jsx',
+      requirement: '创建一个手机品牌官网首页，突出旗舰手机、影像能力、AI 体验和预约购买入口。',
+      brandName: 'Nova One',
+      brandInitials: 'NO',
+      tagline: '旗舰影像手机与端侧 AI 体验',
+      heroText: 'Nova One 面向年轻创作者和移动办公人群，提供 1 英寸主摄、端侧 AI 助手、全天续航和高亮护眼屏，让拍摄、剪辑和协作都在手机上顺畅完成。',
+      primaryCta: '预约体验',
+      secondaryCta: '查看参数',
+      featuresTitle: '旗舰能力',
+      roadmapTitle: '从了解产品到预约体验',
+      ctaTitle: '现在预约 Nova One 旗舰体验',
+      ctaText: '选择线下体验、在线咨询或新品到货提醒，把官网访问转化为真实购买线索。',
+      visualProfile: {
+        name: 'phone-brand-official',
+        tone: 'premium-tech',
+        motif: ['device-hero', 'camera-proof', 'ai-experience'],
+      },
+      themeProfile: {
+        name: 'nova-phone',
+        themeColor: '#2563EB',
+        themeColorDeep: '#0F172A',
+        themeColorSoft: '#EAF2FF',
+        palette: ['#2563EB', '#06B6D4', '#F59E0B', '#10B981', '#E11D48'],
+      },
+      interactionProfile: {
+        primaryAction: '预约体验',
+        secondaryAction: '查看参数',
+      },
+      assets: {
+        heroImage: 'https://images.example.com/nova-one-hero.jpg',
+        heroImageAlt: 'Nova One 旗舰手机悬浮展示与蓝色科技光影',
+        storyImage: 'https://images.example.com/nova-one-camera-lab.jpg',
+        storyImageAlt: 'Nova One 影像实验室调校手机镜头',
+        productImages: [
+          { url: 'https://images.example.com/nova-phone-front.jpg', alt: 'Nova One 正面全面屏', position: 'center' },
+          { url: 'https://images.example.com/nova-phone-camera.jpg', alt: 'Nova One 后置影像模组', position: 'center' },
+          { url: 'https://images.example.com/nova-phone-colors.jpg', alt: 'Nova One 多色机身', position: 'center' },
+        ],
+      },
+      features: [
+        { title: '1 英寸旗舰主摄', text: '高动态范围、人像夜景和视频防抖面向移动创作者优化。', meta: 'Camera system' },
+        { title: '端侧 AI 助手', text: '会议摘要、图片生成、跨应用检索和翻译都可在本机快速完成。', meta: 'On-device AI' },
+        { title: '全天续航与快充', text: '高密度电池配合智能功耗调度，兼顾轻薄手感和长时间使用。', meta: 'Battery' },
+      ],
+      metrics: [
+        { label: '主摄传感器', value: '1 inch' },
+        { label: '屏幕峰值亮度', value: '3000nit' },
+        { label: '快充功率', value: '100W' },
+      ],
+      roadmap: [
+        { stage: '01', title: '查看旗舰亮点', text: '快速理解影像、AI、屏幕和续航的核心差异。' },
+        { stage: '02', title: '对比机型参数', text: '根据容量、颜色和套餐选择适合版本。' },
+        { stage: '03', title: '预约线下体验', text: '提交城市、门店和时间偏好，由顾问确认体验安排。' },
+        { stage: '04', title: '接收购买提醒', text: '新品开售、到货和权益变化通过表单线索触达。' },
+      ],
+      compile: true,
+    };
+    const specPath = path.join(tmpDir, 'nova-phone-home.json');
+    fs.writeFileSync(specPath, JSON.stringify(spec, null, 2), 'utf8');
+
+    execFileSync(process.execPath, [BIN, 'generate-page', '--spec', specPath], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const sourcePath = path.join(tmpDir, 'pages', 'src', 'nova-phone-home.canvas.jsx');
+    const compiledPath = path.join(tmpDir, 'pages', 'dist', 'nova-phone-home.canvas.js');
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'nova-phone-home.canvas.openyida-page.json');
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(fs.existsSync(compiledPath)).toBe(true);
+    expect(source).toContain('Nova One');
+    expect(source).toContain('1 英寸旗舰主摄');
+    expect(source).toContain('端侧 AI 助手');
+    expect(source).toContain('预约体验');
+    expect(findSampleResidues(source, 'official-homepage', spec)).toEqual([]);
+    expect(manifest.domainFidelity.status).toBe('domain-ready');
+    expect(manifest.assets.storyImage).toBe('https://images.example.com/nova-one-camera-lab.jpg');
+    expect(manifest.blocks[1].items[1].title).toBe('端侧 AI 助手');
   });
 
   test('official homepage without hero material is gated as non-final draft', () => {
