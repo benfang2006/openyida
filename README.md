@@ -16,7 +16,7 @@ OpenYida connects AI coding agents with Yida's low-code platform, so developers 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**Documentation:** [English](https://openyida.ai/docs/en) · [简体中文](https://openyida.ai/docs) · [繁體中文](https://openyida.ai/docs/zh-Hant/) · [日本語](https://openyida.ai/docs/ja/) · [한국어](https://openyida.ai/docs/ko/) · [Français](https://openyida.ai/docs/fr/) · [Deutsch](https://openyida.ai/docs/de/) · [Español](https://openyida.ai/docs/es/) · [Português](https://openyida.ai/docs/pt/) · [Tiếng Việt](https://openyida.ai/docs/vi/) · [हिन्दी](https://openyida.ai/docs/hi/) · [العربية](https://openyida.ai/docs/ar/)
+**Documentation:** [English](https://xmtrf1.aliwork.com/o/openyida/help) · [简体中文](https://xmtrf1.aliwork.com/o/openyida/help) · [繁體中文](https://xmtrf1.aliwork.com/o/openyida/help) · [日本語](https://xmtrf1.aliwork.com/o/openyida/help) · [한국어](https://xmtrf1.aliwork.com/o/openyida/help) · [Français](https://xmtrf1.aliwork.com/o/openyida/help) · [Deutsch](https://xmtrf1.aliwork.com/o/openyida/help) · [Español](https://xmtrf1.aliwork.com/o/openyida/help) · [Português](https://xmtrf1.aliwork.com/o/openyida/help) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida/help) · [हिन्दी](https://xmtrf1.aliwork.com/o/openyida/help) · [العربية](https://xmtrf1.aliwork.com/o/openyida/help)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 
@@ -96,7 +96,7 @@ Build an IPD workflow for chip production, including approval nodes and dashboar
 Generate a public landing page and publish it to my Yida app.
 ```
 
-The agent can then call OpenYida commands to create the application, generate source files, publish pages, and return the final Yida URLs. In Codex, QoderWork, Qoder, and Wukong environments, successful creation and publish commands also include a browser handoff so the agent can open the resulting Yida page in the in-app browser. Use `--open` to force this handoff or `--no-open` to suppress it.
+The agent can then call OpenYida commands to create the application, generate source files, publish pages, and return the final Yida URLs. In Codex, QwenWork, QoderWork, Qoder, and Wukong environments, successful creation and publish commands also include a browser handoff so the agent can open the resulting Yida page in the in-app browser. Use `--open` to force this handoff or `--no-open` to suppress it.
 
 ## Wukong Installation
 
@@ -123,6 +123,7 @@ export PATH="$HOME/.real/.bin/node/bin:$PATH"
 | [OpenCode](https://opencode.ai) | Full support |
 | [Cursor](https://cursor.com/) | Full support |
 | [Visual Studio Code](https://code.visualstudio.com/) | Full support |
+| QwenWork（千问办公） | Full support |
 | [QoderWork](https://qoder.com) | Full support |
 | [Qoder](https://qoder.com) | Full support |
 | [Wukong](https://dingtalk.com/wukong) | Full support |
@@ -178,7 +179,7 @@ openyida get-schema APP_XXX FORM_XXX --compact --resolve-fields "Customer Name,S
 openyida get-schema APP_XXX --all --output-dir .cache/schemas
 ```
 
-Form definitions support 19 business field types plus verified `@ali/vc-deep-yida` presentation/layout components. Prefer `Divider` for section titles and `ColumnContainer` (mapped to `ColumnsLayout` + `Column`) for multi-column layout; use `GroupContainer` / `PageSection` only when an actual grouping container is needed.
+Form definitions support 19 business field types plus verified presentation/layout components. Prefer `Divider` for section titles and `ColumnContainer` (mapped to `ColumnsLayout` + `Column`) for multi-column layout; use `GroupContainer` / `PageSection` only when an actual grouping container is needed.
 
 ### Custom Page Development
 
@@ -197,7 +198,7 @@ openyida publish pages/src/home.canvas.jsx APP_XXX FORM_XXX
 ```
 
 `generate-page` turns a structured spec into a Page IR, renders a curated template, writes a `.openyida-page.json` manifest, and optionally compiles the result. Code Canvas is the default output (`.canvas.jsx`); pass `--native` or output `.oyd.jsx` only when the page must use the 普通自定义页面 JSX/Jsx 组件链路. Pass `--scene workbench|dashboard|list|detail|landing|screen` and `--theme-profile <name-or-json>` / `--visual-profile <name-or-json>` to preserve the visual direction decision in both source comments and the manifest. The user-facing default theme profile is `yida-app-theme`, which follows Yida application theme styling, compact business density, and layered 12/8/6/4 radii. `--theme-scope page` only injects theme variables into the generated page root; `--theme-scope app` additionally calls `window.__YIDA__.updateShellConfig({ themeConfig })` so the application shell can adopt the same theme. Landing pages should declare `spec.assets.heroImage` / `productImages`; use `--resolve-assets` to verify public image URLs and `--upload-assets` to mirror local or verified external images to CDN when CDN is configured. Use `--offline-assets` only for draft/offline gating. The manifest makes follow-up AI edits safer because agents can update known blocks and visual constraints instead of rewriting a large JSX file by hand.
-Built-in templates currently include `official-homepage` for brand/law-firm/product official sites, `data-screen` for immersive monitoring screens, `dashboard-overview` for business dashboards, `workbench-home` for task/entry workbenches, `business-list` for list management pages, `detail-profile` for single-object detail pages, `split-pane-detail` for left-list/right-detail processing consoles, `portal-shell-home` for in-page portal shells, `native-components-smoke` for runtime probing existing Yida host components without changing `vc-deep-yida`, `portal-native-components` for runtime-bridged portal, member, department, and upload components, `product-homepage` for legacy workbench-style pages, and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
+Built-in templates currently include `official-homepage` for brand/law-firm/product official sites, `data-screen` for immersive monitoring screens, `dashboard-overview` for business dashboards, `workbench-home` for task/entry workbenches, `business-list` for list management pages, `detail-profile` for single-object detail pages, `split-pane-detail` for left-list/right-detail processing consoles, `portal-shell-home` for in-page portal shells, `native-components-smoke` for runtime probing existing Yida host components through `window.Deep` / `window.DeepYida`, `portal-native-components` for runtime-bridged portal, member, department, and upload components, `product-homepage` for legacy workbench-style pages, and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
 
 For member, department, attachment, and image upload components, choose the page chain first. Code Canvas pages should start with `native-components-smoke` or `portal-native-components` and follow `yida-canvas-custom-page/references/native-components-bridge.md` for feature detection, fallback, and value normalization. 普通自定义页面 JSX/Jsx pages should use `.oyd.jsx`, read `yida-custom-page/references/component-jsx-guide.md`, and read `attachment-upload-guide.md` when upload fields are involved.
 
@@ -376,7 +377,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | Query enterprise efficiency overview and detail reports |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a Yida app |
 | `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` | Update app info |
-| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
+| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
 | `openyida app-permission <get\|set\|add\|remove\|search-user> ...` | Manage app primary, data, and developer admins |
 | `openyida i18n <overview\|config\|languages\|list\|upsert\|delete\|translate\|translate-all\|upgrade> <appType> ...` | Manage app multilingual copy and language config |
 | `openyida export <appType> [output]` | Export app (generate migration package) |
@@ -399,12 +400,12 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> <appType> ...` | Manage aggregate tables (virtualView) |
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | Get one form Schema or all form Schemas |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | Export app entity relationship diagram |
-| `openyida create-page <appType> "<name>" [--mode dashboard] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
+| `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
 | `openyida generate-page <template>` | Generate page from curated template |
 | `openyida build-page <sourceFile> [--output file\|--write]` | Build Yida-compatible page source |
 | `openyida check-page <src> [--compat]` | Check custom page standards |
 | `openyida compile <src>` | Compile custom page locally |
-| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--open\|--no-open]` | Compile and publish custom page |
+| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | Compile and publish custom page |
 | `openyida update-form-config <appType> ...` | Update form configuration |
 | `openyida get-form-config <appType> <formUuid> [--json]` | Query form configuration |
 
@@ -547,6 +548,8 @@ The `yida-skills/` directory is the source skill library used by OpenYida during
 When OpenYida is used inside a supported AI coding environment, these skills help the agent choose the right command sequence and file conventions.
 
 For Wukong manual import, upload the generated `openyida-skills.zip`. The package follows Wukong's custom skill rules: folder name and `frontmatter.name` are both `openyida`, root frontmatter only contains `name` and `description`, and long references live under `references/`.
+
+For QwenWork, use the same user-level global skills layout as QoderWork: `~/.qwenworkcn/skills/yida-skills/`. Skip QwenWork setup when `~/.qwenworkcn` is not present.
 
 For Codex, `npm install -g openyida` additionally creates a local plugin marketplace under `~/.openyida/codex-plugin` and enables `openyida@openyida` in `~/.codex/config.toml` when Codex is detected. This makes OpenYida show up in Codex's `@` plugin menu as **宜搭** after Codex reloads.
 

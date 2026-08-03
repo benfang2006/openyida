@@ -11,7 +11,7 @@ const {
 } = require('../lib/app/canvas-compile');
 
 /**
- * 模拟 @ali/vc-deep-yida 的 YidaCodeCanvas 运行时装配（factory.tsx）：
+ * 模拟 YidaCodeCanvas 运行时装配：
  * 把 runtimeCode 包进 `new Function`，注入 window 桩，取回 YidaComp。
  */
 function assembleRuntime(runtimeCode, stubWindow) {
@@ -228,6 +228,54 @@ function renderCanvasSample(filename, transformSource) {
   const stubWindow = stubCanvasSampleWindow();
   const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
   return { source, runtimeCode, rendered, visibleText: collectVisibleStrings(rendered).join('\n') };
+}
+
+function renderCanvasSampleWithWindow(filename, extraWindow) {
+  const samplePath = path.join(
+    __dirname,
+    '..',
+    'lib',
+    'samples',
+    'yida-canvas-custom-page',
+    filename
+  );
+  const source = fs.readFileSync(samplePath, 'utf8');
+  const { runtimeCode } = compileCanvasLocal(source);
+  const stubWindow = Object.assign(stubCanvasSampleWindow(), extraWindow || {});
+  stubWindow.React.createElement = (type, props, ...children) => ({
+    type,
+    props: props || {},
+    children,
+  });
+  const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
+  const expanded = expandFunctionComponents(rendered);
+  return { source, runtimeCode, rendered: expanded, visibleText: collectVisibleStrings(expanded).join('\n') };
+}
+
+function expandFunctionComponents(node, depth = 0) {
+  if (depth > 20 || node === null || node === undefined || typeof node === 'boolean') {
+    return node;
+  }
+  if (typeof node === 'string' || typeof node === 'number') {
+    return node;
+  }
+  if (Array.isArray(node)) {
+    return node.map((item) => expandFunctionComponents(item, depth + 1));
+  }
+  if (typeof node === 'object') {
+    if (typeof node.type === 'function') {
+      const props = Object.assign({}, node.props || {}, { children: node.children });
+      if (node.type.prototype && typeof node.type.prototype.render === 'function') {
+        const instance = new node.type(props);
+        return expandFunctionComponents(instance.render(), depth + 1);
+      }
+      return expandFunctionComponents(node.type(props), depth + 1);
+    }
+    return Object.assign({}, node, {
+      children: expandFunctionComponents(node.children || [], depth + 1),
+    });
+  }
+  return node;
 }
 
 function renderCanvasSampleWithDataState(filename, transformSource, dataState) {
@@ -580,7 +628,7 @@ describe('compileCanvasLocal', () => {
     expect(mods).toEqual(expect.arrayContaining(['antd', 'react']));
     expect(mods).not.toContain('./styles.css');
 
-    // 运行时契约：装配后能拿到组件并渲染
+    // 运行时装配后能拿到组件并渲染
     const win = stubReactWindow({
       antd: { Button: function Button() {}, Card: function Card() {} },
     });
@@ -752,6 +800,36 @@ describe('compileCanvasLocal', () => {
     expect(runtimeCode).not.toMatch(/@ali\/vc-deep-yida/);
   });
 
+  test('native component samples unwrap DeepYida descriptor objects before rendering', () => {
+    function EmployeeField() { return 'employee-node'; }
+    function QuickAccessCard() { return 'quick-node'; }
+
+    const portal = renderCanvasSampleWithWindow('portal-native-components.canvas.jsx', {
+      DeepYida: [
+        { displayName: 'EmployeeField', component: EmployeeField },
+        { displayName: 'QuickAccessCard', default: QuickAccessCard },
+        { displayName: 'DepartmentSelectField' },
+      ],
+    });
+
+    expect(portal.visibleText).toContain('employee-node');
+    expect(portal.visibleText).toContain('quick-node');
+    expect(portal.visibleText).not.toContain('[object Object]');
+    expect(portal.visibleText).toContain('DepartmentSelectField');
+
+    const smoke = renderCanvasSampleWithWindow('native-components-smoke.canvas.jsx', {
+      DeepYida: [
+        { displayName: 'EmployeeField', component: EmployeeField },
+        { displayName: 'DepartmentSelectField' },
+      ],
+    });
+
+    expect(smoke.visibleText).toContain('1');
+    expect(smoke.visibleText).toContain('window.DeepYida');
+    expect(smoke.visibleText).toContain('EmployeeField, DepartmentSelectField');
+    expect(smoke.visibleText).not.toContain('[object Object]');
+  });
+
   test('keeps the official homepage sample self-contained and photographic', () => {
     const samplePath = path.join(
       __dirname,
@@ -774,6 +852,35 @@ describe('compileCanvasLocal', () => {
     expect(JSON.parse(importedModules)).toEqual(['antd', 'react']);
     expect(runtimeCode).not.toMatch(/window\.ahooks/);
     expectCanvasEntry(runtimeCode);
+  });
+
+  test('form dataBinding Canvas templates carry CSRF in query and headers', () => {
+    const filenames = [
+      'business-list.canvas.jsx',
+      'dashboard-overview.canvas.jsx',
+      'data-management.canvas.jsx',
+      'split-pane-detail.canvas.jsx',
+    ];
+
+    filenames.forEach((filename) => {
+      const samplePath = path.join(
+        __dirname,
+        '..',
+        'lib',
+        'samples',
+        'yida-canvas-custom-page',
+        filename
+      );
+      const source = fs.readFileSync(samplePath, 'utf8');
+
+      expect(source).toContain('window.pageConfig');
+      expect(source).toContain("getCookieValue('tianshu_csrf_token')");
+      expect(source).toContain("params.set('_csrf_token', csrfToken)");
+      expect(source).toContain('headers.global_csrf_token = csrfToken');
+      expect(source).toContain("headers['x-csrf-token'] = csrfToken");
+      expect(source).toContain("credentials: 'include'");
+      expect(source).toContain('TIANSHU_000030');
+    });
   });
 
   test('business-list raw sample renders marked seed rows', () => {

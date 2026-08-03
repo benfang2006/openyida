@@ -49,7 +49,7 @@
 | `lib/app/*`、`lib/basic-info/*`、`lib/corp-*/*`、`lib/agent-center/*`、`lib/i18n-management/*`、`lib/formula/*` | 继续收口高频业务模块的 `process.exit`，改为抛 `CliError`/普通错误 |
 | `lib/core/i18n.js`、`locales-extra/core/` | 核心包只保留 `zh` / `en`，其他 CLI UI 语言包改为按需加载 |
 | `lib/core/locales/en.js`、`locales-extra/core/*.js` | 补齐非中英可选语言包结构缺失；非中英缺失内容先以英文兜底，`zh-HK` 以中文兜底 |
-| `yida-skills/SKILL.md`、`yida-skills/skills-index.json` | 增加机器路由提示、负向信号、命令关联和完成标准，降低技能误路由 |
+| `yida-skills/SKILL.md`、`yida-skills/skills-index.json` | 增加自动匹配提示、负向信号、命令关联和完成标准，降低技能误选概率 |
 | `yida-skills/skills/yida-report/SKILL.md`、`yida-skills/skills/yida-report/references/schema-builder-details.md` | 拆分长技能文档，主文档保留路由和必要步骤，低频细节迁入参考文档 |
 | `scripts/eval/parallel.js`、`tests/utils.test.js`、`tests/token-auth.test.js` | 修复 Jest open-handle：统一 child process timeout 清理，并等待测试 HTTP server 关闭 |
 | `tests/package-smoke.test.js` | 校验 npm 包只包含核心语言包，并放宽 `npm pack --dry-run` 超时时间，避免 CI 假失败 |

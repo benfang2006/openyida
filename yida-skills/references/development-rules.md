@@ -4,7 +4,7 @@
 
 ## 致命规则（FATAL）
 
-**F1 技能加载唯一入口**：执行任何子技能前，支持 `use_skill` 的宿主必须调用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径。`skills-index.json` 仅供 yida-agent 或同构宿主机器发现，不支持该索引的宿主忽略它。完全没有 `use_skill` / `search_skills` 的本地工具，才允许按根技能路由表和技能包相对路径逐个读取当前阶段唯一必要的技能文档；禁止并发批量读取多个 `SKILL.md`，禁止预读未来阶段技能。
+**F1 技能加载唯一入口**：执行任何子技能前，支持 `use_skill` 的宿主必须调用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径。`skills-index.json` 是给能读取索引的工具快速找到技能用的；不能读取它的工具直接忽略。完全没有 `use_skill` / `search_skills` 的本地工具，才允许按根技能路由表和技能包相对路径逐个读取当前阶段唯一必要的技能文档；禁止并发批量读取多个 `SKILL.md`，禁止预读未来阶段技能。
 
 **F2 corpId 一致性检查**：创建页面前对比 prd 文档与 token 登录态中的 corpId——
 - 一致 → 继续；

@@ -15,7 +15,24 @@ describe('publish argument parsing', () => {
       appType: 'APP_XXX',
       formUuid: 'FORM-XXX',
       healthCheck: true,
+      autoNavOrder: false,
       browserOpenMode: false,
+    });
+  });
+
+  test('parses auto navigation order as an explicit publish option', () => {
+    expect(publish.parseArgs([
+      'pages/src/home.canvas.jsx',
+      'APP_XXX',
+      'FORM-XXX',
+      '--auto-nav-order',
+      '--health-check',
+    ])).toMatchObject({
+      sourceFile: 'pages/src/home.canvas.jsx',
+      appType: 'APP_XXX',
+      formUuid: 'FORM-XXX',
+      healthCheck: true,
+      autoNavOrder: true,
     });
   });
 

@@ -4,7 +4,7 @@
 
 ## 先说清楚边界
 
-- 不要假设自定义页面能直接 `import` 宜搭内部表单组件；当前规范下应使用原生 JSX 元素、Tailwind `className` 和必要的内联兜底样式组合。
+- 不要假设自定义页面能通过 `import` 获取 `window.Deep` 上的表单组件；当前规范下应使用原生 JSX 元素、Tailwind `className` 和必要的内联兜底样式组合。
 - Code Canvas 是自定义页面的默认链路（现代 React/hooks/可视化/AI）；本指南服务普通自定义页面 JSX/Jsx 组件链路，例如明确要求 `Jsx` 组件、`renderJsx`、或强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交/字段双向绑定深度耦合。用户要代码画布、`YidaCodeCanvas`、`runtimeCode`、`importedModules` 时，切换到 `yida-canvas-custom-page`。
 - 不要把字段中文名当作 `fieldId`；字段 ID 必须来自 `openyida get-schema`。
 - 不要把原生表单页面的组件配置 JSON 直接复制到自定义页面 JSX；两者不是同一个运行面。
@@ -79,7 +79,7 @@ var self = this;
 视觉契约：
 - 触发器必须有 `.oyd-select-arrow` 下箭头，打开时旋转并跟随主题色。
 - 选中项必须有 `.oyd-select-check` 或等效选中标记，不能只靠加粗文字。
-- light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 或等效低透明度浅色 token；不要直接用 `--color-brand1-1`，部分宿主主题会把它解析成过深的品牌底色。
+- light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 或等效低透明度浅色 token；不要直接用 `--color-brand1-1`，部分应用全局主题会把它解析成过深的品牌底色。
 - `.oyd-select-arrow` 和 `.oyd-select-check` 必须显式设置 `width/height/flex/display`，必要时加 `!important`，避免 reset 未生效时 SVG 使用浏览器默认大尺寸。
 - 控件必须被 `openyida-native-control-reset` 或等效样式覆盖，避免 focus 时出现浏览器黑色粗边。
 - 如果页面用 `.oyd-grade-page`、`.oyd-data-page` 等自定义作用域，reset 的 style id 必须页面专属；不要检测到全局 `openyida-native-control-reset` 就跳过注入，否则多页面切换后菜单项和 SVG 样式可能丢失。
@@ -296,7 +296,7 @@ var self = this;
 
 ## EmployeeField / DepartmentSelectField
 
-普通自定义页面 JSX 里不能直接把表单设计器字段当 React 组件渲染。不要写未验证的 `<EmployeeField />`、`<DepartmentSelectField />`、`<AttachmentField />`、`<ImageField />`，也不要假设可以从 `@ali/deep` import。自定义页面只负责交互 UI 和数据提交；真正的字段组件优先放在表单页面里。
+普通自定义页面 JSX 里不能直接把表单设计器字段当 React 组件渲染。不要写未验证的 `<EmployeeField />`、`<DepartmentSelectField />`、`<AttachmentField />`、`<ImageField />`，也不要假设可以通过 `import` 获取 `window.Deep` 上的组件。自定义页面只负责交互 UI 和数据提交；真正的字段组件优先放在表单页面里。
 
 按场景选择：
 

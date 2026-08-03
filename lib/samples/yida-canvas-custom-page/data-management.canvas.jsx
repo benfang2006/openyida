@@ -197,16 +197,16 @@ function applyShellTheme(scope, profile) {
 }
 
 const BASE_ROWS = [
-  { id: 1, group: '20260717-研发治理', task: 'openyida skill治理', progress: '已完成', date: '2026-07-17', tags: ['skill优化', '发布'], priority: 'P1', note: '已完成索引校验', rich: '发布记录已归档' },
-  { id: 2, group: '20260717-研发治理', task: '公式校验问题修复&测试&发布', progress: '已完成', date: '2026-07-17', tags: ['bugfix'], priority: 'P1', note: '覆盖边界案例', rich: '补充 8 条用例' },
-  { id: 3, group: '20260717-研发治理', task: 'npm外置链路方案-服务端oss', progress: '进行中', date: '2026-07-18', tags: ['技术方案调研'], priority: 'P2', note: '等待链路压测', rich: '需要后端确认' },
-  { id: 4, group: '20260717-研发治理', task: '自定义页面升级方案调研&技术方案', progress: '待确认', date: '2026-07-18', tags: ['技术方案'], priority: 'P1', note: '产品评审中', rich: '关联 Canvas 模板' },
-  { id: 5, group: '20260717-研发治理', task: 'npm外置链路技术方案', progress: '进行中', date: '2026-07-19', tags: ['技术方案'], priority: 'P2', note: '联调草案', rich: '同步研发负责人' },
-  { id: 6, group: '20260717-研发治理', task: 'openyida现有问题整理', progress: '已完成', date: '2026-07-19', tags: ['自测'], priority: 'P3', note: '已分类', rich: '沉淀缺陷池' },
-  { id: 7, group: '20260717-体验优化', task: '验证jsx与成员搜索组件的可用性', progress: '已完成', date: '2026-07-20', tags: ['体验优化'], priority: 'P2', note: '验证通过', rich: '补充文档截图' },
-  { id: 8, group: '20260717-体验优化', task: '自定义页面基于jsx链路的优化&测试&bugfix', progress: '进行中', date: '2026-07-20', tags: ['bugfix', '自测'], priority: 'P1', note: '回归中', rich: '关注发布链路' },
-  { id: 9, group: '20260717-体验优化', task: '自定义页面优化fix自测&bugfix&优化', progress: '待确认', date: '2026-07-21', tags: ['发布'], priority: 'P2', note: '等待验收', rich: '需设计确认' },
-  { id: 10, group: '20260717-体验优化', task: 'skill治理自测', progress: '已完成', date: '2026-07-21', tags: ['自测', '发布'], priority: 'P3', note: '清单完成', rich: '无阻塞' },
+  { id: 1, group: '20260717-客户运营', task: '客户分层规则梳理', progress: '已完成', date: '2026-07-17', tags: ['客户运营', '规则'], priority: 'P1', note: '已完成分层清单', rich: '覆盖重点客户' },
+  { id: 2, group: '20260717-客户运营', task: '回访提醒配置', progress: '已完成', date: '2026-07-17', tags: ['回访'], priority: 'P1', note: '补充超期提醒', rich: '新增 8 条规则' },
+  { id: 3, group: '20260717-客户运营', task: '重点客户跟进排期', progress: '进行中', date: '2026-07-18', tags: ['排期'], priority: 'P2', note: '等待负责人确认', rich: '下周完成首轮回访' },
+  { id: 4, group: '20260717-订单履约', task: '异常订单处理流程', progress: '待确认', date: '2026-07-18', tags: ['流程'], priority: 'P1', note: '业务评审中', rich: '关联售后表单' },
+  { id: 5, group: '20260717-订单履约', task: '发货时效复盘', progress: '进行中', date: '2026-07-19', tags: ['复盘'], priority: 'P2', note: '同步仓储负责人', rich: '关注超期批次' },
+  { id: 6, group: '20260717-数据治理', task: '客户档案缺失项整理', progress: '已完成', date: '2026-07-19', tags: ['数据质量'], priority: 'P3', note: '已分类', rich: '沉淀补录清单' },
+  { id: 7, group: '20260717-体验优化', task: '筛选条件易用性检查', progress: '已完成', date: '2026-07-20', tags: ['体验优化'], priority: 'P2', note: '验证通过', rich: '补充操作截图' },
+  { id: 8, group: '20260717-体验优化', task: '列表批量操作回归', progress: '进行中', date: '2026-07-20', tags: ['回归', '自测'], priority: 'P1', note: '回归中', rich: '关注提交链路' },
+  { id: 9, group: '20260717-体验优化', task: '详情页字段可读性优化', progress: '待确认', date: '2026-07-21', tags: ['发布'], priority: 'P2', note: '等待验收', rich: '需业务确认' },
+  { id: 10, group: '20260717-数据治理', task: '数据看板口径自测', progress: '已完成', date: '2026-07-21', tags: ['自测', '发布'], priority: 'P3', note: '清单完成', rich: '无阻塞' },
   { id: 11, group: '20260717-发布准备', task: '导航顺序首次优化', progress: '已完成', date: '2026-07-22', tags: ['体验优化'], priority: 'P2', note: '排序已同步', rich: '影响 3 个入口' },
   { id: 12, group: '20260717-发布准备', task: 'skill内容再治理', progress: '进行中', date: '2026-07-22', tags: ['skill优化'], priority: 'P1', note: '重点检查技能路由', rich: '预计今日完成' },
   { id: 13, group: '20260717-发布准备', task: '登录态路径优化', progress: '待确认', date: '2026-07-23', tags: ['bugfix'], priority: 'P1', note: '需真实账号验证', rich: '风险待复核' },
@@ -236,9 +236,65 @@ function isSampleSeedPreview(binding) {
   return RESEARCH_LEVEL === 'sample' && !isDataBindingEnabled(binding) && mode === 'seed';
 }
 
+function getCookieValue(name) {
+  if (typeof document === 'undefined' || !document.cookie) return '';
+  const parts = String(document.cookie).split(';');
+  for (let i = 0; i < parts.length; i += 1) {
+    const pair = parts[i].trim().split('=');
+    const key = pair.shift();
+    if (key === name) {
+      try {
+        return decodeURIComponent(pair.join('='));
+      } catch (err) {
+        return pair.join('=');
+      }
+    }
+  }
+  return '';
+}
+
+function getMetaContent(names) {
+  if (typeof document === 'undefined' || !document.querySelector) return '';
+  for (let i = 0; i < names.length; i += 1) {
+    const node = document.querySelector('meta[name="' + names[i] + '"]');
+    const content = node && node.getAttribute && node.getAttribute('content');
+    if (content) return content;
+  }
+  return '';
+}
+
+function getRuntimeConfigValue(keys) {
+  const yida = window.__YIDA__ || {};
+  const sources = [
+    window.g_config,
+    window.pageConfig,
+    window.YIDA_CONFIG,
+    yida,
+    yida.config,
+    yida.pageConfig,
+    yida.runtimeConfig,
+  ];
+  for (let i = 0; i < sources.length; i += 1) {
+    const source = sources[i] || {};
+    for (let j = 0; j < keys.length; j += 1) {
+      const value = source[keys[j]];
+      if (typeof value === 'string' && value) return value;
+    }
+  }
+  return '';
+}
+
 function getCsrfToken() {
   try {
-    return (window.g_config && (window.g_config._csrf_token || window.g_config.csrfToken)) || '';
+    return getRuntimeConfigValue(['_csrf_token', 'csrfToken', 'csrf_token', 'global_csrf_token', '_tb_token_', 'csrf'])
+      || getMetaContent(['csrf-token', '_csrf_token', 'global-csrf-token'])
+      || getCookieValue('tianshu_csrf_token')
+      || getCookieValue('aliwork_csrf_token')
+      || getCookieValue('XSRF-TOKEN')
+      || getCookieValue('_csrf_token')
+      || getCookieValue('csrfToken')
+      || getCookieValue('_tb_token_')
+      || '';
   } catch (err) {
     return '';
   }
@@ -246,13 +302,18 @@ function getCsrfToken() {
 
 function buildDataRequest(binding) {
   if (binding.mode === 'form' && binding.appType && binding.formUuid) {
-    const qs = new URLSearchParams({
+    const params = new URLSearchParams({
       formUuid: binding.formUuid,
       appType: binding.appType,
       currentPage: String(binding.pageNumber || 1),
       pageSize: String(binding.pageSize || 50),
       searchFieldJson: JSON.stringify(binding.query || {}),
-    }).toString();
+    });
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      params.set('_csrf_token', csrfToken);
+    }
+    const qs = params.toString();
     return {
       url: '/dingtalk/web/' + binding.appType + '/v1/form/searchFormDatas.json?' + qs,
       method: 'GET',
@@ -271,6 +332,7 @@ function requestJson(req, signal) {
   const headers = { 'Content-Type': 'application/json' };
   if (csrfToken) {
     headers.global_csrf_token = csrfToken;
+    headers['x-csrf-token'] = csrfToken;
   }
   return fetch(req.url, {
     method: req.method || 'GET',
@@ -285,7 +347,12 @@ function requestJson(req, signal) {
     return resp.json();
   }).then((json) => {
     if (json && json.success === false) {
-      throw new Error(json.errorMsg || json.message || 'request failed');
+      const code = json.errorCode || json.code || '';
+      const message = json.errorMsg || json.message || 'request failed';
+      if (code === 'TIANSHU_000030' || /csrf/i.test(message)) {
+        throw new Error('CSRF 校验失败：请确认页面同源打开且运行态已注入 CSRF token。' + message);
+      }
+      throw new Error(message);
     }
     return json;
   });

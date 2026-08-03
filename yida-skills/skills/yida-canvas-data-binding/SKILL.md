@@ -19,7 +19,7 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 - Canvas 没有官方 `useDataBinding` hook，不得从任何包 `import { useDataBinding }`；真实表单数据绑定用页面内本地 `useYidaData(binding)`、`DataBridge` 和同源 `fetch` 实现。
 - Cookie 由浏览器同源请求自动携带，前端代码不能硬编码 Cookie、appSecret、accessKey 或外部密钥。
 - 调宜搭同源端点时，请求必须带 `credentials: 'include'`。
-- CSRF 优先从 `window.g_config._csrf_token` 或 `window.g_config.csrfToken` 读取；内部端点常同时需要 `_csrf_token` 参数和 `global_csrf_token` 请求头。
+- CSRF 优先从 `window.g_config`、`window.pageConfig`、`window.__YIDA__` 运行态配置读取；预览域名里缺少这些字段时，可兜底读取 meta 或同源 cookie（如 `tianshu_csrf_token`）。内部端点常同时需要 `_csrf_token` query 参数和 `global_csrf_token` 请求头。
 
 ## dataBinding 契约
 
@@ -71,8 +71,26 @@ OpenYida 模板可通过以下入口消费数据契约：
 
 ```javascript
 function getCsrfToken() {
-  var config = window.g_config || {};
-  return config._csrf_token || config.csrfToken || '';
+  var yida = window.__YIDA__ || {};
+  var sources = [
+    window.g_config,
+    window.pageConfig,
+    window.YIDA_CONFIG,
+    yida,
+    yida.config,
+    yida.pageConfig,
+    yida.runtimeConfig
+  ];
+  var keys = ['_csrf_token', 'csrfToken', 'csrf_token', 'global_csrf_token', '_tb_token_', 'csrf'];
+  for (var i = 0; i < sources.length; i += 1) {
+    var source = sources[i] || {};
+    for (var j = 0; j < keys.length; j += 1) {
+      if (source[keys[j]]) return source[keys[j]];
+    }
+  }
+  var cookie = typeof document !== 'undefined' && document.cookie ? document.cookie : '';
+  var match = cookie.match(/(?:^|;\s*)(tianshu_csrf_token|aliwork_csrf_token|XSRF-TOKEN|_csrf_token|csrfToken|_tb_token_)=([^;]+)/);
+  return match ? decodeURIComponent(match[2]) : '';
 }
 
 function unwrapRows(payload) {
@@ -114,21 +132,23 @@ function unwrapTotal(payload, rows) {
 ```javascript
 async function fetchFormRows(binding, signal) {
   var csrfToken = getCsrfToken();
-  var url = '/dingtalk/web/' + binding.appType + '/v1/form/searchFormDatas.json';
-  var body = new URLSearchParams();
-  body.set('formUuid', binding.formUuid);
-  body.set('pageSize', String(binding.pageSize || 20));
-  body.set('currentPage', String(binding.currentPage || 1));
-  if (csrfToken) body.set('_csrf_token', csrfToken);
+  var qs = new URLSearchParams();
+  qs.set('formUuid', binding.formUuid);
+  qs.set('appType', binding.appType);
+  qs.set('pageSize', String(binding.pageSize || 20));
+  qs.set('currentPage', String(binding.currentPage || 1));
+  qs.set('searchFieldJson', JSON.stringify(binding.query || {}));
+  if (csrfToken) qs.set('_csrf_token', csrfToken);
+  var url = '/dingtalk/web/' + binding.appType + '/v1/form/searchFormDatas.json?' + qs;
 
   var response = await fetch(url, {
-    method: 'POST',
+    method: 'GET',
     credentials: 'include',
     headers: {
-      'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      'global_csrf_token': csrfToken
+      'content-type': 'application/json',
+      'global_csrf_token': csrfToken,
+      'x-csrf-token': csrfToken
     },
-    body: body,
     signal: signal
   });
 

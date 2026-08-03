@@ -5,9 +5,12 @@
 ```markdown
 ### 【视觉方向决策】
 
-- **导航形态**：<导航可见（跟品牌融合）/ 导航隐藏 isRenderNav=false（视觉自立 + 自带导航壳，说明壳型）>
+- **导航形态**：<导航可见（默认，跟平台应用导航融合）/ 导航隐藏 isRenderNav=false（仅显式要求；如需页面内导航再说明壳型）>
 - **页面类型**：<workbench / dashboard / screen / list / detail / landing>（判定依据一句话）
 - **researchLevel**：<none / light / enhanced / deep；官网默认 light，业务页默认 none>
+- **明暗模式**：<light（默认，themeProfile.navTheme=light）/ dark（仅用户显式暗色、夜间、高对比、黑金、暗色科技风）>
+- **主题策略**：<themeProfile.name=podBlue/podGreen/podOrange（默认三选一）/ yida-app-theme（仅显式应用主题色）/ 用户指定品牌色；themeScope=page 默认；themeColorSource=应用主题/运行态应用主题/用户指定色；themeProfile.colorMode 可为宜搭配色模式如 gradient，不表示暗黑>
+- **主题色说明**：<采用哪个主色或主题色来源 + 为什么适合当前业务；默认不要采用暗黑、黑色、近黑背景或深色科技风>
 - **appBlueprint**：<多页面应用写角色、导航分组、入口页、页面组合；来自应用体验蓝图时只摘当前页相关信息；单页写当前页作为 entry>
 - **archetype**：<dashboard: overview/analysis/monitor/report/compare/operation；其他场景写 profile/table-management/operation/brand-home 等>
 - **interactionProfile**：<primaryAction、detailMode(drawer/page/iframe/none)、bulkActions、empty/loading/error 状态>
@@ -18,7 +21,7 @@
 - **布局骨架**：<来自 scene 文件的骨架，按本页信息调整>
 - **信息密度**：<紧凑 / 均衡 / 宽松 + 一句理由>
 - **视觉焦点**：<这页唯一的主角是什么>
-- **场景专项策略**：<landing 写 Section 构图 + 素材锚点 + 转化动作；dashboard 写 Shell + Archetype + 数据洞察落点；screen 写 full-bleed + 中心态势 + 左右信息塔；其他场景按需写导航壳/多视图>
+- **场景专项策略**：<landing 写 Section 构图 + 素材锚点 + 转化动作；dashboard 写 Shell + Archetype + 数据洞察落点；screen 写中心态势 + 左右信息塔；其他场景只有显式要求时才写页面内导航壳/多视图>
 
 ### 【差异化 5 维】
 
@@ -51,6 +54,14 @@
   "scene": "dashboard",
   "researchLevel": "none",
   "archetype": "overview",
+  "themeProfile": {
+    "name": "podBlue",
+    "appThemeKey": "podBlue",
+    "themeColorSource": "application-theme",
+    "navTheme": "light",
+    "colorMode": "gradient"
+  },
+  "themeScope": "page",
   "appBlueprint": {
     "appName": "应用名称",
     "entry": "首页",

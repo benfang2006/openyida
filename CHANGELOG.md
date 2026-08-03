@@ -11,6 +11,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.8.3] - 2026-08-03
+
+### Added
+- 新增 `yida-nav-group` 导航编排能力，支持创建导航分组、设置父子关系、自动排序和入口页优先展示，便于完整应用生成后整理应用导航。
+- 新增 `yida-app` UI 引导参考文档，补充应用生成模式、主页面引导、业务入口和验收契约，明确完整应用主页面默认包含轻量 UI 引导。
+- 新增 `yida-theme` 主题令牌预设参考，沉淀业务场景色、导航主题和页面主题应用规则。
+- 新增千问办公等 AI 工具环境识别，完善 OpenYida 在不同 AI 编程工具中的环境适配。
+
+### Changed
+- 优化技能索引与路由描述，收口应用创建、页面 UIUX、Code Canvas、主题、导航和发布等子技能边界，减少技能误选和重复读取。
+- 应用创建默认主题色改为 `podBlue`/`podGreen` 等新版主题色，并将创建成功后的默认入口从管理后台调整为应用工作台。
+- 自定义页面创建新增隐藏平台导航参数，显式支持 `--hide-nav` / `--no-nav` / `--render-nav` 等导航展示控制。
+- 页面生成输出补充主题来源、主题色、导航主题和颜色模式等元信息，让生成结果的视觉决策更可追踪。
+- `generate-page`、`page-ir` 与页面 UIUX 文档强化主页面、门户、工作台、导航结构和主题决策规则，避免把样例页面直接当成完整信息架构。
+
+### Fixed
+- 修复 AI 能力、环境检测、Doctor、bridge handoff、postinstall 注入和命令清单中的品牌与环境描述漂移。
+- 调整 `publish`、`canvas-compile`、复制和更新应用相关校验，提升 Code Canvas / 自定义页面发布链路在边界参数下的稳定性。
+
+### Tests
+- 新增或扩展 `nav-group`、`create-page`、`generate-page`、`page-ir`、`publish`、`canvas-compile`、`skill-contracts`、`utils`、`env`、`doctor`、`bridge` 等测试，覆盖导航排序、隐藏平台导航、主题元信息、技能契约和发布参数。
+- 同步更新路由测评、技能覆盖矩阵和构建包测试，校验新增导航、主题和 UI 引导契约。
+
+
 ## [2026.7.27-beta.1] - 2026-07-27
 
 ### Added
@@ -46,7 +70,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - CLI 发布包默认只内置核心界面语言 `zh` / `en`，降低默认安装体积；其他 CLI UI 语言包不随 npm 包默认分发，运行时按 `OPENYIDA_LANG` + `OPENYIDA_LOCALE_DIR` 加载。
 - 国际化运行时回退链路调整为「目标语言 -> en -> zh」；非中英可选语言包已补齐结构缺失，便于真实用户使用某语种时单独校对和分发。
 - `app-list`、`list-forms`、`create-app`、`create-page`、`get-schema`、`get-form-config`、`i18n-management`、`corp-manager`、`agent-center`、`formula` 等高频业务模块改为抛错交由 CLI 入口统一处理，减少业务层直接退出。
-- `yida-skills/skills-index.json` 补充 `positive_signals`、`negative_signals`、`command_ids`、`done_when` 等机器路由字段，降低表单结构、数据管理、Canvas 页面和 UIUX 等高混淆技能的误路由概率。
+- `yida-skills/skills-index.json` 补充 `positive_signals`、`negative_signals`、`command_ids`、`done_when` 等自动匹配字段，降低表单结构、数据管理、Canvas 页面和 UIUX 等高混淆技能的误选概率。
 - `yida-skills/SKILL.md` 同步补充技能索引读取策略和路由提示，要求先用索引快速判断，再按需读取单个子技能文档。
 - `yida-report/SKILL.md` 从长文档拆为主流程文档 + `references/schema-builder-details.md`，主文档保留路由信号、必要步骤和完成标准。
 - `README.md`、`README_zhCN.md`、`docs/capabilities.md` 补充 CLI 语言包按需加载说明，并对齐当前 OAuth token 登录和功能清单说明。
@@ -65,7 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Tests
 - 新增或扩展 asset、safe-json、generate-page、page-ir、page-linter、canvas-compile、create-form、CLI smoke、package smoke、i18n、skill contract 和 eval 系列测试。
 - 新增 Skill eval CI workflow、命令文档校验、i18n 棘轮校验和发布包体积校验适配，覆盖本次 UI 生成与技能评测链路。
-- 补充业务模块抛错、可选语言加载、技能索引机器路由字段、长技能文档校验、package smoke 和 Jest open-handle 相关回归测试。
+- 补充业务模块抛错、可选语言加载、技能索引自动匹配字段、长技能文档校验、package smoke 和 Jest open-handle 相关回归测试。
 - 验证 `npm test` 默认并行模式下 111 个 suite / 1303 个用例全绿，且不再出现 Jest open-handle 或 worker 退出提示。
 
 ## [2026.7.18-2] - 2026-07-19
@@ -264,12 +288,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026.5.13] - 2026-05-13
 
 ### Highlights
-- 这是 2026-05-13 的正式版发布，包含宜搭 AI 文生文/识图 CLI、钉钉 AppLink 生成器、组织基础信息查询，以及钉钉 AI 解决方案中心示例资产。
+- 这是 2026-05-13 的正式版发布，包含 AI 文生文/识图 CLI、钉钉 AppLink 生成器、组织基础信息查询，以及钉钉 AI 解决方案中心示例资产。
 - 登录与多环境 Cookie 管理继续增强，支持更清晰的强制重登、浏览器登录和多环境缓存隔离行为。
 - Agent 生成的字段配置、报表配置、流程配置、导入数据和一次性脚本统一约束到 `.cache/openyida/`，减少仓库根目录临时文件噪音。
 
 ### Added
-- 新增 `openyida ai text` 与 `openyida ai image`，支持调用宜搭 AI 文生文、图片上传和识图连接器能力。
+- 新增 `openyida ai text` 与 `openyida ai image`，支持调用 AI 文生文、图片上传和识图连接器能力。
 - 新增 `openyida dingtalk-link`，支持生成 DingTalk AppLink，并保留 legacy scheme 兼容选项。
 - 新增 `openyida basic-info` 与 `yida-basic-info` 技能，用于查询组织基本信息、容量、额度和域名等平台管理信息。
 - 新增钉钉 AI 解决方案中心示例 PRD、表单字段、种子数据、自定义页面源码、预览 HTML 和本地 runner。

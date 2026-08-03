@@ -85,8 +85,8 @@ const DEFAULT_ROADMAP = [
   { stage: 'B', title: '态势分析', text: '按区域、时间和业务线做对比。' },
   { stage: 'C', title: '行动闭环', text: '把异常项同步给对应负责人。' },
 ];
-const DEFAULT_VISUAL_PROFILE = { name: 'data-screen' };
-const DEFAULT_THEME_PROFILE = { followRuntimeTheme: false, name: 'electric-cyan-screen', themeColor: '#00B8D9', themeColorDeep: '#075985', themeColorSoft: '#E7F9FD', themeColorTint: 'rgba(0, 184, 217, 0.2)', palette: ['#00B8D9', '#31D7FF', '#4BE0A0', '#B8F35A', '#FF7AB6'] };
+const DEFAULT_VISUAL_PROFILE = { name: 'data-screen', tone: 'light-command', neutral: 'light-blue-gray' };
+const DEFAULT_THEME_PROFILE = { followRuntimeTheme: false, name: 'blue', themeColor: 'rgb(0, 137, 255)', themeColorDeep: 'rgb(0, 109, 204)', themeColorSoft: 'rgb(242, 249, 255)', themeColorTint: 'rgba(0, 137, 255, 0.2)', palette: ['rgb(0, 137, 255)', 'rgb(51, 160, 255)', 'rgb(64, 179, 112)', 'rgb(255, 111, 0)', '#FF7AB6'] };
 const DEFAULT_APP_BLUEPRINT = { shell: 'screen' };
 const DEFAULT_INTERACTION_PROFILE = { primaryAction: '刷新数据' };
 const DEFAULT_INSIGHTS = [{ conclusion: '北区增长最快，南区异常率需要进一步拆解。' }];
@@ -173,6 +173,75 @@ function parseColorGroup(fallback) {
   }
 }
 
+const DARK_SCREEN_PATTERN = /(dark|night|black|obsidian|high-contrast|dark-tech|暗色|深色|暗黑|夜间|黑金|高对比)/i;
+
+function isDarkScreenProfile(profile) {
+  if (!profile || typeof profile !== 'object') {
+    return false;
+  }
+  const fields = ['name', 'tone', 'neutral', 'accent', 'themeMode', 'mode', 'colorMode', 'navTheme', 'style', 'description'];
+  return fields.some((field) => typeof profile[field] === 'string' && DARK_SCREEN_PATTERN.test(profile[field]));
+}
+
+function buildScreenModeVars(isDark) {
+  if (isDark) {
+    return {
+      '--oy-page-color': '#dcecff',
+      '--oy-page-bg': 'radial-gradient(circle at 50% 42%, rgba(49,215,255,.16), transparent 34%), linear-gradient(135deg, rgba(7,18,38,.98), rgba(10,34,68,.96) 48%, rgba(8,18,37,1)), var(--oy-brand-deep)',
+      '--oy-grid-line': 'rgba(49,215,255,.045)',
+      '--oy-grid-mask': 'radial-gradient(circle at center, #000, transparent 76%)',
+      '--oy-heading-color': '#f6fbff',
+      '--oy-muted-color': 'rgba(220,236,255,.66)',
+      '--oy-support-color': 'rgba(220,236,255,.76)',
+      '--oy-panel-border': 'rgba(49,215,255,.18)',
+      '--oy-panel-bg': 'linear-gradient(180deg, rgba(15,48,88,.72), rgba(7,25,54,.62))',
+      '--oy-panel-shadow': 'inset 0 0 24px rgba(49,215,255,.05), 0 18px 42px rgba(0,0,0,.22)',
+      '--oy-title-shadow': '0 0 18px rgba(49,215,255,.22)',
+      '--oy-metric-bg': 'rgba(7,24,48,.55)',
+      '--oy-metric-shadow': '0 0 18px rgba(49,215,255,.36)',
+      '--oy-map-bg': 'radial-gradient(circle at 44% 54%, rgba(49,215,255,.20), transparent 36%), linear-gradient(180deg, rgba(10,36,72,.38), rgba(5,17,38,.58))',
+      '--oy-map-grid-line': 'rgba(126,222,255,.035)',
+      '--oy-map-stage-bg': 'radial-gradient(circle at 42% 48%, rgba(49,215,255,.16), transparent 36%), rgba(4,18,39,.20)',
+      '--oy-map-badge-bg': 'rgba(5,18,39,.72)',
+      '--oy-map-region-stroke': 'rgba(126,222,255,.78)',
+      '--oy-map-inner-stroke': 'rgba(126,222,255,.22)',
+      '--oy-map-filter': 'url(#oyMapGlow)',
+      '--oy-label-stroke': 'rgba(5,18,39,.78)',
+      '--oy-floating-bg': 'linear-gradient(90deg, rgba(49,215,255,.12), transparent 46%), rgba(14,39,76,.86)',
+      '--oy-floating-shadow': '0 12px 28px rgba(0,0,0,.18)',
+      '--oy-ring-center': 'rgba(8,23,48,1)',
+      '--oy-ring-trail': 'rgba(255,255,255,.1)',
+    };
+  }
+  return {
+    '--oy-page-color': '#172033',
+    '--oy-page-bg': 'radial-gradient(circle at 50% 42%, rgba(0,137,255,.08), transparent 34%), linear-gradient(135deg, #f5f9ff, #ffffff 48%, #eef6ff)',
+    '--oy-grid-line': 'rgba(0,137,255,.07)',
+    '--oy-grid-mask': 'radial-gradient(circle at center, rgba(0,0,0,.58), transparent 76%)',
+    '--oy-heading-color': '#0f1f35',
+    '--oy-muted-color': 'rgba(15,31,53,.62)',
+    '--oy-support-color': 'rgba(15,31,53,.72)',
+    '--oy-panel-border': 'rgba(0,137,255,.16)',
+    '--oy-panel-bg': 'linear-gradient(180deg, rgba(255,255,255,.92), rgba(244,249,255,.84))',
+    '--oy-panel-shadow': '0 14px 34px rgba(31,77,130,.10)',
+    '--oy-title-shadow': 'none',
+    '--oy-metric-bg': 'rgba(242,249,255,.78)',
+    '--oy-metric-shadow': 'none',
+    '--oy-map-bg': 'radial-gradient(circle at 44% 54%, rgba(0,137,255,.10), transparent 36%), linear-gradient(180deg, rgba(255,255,255,.78), rgba(235,245,255,.70))',
+    '--oy-map-grid-line': 'rgba(0,137,255,.06)',
+    '--oy-map-stage-bg': 'radial-gradient(circle at 42% 48%, rgba(0,137,255,.08), transparent 36%), rgba(255,255,255,.48)',
+    '--oy-map-badge-bg': 'rgba(255,255,255,.86)',
+    '--oy-map-region-stroke': 'rgba(0,109,204,.48)',
+    '--oy-map-inner-stroke': 'rgba(0,109,204,.18)',
+    '--oy-map-filter': 'none',
+    '--oy-label-stroke': 'rgba(255,255,255,.78)',
+    '--oy-floating-bg': 'linear-gradient(90deg, rgba(0,137,255,.08), transparent 46%), rgba(255,255,255,.90)',
+    '--oy-floating-shadow': '0 12px 28px rgba(31,77,130,.12)',
+    '--oy-ring-center': '#ffffff',
+    '--oy-ring-trail': 'rgba(0,137,255,.12)',
+  };
+}
+
 function buildScopedThemeVars(scope, profile) {
   if (scope !== 'page' || (profile && profile.followRuntimeTheme)) {
     return {};
@@ -244,10 +313,21 @@ function getDeepYidaBundle() {
 
 function findFromBundle(bundle, name) {
   if (!bundle) return null;
-  if (bundle[name]) return bundle[name];
+  if (bundle[name]) return normalizeYidaComponentCandidate(bundle[name]);
   if (Array.isArray(bundle)) {
-    return bundle.find((item) => item && (item.displayName === name || item.name === name)) || null;
+    const match = bundle.find((item) => item && (item.displayName === name || item.name === name));
+    return normalizeYidaComponentCandidate(match);
   }
+  return null;
+}
+
+function normalizeYidaComponentCandidate(candidate) {
+  if (!candidate) return null;
+  if (typeof candidate === 'function') return candidate;
+  if (candidate.Component) return normalizeYidaComponentCandidate(candidate.Component);
+  if (candidate.component) return normalizeYidaComponentCandidate(candidate.component);
+  if (candidate.default) return normalizeYidaComponentCandidate(candidate.default);
+  if (candidate.render && typeof candidate.render === 'function') return candidate;
   return null;
 }
 
@@ -408,6 +488,17 @@ function YidaComp() {
   const green = brandPalette[2] || '#4be0a0';
   const amber = brandPalette[4] || '#f4a33f';
   const pink = brandPalette[5] || '#ff4aa2';
+  const isDarkScreen = isDarkScreenProfile(VISUAL_PROFILE) || isDarkScreenProfile(THEME_PROFILE);
+  const screenModeVars = buildScreenModeVars(isDarkScreen);
+  const chartTextColor = isDarkScreen ? 'rgba(220,236,255,.54)' : 'rgba(15,31,53,.56)';
+  const chartGridColor = isDarkScreen ? 'rgba(49,215,255,.24)' : 'rgba(0,137,255,.16)';
+  const progressTrailColor = isDarkScreen ? 'rgba(255,255,255,.1)' : 'rgba(0,137,255,.10)';
+  const tooltipStyle = {
+    background: isDarkScreen ? '#0b1f3c' : '#ffffff',
+    border: isDarkScreen ? '1px solid rgba(49,215,255,.22)' : '1px solid rgba(0,137,255,.16)',
+    borderRadius: 8,
+    boxShadow: isDarkScreen ? 'none' : '0 12px 28px rgba(31,77,130,.12)',
+  };
   const primaryAction = INTERACTION_PROFILE.primaryAction || PAGE.primaryCta;
   const insight = INSIGHTS[0] || {};
   const shellLabel = APP_BLUEPRINT.shell || 'single_page';
@@ -431,12 +522,13 @@ function YidaComp() {
   return (
     <ConfigProvider getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body} theme={{ token: { colorPrimary: brand, borderRadius: 6 } }}>
       <div
-        className="oy-screen"
+        className={`oy-screen ${isDarkScreen ? 'oy-screen-dark' : 'oy-screen-light'}`}
         data-profile={VISUAL_PROFILE.name}
         data-theme-profile={THEME_PROFILE.name}
         data-theme-scope={THEME_SCOPE}
         style={{
           ...themeVars,
+          ...screenModeVars,
           '--oy-brand': brand,
           '--oy-brand-deep': brandDeep,
           '--oy-cyan': cyan,
@@ -450,11 +542,8 @@ function YidaComp() {
           .oy-screen {
             min-height: 100vh;
             padding: 18px;
-            color: #dcecff;
-            background:
-              radial-gradient(circle at 50% 42%, rgba(49,215,255,.16), transparent 34%),
-              linear-gradient(135deg, rgba(7,18,38,.98), rgba(10,34,68,.96) 48%, rgba(8,18,37,1)),
-              var(--oy-brand-deep);
+            color: var(--oy-page-color);
+            background: var(--oy-page-bg);
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
             letter-spacing: 0;
@@ -465,10 +554,10 @@ function YidaComp() {
             inset: 0;
             pointer-events: none;
             background-image:
-              linear-gradient(rgba(49,215,255,.045) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(49,215,255,.045) 1px, transparent 1px);
+              linear-gradient(var(--oy-grid-line) 1px, transparent 1px),
+              linear-gradient(90deg, var(--oy-grid-line) 1px, transparent 1px);
             background-size: 28px 28px;
-            mask-image: radial-gradient(circle at center, #000, transparent 76%);
+            mask-image: var(--oy-grid-mask);
           }
           .oy-shell {
             position: relative;
@@ -488,22 +577,22 @@ function YidaComp() {
           }
           .oy-title {
             margin: 0;
-            color: #f6fbff;
+            color: var(--oy-heading-color);
             font-size: 25px;
             line-height: 1.2;
             font-weight: 850;
-            text-shadow: 0 0 18px rgba(49,215,255,.22);
+            text-shadow: var(--oy-title-shadow);
           }
           .oy-subtitle {
             margin-top: 5px;
-            color: rgba(220,236,255,.66);
+            color: var(--oy-muted-color);
             font-size: 13px;
           }
           .oy-time {
             display: flex;
             align-items: center;
             gap: 10px;
-            color: rgba(220,236,255,.76);
+            color: var(--oy-support-color);
             font-variant-numeric: tabular-nums;
           }
           .oy-grid {
@@ -519,9 +608,9 @@ function YidaComp() {
           }
           .oy-panel {
             position: relative;
-            border: 1px solid rgba(49,215,255,.18);
-            background: linear-gradient(180deg, rgba(15,48,88,.72), rgba(7,25,54,.62));
-            box-shadow: inset 0 0 24px rgba(49,215,255,.05), 0 18px 42px rgba(0,0,0,.22);
+            border: 1px solid var(--oy-panel-border);
+            background: var(--oy-panel-bg);
+            box-shadow: var(--oy-panel-shadow);
             border-radius: 8px;
             overflow: hidden;
           }
@@ -542,7 +631,7 @@ function YidaComp() {
           }
           .oy-panel-title {
             margin: 0 0 12px;
-            color: #eaf7ff;
+            color: var(--oy-heading-color);
             font-size: 14px;
             line-height: 1.4;
             font-weight: 800;
@@ -556,10 +645,10 @@ function YidaComp() {
             min-height: 116px;
             padding: 12px;
             border-radius: 6px;
-            background: rgba(7,24,48,.55);
+            background: var(--oy-metric-bg);
           }
           .oy-metric-label {
-            color: rgba(220,236,255,.68);
+            color: var(--oy-muted-color);
             font-size: 12px;
           }
           .oy-metric-value {
@@ -569,7 +658,7 @@ function YidaComp() {
             line-height: 1;
             font-weight: 850;
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 18px rgba(49,215,255,.36);
+            text-shadow: var(--oy-metric-shadow);
           }
           .oy-spark {
             display: flex;
@@ -596,26 +685,24 @@ function YidaComp() {
             grid-template-columns: 72px 1fr 38px;
             gap: 10px;
             align-items: center;
-            color: rgba(220,236,255,.76);
+            color: var(--oy-support-color);
             font-size: 12px;
           }
           .oy-map {
             position: relative;
             min-height: 100%;
-            border: 1px solid rgba(49,215,255,.18);
+            border: 1px solid var(--oy-panel-border);
             border-radius: 8px;
             overflow: hidden;
-            background:
-              radial-gradient(circle at 44% 54%, rgba(49,215,255,.20), transparent 36%),
-              linear-gradient(180deg, rgba(10,36,72,.38), rgba(5,17,38,.58));
+            background: var(--oy-map-bg);
           }
           .oy-map::before {
             content: "";
             position: absolute;
             inset: 0;
             background:
-              linear-gradient(rgba(126,222,255,.035) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(126,222,255,.035) 1px, transparent 1px);
+              linear-gradient(var(--oy-map-grid-line) 1px, transparent 1px),
+              linear-gradient(90deg, var(--oy-map-grid-line) 1px, transparent 1px);
             background-size: 34px 34px;
             pointer-events: none;
           }
@@ -628,22 +715,20 @@ function YidaComp() {
           }
           .oy-map-title h2 {
             margin: 0;
-            color: #f6fbff;
+            color: var(--oy-heading-color);
             font-size: 18px;
           }
           .oy-map-title p {
             margin: 6px 0 0;
-            color: rgba(220,236,255,.62);
+            color: var(--oy-muted-color);
             font-size: 12px;
           }
           .oy-map-stage {
             position: absolute;
             inset: 76px 16px 16px;
-            border: 1px solid rgba(126,222,255,.18);
+            border: 1px solid var(--oy-panel-border);
             border-radius: 8px;
-            background:
-              radial-gradient(circle at 42% 48%, rgba(49,215,255,.16), transparent 36%),
-              rgba(4,18,39,.20);
+            background: var(--oy-map-stage-bg);
           }
           .oy-yida-map-component {
             position: absolute;
@@ -677,10 +762,10 @@ function YidaComp() {
             top: 12px;
             z-index: 6;
             padding: 6px 10px;
-            border: 1px solid rgba(126,222,255,.22);
+            border: 1px solid var(--oy-panel-border);
             border-radius: 999px;
-            color: rgba(246,251,255,.78);
-            background: rgba(5,18,39,.72);
+            color: var(--oy-support-color);
+            background: var(--oy-map-badge-bg);
             font-size: 11px;
             font-weight: 800;
           }
@@ -692,13 +777,13 @@ function YidaComp() {
           }
           .oy-region-map-shape {
             fill: url(#oyMapAreaGradient);
-            stroke: rgba(126,222,255,.78);
+            stroke: var(--oy-map-region-stroke);
             stroke-width: 2.4;
-            filter: url(#oyMapGlow);
+            filter: var(--oy-map-filter);
           }
           .oy-region-map-inner {
             fill: none;
-            stroke: rgba(126,222,255,.22);
+            stroke: var(--oy-map-inner-stroke);
             stroke-width: 1.2;
           }
           .oy-region-flow {
@@ -730,11 +815,11 @@ function YidaComp() {
             filter: url(#oyMapGlow);
           }
           .oy-region-label {
-            fill: rgba(246,251,255,.84);
+            fill: var(--oy-heading-color);
             font-size: 22px;
             font-weight: 850;
             paint-order: stroke;
-            stroke: rgba(5,18,39,.78);
+            stroke: var(--oy-label-stroke);
             stroke-width: 4px;
           }
           .oy-map-legend {
@@ -744,7 +829,7 @@ function YidaComp() {
             display: flex;
             gap: 10px;
             z-index: 5;
-            color: rgba(220,236,255,.66);
+            color: var(--oy-muted-color);
             font-size: 12px;
           }
           .oy-map-legend span {
@@ -752,9 +837,9 @@ function YidaComp() {
             align-items: center;
             gap: 6px;
             padding: 5px 8px;
-            border: 1px solid rgba(126,222,255,.16);
+            border: 1px solid var(--oy-panel-border);
             border-radius: 6px;
-            background: rgba(7,24,48,.58);
+            background: var(--oy-map-badge-bg);
           }
           .oy-map-legend i {
             width: 8px;
@@ -777,13 +862,11 @@ function YidaComp() {
           .oy-point-card {
             min-height: 74px;
             padding: 10px 11px;
-            border: 1px solid rgba(126,222,255,.32);
+            border: 1px solid var(--oy-panel-border);
             border-radius: 8px;
-            color: rgba(246,251,255,.92);
-            background:
-              linear-gradient(90deg, rgba(49,215,255,.12), transparent 46%),
-              rgba(14,39,76,.86);
-            box-shadow: 0 12px 28px rgba(0,0,0,.18);
+            color: var(--oy-support-color);
+            background: var(--oy-floating-bg);
+            box-shadow: var(--oy-floating-shadow);
             font-size: 12px;
             line-height: 1.55;
           }
@@ -795,7 +878,7 @@ function YidaComp() {
             margin-bottom: 5px;
           }
           .oy-point-card b {
-            color: #f6fbff;
+            color: var(--oy-heading-color);
             font-size: 14px;
           }
           .oy-point-card strong {
@@ -804,7 +887,7 @@ function YidaComp() {
             font-variant-numeric: tabular-nums;
           }
           .oy-point-card small {
-            color: rgba(220,236,255,.58);
+            color: var(--oy-muted-color);
           }
           .oy-rank-list {
             display: grid;
@@ -815,7 +898,7 @@ function YidaComp() {
             grid-template-columns: 26px 54px 1fr auto;
             gap: 10px;
             align-items: center;
-            color: rgba(220,236,255,.78);
+            color: var(--oy-support-color);
             font-size: 12px;
           }
           .oy-rank-index {
@@ -843,7 +926,7 @@ function YidaComp() {
             place-items: center;
             min-height: 104px;
             border-radius: 8px;
-            background: rgba(7,24,48,.48);
+            background: var(--oy-metric-bg);
           }
           .oy-ring-circle {
             width: 78px;
@@ -851,11 +934,11 @@ function YidaComp() {
             display: grid;
             place-items: center;
             border-radius: 999px;
-            color: #fff;
+            color: var(--oy-heading-color);
             font-weight: 850;
             background:
-              radial-gradient(circle at center, rgba(8,23,48,1) 48%, transparent 50%),
-              conic-gradient(var(--ring-color) calc(var(--ring-value) * 1%), rgba(255,255,255,.1) 0);
+              radial-gradient(circle at center, var(--oy-ring-center) 48%, transparent 50%),
+              conic-gradient(var(--ring-color) calc(var(--ring-value) * 1%), var(--oy-ring-trail) 0);
           }
           .oy-screen-brief {
             display: flex;
@@ -863,7 +946,7 @@ function YidaComp() {
             gap: 8px;
             align-items: center;
             margin-top: 8px;
-            color: rgba(220,236,255,.68);
+            color: var(--oy-muted-color);
           }
           @media (max-width: 1160px) {
             .oy-grid { grid-template-columns: 1fr; }
@@ -919,8 +1002,8 @@ function YidaComp() {
                   <div className="oy-chart">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart data={radarData}>
-                        <PolarGrid stroke="rgba(49,215,255,.24)" />
-                        <PolarAngleAxis dataKey="name" tick={{ fill: 'rgba(220,236,255,.64)', fontSize: 12 }} />
+                        <PolarGrid stroke={chartGridColor} />
+                        <PolarAngleAxis dataKey="name" tick={{ fill: chartTextColor, fontSize: 12 }} />
                         <Radar dataKey="value" stroke={cyan} fill={cyan} fillOpacity={0.28} />
                       </RadarChart>
                     </ResponsiveContainer>
@@ -935,7 +1018,7 @@ function YidaComp() {
                     {barData.map((item, index) => (
                       <div className="oy-bar-row" key={item.name}>
                         <span>{item.name}</span>
-                        <Progress percent={item.value} size="small" showInfo={false} strokeColor={index === 0 ? cyan : green} trailColor="rgba(255,255,255,.1)" />
+                        <Progress percent={item.value} size="small" showInfo={false} strokeColor={index === 0 ? cyan : green} trailColor={progressTrailColor} />
                         <b>{item.value}</b>
                       </div>
                     ))}
@@ -1012,9 +1095,9 @@ function YidaComp() {
                   <div className="oy-chart">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={trendData}>
-                        <XAxis dataKey="label" tick={{ fill: 'rgba(220,236,255,.54)', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: 'rgba(220,236,255,.54)', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ background: '#0b1f3c', border: '1px solid rgba(49,215,255,.22)', borderRadius: 8 }} />
+                        <XAxis dataKey="label" tick={{ fill: chartTextColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: chartTextColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={tooltipStyle} />
                         <Area type="monotone" dataKey="up" stroke={amber} fill={amber} fillOpacity={0.12} strokeWidth={2} dot={false} />
                         <Area type="monotone" dataKey="down" stroke={cyan} fill={cyan} fillOpacity={0.12} strokeWidth={2} dot={false} />
                         <Area type="monotone" dataKey="avg" stroke={green} fill={green} fillOpacity={0.08} strokeWidth={2} dot={false} />

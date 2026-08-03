@@ -2,7 +2,7 @@
 
 从零写 Code Canvas 页面时，入口使用普通 React18 函数组件 `YidaComp`，源码导出或返回 `YidaComp` / `YidaComp.default`；`import` 使用可用资源清单内的包；副作用在 `useEffect` 里注册并返回 cleanup。
 
-> 可用资源、import 写法与运行时加载契约见 [dependencies-and-cdn.md](dependencies-and-cdn.md)；读写宜搭数据见 [data-bridge-guide.md](data-bridge-guide.md)。
+> 可用资源、import 写法与运行时加载方式见 [dependencies-and-cdn.md](dependencies-and-cdn.md)；读写宜搭数据见 [data-bridge-guide.md](data-bridge-guide.md)。
 
 ## 1. 最小可运行组件（入口 + 本地状态）
 
@@ -60,13 +60,13 @@ export default YidaComp;
 
 ## 3. 可视化：recharts 图表
 
-`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读平台品牌色，让线条跟随 App 主题（见 [canvas-design-system.md](canvas-design-system.md)）。
+`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读取当前应用主题 token；用户明确要求应用主题风格时才跟随运行态应用主题（见 [canvas-design-system.md](canvas-design-system.md)）。
 
 ```jsx
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// 读平台品牌色（跑在真 window，getComputedStyle 可直接解析），缺失时退宜搭应用主题默认主色
+// 读当前品牌色 token（跑在真 window，getComputedStyle 可直接解析），缺失时退`podBlue` 应用主题 主色
 function readBrandColor(level, fallback) {
   try {
     var v = getComputedStyle(document.documentElement)

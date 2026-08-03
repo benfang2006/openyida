@@ -272,9 +272,65 @@ function isSampleSeedPreview(binding) {
   return RESEARCH_LEVEL === 'sample' && !isDataBindingEnabled(binding) && mode === 'seed';
 }
 
+function getCookieValue(name) {
+  if (typeof document === 'undefined' || !document.cookie) return '';
+  const parts = String(document.cookie).split(';');
+  for (let i = 0; i < parts.length; i += 1) {
+    const pair = parts[i].trim().split('=');
+    const key = pair.shift();
+    if (key === name) {
+      try {
+        return decodeURIComponent(pair.join('='));
+      } catch (err) {
+        return pair.join('=');
+      }
+    }
+  }
+  return '';
+}
+
+function getMetaContent(names) {
+  if (typeof document === 'undefined' || !document.querySelector) return '';
+  for (let i = 0; i < names.length; i += 1) {
+    const node = document.querySelector('meta[name="' + names[i] + '"]');
+    const content = node && node.getAttribute && node.getAttribute('content');
+    if (content) return content;
+  }
+  return '';
+}
+
+function getRuntimeConfigValue(keys) {
+  const yida = window.__YIDA__ || {};
+  const sources = [
+    window.g_config,
+    window.pageConfig,
+    window.YIDA_CONFIG,
+    yida,
+    yida.config,
+    yida.pageConfig,
+    yida.runtimeConfig,
+  ];
+  for (let i = 0; i < sources.length; i += 1) {
+    const source = sources[i] || {};
+    for (let j = 0; j < keys.length; j += 1) {
+      const value = source[keys[j]];
+      if (typeof value === 'string' && value) return value;
+    }
+  }
+  return '';
+}
+
 function getCsrfToken() {
   try {
-    return (window.g_config && (window.g_config._csrf_token || window.g_config.csrfToken)) || '';
+    return getRuntimeConfigValue(['_csrf_token', 'csrfToken', 'csrf_token', 'global_csrf_token', '_tb_token_', 'csrf'])
+      || getMetaContent(['csrf-token', '_csrf_token', 'global-csrf-token'])
+      || getCookieValue('tianshu_csrf_token')
+      || getCookieValue('aliwork_csrf_token')
+      || getCookieValue('XSRF-TOKEN')
+      || getCookieValue('_csrf_token')
+      || getCookieValue('csrfToken')
+      || getCookieValue('_tb_token_')
+      || '';
   } catch (err) {
     return '';
   }
@@ -285,13 +341,18 @@ function buildDataRequest(binding) {
     // 已验证：searchFormDatas.json 用 GET + query 参数，formUuid/appType 必须放在 URL query 里
     // （放在 POST body 里后端读不到，会报「参数校验失败 formUuid」）。
     // 分页参数名是 currentPage（不是 pageNumber）。返回列表在响应的 content.data 中，由 unwrapRows 兜底解包。
-    const qs = new URLSearchParams({
+    const params = new URLSearchParams({
       formUuid: binding.formUuid,
       appType: binding.appType,
       currentPage: String(binding.pageNumber || 1),
       pageSize: String(binding.pageSize || 20),
       searchFieldJson: JSON.stringify(binding.query || {}),
-    }).toString();
+    });
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      params.set('_csrf_token', csrfToken);
+    }
+    const qs = params.toString();
     return {
       url: '/dingtalk/web/' + binding.appType + '/v1/form/searchFormDatas.json?' + qs,
       method: 'GET',
@@ -310,6 +371,7 @@ function requestJson(req, signal) {
   const headers = { 'Content-Type': 'application/json' };
   if (csrfToken) {
     headers.global_csrf_token = csrfToken;
+    headers['x-csrf-token'] = csrfToken;
   }
   return fetch(req.url, {
     method: req.method || 'GET',
@@ -324,7 +386,12 @@ function requestJson(req, signal) {
     return resp.json();
   }).then((json) => {
     if (json && json.success === false) {
-      throw new Error(json.errorMsg || json.message || 'request failed');
+      const code = json.errorCode || json.code || '';
+      const message = json.errorMsg || json.message || 'request failed';
+      if (code === 'TIANSHU_000030' || /csrf/i.test(message)) {
+        throw new Error('CSRF 校验失败：请确认页面同源打开且运行态已注入 CSRF token。' + message);
+      }
+      throw new Error(message);
     }
     return json;
   });

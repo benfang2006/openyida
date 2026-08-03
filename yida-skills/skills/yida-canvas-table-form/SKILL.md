@@ -40,7 +40,7 @@ description: Code Canvas + antd 默认批量录入技能。使用 Table、Input�
 
 ## 数据桥契约
 
-推荐让宿主、连接器适配层或页面装配代码显式注入：
+推荐让运行环境、连接器适配层或页面装配代码显式注入：
 
 ```javascript
 const writeBridge = {

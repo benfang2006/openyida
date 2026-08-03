@@ -6,7 +6,7 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 用户描述页面目标后，按下表把自然语言需求路由到确定模板。
 
-`generate-page` 的模板提供运行时契约、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
+`generate-page` 的模板提供运行时结构、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
 
 页面生成路径二选一：走模板路径时，先写业务化 `page-spec.json` 并执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；已经明确最终页面结构、数据桥和视觉细节时，走手写路径，直接 Write 最终 `.canvas.jsx`。
 
@@ -33,11 +33,13 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 | 列表、管理页、订单管理、客户列表、工单池 | `business-list` | `list` | 搜索筛选、表格、状态标签、详情抽屉 |
 | 详情页、客户档案、订单详情、项目详情 | `detail-profile` | `detail` | 单对象摘要、章节、侧栏元信息、时间线 |
 | 主从分栏、工单处理台、左列表右详情 | `split-pane-detail` | `list` | 左侧队列、右侧详情、时间线、动作区 |
-| 页面内门户壳、多入口门户、隐藏导航门户 | `portal-shell-home` | `workbench` | 自绘门户导航、角色入口、常用应用、动态摘要 |
+| 页面内门户壳、多入口门户、隐藏导航门户 | `portal-shell-home` | `workbench` | 仅显式要求页面内门户壳、自绘导航或隐藏平台导航时使用；默认门户/工作台不自建导航 |
 
 如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接规则。
 
-当模板本身包含页面内应用导航（如 `workbench-home` 的侧边导航、`portal-shell-home` 的门户导航）时，生成的 `.openyida-page.json` 会默认写入 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。发布后必须用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏宜搭原应用导航，保持页面单导航。
+默认生成页保留平台应用导航，不在自定义页面里自建同级导航，也不默认写 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，但仍保持平台导航可见；只有用户明确要求隐藏平台导航、无导航全屏体验或 `isRenderNav=false` 时，才在 spec 里写 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
+
+快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；不要在默认工作台或门户内容区再生成同级页面入口卡。`quickEntries` 更适合当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。
 
 ## 官网与品牌页素材流程
 
@@ -71,7 +73,9 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 ## 主题作用域
 
-`themeProfile: { "name": "yida-app-theme" }` 表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
+默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。`themeProfile: { "name": "yida-app-theme" }` 只在用户明确要求应用主题风格/应用主题色时使用，表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
+
+生成页默认用 `--theme-profile podBlue|podGreen|podOrange` 形成页面级 token profile；其中 `podBlue|podGreen|podOrange` 也是平台主题 key。`blue|green|orange` 仅作为旧 spec 可用主题，不再作为新页面默认推荐。
 
 `themeScope` 决定主题影响范围：
 

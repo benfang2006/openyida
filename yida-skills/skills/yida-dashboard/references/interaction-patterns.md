@@ -39,9 +39,9 @@
 
 不要在前端直接 `fetch('https://api.dingtalk.com/...')`，也不要在页面代码里保存 accessToken/appSecret。钉钉鉴权交给集成自动化的连接器后台托管。
 
-### 1.0.1 为什么不再推荐"页面数据源直连连接器"
+### 1.0.1 为什么不推荐"页面数据源直连连接器"
 
-历史方案是在宜搭页面编辑器里把「待办2.0」动作绑成页面数据源 `createDingTodo`，然后前端调 `this.dataSourceMap.createDingTodo.load(payload)`。问题：
+不要在宜搭页面编辑器里把「待办2.0」动作绑成页面数据源 `createDingTodo`，也不要在前端调用 `this.dataSourceMap.createDingTodo.load(payload)`。这种做法的问题：
 
 1. **AI 无法 CLI 闭环**：页面数据源绑定只能在设计器 UI 里点；Agent 没法保证这一步完成
 2. **难以 PoC 回归**：连接器入参变了没法自动校验

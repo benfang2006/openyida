@@ -6,7 +6,7 @@
 
 **面向 AI 编程工具的宜搭低代码 CLI。**
 
-OpenYida 把 Codex、Claude Code、Cursor、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
+OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
 
 [快速开始](#快速开始) · [核心能力](#核心能力) · [完整功能列表](./docs/capabilities.md) · [自定义页面开发](#自定义页面开发) · [常用命令](#常用命令) · [开发与校验](#开发与校验)
 
@@ -15,7 +15,7 @@ OpenYida 把 Codex、Claude Code、Cursor、Qoder、悟空等 AI 编程助手连
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**帮助中心:** [English](https://openyida.ai/docs/en) · [简体中文](https://openyida.ai/docs) · [繁體中文](https://openyida.ai/docs/zh-Hant/) · [日本語](https://openyida.ai/docs/ja/) · [한국어](https://openyida.ai/docs/ko/) · [Français](https://openyida.ai/docs/fr/) · [Deutsch](https://openyida.ai/docs/de/) · [Español](https://openyida.ai/docs/es/) · [Português](https://openyida.ai/docs/pt/) · [Tiếng Việt](https://openyida.ai/docs/vi/) · [हिन्दी](https://openyida.ai/docs/hi/) · [العربية](https://openyida.ai/docs/ar/)
+**帮助中心:** [English](https://xmtrf1.aliwork.com/o/openyida/help) · [简体中文](https://xmtrf1.aliwork.com/o/openyida/help) · [繁體中文](https://xmtrf1.aliwork.com/o/openyida/help) · [日本語](https://xmtrf1.aliwork.com/o/openyida/help) · [한국어](https://xmtrf1.aliwork.com/o/openyida/help) · [Français](https://xmtrf1.aliwork.com/o/openyida/help) · [Deutsch](https://xmtrf1.aliwork.com/o/openyida/help) · [Español](https://xmtrf1.aliwork.com/o/openyida/help) · [Português](https://xmtrf1.aliwork.com/o/openyida/help) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida/help) · [हिन्दी](https://xmtrf1.aliwork.com/o/openyida/help) · [العربية](https://xmtrf1.aliwork.com/o/openyida/help)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 </div>
@@ -274,7 +274,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | 查询企业效能概览和明细报表 |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建宜搭应用 |
 | `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` | 更新应用信息 |
-| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|hide\|show> <appType> ...` | 管理应用左侧导航分组 |
+| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | 管理应用左侧导航分组 |
 | `openyida app-permission <get\|set\|add\|remove\|search-user> ...` | 管理应用主管理员、数据管理员和开发成员 |
 | `openyida i18n <overview\|config\|languages\|list\|upsert\|delete\|translate\|translate-all\|upgrade> <appType> ...` | 管理应用多语言文案和语言配置 |
 | `openyida export <appType> [output]` | 导出应用（生成迁移包） |
@@ -297,12 +297,12 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> <appType> ...` | 管理聚合表（virtualView） |
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | 获取单个或全部表单 Schema |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | 导出应用实体关系图 |
-| `openyida create-page <appType> "<name>" [--mode dashboard] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建自定义展示页面 |
+| `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建自定义展示页面 |
 | `openyida generate-page <template>` | 基于高质量模板生成页面 |
 | `openyida build-page <sourceFile> [--output file\|--write]` | 构建宜搭兼容页面源码 |
 | `openyida check-page <src> [--compat]` | 检查自定义页面规范 |
 | `openyida compile <src>` | 本地编译自定义页面 |
-| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--open\|--no-open]` | 编译并发布自定义页面 |
+| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | 编译并发布自定义页面 |
 | `openyida update-form-config <appType> ...` | 更新表单配置 |
 | `openyida get-form-config <appType> <formUuid> [--json]` | 查询表单配置 |
 
@@ -396,7 +396,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida feedback <setup\|url\|dismiss\|status> [options]` | 配置体验反馈表单和本地提醒状态 |
 | `openyida batch <file>\|--commands "cmd1 ; cmd2" [--stop-on-error] [--json]` | 批量执行 OpenYida 命令 |
 | `openyida flash-to-prd --file <path> --name "<project>"` | 闪记 / 会议纪要转 PRD prompt |
-| `openyida ai <text\|image> [options]` | 调用宜搭 AI 文生文和识图能力 |
+| `openyida ai <text\|image> [options]` | 调用 AI 文生文和识图能力 |
 | `openyida asset <status\|verify-url\|resolve\|generate> [options]` | 检测素材能力 / 校验图片 URL / 解析回填素材 |
 | `openyida cdn-config [options]` | 配置 CDN / OSS 上传 |
 | `openyida cdn-upload <image-path>` | 上传图片到 CDN |
@@ -426,6 +426,8 @@ npm run build:skills
 dist/skills/openyida/
 openyida-skills.zip
 ```
+
+QwenWork（千问办公）与 QoderWork 一样使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
 
 ## 开发与校验
 

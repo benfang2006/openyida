@@ -39,7 +39,7 @@ metadata:
 
 1. 单屏控制塔结构，见 `references/structure-and-layout.md`。
 2. 真实数据绑定：聚合指标走报表/聚合结果，明细走分页查询；禁止前端拉全量后聚合。
-3. 视觉主题和信息层级，见 `references/theme-presets.md`。
+3. 视觉主题和信息层级，见 `references/theme-presets.md`。默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择，用同名 profile 注入页面 token 并可同步应用 `--theme`。
 4. 筛选与图表联动；控件必须受控并真实改变下方数据。
 5. 每元素可派单：`saveFormData → 集成自动化 → 待办2.0 ConnectorCall`。
 6. 卡片截图分享：真实可点击，截图时排除截图按钮本身。
@@ -59,7 +59,7 @@ metadata:
 | 维护已有 `.oyd.jsx`、`renderJsx`、`didMount` 页面 | legacy `yida-custom-page` + `yida-chart` |
 | 单个原生统计报表 | `yida-report` |
 
-不得因为历史样本是普通自定义页面，就把新看板降级为 `.oyd.jsx`。
+不得因为维护旧页面时看到普通自定义页面样例，就把新看板降级为 `.oyd.jsx`。
 
 ## Canvas-first 交付流程
 
@@ -87,11 +87,11 @@ Canvas 模板入口：
 
 ```bash
 openyida generate-page dashboard-overview --spec <page-spec.json> \
-  --theme-profile yida-app-theme \
+  --theme-profile podBlue \
   --output project/pages/src/<name>.canvas.jsx --compile
 ```
 
-用户强调“大屏 / 指挥舱 / 实时监控”时使用 `data-screen` 模板。Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
+默认主题从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题风格/应用主题色时，才把示例里的 `podBlue` 换成 `yida-app-theme`。用户强调“大屏 / 指挥舱 / 实时监控”时使用 `data-screen` 模板。Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
 
 ## 数据与派单边界
 
@@ -161,7 +161,7 @@ use_skill("yida-chart", "实现明确要求的 ECharts 或维护旧 native 图�
 - 页面规范交 `yida-custom-page`。
 - 旧 ECharts 图表交 `yida-chart`。
 - 本地使用 `.oyd.jsx`、`openyida check-page`、`openyida compile`。
-- 历史样本和本技能 references 中的 `renderJsx` / `didMount` 片段仅供维护旧页面，不代表新建默认。
+- references 中的 `renderJsx` / `didMount` 片段仅供维护旧页面，不代表新建默认。
 
 ## 严格禁止
 

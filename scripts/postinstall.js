@@ -9,11 +9,14 @@
  *   4. 首次安装欢迎引导
  *
  * 正确的 skills 安装路径（所有工具统一使用 skills/ 子目录）：
+ *   folderName 固定为 yida-skills，安装目标始终是 ~/<tool-config>/skills/yida-skills/
  *   ~/.claude/skills/yida-skills/          ← <package>/yida-skills (copy)
  *   ~/.codex/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.opencode/skills/yida-skills/        ← <package>/yida-skills (copy)
  *   ~/.aone_copilot/skills/yida-skills/    ← <package>/yida-skills (copy)
  *   ~/.cursor/skills/yida-skills/          ← <package>/yida-skills (copy)
+ *   ~/.qwenworkcn/skills/yida-skills/      ← <package>/yida-skills (copy)
+ *   ~/.qoderwork/skills/yida-skills/       ← <package>/yida-skills (copy)
  *   ~/.qoder/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.mulerun/skills/yida-skills/          ← <package>/yida-skills (copy)
  *
@@ -255,19 +258,21 @@ openyida copy
 
 用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，加载 \`yida-app\` 并选择 \`fast_build\`。
 
-\`fast_build\` 只做：创建应用 → 核心表单 → 主页面 → 编写主页面源码 → 发布 → 返回访问链接。发布主页面成功并输出 URL 后即完成。
+\`fast_build\` 只做：创建应用 → 核心表单 → 主页面 → 编写主页面源码 → 发布 + 轻量导航排序 → 返回一个主访问链接和资源摘要。发布主页面成功后立刻执行 \`openyida publish ... --auto-nav-order\` 或 \`openyida nav-group auto-order <appType>\`，默认优先级为门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单。
+
+表单页开发默认加载 \`yida-form-detail\` 做表单视觉引导，并把 Divider 分割线语义分组合并进字段 JSON；是否额外注入 formDetail CSS 按用户要求或交付模式决定。
 
 fast_build 页面源码默认不得使用 \`this.dataSourceMap.*\`，除非本轮已经明确创建并绑定设计器数据源；默认使用入口型页面或 \`this.utils.yida.*\` 查询已创建表单。
 
-最终结果如果包含 3 个及以上资源或链接，必须用 Markdown 表格集中展示（资源类型、名称/用途、链接、状态），不要连续堆 URL；1-2 个链接才用简短列表。
+最终结果只输出一个主访问链接：新增/修改/发布单个页面时输出当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景输出应用首页 \`{base_url}/{appType}/workbench\`。资源较多时只用表格列 \`资源类型 | 名称/用途 | ID | 状态\`，不要把 \`g.alicdn.com\` 静态资源、CDN 构建产物、locale JSON、\`/admin\` 管理页或中间文件 URL 当成最终结果。
 
 fast_build 创建/解析多个表单后，页面阶段需要字段映射时，对每个目标表单默认只执行一次 \`openyida get-schema <appType> <formUuid> --field-map-json\`，读取完整 JSON 并写入/复用 \`.cache/<项目名>-schema.json\`；不要用 \`head\` / \`tail\` / \`grep\` 截断 schema stdout 后重复拉取。
 
 Canvas 页面实现二选一：走模板路径时先写业务化 \`page-spec.json\` 再 \`openyida generate-page ... --spec ... --compile\`，之后只做必要小范围 Edit/patch；如果已经明确最终页面结构，跳过 \`generate-page\`，直接 Write 最终 \`.canvas.jsx\`。不要 generate-page 后马上 Read 大段源码并全量 Write 覆盖同一路径。
 
-完整应用主页面生成默认包含 \`yida-page-uiux\` 轻量 ui_skill 引导，产出页面类型、模板路由、\`visualProfile\` 和去 sample 化检查，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。这不等于 \`deep_design\`。
+所有模式的 PRD 都必须写入视觉规范（推荐主题、主题色来源、明暗模式、导航视觉、页面气质/布局）；fast_build 只写轻量视觉规范，不升级成长 PRD。完整应用主页面生成默认包含 \`yida-page-uiux\` 轻量 ui_skill 引导，产出页面类型、模板路由、\`visualProfile\` 和去 sample 化检查，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。这不等于 \`deep_design\`。
 
-不要默认加载 \`yida-app-uiux\`、\`yida-data-source-connectors\`、\`yida-data-management\`、\`yida-nav-group\`、\`yida-dashboard\`，也不要默认做示例数据、导航整理、截图验收、公开访问、长 PRD、深度 UI 设计或深读 references；这些只在用户明确要求或 \`full_demo\` / \`deep_design\` 时执行。
+不要默认加载 \`yida-app-uiux\`、\`yida-data-source-connectors\`、\`yida-data-management\`、\`yida-dashboard\`，也不要默认做示例数据、精细导航分组、截图验收、公开访问、长 PRD、深度 UI 设计或深读 references；这些只在用户明确要求或 \`full_demo\` / \`deep_design\` 时执行。发布后的轻量导航排序是 fast_build 默认收尾，不等于 full_demo 导航整理。
 
 ## 子技能目录
 
@@ -436,6 +441,20 @@ safeExec(() => {
 safeExec(() => {
   if (fs.existsSync(path.join(HOME_DIR, '.cursor'))) {
     installSkillsToTool(path.join(HOME_DIR, '.cursor'));
+  }
+});
+
+// QwenWork（千问办公）— 仅在已安装时安装到全局 skills 目录
+safeExec(() => {
+  if (fs.existsSync(path.join(HOME_DIR, '.qwenworkcn'))) {
+    installSkillsToTool(path.join(HOME_DIR, '.qwenworkcn'));
+  }
+});
+
+// QoderWork — 仅在已安装时安装
+safeExec(() => {
+  if (fs.existsSync(path.join(HOME_DIR, '.qoderwork'))) {
+    installSkillsToTool(path.join(HOME_DIR, '.qoderwork'));
   }
 });
 

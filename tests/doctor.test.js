@@ -294,7 +294,7 @@ describe('EnvironmentChecker', () => {
     cleanupTempDir(tmpDir);
   });
 
-  test('checkLoginStatus 在宿主 token 注入模式缺 token 时不提示本地登录', () => {
+  test('checkLoginStatus 在运行环境 token 注入模式缺 token 时不提示本地登录', () => {
     const originalAuthEnabled = process.env.YIDA_AUTH_ENABLED;
     const originalAccessToken = process.env.OPENYIDA_ACCESS_TOKEN;
     const originalRefreshToken = process.env.OPENYIDA_REFRESH_TOKEN;
@@ -313,7 +313,7 @@ describe('EnvironmentChecker', () => {
         fixType: null,
         fixCommand: null,
       });
-      expect(result.label).toContain('宿主 token 注入');
+      expect(result.label).toContain('运行环境 token 注入');
       expect(result.message).toContain('OPENYIDA_ACCESS_TOKEN');
       expect(result.message).toContain('OPENYIDA_REFRESH_TOKEN');
       expect(result.message).not.toContain('openyida login');

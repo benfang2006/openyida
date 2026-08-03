@@ -18,6 +18,7 @@ const {
   httpPostJson,
   httpGet,
 } = require('../lib/core/utils');
+const { buildBrowserHandoff } = require('../lib/core/browser-handoff');
 
 jest.mock('../lib/auth/token-auth', () => ({
   getAccessToken: jest.fn(() => 'test-access-token'),
@@ -521,7 +522,7 @@ describe('loadAuthData', () => {
     expect(loadAuthData(tmpDir)).toBeNull();
   });
 
-  test('YIDA_AUTH_ENABLED=true 时读取宿主注入 token，忽略旧 cookie env', () => {
+  test('YIDA_AUTH_ENABLED=true 时读取运行环境注入 token，忽略旧 cookie env', () => {
     process.env.YIDA_AUTH_ENABLED = 'true';
     process.env.OPENYIDA_ACCESS_TOKEN = 'env-access-token';
     process.env.OPENYIDA_REFRESH_TOKEN = 'env-refresh-token';
@@ -542,7 +543,7 @@ describe('loadAuthData', () => {
     });
   });
 
-  test('YIDA_AUTH_ENABLED=true 且宿主缺 token 时不回退旧 cookies.json 文件', () => {
+  test('YIDA_AUTH_ENABLED=true 且运行环境缺 token 时不回退旧 cookies.json 文件', () => {
     const cacheDir = path.join(tmpDir, '.cache');
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.writeFileSync(path.join(cacheDir, 'cookies.json'), JSON.stringify([
@@ -583,6 +584,8 @@ describe('detectActiveTool', () => {
     delete process.env.QODER_IDE;
     delete process.env.QODER_AGENT;
     delete process.env.QODERCLI_INTEGRATION_MODE;
+    delete process.env.QWENWORK_INTEGRATION_MODE;
+    delete process.env.QWENWORKCN_INTEGRATION_MODE;
     delete process.env.CODEX_SHELL;
     delete process.env.CODEX_CI;
     delete process.env.CODEX_THREAD_ID;
@@ -594,6 +597,7 @@ describe('detectActiveTool', () => {
     delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
     delete process.env.VSCODE_GIT_ASKPASS_NODE;
+    delete process.env.OPENYIDA_NO_BROWSER_HANDOFF;
   });
 
   afterEach(() => {
@@ -651,6 +655,31 @@ describe('detectActiveTool', () => {
     expect(result.tool).toBe('qoder');
   });
 
+  test('QWENWORKCN_INTEGRATION_MODE 环境变量时检测为 QwenWork', () => {
+    process.env.QWENWORKCN_INTEGRATION_MODE = 'qwen_work';
+    process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk-ts';
+    process.env.CLAUDE_CODE = '1';
+    const result = detectActiveTool();
+    expect(result.tool).toBe('qwenwork');
+    expect(result.displayName).toBe('QwenWork（千问办公）');
+    expect(result.dirName).toBe('.qwenworkcn');
+  });
+
+  test('QwenWork 和 QoderWork 环境默认附加浏览器 handoff', () => {
+    process.env.QWENWORKCN_INTEGRATION_MODE = 'qwen_work';
+    expect(buildBrowserHandoff('https://example.com/yida')).toMatchObject({
+      status: 'open_url',
+      handoff_type: 'browser',
+    });
+
+    delete process.env.QWENWORKCN_INTEGRATION_MODE;
+    process.env.QODERCLI_INTEGRATION_MODE = 'qoder_work';
+    expect(buildBrowserHandoff('https://example.com/yida')).toMatchObject({
+      status: 'open_url',
+      handoff_type: 'browser',
+    });
+  });
+
   test('CODEX_SHELL 环境变量时检测为 Codex', () => {
     process.env.CODEX_SHELL = '1';
     const result = detectActiveTool();
@@ -667,6 +696,8 @@ describe('detectActiveTool', () => {
     delete process.env.OPENCODE_CLIENT;
     delete process.env.QODER_IDE;
     delete process.env.QODERCLI_INTEGRATION_MODE;
+    delete process.env.QWENWORK_INTEGRATION_MODE;
+    delete process.env.QWENWORKCN_INTEGRATION_MODE;
     delete process.env.CODEX_SHELL;
     delete process.env.CURSOR_TRACE_ID;
     process.env.AGENT_WORK_ROOT = '/home/user/.real/workspace';

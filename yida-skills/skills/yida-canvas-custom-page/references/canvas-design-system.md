@@ -1,11 +1,11 @@
 # Code Canvas 主色对齐与视觉落地
 
-真实业务页跟随宿主 App 品牌主题色；官方 sample / 示例展示应用使用页面级固定主题和差异化色盘。`yida-page-uiux` 负责确定页面类型、差异化和去 AI 味方向；Code Canvas 实现层负责把这些决策落到 antd token、Tailwind、图表和控件状态。
+真实业务页默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；只有用户明确要求应用主题风格/应用主题色时才跟随运行态应用品牌主题色。官方 sample / 示例展示应用使用页面级固定主题和差异化色盘。`yida-page-uiux` 负责确定页面类型、差异化和去 AI 味方向；Code Canvas 实现层负责把这些决策落到 antd token、Tailwind、图表和控件状态。
 
 > 决策层：`yida-page-uiux` 负责页面类型、导航形态、5 维差异化、去 AI 味和禁 emoji。
-> 实现层：Code Canvas 负责把真实业务页跟随 App 品牌、sample 页面独立主题落到 antd token / Tailwind / 图表 / 控件状态。
+> 实现层：Code Canvas 负责把真实业务页的应用主题 token、显式应用主题跟随、sample 页面独立主题落到 antd token / Tailwind / 图表 / 控件状态。
 
-> **前提是导航可见且是真实业务页**：跟随品牌主色是为了跟应用框架融合。页面隐藏应用导航（`isRenderNav=false`，沉浸/独立/门户/大屏，由 `yida-page-uiux` Step 0 判定）时，主色相可自立。`lib/samples/**` 或官方 sample 展示应用也使用自立主色相：`followRuntimeTheme: false`，antd `colorPrimary` / 图表色 / CSS 变量都喂页面自己的固定色盘，语义色保持固定。
+> **前提是导航可见且是真实业务页**：默认仍先选 `podBlue`、`podGreen`、`podOrange` 等应用主题；显式要求应用主题风格时，跟随品牌主色是为了跟应用框架融合。只有用户明确要求隐藏平台导航、无导航全屏或 `isRenderNav=false`（由 `yida-page-uiux` Step 0 判定）时，主色相可自立。`lib/samples/**` 或官方 sample 展示应用也使用自立主色相：`followRuntimeTheme: false`，antd `colorPrimary` / 图表色 / CSS 变量都喂页面自己的固定色盘，语义色保持固定。
 
 ## themeScope：页面级与应用级换肤
 
@@ -13,10 +13,12 @@ OpenYida 生成页会把主题拆成两个概念：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
-| `themeProfile` | `yida-app-theme` | 宜搭应用主题色、壳层模式、移动导航样式等配置 |
+| `themeProfile` | `podBlue` / `podGreen` / `podOrange` | 推荐应用主题；用户明确要求应用主题风格/应用主题色时才用 `yida-app-theme` |
 | `themeScope` | `page` | 主题作用域，决定只影响当前页还是请求应用壳层一起换肤 |
 
-`themeScope: page` 是默认安全模式：真实业务页默认跟随宜搭运行态 `style#yida-global-theme`，不污染应用其他页面。只有 `profile.followRuntimeTheme === false`、用户显式传了 `themeColor`，或当前文件是官方 sample 时，才在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。sample 默认必须走覆盖模式。
+`themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。只有用户明确要求应用主题风格/应用主题色时，才让页面跟随运行态 `style#yida-global-theme`。用户显式传了 `themeColor`，或当前文件是官方 sample 时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。sample 默认必须走覆盖模式。
+
+默认推荐主题是 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-theme/references/theme-token-presets.md` 为准。
 
 ```jsx
 var THEME_COLOR_LEVELS = {
@@ -63,7 +65,7 @@ React.useEffect(function () {
 }, []);
 ```
 
-命令侧：`openyida generate-page product-homepage --theme-profile yida-app-theme --theme-scope page|app --compile`。页面级换肤写 scoped 变量；应用级换肤使用显式 `themeScope: app`。
+命令侧：默认从 `podBlue`、`podGreen`、`podOrange` 三选一，例如 `openyida generate-page product-homepage --theme-profile podBlue --theme-scope page --compile`。页面级换肤写 scoped 变量；只有用户明确要求应用主题风格/应用主题色时，才使用 `--theme-profile yida-app-theme` 或显式 `themeScope: app`。
 
 ## 自然语言推断规则
 
@@ -80,11 +82,11 @@ React.useEffect(function () {
 
 ## 核心事实：CSS 变量直接级联，antd token 使用解析色值
 
-Canvas 的 `runtimeCode` 在**宿主页真实 `window`** 里 `new Function` 执行（见 SKILL.md「运行时事实」），组件挂在宿主 DOM 树内。由此得到主色落地的分界：
+Canvas 的 `runtimeCode` 在**运行页面真实 `window`** 里 `new Function` 执行（见 SKILL.md「运行时事实」），组件挂在页面 DOM 树内。由此得到主色落地的分界：
 
 | 消费方 | 品牌色怎么给 | 原因 |
 | --- | --- | --- |
-| 普通 DOM / Tailwind 元素（`style` / `className`） | **直接用 CSS 变量** `var(--color-brand1-6)` | CSS 变量沿 DOM 树级联，Canvas 节点在宿主树内，能读到平台注入的 `--color-brand1-*` |
+| 普通 DOM / Tailwind 元素（`style` / `className`） | **直接用 CSS 变量** `var(--color-brand1-6)` | CSS 变量沿 DOM 树级联，Canvas 节点在页面 DOM 树内，能读到平台注入的 `--color-brand1-*` |
 | antd 组件（Button / Table / Tabs…） | **JS 解析成真实色值**喂 `ConfigProvider.theme.token.colorPrimary` | antd 的色板（hover/active/disabled）由 JS 算法从一个真实颜色推导，`var(...)` 是字符串塞不进算法 |
 | JS 消费的颜色：recharts `stroke`/`fill`、canvas 绘制、图表配色数组 | **JS 解析成真实色值** | 传给库的是运行时字符串，不走 CSS 级联 |
 
@@ -92,7 +94,7 @@ Canvas 的 `runtimeCode` 在**宿主页真实 `window`** 里 `new Function` 执�
 
 ## 读品牌色的 helper（JS 消费场景用）
 
-因为跑在真 window，直接读根节点计算样式即可。带兜底，读不到时退 OpenYida 默认的宜搭应用主题低饱和蓝灰。
+因为跑在真 window，直接读根节点计算样式即可。带兜底，读不到时退到 `podBlue` 应用主题主色。
 
 ```jsx
 // 品牌色阶：1 最浅 → 6 主色 → 10 最深，与平台 --color-brand1-* 对齐
@@ -132,12 +134,12 @@ function readBrandColor(level, fallback) {
 }
 
 function YidaComp(props) {
-  var colorPrimary = readBrandColor(6, '#6b7cab'); // 缺失时退宜搭应用主题默认主色
+  var colorPrimary = readBrandColor(6, 'rgb(0, 137, 255)'); // 缺失时退到 podBlue 应用主题主色
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: colorPrimary,   // 主色跟随 App 品牌
+          colorPrimary: colorPrimary,   // 主色来自应用主题 token；显式要求时才跟随应用品牌
           borderRadius: 8,              // 圆角等非主色 token 可按视觉方向调
         },
         // 不覆盖 colorSuccess/colorWarning/colorError，语义色保持固定
@@ -207,7 +209,7 @@ Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本�
 
 ## Tailwind：CSS 变量直接用
 
-Canvas 节点在宿主树内，Tailwind 运行时对普通元素直接用 arbitrary value 引用 CSS 变量即可，**不需要 JS**：
+Canvas 节点在页面 DOM 树内，Tailwind 运行时对普通元素直接用 arbitrary value 引用 CSS 变量即可，**不需要 JS**：
 
 ```jsx
 // 主色文字 / 背景 / 边框，直接引平台变量，跟随 App 主题

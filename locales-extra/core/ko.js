@@ -28,6 +28,7 @@ module.exports = {
     cmd_import: '마이그레이션 패키지 가져오기, 앱 재구축',
     group_form: '양식 & 페이지',
     cmd_create_form: '양식 페이지 생성',
+    cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: '양식 페이지 업데이트',
     cmd_list_forms: 'List forms/pages in an app',
     cmd_aggregate_table: 'Manage aggregate tables (virtualView)',
@@ -128,7 +129,7 @@ module.exports = {
       '  login                                                        Manage login credentials (cache first, then QR scan)\n' +
       '  logout                                                       Logout / switch account\n' +
       '  create-app "<name>" [desc] [icon] [color] [theme] [nav] [layout]  Create an app, output appType\n' +
-      '  create-page <appType> "<pageName>" [--mode dashboard]        Create a custom page, output pageId\n' +
+      '  create-page <appType> "<pageName>" [--mode dashboard] [--hide-nav]        Create a custom page, output pageId\n' +
       '  create-form create <appType> "<formName>" <fieldsJSON> [--layout <layout>] [--theme <theme>] [--label-align <align>]  Create a form page\n' +
       '  create-form update <appType> <formUuid> <changesJSON>        Update a form page\n' +
       '  list-forms <appType> [--keyword <text>]                      List forms/pages in an app\n' +
@@ -236,6 +237,7 @@ module.exports = {
     forbidden_alias_list_apps: '`{0}` is not an OpenYida command; use `{1}` for application discovery.',
     forbidden_alias_get_app: '`{0}` is ambiguous; use `{1}` for app name search, `{2}` for form/schema lookup, or `{3}` for bound context preflight.',
     forbidden_alias_create_app_json: '`{0}` is not a separate command contract; use canonical `{1}` output.',
+    forbidden_alias_create_form_name_fields_options: '`{0}` form creation must use the explicit `create` subcommand; `{1}` / `{2}` option shape is not supported.',
     forbidden_alias_create_page_app_type_option: '`{0}` takes appType as the first positional argument, not `{1}`.',
     forbidden_alias_get_schema_app_type_option: '`{0}` takes appType as the first positional argument, not `{1}`.',
     forbidden_alias_get_schema_form_uuid_option: '`{0}` takes formUuid as the second positional argument, not `{1}`.',
@@ -258,8 +260,8 @@ module.exports = {
     generate_page_example: 'Example: openyida generate-page product-homepage --brand-name OpenKuma --brand-initials OK --theme-scope page --output pages/src/home.canvas.jsx --compile',
     build_page_usage: 'Usage: openyida build-page <sourceFile> [--output pages/build/page.yida.jsx|--write] [--json]',
     build_page_example: 'Example: openyida build-page pages/src/dashboard.oyd.jsx --output pages/build/dashboard.yida.jsx',
-    publish_usage: 'Usage: openyida publish <sourceFile> <appType> <formUuid> [--health-check] [--canvas]',
-    publish_example: 'Example: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check',
+    publish_usage: 'Usage: openyida publish <sourceFile> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    publish_example: 'Example: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check --auto-nav-order',
     formula_usage: 'Usage: openyida formula evaluate <formula|file> [--schema schema.json] [--json] [--strict]',
     formula_example: `Example: openyida formula evaluate 'IF(GT(#{numberField_total}, 100), "high", "low")' --schema .cache/schema.json`,
     verify_usage: 'Usage: openyida verify-short-url <appType> <formUuid> <url>',
@@ -582,18 +584,18 @@ module.exports = {
   },
   create_page: {
     title: '  create-page - Yida 커스텀 페이지 생성 도구',
-    usage: '사용법: openyida create-page <appType> <페이지 이름> [--mode dashboard]',
+    usage: '사용법: openyida create-page <appType> <페이지 이름> [--mode dashboard] [--hide-nav]',
     example: '예: openyida create-page APP_XXX "Dashboard" --mode dashboard',
     app_id: '\n  앱 ID:    {0}',
     page_name: '  페이지 이름: {0}',
     step_create: '\n📄 커스텀 페이지 생성 중...',
     sending: '  Sending saveFormSchemaInfo request...',
     success: '  ✅ 커스텀 페이지 생성 성공!',
-    step_dashboard_config: '\n🖥️  Step 3: Configure dashboard fullscreen mode',
-    dashboard_config_ok: '  ✅ Dashboard mode configured: top nav hidden, chromeless custom URL enabled',
-    dashboard_config_failed: '  ⚠️  Dashboard mode config failed: {0}',
+    step_dashboard_config: '\n🖥️  Step 3: Configure hidden navigation',
+    dashboard_config_ok: '  ✅ Navigation hidden by explicit request, chromeless custom URL enabled',
+    dashboard_config_failed: '  ⚠️  Hidden navigation config failed: {0}',
     err_mode_invalid: 'Unsupported page mode: {0}',
-    mode_hint: 'Available modes: default, dashboard',
+    mode_hint: 'Available modes: default, dashboard. Navigation is visible by default; pass --hide-nav or --render-nav false to hide it.',
     page_id_label: '  pageId: {0}',
     url_label: '  URL: {0}',
     failed: '  ❌ 커스텀 페이지 생성 실패: {0}',
@@ -701,6 +703,7 @@ module.exports = {
     config_failed: '  ⚠️  Config update failed: {0}',
     schema_ok_config_failed: '  Schema saved, but config update failed',
     schema_saved_config_failed: '  Schema saved, but config update failed',
+    create_post_failure_retry_advice: 'Do not repeat create directly. First run openyida list-forms {0} --keyword "{1}" to check for an existing same-title form; if this run already created a blank/existing form, prefer create-form update or a future --resume-form-uuid flow.',
     error: '\n❌ 폼 페이지 생성 오류: {0}',
     usage_create: 'Usage: openyida create-form create <appType> <formTitle> <fieldsJsonFile>',
     example_create: 'Example: openyida create-form create "APP_XXX" "Employee Info" .cache/openyida/forms/employee-fields.json',
@@ -752,6 +755,8 @@ module.exports = {
     in_table: 'in sub-table "{0}" ',
     update_ok: ' - updated {0}field "{1}" props: {2}',
     update_not_found: ' - {0}field "{1}" not found, skipped',
+    field_ambiguous: ' - {0}field "{1}" matched multiple candidates, Schema not saved',
+    field_resolution_failed: 'Field resolution failed; Schema was not saved',
     unknown_action: ' - unknown action "{0}", skipped',
     filling_rule_resolved: '  🔗 Filling rule resolved: @label:{0} → {1}',
     filling_rule_failed: '  ⚠️ Filling rule failed: field with label "{0}" not found, please check the field name',
@@ -1084,6 +1089,7 @@ module.exports = {
     available_templates: 'Available templates: {0}',
     template_not_found: 'Template file not found: {0}',
     done: 'Page generated: {0}',
+    output_project_prefix_stripped: 'Current directory is already an OpenYida project; output path was adjusted from {0} to {1} to avoid project/project.',
     hint: 'Next run openyida compile <file>, or pass --compile to compile immediately.',
     success: 'Page generation complete'
   },
@@ -1140,6 +1146,7 @@ module.exports = {
     lint_iframe_self_navigation: 'Yida 사용자 정의 페이지는 iframe 안에서 실행됩니다. 중첩 페이지를 피하려면 Yida 페이지 이동에 target="_top"/target="_blank" 또는 window.top.location을 사용하세요.',
     lint_page_size_limit: 'pageSize={0}이 Yida API 제한 100을 초과합니다. 100 이하를 사용하세요',
     lint_page_size_recommend: 'pageSize={0}이 큽니다. 권장값은 50입니다(최고 성능, 최대 100). 10/20/50을 우선 사용하세요',
+    lint_emoji_forbidden: 'Found emoji "{0}". OpenYida generated artifacts must not use emoji in UI copy, source comments, file paths, or code constants; use plain text, SVG, or icon components instead.',
     lint_searchformdata_http_post: 'searchFormDatas.json을 직접 호출할 때는 GET + 쿼리 파라미터가 필수입니다(formUuid/appType을 URL 쿼리에 넣기). POST로 formUuid를 body에 넣으면 "参数校验失败formUuid" 오류가 발생하고 대시보드/목록이 모두 0으로 표시됩니다',
     lint_searchformdata_http_pagenumber: 'searchFormDatas.json의 페이지 파라미터 이름은 currentPage입니다(pageNumber 아님). pageNumber를 쓰면 페이징이 작동하지 않습니다',
     lint_searchformdata_http_unwrap: '브라우저 searchFormDatas.json 응답은 목록이 content.data에 중첩됩니다({ content: { data: [...] } }). json.data만 읽으면 0건이 됩니다. (json.content && json.content.data)로 언랩하세요',
@@ -1216,12 +1223,15 @@ module.exports = {
     step_health_check: '\n🩺 Step 5: Health check published page\n',
     health_check_ok: '  ✅ Health check passed: HTTP {0}',
     health_check_failed: '  ⚠️  Health check failed: HTTP {0} {1}',
+    step_nav_order: '\n🧭 Auto-order app navigation\n',
+    nav_order_ok: '  ✅ Navigation order updated: {0}',
+    nav_order_failed: '  ⚠️  Navigation order failed; page is already published: {0}',
     exception: '\n❌ 배포 오류: {0}',
     error: '\n❌ Publish error: {0}',
     source_not_found: '❌ 소스 파일을 찾을 수 없습니다: {0}',
     source_path_hint: '💡 이 소스 파일 경로를 시도해 보세요: {0}',
-    usage: '사용법: openyida publish <소스 파일> <appType> <formUuid> [--health-check] [--canvas]',
-    example: '예시: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check'
+    usage: '사용법: openyida publish <소스 파일> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    example: '예시: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check --auto-nav-order'
   },
   qr_login: {
     title: '🔐 Yida 터미널 QR 코드 로그인',

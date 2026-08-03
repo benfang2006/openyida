@@ -89,7 +89,7 @@ const DEFAULT_ROADMAP = [
   { stage: '17:00', title: '日报自动归档', text: '门户沉淀今日处理记录，并推送给各角色负责人。' },
 ];
 const DEFAULT_THEME_PROFILE = { followRuntimeTheme: false, name: 'crimson-portal', themeColor: '#DC2626', themeColorDeep: '#7F1D1D', themeColorSoft: '#FFF1F2', themeColorTint: 'rgba(220, 38, 38, 0.16)', palette: ['#DC2626', '#F97316', '#F43F5E', '#F59E0B', '#10B981'] };
-const DEFAULT_APP_BLUEPRINT = { shell: 'portal', navigation: ['首页', '业务', '报表', '设置'] };
+const DEFAULT_APP_BLUEPRINT = { shell: 'single_page', navigation: [] };
 const DEFAULT_INSIGHTS = [{
   conclusion: '今天优先处理 6 条高优先级流程',
   evidence: '审批、合同材料和客户回访集中在上午，建议把流程入口和负责人状态固定在首屏。',
@@ -152,6 +152,20 @@ function getNavItems() {
   const pages = Array.isArray(APP_BLUEPRINT.pages) ? APP_BLUEPRINT.pages : [];
   const names = navigation.length ? navigation : pages.map((page) => page.name).filter(Boolean);
   return (names.length ? names : FEATURES.map((item) => item.title)).slice(0, 6);
+}
+
+function shouldRenderPageNavigation(blueprint) {
+  return Boolean(
+    blueprint
+      && (
+        blueprint.hasPageNavigation === true
+        || blueprint.selfNavigation === true
+        || blueprint.customNav === true
+        || blueprint.hideAppNav === true
+        || blueprint.renderNav === false
+        || (blueprint.navConfig && blueprint.navConfig.isRenderNav === false)
+      )
+  );
 }
 
 function PortalNav({ items, active, onChange }) {
@@ -250,6 +264,7 @@ function YidaComp() {
   const [active, setActive] = useState(navItems[0] || PAGE.brandName);
   const insight = INSIGHTS[0] || { conclusion: PAGE.ctaText, evidence: '', suggestion: '' };
   const themeVars = buildScopedThemeVars();
+  const hasPageNavigation = shouldRenderPageNavigation(APP_BLUEPRINT);
 
   return (
     <ConfigProvider
@@ -263,7 +278,7 @@ function YidaComp() {
       }}
       getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}
     >
-      <main className="oy-portal-shell-home" style={themeVars}>
+      <main className={`oy-portal-shell-home ${hasPageNavigation ? 'has-page-nav' : 'is-platform-nav'}`} style={themeVars}>
         <style>{`
           {{OPENYIDA_CANVAS_CONTROL_CSS}}
           .oy-portal-shell-home {
@@ -276,6 +291,7 @@ function YidaComp() {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
           }
           .oy-portal-layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; align-items: stretch; }
+          .oy-portal-shell-home.is-platform-nav .oy-portal-layout { grid-template-columns: minmax(0, 1fr); }
           .oy-portal-side {
             min-height: 100%;
             align-self: stretch;
@@ -403,18 +419,20 @@ function YidaComp() {
           }
         `}</style>
         <div className="oy-portal-layout">
-          <aside className="oy-portal-side">
-            <div className="oy-portal-brand">
-              <div className="oy-brand-mark">{PAGE.brandInitials}</div>
-              <div>
-                <h1>{PAGE.brandName}</h1>
-                <p>{PAGE.tagline}</p>
+          {hasPageNavigation ? (
+            <aside className="oy-portal-side">
+              <div className="oy-portal-brand">
+                <div className="oy-brand-mark">{PAGE.brandInitials}</div>
+                <div>
+                  <h1>{PAGE.brandName}</h1>
+                  <p>{PAGE.tagline}</p>
+                </div>
               </div>
-            </div>
-            <Input.Search className="oy-portal-search" placeholder="搜索入口、流程或数据" allowClear />
-            <PortalNav items={navItems} active={active} onChange={setActive} />
-            <SideInsight metrics={METRICS} roadmap={ROADMAP} />
-          </aside>
+              <Input.Search className="oy-portal-search" placeholder="搜索入口、流程或数据" allowClear />
+              <PortalNav items={navItems} active={active} onChange={setActive} />
+              <SideInsight metrics={METRICS} roadmap={ROADMAP} />
+            </aside>
+          ) : null}
           <section className="oy-portal-main">
             <div className="oy-portal-hero">
               <section className="oy-hero-copy">

@@ -147,7 +147,7 @@ export function didMount() {
 
 1. Tailwind URL 必须写成常量，只能填写已验证的 `g.alicdn.com`、企业 OSS/CDN 或 OpenYida 托管地址。
 2. 禁止默认写海外 CDN；如果目标环境不能访问默认 `g.alicdn.com` 地址，替换为企业自托管地址，或保留空字符串并依赖 fallback 样式。
-3. 使用 `@tailwindcss/browser` 时，通过 `style[type="text/tailwindcss"]` 默认导入 `tailwindcss/theme`、`tailwindcss/preflight` 和 `tailwindcss/utilities`。自定义页面可以接受 reset，但仍必须注入 native control reset，兜住 input/textarea/select/自定义下拉的 focus 边框、font-weight、appearance 和 shadow；只有用户明确要求宿主页面完全隔离时才关闭 preflight，并必须手动重置按钮/输入框/下拉样式。
+3. 使用 `@tailwindcss/browser` 时，通过 `style[type="text/tailwindcss"]` 默认导入 `tailwindcss/theme`、`tailwindcss/preflight` 和 `tailwindcss/utilities`。自定义页面可以接受 reset，但仍必须注入 native control reset，兜住 input/textarea/select/自定义下拉的 focus 边框、font-weight、appearance 和 shadow；只有用户明确要求运行页面完全隔离时才关闭 preflight，并必须手动重置按钮/输入框/下拉样式。
 4. `className` 使用完整静态类名字符串；不要拼 `bg-` + color 这类动态类名。
 5. Tailwind 加载失败时仍要能看到可用页面：关键容器保留 `style` 兜底，通用按钮/输入框/下拉增加 `oyd-*` fallback class。
 6. 用户可见的下拉、菜单、分段控件默认用 Tailwind 自定义组件；不要用原生 `<select>`。
@@ -318,7 +318,7 @@ this.forceUpdate();
 
 业务态由 `setCustomState()` 写入 `_customState`；`this.state` 里**只有** `forceUpdate()` 写的 `{ timestamp }`。因此 `this.state.<业务字段>` 恒为 `undefined`，页面无任何报错，却渲染成"数据全为占位符、图表全空"的空壳页——极难排查。
 
-`this.state` 仅允许读两个运行时契约字段：`this.state.timestamp`（重渲染标记）和 `this.state.urlParams`（URL 参数）。其余一律走 `getCustomState()`。
+`this.state` 仅允许读两个运行时保留字段：`this.state.timestamp`（重渲染标记）和 `this.state.urlParams`（URL 参数）。其余一律走 `getCustomState()`。
 
 ```javascript
 // ✅ 正确：业务态用 getCustomState 读
@@ -330,7 +330,7 @@ export function renderJsx() {
   return (
     <div>
       <div>{agg ? agg.totalGmv : '-'}</div>
-      {/* timestamp 仍从 this.state 读，这是运行时契约字段 */}
+      {/* timestamp 仍从 this.state 读，这是运行时保留字段 */}
       <div style={{ display: 'none' }}>{this.state && this.state.timestamp}</div>
     </div>
   );

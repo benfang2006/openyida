@@ -1,6 +1,6 @@
-# Code Canvas 可用资源与加载契约
+# Code Canvas 可用资源
 
-Code Canvas 页面按下表 import 前端资源，运行时由 `YidaCodeCanvas` 按 `importedModules` 加载。依赖加载契约核实自 `vc-deep-yida/src/components/yida-code-canvas` 源码（`dependencies.ts` / `factory.tsx`）。
+Code Canvas 页面只从下表资源 import。编译阶段会把这些资源写入 `importedModules`，运行时由 `YidaCodeCanvas` 按资源表加载。
 
 ## 可用前端资源
 
@@ -23,10 +23,10 @@ Code Canvas 页面按下表 import 前端资源，运行时由 `YidaCodeCanvas` 
 ## 资源使用约定
 
 - 页面源码只从上表资源 import；第三方资源加载交给 Code Canvas runtime。
-- 宜搭运行态组件和平台能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等宿主对象探测。
+- 平台运行态组件和平台能力通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 等页面对象探测。
 - 真实表单数据绑定使用页面内本地 `useYidaData(binding)`、`DataBridge` 与同源 `fetch` 实现。
 - 组件库选型见 [component-library-guide.md](component-library-guide.md)。
 
-## 编译运行契约
+## 编译与运行方式
 
 OpenYida CLI **本地用 Babel** 把源码转译为 `runtimeCode` + `importedModules`，不调用在线编译服务。运行时由 `YidaCodeCanvas` 物料按 `importedModules` 加载上表资源，再用 `new Function` 执行 `runtimeCode` 并取回 `YidaComp`。

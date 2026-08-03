@@ -105,6 +105,7 @@ const DEFAULT_THEME_PROFILE = {
   themeColorTint: 'rgba(244, 114, 182, 0.2)',
   palette: ['#F472B6', '#BE185D', '#F59E0B', '#38D9C7', '#A78BFA'],
 };
+const DEFAULT_APP_BLUEPRINT = { shell: 'single_page', navigation: [] };
 const DEFAULT_INTERACTION_PROFILE = { primaryAction: '创建事项' };
 const DEFAULT_INSIGHTS = [{ conclusion: '今日需优先清理高优先级待办。', suggestion: '先处理补件、回访和 SLA 复盘，再查看全局数据。' }];
 
@@ -115,6 +116,7 @@ const ASSETS = parseTemplateJson('{{ASSETS_JSON}}', DEFAULT_ASSETS);
 const VISUAL_PROFILE = parseTemplateJson('{{OPENYIDA_VISUAL_PROFILE_JSON}}', DEFAULT_VISUAL_PROFILE);
 const THEME_PROFILE = parseTemplateJson('{{OPENYIDA_THEME_PROFILE_JSON}}', DEFAULT_THEME_PROFILE);
 const THEME_SCOPE = withFallback('{{OPENYIDA_THEME_SCOPE}}', 'page');
+const APP_BLUEPRINT = parseTemplateJson('{{OPENYIDA_APP_BLUEPRINT_JSON}}', DEFAULT_APP_BLUEPRINT);
 const INTERACTION_PROFILE = parseTemplateJson('{{OPENYIDA_INTERACTION_PROFILE_JSON}}', DEFAULT_INTERACTION_PROFILE);
 const INSIGHTS = parseTemplateJson('{{OPENYIDA_INSIGHTS_JSON}}', DEFAULT_INSIGHTS);
 
@@ -157,6 +159,27 @@ function buildScopedThemeVars(scope, profile) {
     '--color-brand1-2': getThemeColor(profile, 'themeColorSoft', '#3A1730'),
     '--color-brand1-9': getThemeColor(profile, 'themeColorDeep', '#4A1230'),
   };
+}
+
+function shouldRenderPageNavigation(blueprint) {
+  return Boolean(
+    blueprint
+      && (
+        blueprint.hasPageNavigation === true
+        || blueprint.selfNavigation === true
+        || blueprint.customNav === true
+        || blueprint.hideAppNav === true
+        || blueprint.renderNav === false
+        || (blueprint.navConfig && blueprint.navConfig.isRenderNav === false)
+      )
+  );
+}
+
+function getNavItems() {
+  const navigation = Array.isArray(APP_BLUEPRINT.navigation) ? APP_BLUEPRINT.navigation : [];
+  const pages = Array.isArray(APP_BLUEPRINT.pages) ? APP_BLUEPRINT.pages : [];
+  const names = navigation.length ? navigation : pages.map((page) => page.name).filter(Boolean);
+  return (names.length ? names : ['今日工作台', '事项队列', '客户运营', '数据复盘', '流程自动化', '资料中心', '团队日程', '系统设置']).slice(0, 8);
 }
 
 function applyShellTheme(scope, profile) {
@@ -291,11 +314,13 @@ function YidaComp() {
   const selectedEntry = FEATURES[active] || FEATURES[0] || {};
   const primaryAction = INTERACTION_PROFILE.primaryAction || PAGE.primaryCta;
   const insight = INSIGHTS[0] || null;
+  const hasPageNavigation = shouldRenderPageNavigation(APP_BLUEPRINT);
+  const navItems = getNavItems();
 
   return (
     <ConfigProvider getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body} theme={{ token: { colorPrimary: brand, borderRadius: 8 } }}>
       <div
-        className="oy-workbench-home"
+        className={`oy-workbench-home ${hasPageNavigation ? 'has-page-nav' : 'is-platform-nav'}`}
         data-profile={VISUAL_PROFILE.name}
         data-theme-profile={THEME_PROFILE.name}
         data-theme-scope={THEME_SCOPE}
@@ -343,6 +368,9 @@ function YidaComp() {
               linear-gradient(90deg, rgba(37, 12, 31, .96), rgba(37, 12, 31, .78)),
               var(--oy-workspace-image) center/cover no-repeat;
             box-shadow: none;
+          }
+          .oy-workbench-home.is-platform-nav .oy-shell {
+            grid-template-columns: minmax(0, 1fr);
           }
           .oy-sidebar {
             min-height: 100vh;
@@ -550,23 +578,25 @@ function YidaComp() {
         `}</style>
 
         <div className="oy-shell">
-          <aside className="oy-sidebar">
-            <div className="oy-side-brand">
-              <div className="oy-logo">{PAGE.brandInitials}</div>
-              <div>
-                <div className="oy-brand-title">{PAGE.brandName}</div>
-                <Text className="oy-muted">{PAGE.tagline}</Text>
-              </div>
-            </div>
-            <nav className="oy-nav">
-              {['今日工作台', '事项队列', '客户运营', '数据复盘', '流程自动化', '资料中心', '团队日程', '系统设置'].map((item, index) => (
-                <div className={'oy-nav-item ' + (index === 0 ? 'is-active' : '')} key={item}>
-                  <span className="oy-nav-dot" />
-                  <span>{item}</span>
+          {hasPageNavigation ? (
+            <aside className="oy-sidebar">
+              <div className="oy-side-brand">
+                <div className="oy-logo">{PAGE.brandInitials}</div>
+                <div>
+                  <div className="oy-brand-title">{PAGE.brandName}</div>
+                  <Text className="oy-muted">{PAGE.tagline}</Text>
                 </div>
-              ))}
-            </nav>
-          </aside>
+              </div>
+              <nav className="oy-nav" aria-label="页面内导航">
+                {navItems.map((item, index) => (
+                  <div className={'oy-nav-item ' + (index === 0 ? 'is-active' : '')} key={item}>
+                    <span className="oy-nav-dot" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </nav>
+            </aside>
+          ) : null}
 
           <main className="oy-main">
             <header className="oy-header">

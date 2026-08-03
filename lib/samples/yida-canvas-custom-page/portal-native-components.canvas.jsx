@@ -115,17 +115,31 @@ function getDeepYidaBundle() {
 
 function findYidaComponent(name) {
   const native = window.YidaNativeComponents || {};
-  if (native[name]) return native[name];
+  const nativeComponent = normalizeYidaComponentCandidate(native[name]);
+  if (nativeComponent) return nativeComponent;
 
   const deep = window.Deep || {};
-  if (deep[name]) return deep[name];
+  const deepComponent = normalizeYidaComponentCandidate(deep[name]);
+  if (deepComponent) return deepComponent;
 
   const bundle = getDeepYidaBundle();
   if (!bundle) return null;
-  if (bundle[name]) return bundle[name];
+  const directComponent = normalizeYidaComponentCandidate(bundle[name]);
+  if (directComponent) return directComponent;
   if (Array.isArray(bundle)) {
-    return bundle.find((item) => item && (item.displayName === name || item.name === name)) || null;
+    const match = bundle.find((item) => item && (item.displayName === name || item.name === name));
+    return normalizeYidaComponentCandidate(match);
   }
+  return null;
+}
+
+function normalizeYidaComponentCandidate(candidate) {
+  if (!candidate) return null;
+  if (typeof candidate === 'function') return candidate;
+  if (candidate.Component) return normalizeYidaComponentCandidate(candidate.Component);
+  if (candidate.component) return normalizeYidaComponentCandidate(candidate.component);
+  if (candidate.default) return normalizeYidaComponentCandidate(candidate.default);
+  if (candidate.render && typeof candidate.render === 'function') return candidate;
   return null;
 }
 

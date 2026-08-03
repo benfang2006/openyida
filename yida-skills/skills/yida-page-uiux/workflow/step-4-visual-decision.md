@@ -1,11 +1,23 @@
-# Step 4：视觉方向决策（差异化引擎）
+# Step 4：视觉方向决策（差异化规则）
 
-> 读 [references/visual-decision-engine.md](../references/visual-decision-engine.md)，在场景可行域内做决策。这是全流程的核心，去 AI 味成败在此。
+> 读 [references/visual-decision-engine.md](../references/visual-decision-engine.md)，在场景可行域内选择视觉方向，并完成反默认自检。
 
 ## 宜搭的关键主色约束
 
 - **导航可见时，主色由平台品牌变量 `var(--color-brand1-*)` 控制，不能自由换主色相**（要跟应用框架融合），所以差异化落到下面 5 个维度。
-- **导航隐藏时（Step 0 判定为 `isRenderNav=false`）主色相可自立**，但语义色仍固定、去 AI 味红线仍生效，差异化 5 维照样要做（至少 3 个维度偏离「默认泛滥组合」）。
+- **显式隐藏导航时（Step 0 判定为 `isRenderNav=false`）主色相可自立**，但语义色仍固定、去 AI 味红线仍生效，差异化 5 维照样要做（至少 3 个维度偏离「默认泛滥组合」）。
+
+## 明暗模式与主题色必填
+
+视觉方向不能只写“高级 / 简洁 / 商务”。每次必须明确下面 5 项：
+
+- `themeProfile.name`：默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题色时才写 `yida-app-theme`；用户指定其他平台预置 key 时才记录对应 `appThemeKey`。
+- `themeScope`：默认 `page`，只有用户明确要求影响应用壳层 / 全局换肤时才用 `app`。
+- 明暗模式：默认 `light`，并保持 `themeProfile.navTheme=light`。工作台、门户、列表、详情、普通看板和数据大屏默认不要采用暗黑、深色、黑金、夜间、高对比、`black` 或近黑背景。注意 `themeProfile.colorMode` 是宜搭配色模式（如 `gradient`），不是 light/dark。
+- `themeColorSource`：应用主题 / 运行态应用主题 / 用户指定品牌色 / sample 独立色盘。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新默认优先推荐 `podBlue`、`podGreen`、`podOrange`。
+- `themeColor`：写主色的来源或色值；真实业务页不要凭空硬编码主色，sample 或用户指定品牌色除外。
+
+只有用户明确说暗色、深色、暗黑、夜间、高对比、黑金、暗色科技风，才允许 `colorMode=dark` 或深色沉浸方案；“好看 / 高级 / 大屏 / 看板 / 驾驶舱”不等于暗黑。
 
 ## 差异化 5 维
 
@@ -15,7 +27,7 @@
 4. **排版性格**（字重对比、字号跨度、字间距、`tabular-nums`——字体不能换 Google Fonts，用这些造性格）
 5. **装饰母题 / 视觉 DNA**（2-3 个贯穿全页的视觉基因，遮住标题也能认出是同一套设计）
 
-引擎会要求：**强制第二选择**（跳过第一直觉）+ **反默认自检**（不像 90% 同类页）。
+执行要求：**强制第二选择**（跳过第一直觉）+ **反默认自检**（不像 90% 同类页）。
 
 ## 场景专项决策（按页面类型追加）
 

@@ -27,7 +27,7 @@ description: 宜搭多页面应用体验蓝图技能。用于从零创建完整�
   - <页面名>：scene=<landing/workbench/dashboard/screen/list/detail>，template=<模板名>，目标用户=<角色>
 - 导航分组：<分组名 → 页面列表>
 - 壳形态：<side_nav/top_nav/l_shaped/fullbleed-screen/split-pane/single_page>
-- 主题策略：<themeProfile、themeScope、是否跟随 yida-app-theme>
+- 主题策略：<默认 应用主题、themeProfile、themeScope、是否明确跟随 yida-app-theme>
 - 数据与表单：<需要的核心表单、示例数据、看板数据来源>
 - 交付顺序：<先建哪些页面，哪些表单在后>
 ```
@@ -38,7 +38,8 @@ description: 宜搭多页面应用体验蓝图技能。用于从零创建完整�
 2. **先定门面再排导航**：完整应用必须有第一入口。面向外部传播常用官网首页；内部业务系统常用工作台；管理决策系统常用经营看板。
 3. **平台导航优先**：常规中后台应用优先使用宜搭左侧导航和分组；沉浸官网、大屏、独立分享页才考虑隐藏导航后自绘壳。
 4. **表单与页面分层**：数据录入、审批、权限、字段结构交给原生表单/流程；自定义页面负责展示、洞察、入口、详情和胶水。
-5. **主题跟随运行态**：用户说“宜搭应用主题风格”时默认 `themeProfile.name = "yida-app-theme"`，不硬编码品牌色；用户明确要求全局导航/壳层一起换肤时再推断 `themeScope: app`。
+5. **主题默认三选一**：应用默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户说“宜搭应用主题风格/应用主题色”时才默认 `themeProfile.name = "yida-app-theme"`，不硬编码品牌色；用户明确要求全局导航/壳层一起换肤时再推断 `themeScope: app`。
+   应用主题可同时用于 `--theme` / `colour` 和页面级 `style#yida-global-theme` / `customThemeStyle.tokens`；`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新默认优先推荐 `podBlue`、`podGreen`、`podOrange`。
 6. **多页面不是平铺页面**：导航分组需要体现角色路径和业务主次，不按创建顺序堆叠。
 
 ## 壳形态速查
@@ -93,3 +94,4 @@ description: 宜搭多页面应用体验蓝图技能。用于从零创建完整�
 - 导航顺序能解释业务主次，门面页靠前，数据录入/配置类页面靠后。
 - 官网、大屏、工作台、列表、详情等页面类型没有混用模板。
 - 主题策略不把“宜搭应用主题风格”误解成固定浅色卡片。
+- 应用主题按实际名称填写；`blue`、`green`、`orange` 和 `podBlue`、`podGreen`、`podOrange` 都不要互相改写。

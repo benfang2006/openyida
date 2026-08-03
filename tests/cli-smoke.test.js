@@ -436,14 +436,15 @@ describe('CLI offline smoke', () => {
         'create-form.create',
         'create-page',
         'publish',
+        'nav-group',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
         'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
-        'yida-nav-group',
       ]),
       ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
+      default_nav_order_policy: expect.stringContaining('portal/home/workbench entry > custom display pages > process forms > receipt/forms'),
       completion_contract: expect.stringContaining('Markdown table'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
@@ -1151,14 +1152,15 @@ describe('CLI offline smoke', () => {
         'create-form.create',
         'create-page',
         'publish',
+        'nav-group',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
         'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
-        'yida-nav-group',
       ]),
       ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
+      default_nav_order_policy: expect.stringContaining('portal/home/workbench entry > custom display pages > process forms > receipt/forms'),
       completion_contract: expect.stringContaining('Markdown table'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),

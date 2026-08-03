@@ -35,10 +35,10 @@ OpenYida 任务完成后，除了交付当前结果，还要判断是否有可�
    用户要求参考 Dribbble / 优秀示例时，必须把参考转成可执行设计变量：页面类型、构图、视觉锚点、信息密度、色彩关系、组件细节、反默认点。交付时说明“参考转译成了什么”。
 
 2. **sample 必须有页面级主题**
-   官方 sample 展示应用是样板库，每个页面都应自带独立主题 token。不要被宿主应用主题统一染色，尤其宿主是 `black` 时会把页面变成黑灰。
+   官方 sample 展示应用是样板库，每个页面都应自带独立主题 token。不要被应用全局主题统一染色，尤其全局主题是 `black` 时会把页面变成黑灰。
 
 3. **`--theme` 只能填平台预置 key**
-   `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black` 才能作为 app `colour`。自定义“活力橙”“深玫红”“暗黑金”等设计主题，应在每个页面注入 `style#yida-global-theme` 或 scoped tokens。
+   `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black` 才能作为 app `colour`。默认优先使用 `podBlue`、`podGreen`、`podOrange`；自定义“活力橙”“深玫红”“暗黑金”等设计主题，应在每个页面注入 `style#yida-global-theme` 或 scoped tokens，`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。
 
 4. **CLI 成功不等于线上生效**
    修改应用主题后必须回读 `getAppIncludingAecpInfo`，确认 `colour` 和 `config.COLOUR`。如果接口回包成功但字段没变，要修 CLI 链路和测试，而不是只用一次性脚本绕过。
@@ -53,7 +53,7 @@ OpenYida 任务完成后，除了交付当前结果，还要判断是否有可�
    工作台页面应铺满应用内容区，侧栏、导航和主面板形成真实产品首页。不要用 `max-width + margin: 0 auto + 外层 padding` 做居中展示框；不要把 `dribbble research`、`sample`、`workbench + operation`、英文过程标签露给用户。
 
 8. **地图类大屏不能显示“组件暂不可用”**
-   大屏中心区域如果是地图，优先探测宜搭宿主地图组件；组件不可用时也要用内置区域 SVG / GeoJSON 兜底，保留区域数据和 tooltip，不把“地图组件暂不可用”作为正常展示态。
+   大屏中心区域如果是地图，优先探测平台地图组件；组件不可用时也要用内置区域 SVG / GeoJSON 兜底，保留区域数据和 tooltip，不把“地图组件暂不可用”作为正常展示态。
 
 9. **原生组件 sample 要有设计场景**
    `native-components-smoke`、`portal-native-components` 等 native 系列不应只是诊断表格。先参考同类组件实验室、门户组件面板或管理台设计，再做运行态探测、局部 ErrorBoundary、fallback 和 payload inspector。
