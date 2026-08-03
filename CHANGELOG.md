@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 新增 `yida-nav-group` 导航编排能力，支持创建导航分组、设置父子关系、自动排序和入口页优先展示，便于完整应用生成后整理应用导航。
 - 新增 `yida-app` UI 引导参考文档，补充应用生成模式、主页面引导、业务入口和验收契约，明确完整应用主页面默认包含轻量 UI 引导。
 - 新增 `yida-theme` 主题令牌预设参考，沉淀业务场景色、导航主题和页面主题应用规则。
+- 新增千问办公等 AI 工具环境识别，完善 OpenYida 在不同 AI 编程工具中的环境适配。
 
 ### Changed
 - 优化技能索引与路由描述，收口应用创建、页面 UIUX、Code Canvas、主题、导航和发布等子技能边界，减少技能误选和重复读取。
@@ -26,7 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `generate-page`、`page-ir` 与页面 UIUX 文档强化主页面、门户、工作台、导航结构和主题决策规则，避免把样例页面直接当成完整信息架构。
 
 ### Fixed
-- 修复 AI 能力、环境检测、Doctor、bridge handoff、postinstall 注入和命令清单中的品牌与环境描述漂移，补齐千问办公等 AI 工具识别。
+- 修复 AI 能力、环境检测、Doctor、bridge handoff、postinstall 注入和命令清单中的品牌与环境描述漂移。
 - 调整 `publish`、`canvas-compile`、复制和更新应用相关校验，提升 Code Canvas / 自定义页面发布链路在边界参数下的稳定性。
 
 ### Tests
