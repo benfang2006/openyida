@@ -11,6 +11,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
 
+## [2026.8.3] - 2026-08-03
+
+### Added
+- 新增 `yida-nav-group` 导航编排能力，支持创建导航分组、设置父子关系、自动排序和入口页优先展示，便于完整应用生成后整理应用导航。
+- 新增 `yida-app` UI 引导参考文档，补充应用生成模式、主页面引导、业务入口和验收契约，明确完整应用主页面默认包含轻量 UI 引导。
+- 新增 `yida-theme` 主题令牌预设参考，沉淀业务场景色、导航主题和页面主题应用规则。
+
+### Changed
+- 优化技能索引与路由描述，收口应用创建、页面 UIUX、Code Canvas、主题、导航和发布等子技能边界，减少技能误选和重复读取。
+- 应用创建默认主题色改为 `podBlue`/`podGreen` 等新版主题色，并将创建成功后的默认入口从管理后台调整为应用工作台。
+- 自定义页面创建新增隐藏平台导航参数，显式支持 `--hide-nav` / `--no-nav` / `--render-nav` 等导航展示控制。
+- 页面生成输出补充主题来源、主题色、导航主题和颜色模式等元信息，让生成结果的视觉决策更可追踪。
+- `generate-page`、`page-ir` 与页面 UIUX 文档强化主页面、门户、工作台、导航结构和主题决策规则，避免把样例页面直接当成完整信息架构。
+
+### Fixed
+- 修复 AI 能力、环境检测、Doctor、bridge handoff、postinstall 注入和命令清单中的品牌与环境描述漂移，补齐千问办公等 AI 工具识别。
+- 调整 `publish`、`canvas-compile`、复制和更新应用相关校验，提升 Code Canvas / 自定义页面发布链路在边界参数下的稳定性。
+
+### Tests
+- 新增或扩展 `nav-group`、`create-page`、`generate-page`、`page-ir`、`publish`、`canvas-compile`、`skill-contracts`、`utils`、`env`、`doctor`、`bridge` 等测试，覆盖导航排序、隐藏平台导航、主题元信息、技能契约和发布参数。
+- 同步更新路由测评、技能覆盖矩阵和构建包测试，校验新增导航、主题和 UI 引导契约。
+
+
 ## [2026.7.27-beta.1] - 2026-07-27
 
 ### Added
