@@ -9,6 +9,7 @@
  *   4. 首次安装欢迎引导
  *
  * 正确的 skills 安装路径（所有工具统一使用 skills/ 子目录）：
+ *   folderName 固定为 yida-skills，安装目标始终是 ~/<tool-config>/skills/yida-skills/
  *   ~/.claude/skills/yida-skills/          ← <package>/yida-skills (copy)
  *   ~/.codex/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.opencode/skills/yida-skills/        ← <package>/yida-skills (copy)
