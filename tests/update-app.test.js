@@ -4,7 +4,10 @@ const {
   assertPresetThemeKey,
   BASIC_THEME_TOKEN_PRESETS,
   BASIC_THEME_TOKEN_PRESET_KEYS,
+  POD_THEME_TOKEN_PRESETS,
+  POD_THEME_TOKEN_PRESET_KEYS,
   getBasicThemeTokenPreset,
+  getPodThemeTokenPreset,
   SUPPORTED_THEME_KEYS,
 } = require('../lib/app/theme-presets');
 
@@ -41,7 +44,16 @@ describe('update-app helpers', () => {
     expect(() => assertPresetThemeKey('customAmber')).toThrow('Unsupported theme: customAmber');
   });
 
-  test('basic token presets are separate from --theme platform keys', () => {
+  test('pod theme token presets are recommended and legacy basic token presets remain separate', () => {
+    expect(POD_THEME_TOKEN_PRESET_KEYS).toEqual(['podBlue', 'podGreen', 'podOrange']);
+    expect(POD_THEME_TOKEN_PRESET_KEYS.every((presetKey) => SUPPORTED_THEME_KEYS.includes(presetKey))).toBe(true);
+    expect(getPodThemeTokenPreset('podBlue')).toMatchObject({
+      '--color-brand1-1': 'rgb(51, 160, 255)',
+      '--color-brand1-6': 'rgb(0, 137, 255)',
+      '--color-brand-4': 'rgb(0, 109, 204)',
+    });
+    expect(POD_THEME_TOKEN_PRESETS).toHaveProperty('podOrange.--color-brand1-10', 'rgba(255, 111, 0, 0.3)');
+
     expect(BASIC_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange']);
     BASIC_THEME_TOKEN_PRESET_KEYS.forEach((presetKey) => {
       expect(SUPPORTED_THEME_KEYS).not.toContain(presetKey);
@@ -62,7 +74,7 @@ describe('update-app helpers', () => {
       '--color-brand-4': 'rgb(242, 105, 0)',
     });
     expect(BASIC_THEME_TOKEN_PRESETS).toHaveProperty('blue.--color-brand1-10', 'rgba(0, 137, 255, 0.3)');
-    expect(() => assertPresetThemeKey('blue')).toThrow('basic token presets (blue, green, orange)');
+    expect(() => assertPresetThemeKey('blue')).toThrow('legacy basic token presets (blue, green, orange)');
   });
 
   test('detects shell updates that need updateApp instead of updateAppName', () => {

@@ -2,8 +2,10 @@
 
 const {
   ROOT_NAV_UUID,
+  autoOrderRootNodes,
   buildNavigationTree,
   flattenTreeIds,
+  getNavigationPriority,
   moveNodeInTree,
   parseArgs,
   reorderRootNodes,
@@ -84,6 +86,35 @@ describe('nav-group helpers', () => {
   test('reorderRootNodes rejects duplicate items', () => {
     expect(() => reorderRootNodes(fixture, ['FORM-A', 'FORM-A']))
       .toThrow('Duplicate navigation item: FORM-A');
+  });
+
+  test('autoOrderRootNodes ranks portal, custom pages, process forms, then forms', () => {
+    const mixed = [
+      { id: 1, navUuid: 'NAV-SYSTEM-RUNNING-UUID', parentNavUuid: ROOT_NAV_UUID, navType: 'SYSTEM', title: { zh_CN: '待我处理' }, listOrder: 0 },
+      { id: 2, navUuid: 'FORM-RECEIPT', formUuid: 'FORM-RECEIPT', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'receipt', title: { zh_CN: '访客登记表' }, listOrder: 1 },
+      { id: 3, navUuid: 'PAGE-DASHBOARD', formUuid: 'PAGE-DASHBOARD', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'display', title: { zh_CN: '数据看板' }, listOrder: 2 },
+      { id: 4, navUuid: 'FORM-PROCESS', formUuid: 'FORM-PROCESS', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'process', title: { zh_CN: '访客审批表' }, listOrder: 3 },
+      { id: 5, navUuid: 'PAGE-PORTAL', formUuid: 'PAGE-PORTAL', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'display', title: { zh_CN: '访客管理首页' }, listOrder: 4 },
+      { id: 6, navUuid: 'NAV-GROUP-1', parentNavUuid: ROOT_NAV_UUID, navType: 'NAV', title: { zh_CN: '配置分组' }, listOrder: 5 },
+    ];
+
+    const ordered = autoOrderRootNodes(mixed);
+    const visibleRootOrder = ordered.roots
+      .filter((node) => node.parentNavUuid === ROOT_NAV_UUID && node.navType !== 'SYSTEM')
+      .map((node) => node.navUuid);
+
+    expect(visibleRootOrder).toEqual([
+      'PAGE-PORTAL',
+      'PAGE-DASHBOARD',
+      'FORM-PROCESS',
+      'FORM-RECEIPT',
+      'NAV-GROUP-1',
+    ]);
+    expect(ordered.ids).toEqual([1, 5, 3, 4, 2, 6]);
+    expect(getNavigationPriority(mixed[4])).toBe(0);
+    expect(getNavigationPriority(mixed[2])).toBe(1);
+    expect(getNavigationPriority(mixed[3])).toBe(2);
+    expect(getNavigationPriority(mixed[1])).toBe(3);
   });
 
   test('moveNodeInTree rejects moving a system node', () => {

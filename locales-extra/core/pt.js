@@ -128,7 +128,7 @@ module.exports = {
       '  login                                                        Manage login credentials (cache first, then QR scan)\n' +
       '  logout                                                       Logout / switch account\n' +
       '  create-app "<name>" [desc] [icon] [color] [theme] [nav] [layout]  Create an app, output appType\n' +
-      '  create-page <appType> "<pageName>" [--mode dashboard]        Create a custom page, output pageId\n' +
+      '  create-page <appType> "<pageName>" [--mode dashboard] [--hide-nav]        Create a custom page, output pageId\n' +
       '  create-form create <appType> "<formName>" <fieldsJSON> [--layout <layout>] [--theme <theme>] [--label-align <align>]  Create a form page\n' +
       '  create-form update <appType> <formUuid> <changesJSON>        Update a form page\n' +
       '  list-forms <appType> [--keyword <text>]                      List forms/pages in an app\n' +
@@ -258,8 +258,8 @@ module.exports = {
     generate_page_example: 'Example: openyida generate-page product-homepage --brand-name OpenKuma --brand-initials OK --theme-scope page --output pages/src/home.canvas.jsx --compile',
     build_page_usage: 'Usage: openyida build-page <sourceFile> [--output pages/build/page.yida.jsx|--write] [--json]',
     build_page_example: 'Example: openyida build-page pages/src/dashboard.oyd.jsx --output pages/build/dashboard.yida.jsx',
-    publish_usage: 'Usage: openyida publish <sourceFile> <appType> <formUuid> [--health-check] [--canvas]',
-    publish_example: 'Example: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check',
+    publish_usage: 'Usage: openyida publish <sourceFile> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    publish_example: 'Example: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check --auto-nav-order',
     formula_usage: 'Usage: openyida formula evaluate <formula|file> [--schema schema.json] [--json] [--strict]',
     formula_example: `Example: openyida formula evaluate 'IF(GT(#{numberField_total}, 100), "high", "low")' --schema .cache/schema.json`,
     verify_usage: 'Usage: openyida verify-short-url <appType> <formUuid> <url>',
@@ -582,18 +582,18 @@ module.exports = {
   },
   create_page: {
     title: '  create-page - Ferramenta de criação de páginas personalizadas Yida',
-    usage: 'Uso: openyida create-page <appType> <nome da página> [--mode dashboard]',
+    usage: 'Uso: openyida create-page <appType> <nome da página> [--mode dashboard] [--hide-nav]',
     example: 'Exemplo: openyida create-page APP_XXX "Dashboard" --mode dashboard',
     app_id: '\n  ID do app:    {0}',
     page_name: '  Nome da página: {0}',
     step_create: '\n📄 Criando página personalizada...',
     sending: '  Sending saveFormSchemaInfo request...',
     success: '  ✅ Página personalizada criada com sucesso!',
-    step_dashboard_config: '\n🖥️  Step 3: Configure dashboard fullscreen mode',
-    dashboard_config_ok: '  ✅ Dashboard mode configured: top nav hidden, chromeless custom URL enabled',
-    dashboard_config_failed: '  ⚠️  Dashboard mode config failed: {0}',
+    step_dashboard_config: '\n🖥️  Step 3: Configure hidden navigation',
+    dashboard_config_ok: '  ✅ Navigation hidden by explicit request, chromeless custom URL enabled',
+    dashboard_config_failed: '  ⚠️  Hidden navigation config failed: {0}',
     err_mode_invalid: 'Unsupported page mode: {0}',
-    mode_hint: 'Available modes: default, dashboard',
+    mode_hint: 'Available modes: default, dashboard. Navigation is visible by default; pass --hide-nav or --render-nav false to hide it.',
     page_id_label: '  pageId: {0}',
     url_label: '  URL: {0}',
     failed: '  ❌ Falha na criação: {0}',
@@ -1217,12 +1217,15 @@ module.exports = {
     step_health_check: '\n🩺 Step 5: Health check published page\n',
     health_check_ok: '  ✅ Health check passed: HTTP {0}',
     health_check_failed: '  ⚠️  Health check failed: HTTP {0} {1}',
+    step_nav_order: '\n🧭 Auto-order app navigation\n',
+    nav_order_ok: '  ✅ Navigation order updated: {0}',
+    nav_order_failed: '  ⚠️  Navigation order failed; page is already published: {0}',
     exception: '\n❌ Erro de publicação: {0}',
     error: '\n❌ Publish error: {0}',
     source_not_found: '❌ Arquivo fonte não encontrado: {0}',
     source_path_hint: '💡 Tente este caminho de arquivo fonte: {0}',
-    usage: 'Uso: openyida publish <arquivoFonte> <appType> <formUuid> [--health-check] [--canvas]',
-    example: 'Exemplo: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check'
+    usage: 'Uso: openyida publish <arquivoFonte> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    example: 'Exemplo: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check --auto-nav-order'
   },
   qr_login: {
     title: '🔐 Login Yida com código QR no terminal',

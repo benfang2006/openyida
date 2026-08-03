@@ -342,7 +342,7 @@ describe('publish prechecks', () => {
     requestSpy.mockRestore();
   });
 
-  test('publish main treats health check transport errors as non-fatal after save succeeds', async () => {
+  test('publish main treats health check and auto nav order errors as non-fatal after save succeeds', async () => {
     const sourcePath = path.join(workspace, 'home.canvas.jsx');
     fs.writeFileSync(sourcePath, 'export default function Page() { return null; }\n', 'utf8');
 
@@ -355,6 +355,7 @@ describe('publish prechecks', () => {
     });
     const warnMock = jest.fn();
     const resultMock = jest.fn();
+    const autoOrderNavigationMock = jest.fn(() => Promise.reject(new Error('nav order broke')));
     const requestSpy = jest.spyOn(https, 'request').mockImplementation((options, callback) => {
       if (options && options.method === 'GET') {
         throw new Error('health transport broke');
@@ -427,6 +428,9 @@ describe('publish prechecks', () => {
     jest.doMock('../lib/app/services/canvas-page-schema-builder', () => ({
       buildCanvasPageSchemaContent: jest.fn(() => JSON.stringify({ pages: [] })),
     }));
+    jest.doMock('../lib/app/nav-group', () => ({
+      autoOrderNavigation: autoOrderNavigationMock,
+    }));
 
     try {
       const isolatedPublish = require('../lib/app/publish');
@@ -438,12 +442,15 @@ describe('publish prechecks', () => {
         '--force',
         '--skip-lint',
         '--health-check',
+        '--auto-nav-order',
         '--no-open',
       ])).resolves.toBeUndefined();
 
       expect(exitSpy).not.toHaveBeenCalled();
       expect(resultMock).toHaveBeenCalledWith(true, expect.any(String), expect.any(Array));
       expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('health transport broke'));
+      expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('nav order broke'));
+      expect(autoOrderNavigationMock).toHaveBeenCalledWith('APP_XXX', expect.any(Object));
       const outputPayload = consoleSpy.mock.calls
         .map((call) => call[0])
         .filter((line) => typeof line === 'string' && line.startsWith('{'))
@@ -457,6 +464,7 @@ describe('publish prechecks', () => {
           ok: false,
           error: 'health transport broke',
         },
+        navOrderWarning: 'nav order broke',
       });
     } finally {
       requestSpy.mockRestore();
@@ -468,6 +476,7 @@ describe('publish prechecks', () => {
       jest.dontMock('../lib/core/browser-handoff');
       jest.dontMock('../lib/app/canvas-compile');
       jest.dontMock('../lib/app/services/canvas-page-schema-builder');
+      jest.dontMock('../lib/app/nav-group');
       jest.resetModules();
       if (previousQuiet === undefined) {
         delete process.env.YIDA_QUIET;

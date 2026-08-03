@@ -4,7 +4,7 @@
 >
 > 新建页面默认使用 Code Canvas。粒子、转场、键盘和全屏副作用用 React `ref` + `useEffect` 初始化并 cleanup。本文后半部的 `renderJsx` / `didMount` 写法是 legacy/native 参考，不是默认实现。
 >
-> 注意：`dark-tech` 是演示页视觉主题，不是基础样式 token preset。基础 token preset 只有 `blue`、`green`、`orange`，用于 `style#yida-global-theme` / `customThemeStyle.tokens`。
+> 注意：`dark-tech` 是演示页视觉主题，不是默认业务主题。普通新页面默认推荐 `podBlue`、`podGreen`、`podOrange`；只有演示、发布会或用户明确暗色科技风时才使用本文主题。
 
 **设计体系：** 背景 `#0B0F19` · 主色蓝 `#3b82f6` / 紫 `#a855f7` / 绿 `#10b981` / 粉 `#ec4899`
 

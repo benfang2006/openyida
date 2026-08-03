@@ -59,7 +59,7 @@ description: 自定义页面 JSX 编译发布技能。
 ## 命令
 
 ```bash
-openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [--health-check] [--force]
+openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [--health-check] [--auto-nav-order] [--force]
 ```
 
 路径口径：从仓库根执行时，源文件用 `project/pages/src/...`；如果 Bash cwd 已经是 `<workspace>/project`，源文件用 `pages/src/...`，不要传 `project/pages/src/...` 导致查找 `project/project/pages/src/...`。发布失败提示源文件不存在时，先按该规则切换路径，不要自动发布另一份文件。
@@ -75,6 +75,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 | `--compat` / `--modern` | 否 | 对普通 `.jsx` 也强制启用 OpenYida 兼容构建；`.oyd.jsx` 默认自动启用 |
 | `--canvas` | 否 | 显式走 Code Canvas 链路（本地 Babel 编译 + `YidaCodeCanvas` Schema）；`.canvas.jsx` 扩展名已自动启用，仅当扩展名不规范但确为 Canvas 源码时需要 |
 | `--health-check` | 否 | 发布成功后请求页面 URL，回显 HTTP 健康检查结果，避免只看到 200 接口返回但首屏坏掉 |
+| `--auto-nav-order` | 否 | 发布成功后立刻执行轻量导航排序；完整应用 `fast_build` 主页面发布默认使用，优先级为门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单；排序失败只警告，不回滚已发布页面 |
 | `--force` | 否 | 显式绕过发布目标类型保护；只有确认目标是自定义页面但导航接口暂时无法识别时才使用 |
 
 ## 发布目标确认

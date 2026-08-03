@@ -10,6 +10,24 @@ describe('create-page locale handling', () => {
       pageName: '経営ダッシュボード',
       mode: 'dashboard',
       locale: 'ja',
+      hideNav: false,
+    });
+  });
+
+  test('parseArgs keeps navigation visible unless hidden explicitly', () => {
+    expect(parseArgs(['APP_X', '经营看板', '--mode', 'dashboard'])).toMatchObject({
+      mode: 'dashboard',
+      hideNav: false,
+    });
+    expect(parseArgs(['APP_X', '经营看板', '--mode', 'dashboard', '--hide-nav'])).toMatchObject({
+      mode: 'dashboard',
+      hideNav: true,
+    });
+    expect(parseArgs(['APP_X', '经营看板', '--render-nav', 'false'])).toMatchObject({
+      hideNav: true,
+    });
+    expect(parseArgs(['APP_X', '经营看板', '--isRenderNav=true'])).toMatchObject({
+      hideNav: false,
     });
   });
 

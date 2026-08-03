@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；主页面生成默认包含 yida-page-uiux 轻量 UI 引导，绑定或预创建应用只复用不改名；结果链接较多时表格输出，不默认使用未绑定 dataSourceMap，导航、示例数据和深度设计按需后置。",
-      "done_when": "若本轮 Write/Edit 页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回访问 URL；3 个及以上资源或链接必须用 Markdown 表格输出；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；所有模式 PRD 都写视觉规范，主页面生成默认包含 yida-page-uiux 轻量 UI 引导，发布后立即做轻量导航自动排序；绑定或预创建应用只复用不改名；最终只输出一个主访问链接，其他资源做 ID/状态摘要，不默认使用未绑定 dataSourceMap，精细导航整理、示例数据和深度设计按需后置。",
+      "done_when": "PRD 已记录视觉规范；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",
@@ -646,16 +646,19 @@
       "name": "yida-form-detail",
       "path": "skills/yida-form-detail/SKILL.md",
       "display_name": "表单详情页美化",
-      "description": "表单详情页 formDetail 样式优化，通过 Schema 注入 Html 组件承载 CSS。",
+      "description": "表单页视觉引导与表单详情页 formDetail 样式优化。表单页开发默认加载本技能合并 Divider 分割线语义分组；需要落地详情页样式时，通过 Schema 注入 Html 组件承载 CSS。",
       "category": "yida-skills/form",
       "tags": [
+        "表单视觉引导",
         "详情页",
+        "Divider",
         "formDetail",
         "CSS",
         "Html 组件"
       ],
       "aliases": [
-        "详情页样式"
+        "详情页样式",
+        "表单视觉"
       ]
     },
     {
@@ -822,7 +825,7 @@
       "name": "yida-nav-group",
       "path": "skills/yida-nav-group/SKILL.md",
       "display_name": "应用左侧导航分组",
-      "description": "宜搭应用左侧导航分组管理。查询导航树、新建或重命名分组、移动排序表单页面和外链。",
+      "description": "宜搭应用左侧导航分组管理。查询导航树、新建或重命名分组、移动排序表单页面和外链；支持 auto-order 按门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单自动排序。",
       "category": "yida-skills/app",
       "tags": [
         "导航",
@@ -1087,7 +1090,7 @@
       "name": "yida-theme",
       "path": "skills/yida-theme/SKILL.md",
       "display_name": "应用主题与全局换肤",
-      "description": "应用主题色、品牌色、全局换肤、基础 token 预设 blue/green/orange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
+      "description": "应用主题色、品牌色、全局换肤、推荐 pod 主题 podBlue/podGreen/podOrange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
       "category": "yida-skills/app",
       "tags": [
         "主题",
@@ -1170,10 +1173,12 @@
     {
       "name": "yida-skills/form",
       "display_name": "表单与数据采集",
-      "description": "表单字段结构、字段公式/校验、业务关联规则、表单详情页、Canvas-first 表格批量录入和表单/流程数据记录管理。",
+      "description": "表单字段结构、表单视觉引导、Divider 分割线分组、字段公式/校验、业务关联规则、表单详情页、Canvas-first 表格批量录入和表单/流程数据记录管理。",
       "signals": [
         "创建表单",
         "新增字段",
+        "表单视觉",
+        "Divider",
         "公式",
         "校验",
         "业务关联规则",

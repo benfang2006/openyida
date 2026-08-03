@@ -377,7 +377,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | Query enterprise efficiency overview and detail reports |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a Yida app |
 | `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` | Update app info |
-| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
+| `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
 | `openyida app-permission <get\|set\|add\|remove\|search-user> ...` | Manage app primary, data, and developer admins |
 | `openyida i18n <overview\|config\|languages\|list\|upsert\|delete\|translate\|translate-all\|upgrade> <appType> ...` | Manage app multilingual copy and language config |
 | `openyida export <appType> [output]` | Export app (generate migration package) |
@@ -400,12 +400,12 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> <appType> ...` | Manage aggregate tables (virtualView) |
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | Get one form Schema or all form Schemas |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | Export app entity relationship diagram |
-| `openyida create-page <appType> "<name>" [--mode dashboard] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
+| `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
 | `openyida generate-page <template>` | Generate page from curated template |
 | `openyida build-page <sourceFile> [--output file\|--write]` | Build Yida-compatible page source |
 | `openyida check-page <src> [--compat]` | Check custom page standards |
 | `openyida compile <src>` | Compile custom page locally |
-| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--open\|--no-open]` | Compile and publish custom page |
+| `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | Compile and publish custom page |
 | `openyida update-form-config <appType> ...` | Update form configuration |
 | `openyida get-form-config <appType> <formUuid> [--json]` | Query form configuration |
 

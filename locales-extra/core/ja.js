@@ -128,7 +128,7 @@ module.exports = {
       '  login                                                        ログイン管理（キャッシュ優先、なければ QR コードスキャン）\n' +
       '  logout                                                       ログアウト / アカウント切り替え\n' +
       '  create-app "<名前>" [説明] [アイコン] [色] [テーマ] [ナビ] [レイアウト]  アプリを作成し appType を出力\n' +
-      '  create-page <appType> "<ページ名>" [--mode dashboard]        カスタムページを作成し pageId を出力\n' +
+      '  create-page <appType> "<ページ名>" [--mode dashboard] [--hide-nav]        カスタムページを作成し pageId を出力\n' +
       '  create-form create <appType> "<フォーム名>" <フィールドJSON> [--layout <レイアウト>] [--theme <テーマ>] [--label-align <配置>]  フォームページを作成\n' +
       '  create-form update <appType> <formUuid> <変更JSON>           フォームページを更新\n' +
       '  get-schema <appType> <formUuid>                              フォーム Schema を取得\n' +
@@ -244,8 +244,8 @@ module.exports = {
     generate_page_example: 'Example: openyida generate-page product-homepage --brand-name OpenKuma --brand-initials OK --theme-scope page --output pages/src/home.canvas.jsx --compile',
     build_page_usage: 'Usage: openyida build-page <sourceFile> [--output pages/build/page.yida.jsx|--write] [--json]',
     build_page_example: 'Example: openyida build-page pages/src/dashboard.oyd.jsx --output pages/build/dashboard.yida.jsx',
-    publish_usage: '使用方法: openyida publish <ソースファイル> <appType> <formUuid> [--health-check] [--canvas]',
-    publish_example: '例: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check',
+    publish_usage: '使用方法: openyida publish <ソースファイル> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    publish_example: '例: openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check --auto-nav-order',
     formula_usage: 'Usage: openyida formula evaluate <formula|file> [--schema schema.json] [--json] [--strict]',
     formula_example: `Example: openyida formula evaluate 'IF(GT(#{numberField_total}, 100), "high", "low")' --schema .cache/schema.json`,
     verify_usage: '使用方法: openyida verify-short-url <appType> <formUuid> <url>',
@@ -551,7 +551,7 @@ module.exports = {
   },
   create_page: {
     title: '  openyida create-page - Yida カスタムページ作成ツール',
-    usage: 'Usage: openyida create-page <appType> "<pageName>" [--mode dashboard]',
+    usage: 'Usage: openyida create-page <appType> "<pageName>" [--mode dashboard] [--hide-nav]',
     example: '例: openyida create-page "APP_XXX" "Dashboard" --mode dashboard',
     app_id: '  アプリ ID:   {0}',
     page_name: '  ページ名:   {0}',
@@ -562,7 +562,7 @@ module.exports = {
     dashboard_config_ok: '  ✅ ダッシュボードモードを設定しました: 上部ナビを非表示にし、chromeless custom URL を出力します',
     dashboard_config_failed: '  ⚠️  ダッシュボードモード設定に失敗しました: {0}',
     err_mode_invalid: 'Unsupported page mode: {0}',
-    mode_hint: 'Available modes: default, dashboard',
+    mode_hint: 'Available modes: default, dashboard. Navigation is visible by default; pass --hide-nav or --render-nav false to hide it.',
     page_id_label: '  pageId: {0}',
     url_label: '  URL: {0}',
     failed: '  ❌ 作成に失敗しました: {0}'
@@ -1166,12 +1166,15 @@ module.exports = {
     step_health_check: '\n🩺 Step 5: 公開ページをヘルスチェック\n',
     health_check_ok: '  ✅ Health check passed: HTTP {0}',
     health_check_failed: '  ⚠️  Health check failed: HTTP {0} {1}',
+    step_nav_order: '\n🧭 Auto-order app navigation\n',
+    nav_order_ok: '  ✅ Navigation order updated: {0}',
+    nav_order_failed: '  ⚠️  Navigation order failed; page is already published: {0}',
     exception: '\n❌ 公開エラー: {0}',
     error: '\n❌ 公開エラー: {0}',
     source_not_found: '❌ ソースファイルが見つかりません：{0}',
     source_path_hint: '💡 次のソースファイルパスを試してください：{0}',
-    usage: '使用方法: openyida publish <ソースファイル> <appType> <formUuid> [--health-check] [--canvas]',
-    example: '例: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check'
+    usage: '使用方法: openyida publish <ソースファイル> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    example: '例: openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check --auto-nav-order'
   },
   qr_login: {
     title: '🔐 宜搭 ターミナル QR コードログイン',

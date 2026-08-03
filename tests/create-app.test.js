@@ -48,6 +48,7 @@ describe('create-app argument parsing', () => {
   test('creates normal apps by default', () => {
     expect(parseCreateAppArgs(['--name', '普通应用'])).toMatchObject({
       appName: '普通应用',
+      colour: 'podBlue',
     });
   });
 
@@ -61,7 +62,7 @@ describe('create-app argument parsing', () => {
       appName: '恒信律师事务所',
       icon: 'xian-falv',
       iconColor: '#5C72FF',
-      colour: 'greyBlue',
+      colour: 'podBlue',
       navTheme: null,
       layoutDirection: null,
       industry: 'legal',
@@ -72,7 +73,7 @@ describe('create-app argument parsing', () => {
     expect(inferAppDefaults('云山茶叶官网', '绿色茶园品牌展示')).toMatchObject({
       icon: 'xian-diqiu',
       iconColor: '#00B853',
-      colour: 'teal',
+      colour: 'podGreen',
       industry: 'tea-ecology',
     });
   });

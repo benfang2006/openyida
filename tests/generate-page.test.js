@@ -6,7 +6,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { escapeJsStringValue } = require('../lib/app/page-ir');
 const { getCanvasDistPath, inferTemplateName } = require('../lib/app/generate-page');
-const { BASIC_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
+const { BASIC_THEME_TOKEN_PRESET_KEYS, POD_THEME_TOKEN_PRESET_KEYS } = require('../lib/app/theme-presets');
 
 const ROOT = path.join(__dirname, '..');
 const BIN = path.join(ROOT, 'bin', 'yida.js');
@@ -180,13 +180,46 @@ describe('generate-page command', () => {
     expect(manifest.visualProfile.name).toBe('custom-theme');
     expect(manifest.themeProfile.name).toBe('custom-theme');
     expect(manifest.themeProfile.themeColor).toBe('rgb(0, 137, 255)');
+    expect(manifest.themeProfile.themeColorSource).toBe('platform-pod-theme');
     expect(manifest.themeScope).toBe('page');
     expect(manifest.visualProfile.density).toBe('business-compact');
   });
 
-  test('maps basic theme-profile names to token presets', () => {
+  test('maps pod theme-profile names to platform theme presets', () => {
+    expect(POD_THEME_TOKEN_PRESET_KEYS).toEqual(['podBlue', 'podGreen', 'podOrange']);
     expect(BASIC_THEME_TOKEN_PRESET_KEYS).toEqual(['blue', 'green', 'orange']);
 
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      'product-homepage',
+      '--theme-profile',
+      'podOrange',
+      '--compile',
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'home.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(manifest.themeProfile).toMatchObject({
+      name: 'podOrange',
+      appThemeKey: 'podOrange',
+      followRuntimeTheme: false,
+      themeColorSource: 'platform-pod-theme',
+      themeColor: 'rgb(255, 111, 0)',
+      themeColorDeep: 'rgb(242, 105, 0)',
+      themeColorSoft: 'rgb(255, 248, 242)',
+      themeColorTint: 'rgba(255, 111, 0, 0.2)',
+    });
+    expect(manifest.themeScope).toBe('page');
+  });
+
+  test('keeps legacy basic theme-profile names compatible without recommending them by default', () => {
     execFileSync(process.execPath, [
       BIN,
       'generate-page',
@@ -207,13 +240,10 @@ describe('generate-page command', () => {
     expect(manifest.themeProfile).toMatchObject({
       name: 'orange',
       followRuntimeTheme: false,
-      themeColorSource: 'basic-token-preset',
+      themeColorSource: 'legacy-basic-token-preset',
       themeColor: 'rgb(255, 111, 0)',
-      themeColorDeep: 'rgb(242, 105, 0)',
-      themeColorSoft: 'rgb(255, 248, 242)',
-      themeColorTint: 'rgba(255, 111, 0, 0.2)',
     });
-    expect(manifest.themeScope).toBe('page');
+    expect(manifest.themeProfile).not.toHaveProperty('appThemeKey');
   });
 
   test('injects app scoped shell theme bridge when requested', () => {
@@ -278,7 +308,7 @@ describe('generate-page command', () => {
     expect(source).toContain('export default YidaComp');
     expect(source).toContain('@openyida-template product-homepage');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile blue');
+    expect(source).toContain('@openyida-theme-profile podBlue');
     expect(source).toContain('@openyida-theme-scope page');
     expect(source).toContain('oy-hero-grid');
     expect(source).toContain('buildScopedThemeVars');
@@ -291,9 +321,10 @@ describe('generate-page command', () => {
     expect(manifest.scene).toBe('workbench');
     expect(manifest.visualProfile.name).toBe('yida-app-theme');
     expect(manifest.visualProfile.density).toBe('business-compact');
-    expect(manifest.themeProfile.name).toBe('blue');
+    expect(manifest.themeProfile.name).toBe('podBlue');
+    expect(manifest.themeProfile.appThemeKey).toBe('podBlue');
     expect(manifest.themeProfile.followRuntimeTheme).toBe(false);
-    expect(manifest.themeProfile.themeColorSource).toBe('basic-token-preset');
+    expect(manifest.themeProfile.themeColorSource).toBe('platform-pod-theme');
     expect(manifest.themeScope).toBe('page');
   });
 
@@ -520,7 +551,7 @@ describe('generate-page command', () => {
       expect(source).not.toContain("JSON.parse('{{");
       expect(compiled).not.toContain("JSON.parse('{{");
       if (item.template === 'split-pane-detail') {
-        expect(source).toContain('@openyida-theme-profile blue');
+        expect(source).toContain('@openyida-theme-profile podBlue');
         expect(source).toContain("const THEME_SCOPE = withFallback('page', 'page')");
         expect(source).toContain('function parseTemplateJson');
         expect(source).toContain('const DATA_BINDING = parseTemplateJson');
@@ -908,11 +939,11 @@ describe('generate-page command', () => {
     });
   });
 
-  test('hides Yida app navigation only when page-level navigation is explicit', () => {
-    const specPath = path.join(tmpDir, 'app-home-explicit-nav.json');
+  test('keeps Yida app navigation visible even when page-level navigation exists', () => {
+    const specPath = path.join(tmpDir, 'app-home-page-nav.json');
     fs.writeFileSync(specPath, JSON.stringify({
       template: 'workbench-home',
-      output: 'pages/src/app-home-explicit-nav.canvas.jsx',
+      output: 'pages/src/app-home-page-nav.canvas.jsx',
       scene: 'workbench',
       appBlueprint: {
         appName: '采购协同应用',
@@ -934,7 +965,47 @@ describe('generate-page command', () => {
       timeout: 10000,
     });
 
-    const manifestPath = path.join(tmpDir, 'pages', 'src', 'app-home-explicit-nav.canvas.openyida-page.json');
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'app-home-page-nav.canvas.openyida-page.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    expect(manifest.appBlueprint).toMatchObject({
+      hasPageNavigation: true,
+      hideAppNav: false,
+      renderNav: true,
+      navConfig: {
+        isRenderNav: true,
+      },
+    });
+  });
+
+  test('hides Yida app navigation only when hiding is explicit', () => {
+    const specPath = path.join(tmpDir, 'app-home-hidden-nav.json');
+    fs.writeFileSync(specPath, JSON.stringify({
+      template: 'workbench-home',
+      output: 'pages/src/app-home-hidden-nav.canvas.jsx',
+      scene: 'workbench',
+      appBlueprint: {
+        appName: '采购协同应用',
+        shell: 'side_nav',
+        hasPageNavigation: true,
+        renderNav: false,
+        navigation: ['采购首页', '采购申请', '供应商管理'],
+      },
+    }, null, 2), 'utf8');
+
+    execFileSync(process.execPath, [
+      BIN,
+      'generate-page',
+      '--spec',
+      specPath,
+    ], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    const manifestPath = path.join(tmpDir, 'pages', 'src', 'app-home-hidden-nav.canvas.openyida-page.json');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
     expect(manifest.appBlueprint).toMatchObject({
@@ -1143,7 +1214,7 @@ describe('generate-page command', () => {
     expect(source).toContain('@openyida-template todo-mvc');
     expect(source).toContain('@openyida-scene list');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile blue');
+    expect(source).toContain('@openyida-theme-profile podBlue');
     expect(source).toContain('@openyida-theme-scope page');
     expect(source).toContain('NATIVE_CONTROL_RESET_CSS');
     expect(source).toContain('--oyd-control-focus-ring');
@@ -1161,7 +1232,7 @@ describe('generate-page command', () => {
     expect(manifest.scene).toBe('list');
     expect(manifest.visualProfile.name).toBe('yida-app-theme');
     expect(manifest.visualProfile.density).toBe('business-compact');
-    expect(manifest.themeProfile.name).toBe('blue');
+    expect(manifest.themeProfile.name).toBe('podBlue');
     expect(manifest.themeScope).toBe('page');
     expect(manifest.blocks.map((block) => block.type)).toEqual([
       'todo-shell',

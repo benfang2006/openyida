@@ -327,7 +327,8 @@ describe('bridge HTTP protocol', () => {
         success: true,
         appName: '客户管理',
         appType: 'APP_BRIDGE_TEST',
-        url: 'https://www.aliwork.com/APP_BRIDGE_TEST/admin',
+        url: 'https://www.aliwork.com/APP_BRIDGE_TEST/workbench',
+        workbenchUrl: 'https://www.aliwork.com/APP_BRIDGE_TEST/workbench',
       },
     });
     expect(created.body.app.corpId).toBe('corp-s...3456');

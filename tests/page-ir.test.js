@@ -25,9 +25,10 @@ describe('page IR', () => {
       corner: 'layered',
     });
     expect(ir.themeProfile).toMatchObject({
-      name: 'blue',
+      name: 'podBlue',
+      appThemeKey: 'podBlue',
       followRuntimeTheme: false,
-      themeColorSource: 'basic-token-preset',
+      themeColorSource: 'platform-pod-theme',
       themeColor: 'rgb(0, 137, 255)',
       mode: 'color_color',
       colorMode: 'gradient',
@@ -142,7 +143,8 @@ describe('page IR', () => {
 
     expect(ir.template).toBe('todo-mvc');
     expect(ir.themeScope).toBe('page');
-    expect(ir.themeProfile.name).toBe('blue');
+    expect(ir.themeProfile.name).toBe('podBlue');
+    expect(ir.themeProfile.appThemeKey).toBe('podBlue');
     expect(ir.themeProfile.followRuntimeTheme).toBe(false);
     expect(ir.blocks.map((block) => block.type)).toEqual([
       'todo-shell',

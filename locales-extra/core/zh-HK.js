@@ -128,7 +128,7 @@ module.exports = {
       '  login                                                        登入態管理（優先緩存，否則掃碼）\n' +
       '  logout                                                       登出 / 切換帳戶\n' +
       '  create-app "<名稱>" [描述] [圖示] [顏色] [主題色] [導航風格] [佈局]  建立應用程式，輸出 appType\n' +
-      '  create-page <appType> "<頁面名>" [--mode dashboard]          建立自訂頁面，輸出 pageId\n' +
+      '  create-page <appType> "<頁面名>" [--mode dashboard] [--hide-nav]          建立自訂頁面，輸出 pageId\n' +
       '  create-form create <appType> "<表單名>" <欄位JSON> [--layout <佈局>] [--theme <主題>] [--label-align <對齊>]  建立表單頁面\n' +
       '  create-form update <appType> <formUuid> <修改JSON>           更新表單頁面\n' +
       '  get-schema <appType> <formUuid>                              取得表單 Schema\n' +
@@ -243,8 +243,8 @@ module.exports = {
     generate_page_example: '範例：openyida generate-page product-homepage --brand-name OpenKuma --brand-initials OK --theme-scope page --output pages/src/home.canvas.jsx --compile',
     build_page_usage: '用法: openyida build-page <源文件路径> [--output pages/build/page.yida.jsx|--write] [--json]',
     build_page_example: '示例: openyida build-page pages/src/dashboard.oyd.jsx --output pages/build/dashboard.yida.jsx',
-    publish_usage: '用法：openyida publish <原始檔路徑> <appType> <formUuid> [--health-check] [--canvas]',
-    publish_example: '範例：openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check',
+    publish_usage: '用法：openyida publish <原始檔路徑> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    publish_example: '範例：openyida publish pages/src/home.canvas.jsx APP_XXX FORM-XXX --health-check --auto-nav-order',
     formula_usage: '用法: openyida formula evaluate <公式或文件> [--schema schema.json] [--json] [--strict]',
     formula_example: `示例: openyida formula evaluate 'IF(GT(#{numberField_total}, 100), "高", "低")' --schema .cache/schema.json`,
     verify_usage: '用法：openyida verify-short-url <appType> <formUuid> <url>',
@@ -539,7 +539,7 @@ module.exports = {
   },
   create_page: {
     title: '  openyida create-page - 宜搭自訂頁面建立工具',
-    usage: '用法：openyida create-page <appType> "<pageName>" [--mode dashboard]',
+    usage: '用法：openyida create-page <appType> "<pageName>" [--mode dashboard] [--hide-nav]',
     example: '範例：openyida create-page "APP_XXX" "駕駛艙" --mode dashboard',
     app_id: '  應用程式 ID：  {0}',
     page_name: '  頁面名稱：{0}',
@@ -1149,12 +1149,15 @@ module.exports = {
     step_health_check: '\n🩺 Step 5：健康檢查已發布頁面\n',
     health_check_ok: '  ✅ 健康檢查通過：HTTP {0}',
     health_check_failed: '  ⚠️  健康檢查失敗：HTTP {0} {1}',
+    step_nav_order: '\n🧭 自動整理應用導航\n',
+    nav_order_ok: '  ✅ 導航排序已更新：{0}',
+    nav_order_failed: '  ⚠️  導航排序失敗，頁面已發布：{0}',
     exception: '\n❌ 發布異常：{0}',
     error: '\n❌ 發布異常：{0}',
     source_not_found: '❌ 原始檔案不存在：{0}',
     source_path_hint: '💡 可嘗試使用原始檔路徑：{0}',
-    usage: '用法：openyida publish <原始檔路徑> <appType> <formUuid> [--health-check] [--canvas]',
-    example: '範例：openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check'
+    usage: '用法：openyida publish <原始檔路徑> <appType> <formUuid> [--health-check] [--canvas] [--auto-nav-order]',
+    example: '範例：openyida publish pages/src/xxx.js APP_XXX FORM-XXX --health-check --auto-nav-order'
   },
   qr_login: {
     title: '🔐 宜搭終端機 QR 碼登入',
