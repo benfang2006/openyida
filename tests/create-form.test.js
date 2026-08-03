@@ -29,6 +29,12 @@ const { createDefinitionReaders } = require('../lib/app/create-form/definition-r
 const formCompiler = require('../lib/app/services/form-compiler');
 const { verifyFieldBindings } = require('../lib/app/services/field-bindings');
 
+function stripNodeRuntimeWarnings(output) {
+  return String(output || '')
+    .replace(/^\(node:\d+\) ExperimentalWarning:.*\n?/gm, '')
+    .replace(/^\(Use `node --trace-warnings \.\.\.` to show where the warning was created\)\n?/gm, '');
+}
+
 // ── Bug #1: HTTP helpers must use master token auth / auto-login plumbing ──
 
 describe('create-form.js imports', () => {
@@ -1887,7 +1893,7 @@ describe('create-form create recovery guardrails', () => {
     });
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toBe('');
+    expect(stripNodeRuntimeWarnings(result.stderr)).toBe('');
     const payload = JSON.parse(result.stdout);
     expect(payload).toMatchObject({
       success: false,
@@ -1924,7 +1930,7 @@ describe('create-form create recovery guardrails', () => {
     });
 
     expect(result.status).toBe(0);
-    expect(result.stderr).toBe('');
+    expect(stripNodeRuntimeWarnings(result.stderr)).toBe('');
     expect(JSON.parse(result.stdout)).toMatchObject({
       success: true,
       valid: true,
