@@ -88,7 +88,7 @@ openyida/
 ├── bin/yida.js          # CLI entry point, command routing
 ├── lib/                 # Command implementation modules
 │   ├── core/            # Environment detection, i18n, utilities
-│   ├── auth/            # Login, Codex login, QR login, organizations
+│   ├── auth/            # OAuth login, token sessions, organizations
 │   ├── app/             # Application, form, page commands
 │   └── ...
 ├── project/             # User workspace template

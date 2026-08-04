@@ -14,7 +14,7 @@
 | 风险点 | 现状证据 | 影响 | 建议 |
 |---|---|---|---|
 | npm 包未包含完整功能列表文档 | `package.json` 的 `files` 白名单原本只包含 `README.md`，未包含 README 链接的 `docs/capabilities.md` | npm 包或包页面上的“完整功能列表”可能无法随包分发 | 已补充 `docs/capabilities.md` 到 `files` 白名单；后续若 README 新增 docs 链接，也要同步白名单 |
-| 中文 README 登录说明滞后 | `README_zhCN.md` 仍描述 Chrome/Edge/Chromium CDP 与二维码 handoff | Agent 可能引导用户走旧登录方式，偏离 OAuth token session 主线 | 已改为 OAuth loopback + token session，并强调不要提取 Cookie 或手写 `.cache/cookies.json` |
+| 中文 README 登录说明滞后 | `README_zhCN.md` 曾描述 Chrome/Edge/Chromium CDP 与旧二维码 handoff | Agent 可能引导用户走旧登录方式，偏离 OAuth token session 主线 | 已改为 OAuth loopback + token session，并强调不要提取 Cookie 或手写 `.cache/cookies.json` |
 | 功能列表不是自动校验目标 | `check:docs` 只校验 README 自动生成区块；`docs/capabilities.md` 需要人工维护 | 新增命令后功能列表容易漏项，之前缺少 `auth`、`agent-capabilities`、`asset`、`eval`、`get-form-config`、`integration enable/disable` 的可搜索条目 | 建议新增 `scripts/validate-capabilities-doc.js`，用 command manifest 检查 `docs/capabilities.md` 至少覆盖所有可见命令根或指定例外 |
 
 ## P1：近期优化

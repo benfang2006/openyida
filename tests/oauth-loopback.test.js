@@ -1,9 +1,13 @@
 'use strict';
 
+const EventEmitter = require('events');
+
 const {
   buildDingtalkOAuthUrl,
   resolveBrowserLauncher,
   detectDefaultBrowser,
+  openBrowser,
+  isQwenWorkEnvironment,
   classifyMacBundleId,
   classifyWindowsProgId,
   classifyLinuxDesktop,
@@ -144,6 +148,119 @@ describe('resolveBrowserLauncher', () => {
     });
     expect(command).toBe('/usr/bin/google-chrome-stable');
     expect(args).toEqual(['--new-window', oauthUrl]);
+  });
+});
+
+describe('openBrowser launch policy', () => {
+  const oauthUrl = buildDingtalkOAuthUrl({
+    clientId: 'suite9xvlxxerybljwheo',
+    redirectUri: 'http://127.0.0.1:34882/oauth/callback',
+    state: 'abc123',
+    scope: 'openid corpid',
+  });
+
+  function createChild() {
+    const child = new EventEmitter();
+    child.unref = jest.fn();
+    return child;
+  }
+
+  test('detects QwenWork desktop shell signals', () => {
+    expect(isQwenWorkEnvironment({ QWENWORK_INTEGRATION_MODE: '1' })).toBe(true);
+    expect(isQwenWorkEnvironment({ QWENWORKCN_INTEGRATION_MODE: '1' })).toBe(true);
+    expect(isQwenWorkEnvironment({ __CFBundleIdentifier: 'com.alibaba.qwenwork' })).toBe(true);
+    expect(isQwenWorkEnvironment({ QODER_WORK_INTEGRATION_PRODUCT: 'qwen-work' })).toBe(true);
+    expect(isQwenWorkEnvironment({ __CFBundleIdentifier: 'com.openai.codex' })).toBe(false);
+  });
+
+  test('QwenWork opens the system default browser before new-window fallback', () => {
+    const calls = [];
+    const child = createChild();
+    const ok = openBrowser(oauthUrl, {
+      env: { QWENWORKCN_INTEGRATION_MODE: '1' },
+      platform: 'darwin',
+      detectDefaultBrowser: () => ({ family: 'chromium', bundleId: 'com.google.Chrome' }),
+      spawn: (command, args) => {
+        calls.push({ command, args });
+        return child;
+      },
+    });
+
+    expect(ok).toBe(true);
+    expect(calls).toEqual([{ command: 'open', args: [oauthUrl] }]);
+  });
+
+  test('QwenWork falls back to the new-window launcher when system open fails', () => {
+    const calls = [];
+    const children = [createChild(), createChild()];
+    const ok = openBrowser(oauthUrl, {
+      env: { __CFBundleIdentifier: 'com.alibaba.qwen-work' },
+      platform: 'darwin',
+      detectDefaultBrowser: () => ({ family: 'chromium', bundleId: 'com.google.Chrome' }),
+      spawn: (command, args) => {
+        calls.push({ command, args });
+        return children[calls.length - 1];
+      },
+    });
+
+    children[0].emit('exit', 1, null);
+
+    expect(ok).toBe(true);
+    expect(calls).toEqual([
+      { command: 'open', args: [oauthUrl] },
+      {
+        command: 'open',
+        args: ['-b', 'com.google.Chrome', '-n', '--args', '--new-window', oauthUrl],
+      },
+    ]);
+  });
+
+  test('QwenWork reports success when synchronous system-open failure falls back', () => {
+    const calls = [];
+    const child = createChild();
+    const ok = openBrowser(oauthUrl, {
+      env: { QWENWORKCN_INTEGRATION_MODE: '1' },
+      platform: 'darwin',
+      detectDefaultBrowser: () => ({ family: 'chromium', bundleId: 'com.google.Chrome' }),
+      spawn: (command, args) => {
+        calls.push({ command, args });
+        if (calls.length === 1) {
+          throw new Error('spawn failed');
+        }
+        return child;
+      },
+    });
+
+    expect(ok).toBe(true);
+    expect(calls).toEqual([
+      { command: 'open', args: [oauthUrl] },
+      {
+        command: 'open',
+        args: ['-b', 'com.google.Chrome', '-n', '--args', '--new-window', oauthUrl],
+      },
+    ]);
+  });
+
+  test('non-QwenWork agents still prefer a real browser new window', () => {
+    const calls = [];
+    const child = createChild();
+    const ok = openBrowser(oauthUrl, {
+      env: { CODEX_SHELL: '1' },
+      platform: 'darwin',
+      detectDefaultBrowser: () => ({ family: 'chromium', bundleId: 'com.google.Chrome' }),
+      spawn: (command, args) => {
+        calls.push({ command, args });
+        return child;
+      },
+    });
+
+    expect(ok).toBe(true);
+    expect(calls).toEqual([
+      {
+        command: 'open',
+        args: ['-b', 'com.google.Chrome', '-n', '--args', '--new-window', oauthUrl],
+      },
+    ]);
   });
 });
 
