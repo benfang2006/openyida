@@ -4,9 +4,11 @@ Code Canvas 消费 `yida-design` 输出的 PRD 或单页 page spec，把页面�
 
 ## 页面场景到实现入口
 
-用户描述页面目标后，先读取 `yida-design` 的 PRD 或单页 PRD 章节，确认页面场景、区块、数据来源、主操作、主题色和移动端要求。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
+用户描述页面目标后，先读取 `yida-design` 的 PRD 或单页 PRD 章节，确认页面场景、区块、数据来源、主操作、主题色、页面风格、`designMd` 和移动端要求。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
 
 结构化实现工具提供可编译运行时结构、数据桥、主题变量和基础 primitives。真实业务页结合 `yida-design` 输出的 `prd/<项目名>.md`，落地业务化区块顺序、信息层级、局部构图、文案和样式节奏。
+
+PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-designs/*.design.md`，再落实其中的视觉 DNA、布局配方、组件规则和状态规则。PRD 写有 `visualBaseline` 时，同步落实 `layoutRecipe`、`visualAnchor`、`sectionRhythm`、`densityRule`、`actionPlacement` 和 `responsiveRule`。列表/管理页通常需要顶部视觉区、搜索筛选区、左侧列表或表格、右侧详情预览、错误/空态下一步动作；实现阶段用这些结构替代单个渐变标题、单个指标卡和大块空白提示。
 
 页面实现路径二选一：结构化实现路径先写业务化 `page-spec.json` 并生成可编译骨架，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；手写路径直接 Write 最终 `.canvas.jsx`。
 
@@ -15,7 +17,7 @@ Code Canvas 消费 `yida-design` 输出的 PRD 或单页 page spec，把页面�
 - `domain-ready`：主要业务语义已覆盖，可以作为真实业务页面继续校验和发布。
 - `draft-needs-domain-spec`：用户已有业务要求，但 page spec 仍缺业务对象、指标、交互或视觉方向；继续补 spec 或改源码。
 
-真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。业务区块、指标、行动文案或视觉方向不足时，回到 `yida-design` 补齐 PRD / page spec。
+真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、页面风格、`designMd` 和视觉 DNA；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。业务区块、指标、行动文案或页面风格不足时，回到 `yida-design` 补齐 PRD / page spec。
 
 数据真实性边界：
 
@@ -107,14 +109,21 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | `interactionProfile` | 主操作、详情方式、批量动作、空/载/错状态 | 按 scene 推断 |
 | `functionContract` | 页面美感提升时保留的数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限、状态 | 现有页面契约 |
 | `insights` | 看板/报告/工作台的数据洞察 | 无则空数组或场景默认洞察 |
+| `pageStyle` | 页面风格 `design_id` | 来自 `yida-design` Step 5 |
+| `designMd` | 页面风格设计文档路径 | 来自 `yida-design` Step 5 |
+| `visualDna` | 必须保留的视觉 DNA | 来自选中的 `design.md` |
+| `visualBaseline` | 视觉保底配方，包含版式、视觉锚点、区块节奏、密度、操作位置和响应式规则 | 来自 `yida-design` Step 5 |
 | `domainFidelity` | 实现后由 CLI 回填，标记业务化程度 | 无需手写 |
 
 示例：
 
 ```json
 {
-  "template": "dashboard-overview",
+  "pageStructure": "dashboard-overview",
   "scene": "dashboard",
+  "pageStyle": "deep-indigo-glass-analytics-workbench",
+  "designMd": "references/style-designs/deep-indigo-glass-analytics-workbench.design.md",
+  "visualDna": ["深靛色首屏摘要舞台", "玻璃质感指标卡", "紫蓝热力数据纹理", "柔白圆角分析面板"],
   "researchLevel": "none",
   "archetype": "analysis",
   "appBlueprint": {
@@ -124,8 +133,8 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
     "roles": ["运营", "经销商"],
     "navigation": ["品牌展示", "经营看板"],
     "pages": [
-      { "name": "品牌官网首页", "scene": "landing", "template": "official-homepage" },
-      { "name": "经营看板", "scene": "dashboard", "template": "dashboard-overview" }
+      { "name": "品牌官网首页", "scene": "landing", "pageStructure": "official-homepage" },
+      { "name": "经营看板", "scene": "dashboard", "pageStructure": "dashboard-overview" }
     ]
   },
   "interactionProfile": {

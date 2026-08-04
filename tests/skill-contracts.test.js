@@ -250,6 +250,8 @@ describe('OpenYida skill contracts', () => {
     const step5 = readSkill('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
     const output = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
+    const styleSelection = readSkill('yida-skills/skills/yida-design/references/style-design-selection.md');
+    const styleRegistry = readSkill('yida-skills/skills/yida-design/references/style-designs/registry.md');
     const index = JSON.parse(readSkill('yida-skills/skills-index.json'));
     const byName = new Map(index.skills.map((item) => [item.name, item]));
 
@@ -281,8 +283,9 @@ describe('OpenYida skill contracts', () => {
     expect(step5).toContain('示例品牌名、默认指标和通用卖点');
     expect(step5).not.toContain('sample 品牌名');
     expect(pageGeneration).toContain('## 页面场景到实现入口');
-    expect(pageGeneration).toContain('确认页面场景、区块、数据来源、主操作、主题色和移动端要求');
+    expect(pageGeneration).toContain('确认页面场景、区块、数据来源、主操作、主题色、页面风格、`designMd` 和移动端要求');
     expect(pageGeneration).toContain('实现时按下表选择页面结构');
+    expect(pageGeneration).toContain('PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-designs/*.design.md`');
     expect(pageGeneration).not.toContain('## 首次生成模板路由');
     expect(output).toContain('## 1. 应用基本信息');
     expect(output).toContain('| 应用类型 | <企业管理 / 经营分析 / 流程审批 / 数据采集 / 客户服务 / 库存进销存 / 项目协作 / 资产设备 / 教育培训 / 知识内容 / 监控指挥 / 官网门户 / 活动报名 / 轻量工具> |');
@@ -313,6 +316,9 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('- 页面类型：<display-page / form-page / process-form / report / detail-entry>');
     expect(output).toContain('- 页面定位：<主入口页面 / 核心业务页 / 详情页 / 报表页 / 配置页；说明为什么需要这个页面>');
     expect(output).toContain('- 页面关系：<从哪里进入、下一步去列表 / 看板 / 表单提交 / 详情 / 报表中的哪一个>');
+    expect(output).toContain('- 页面风格：<display-page 填 `design_id`；普通表单 / 流程表单写“跟随应用主题”>');
+    expect(output).toContain('- designMd：<display-page 填 `references/style-designs/<design-id>.design.md`；普通表单 / 流程表单留空>');
+    expect(output).toContain('- 视觉 DNA：<从 design.md 中提取 2-5 个必须保留的视觉 DNA>');
     expect(output).toContain('- 关联资源：');
     expect(output).toContain('  - 表单：<表单名称；用于新增、编辑、查询或作为列表数据来源>');
     expect(output).toContain('  - 流程：<流程名称；用于提交、审批、处理或状态流转>');
@@ -327,6 +333,20 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('| 分组 | 页面顺序 | 导航呈现 | 放置原则 |');
     expect(output).toContain('表单/流程在自定义页面之前');
     expect(output).toContain('## 11. 验收标准');
+    expect(design).toContain('[页面风格选择](references/style-design-selection.md)');
+    expect(design).toContain('[页面风格设计文档索引](references/style-designs/registry.md)');
+    expect(step5).toContain('读取 [页面风格设计文档选择](../references/style-design-selection.md)');
+    expect(step5).toContain('- pageVisualDesign：<pageStyle/designMd/styleReason/visualDna/sectionStyle/themeRelation>');
+    expect(styleSelection).toContain('## PRD 输出字段');
+    expect(styleSelection).toContain('`design.md` 只提供视觉 DNA、布局和组件样式');
+    expect(styleRegistry).toContain('| design_id | file | status | scenes | density | layout | tone | tags | avoid | visual_dna |');
+    expect(styleRegistry).toContain('airy-blue-meeting-ops-workbench.design.md');
+    expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'sub_skill', 'workhome-ui-skill', 'SKILL.md'))).toBe(false);
+    expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'references', 'style-designs', 'airy-blue-meeting-ops-workbench.design.md'))).toBe(true);
+    expect(design).not.toContain('workhome-ui-skill');
+    expect(design).not.toContain('fast_build');
+    expect(step5).not.toContain('workhome-ui-skill');
+    expect(output).not.toContain('workhome-ui-skill');
     expect(contract).toContain('需求分析、产品设计、视觉规范、数据结构、页面布局和验收标准由 `yida-design` 输出');
     expect(contract).toContain('描述应用基本信息、应用配置、数据结构、页面与功能、视觉规范、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准');
     expect(contract).not.toContain('应用体验蓝图');

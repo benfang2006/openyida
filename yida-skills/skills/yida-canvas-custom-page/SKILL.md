@@ -9,7 +9,7 @@ description: 宜搭 Code Canvas / 代码画布自定义页面开发规范，是�
 
 Code Canvas 是宜搭的代码画布自定义页面链路：用户写标准 React18 函数组件源码，OpenYida 本地编译为 `runtimeCode` + `importedModules`，运行时由 `YidaCodeCanvas` 加载前端资源并执行 `YidaComp`。
 
-UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>.md` 或单页 page spec。本技能负责把页面场景、区块、主题色、布局、交互、数据绑定和功能契约落到 `.canvas.jsx` / `.canvas.tsx`、antd token、CSS 变量、数据桥、表单入口和发布验收。
+UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>.md` 或单页 page spec。本技能负责把页面场景、区块、页面风格、`designMd`、视觉 DNA、主题色、布局、交互、数据绑定和功能契约落到 `.canvas.jsx` / `.canvas.tsx`、antd token、CSS 变量、数据桥、表单入口和发布验收。
 
 相较普通 `.oyd.jsx` 自定义页，Code Canvas 更适合：
 
@@ -98,7 +98,7 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>.md` 或�
 9. **门户运行态组件要补必需 props 和局部降级**：`QuickAccessCard` / `RecentlyUsedCard` 传 `theme="row-white"` 等必需 props；所有门户/字段/上传增强组件外层加局部 ErrorBoundary，单个组件不兼容时只降级该块，整页保持可用。
 10. **自定义主题写入页面作用域**：`--theme` 只接受平台预置 key；`podBlue`、`podGreen`、`podOrange` 既能作为平台主题 key，也能写入 `style#yida-global-theme` / scoped vars。PRD 指定非预置主题（例如活力橙、深玫红、自定义暗黑金）时，在 Canvas 源码中注入 `style#yida-global-theme` 或等价 scoped CSS vars，并在根节点设置 `data-theme-scope="page"`。
 11. **真实交付使用真实数据源**：完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；真实数据暂未接入时展示空态、表单入口、刷新/登记按钮。
-12. **PRD 进入实现输入**：完整应用和真实交付页在写页面前，先消费 `yida-design` 的 `prd/<项目名>.md`，把产品定位、页面场景、页面区块、`themeProfile`、`visualProfile`、`functionContract`、素材/图标策略、原生表单入口、页面实现交付顺序和业务化自检写进 `page-spec.json` 或手写实现备注。
+12. **PRD 进入实现输入**：完整应用和真实交付页在写页面前，先消费 `yida-design` 的 `prd/<项目名>.md`，把产品定位、页面场景、页面区块、`pageStyle`、`designMd`、视觉 DNA、`themeProfile`、`visualProfile`、`functionContract`、素材/图标策略、原生表单入口、页面实现交付顺序和业务化自检写进 `page-spec.json` 或手写实现备注。
 13. **页面实现二选一**：结构化实现路径先写 `page-spec.json`，生成可编译骨架后读取 CLI 摘要或 `.openyida-page.json` 判断业务化程度和 dataBinding，并对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
 14. **实现骨架消费业务 spec**：品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明来自当前业务 spec。若 CLI 报业务内容不足，补齐/改写 spec 或 patch 源码后重新生成/编译。
 15. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、页面 spec 会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。页面生成、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。

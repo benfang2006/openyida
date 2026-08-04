@@ -35,7 +35,7 @@ description: >
 | 2 | [主题系统](workflow/step-2-theme-system.md) | 确定主色、辅助色、中性色、字体层级、组件基调和宜搭 token 作用域 | `themeProfile` |
 | 3 | [信息架构](workflow/step-3-information-architecture.md) | 规划首页/入口页、平台导航、页面清单、页面场景和表单/流程关系 | `appBlueprint` / 页面结构 |
 | 4 | [页面原型与交互](workflow/step-4-wireframe-interaction.md) | 确定布局骨架、内容区块、主操作、联动、交互、PC/移动端差异 | 低保真结构 + 交互路径 |
-| 5 | [高保真视觉与状态](workflow/step-5-visual-states.md) | 细化视觉方向、素材、图标、空/载/错态、数据状态和去 AI 味自检 | `visualProfile` + 状态规范 |
+| 5 | [页面风格、视觉与状态](workflow/step-5-visual-states.md) | 为自定义展示页选择 `design.md`，细化视觉 DNA、素材、图标、空/载/错态、数据状态和去 AI 味自检 | `pageVisualDesign` + `visualProfile` + 状态规范 |
 | 6 | [交付 PRD](workflow/step-6-handoff.md) | 汇总应用基本信息、页面与功能、视觉规范、资源创建顺序、页面实现交付顺序、导航顺序和验收标准 | `prd/<项目名>.md` |
 
 > 进入标准流程后，从 Step 1 开始按顺序执行；每步开始前先读取对应步骤文件，每步形成产物后再进入下一步。Step 6 输出前核对 Step 1-5 的产物齐全，确保不跳步、不停在中间步骤。
@@ -57,9 +57,10 @@ description: >
 9. **主题作用域写清楚**：应用级换肤写 `themeScope=app`；单页美化写 `themeScope=page`；页面重构/单页美化默认以当前应用主题色为基准，用户明确要求很不一样的独立风格时再做页面级独立色盘；`--theme` / `colour` 只使用平台预置主题 key。
 10. **默认主题优先业务浅底**：真实业务页默认先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；工作台、门户、列表、详情、普通看板和数据大屏默认都是浅底 / light 模式。默认浅底业务屏，只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸。
 11. **页面布局要到可实现粒度**：每个页面至少写清顶部/左侧/主体/右侧/底部区域、核心组件、信息密度、主操作位置、PC/移动端差异和空/载/错态。
-12. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
-13. **页面文案和图标使用专业表达**：渲染内容使用纯文本和功能性内联 SVG。
-14. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
+12. **页面风格写到页面级**：自定义展示页、工作台、列表管理页、处理台、看板和首页门户在 PRD 中写清 `pageStyle`、`designMd`、视觉 DNA、页面区块和主题关系；实现阶段按该 `design.md` 落地页面观感。
+13. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
+14. **页面文案和图标使用专业表达**：渲染内容使用纯文本和功能性内联 SVG。
+15. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
 
 ---
 
@@ -71,11 +72,13 @@ description: >
 | [Step 2：主题系统](workflow/step-2-theme-system.md) | 主题 token、色彩、字体、组件基调 | 涉及主题或视觉 |
 | [Step 3：信息架构](workflow/step-3-information-architecture.md) | 首页/入口页、导航、页面清单、页面场景 | 应用级或单页设计 |
 | [Step 4：页面原型与交互](workflow/step-4-wireframe-interaction.md) | 布局骨架、内容区块、主操作、抽屉、响应式 | 页面设计 |
-| [Step 5：高保真视觉与状态](workflow/step-5-visual-states.md) | 视觉方向、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
+| [Step 5：页面风格、视觉与状态](workflow/step-5-visual-states.md) | 页面 `design.md`、视觉 DNA、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
 | [Step 6：交付 PRD](workflow/step-6-handoff.md) | PRD 必填内容、三种顺序、实现交接 | 输出前 |
 | [page-design 单页设计](sub_skill/page-design/SKILL.md) | 单页主题证据、页面级设计流程、输出补充字段 | 单个自定义页设计 |
 | [场景参考速查](workflow/scene-reference-lookup.md) | scene 文件和专项变体速查 | 场景判定不确定时 |
 | [PRD 输出格式](workflow/output-prd.md) | 完整 PRD 字段示例 | Step 6 输出前 |
+| [页面风格选择](references/style-design-selection.md) | 选择页面级 `design.md` 的信号、步骤、打分和 PRD 输出字段 | Step 5 |
+| [页面风格设计文档索引](references/style-designs/registry.md) | 可选页面风格、适用场景、信息密度、布局和视觉 DNA | Step 5 |
 | [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、默认主题、token profile | 需要主题 key 或 token |
 | [scene-workbench](references/scenes/workbench.md) | 工作台/门户首页 | 页面场景 = workbench |
