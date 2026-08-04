@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。默认 fast_build 先解析并复用 app/page/form/process 上下文，只创建缺失且允许创建的应用、表单或页面；所有模式 PRD 都写视觉规范，主页面生成默认包含 yida-page-uiux 轻量 UI 引导，发布后立即做轻量导航自动排序；绑定或预创建应用只复用不改名；最终只输出一个主访问链接，其他资源做 ID/状态摘要，不默认使用未绑定 dataSourceMap，精细导航整理、示例数据和深度设计按需后置。",
-      "done_when": "PRD 已记录视觉规范；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。先解析资源上下文并消费 yida-design PRD，再按 PRD 创建或复用应用、表单、流程和页面；表单/流程先于自定义页面；发布后优先按 PRD 导航顺序排序，缺少明确页面清单时自动排序兜底。",
+      "done_when": "PRD 已写入 prd/<项目名>.md；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",
@@ -40,22 +40,51 @@
       ]
     },
     {
-      "name": "yida-app-uiux",
-      "path": "skills/yida-app-uiux/SKILL.md",
-      "display_name": "多页面应用体验蓝图",
-      "description": "多页面应用体验蓝图。用于规划角色路径、页面组合、导航分组、应用门面、壳形态和主题策略，通常由 yida-app deep_design 触发。",
-      "category": "yida-skills/app",
+      "name": "yida-design",
+      "path": "skills/yida-design/SKILL.md",
+      "display_name": "宜搭应用设计",
+      "description": "统一的宜搭应用设计技能，覆盖需求分析、产品定位、信息架构、页面结构、主题系统、各页面布局、视觉状态、素材图标、资源创建顺序、页面实现交付顺序、导航顺序和去 AI 味决策；输出 prd/<项目名>.md。",
+      "category": "yida-skills/design",
       "tags": [
-        "应用体验",
-        "多页面",
-        "导航",
-        "角色路径",
-        "deep_design"
+        "应用设计",
+        "ui_skill",
+        "产品设计",
+        "页面结构",
+        "页面视觉",
+        "主题",
+        "去 AI 味"
       ],
       "aliases": [
-        "应用蓝图",
-        "多页面体验"
-      ]
+        "应用设计",
+        "UI设计",
+        "视觉设计",
+        "视觉规范",
+        "页面结构规划",
+        "页面美化",
+        "应用主题",
+        "品牌色"
+      ],
+      "positive_signals": [
+        "主页面 UI 设计",
+        "ui_skill",
+        "页面美化",
+        "视觉方向",
+        "去 AI 味",
+        "高级感",
+        "品牌化",
+        "页面结构规划",
+        "导航分组",
+        "应用主题色",
+        "全局换肤"
+      ],
+      "negative_signals": [
+        "创建页面资源",
+        "发布页面",
+        "表单字段建模",
+        "数据记录操作"
+      ],
+      "command_ids": [],
+      "done_when": "输出 prd/<项目名>.md；PRD 写清资源创建顺序、页面实现交付顺序、导航顺序和验收标准，页面实现层再提炼 page-spec.json。"
     },
     {
       "name": "yida-app-permission",
@@ -95,9 +124,19 @@
       "display_name": "钉钉文档 Markdown",
       "description": "获取钉钉文档、钉钉在线文档或知识库文档的完整 Markdown 内容。用户提供文档链接并要求读取、提取、总结或继续处理文档内容时使用。",
       "category": "yida-skills/agent",
-      "tags": ["钉钉文档", "Markdown", "文档链接", "内容提取"],
-      "aliases": ["读取钉钉文档", "文档转 Markdown"],
-      "command_ids": ["read-dingtalk-doc"],
+      "tags": [
+        "钉钉文档",
+        "Markdown",
+        "文档链接",
+        "内容提取"
+      ],
+      "aliases": [
+        "读取钉钉文档",
+        "文档转 Markdown"
+      ],
+      "command_ids": [
+        "read-dingtalk-doc"
+      ],
       "done_when": "命令成功返回真实 Markdown 内容，或成功写入指定文件。",
       "requires_login": true
     },
@@ -107,10 +146,24 @@
       "display_name": "钉钉听记详情",
       "description": "按 taskUuid 获取钉钉听记、会议录音转写、会议纪要或 AI 听记详情；只负责读取内容。若用户要求转 PRD，先取内容再交给 yida-flash-note-to-prd。",
       "category": "yida-skills/agent",
-      "tags": ["钉钉听记", "会议纪要", "taskUuid", "语音转写"],
-      "aliases": ["读取听记", "获取会议记录"],
-      "positive_signals": ["taskUuid", "读取听记", "获取听记内容"],
-      "command_ids": ["read-dingtalk-tingji"],
+      "tags": [
+        "钉钉听记",
+        "会议纪要",
+        "taskUuid",
+        "语音转写"
+      ],
+      "aliases": [
+        "读取听记",
+        "获取会议记录"
+      ],
+      "positive_signals": [
+        "taskUuid",
+        "读取听记",
+        "获取听记内容"
+      ],
+      "command_ids": [
+        "read-dingtalk-tingji"
+      ],
       "done_when": "命令成功返回指定 taskUuid 对应的真实听记详情；转 PRD 场景已把内容交给 yida-flash-note-to-prd。",
       "requires_login": true
     },
@@ -181,7 +234,6 @@
         "renderJsx 旧页面迁移"
       ],
       "command_ids": [
-        "generate-page",
         "build-page",
         "publish"
       ],
@@ -235,7 +287,6 @@
       ],
       "command_ids": [
         "get-schema",
-        "sample",
         "publish"
       ],
       "done_when": "Canvas 批量录入页面本地编译通过；只有写入桥真实验证并成功发布后，才能声明远程写入闭环。"
@@ -287,7 +338,6 @@
         "Recharts"
       ],
       "command_ids": [
-        "sample",
         "publish"
       ],
       "done_when": "ECharts 页面源码完成并发布，必要时报表数据源已绑定。"
@@ -449,7 +499,7 @@
       "name": "yida-custom-page",
       "path": "skills/yida-custom-page/SKILL.md",
       "display_name": "普通自定义页面 JSX 开发",
-      "description": "宜搭普通自定义页面 React 16 / JSX / Jsx 组件开发规范。明确要求 JSX/Jsx 组件链路、普通自定义页面，或页面强依赖 this.$、this.utils.yida、dataSourceMap、表单提交或字段双向绑定深度耦合时使用；fast_build 默认使用 this.utils.yida.* 或入口型页面，只有已绑定设计器数据源时才用 dataSourceMap。",
+      "description": "宜搭普通自定义页面 React 16 / JSX / Jsx 组件开发规范。明确要求 JSX/Jsx 组件链路、普通自定义页面，或页面强依赖 this.$、this.utils.yida、dataSourceMap、表单提交或字段双向绑定深度耦合时使用；完整应用默认使用 this.utils.yida.* 或入口型页面，只有已绑定设计器数据源时才用 dataSourceMap。",
       "category": "yida-skills/page",
       "tags": [
         "JSX",
@@ -473,10 +523,9 @@
       "negative_signals": [
         "默认现代 React 页面",
         "Code Canvas 默认链路",
-        "只做视觉方向决策"
+        "只做 PRD"
       ],
       "command_ids": [
-        "sample",
         "check-page",
         "compile",
         "publish"
@@ -513,7 +562,6 @@
       ],
       "command_ids": [
         "create-page",
-        "generate-page",
         "create-report",
         "publish"
       ],
@@ -825,7 +873,7 @@
       "name": "yida-nav-group",
       "path": "skills/yida-nav-group/SKILL.md",
       "display_name": "应用左侧导航分组",
-      "description": "宜搭应用左侧导航分组管理。查询导航树、新建或重命名分组、移动排序表单页面和外链；支持 auto-order 按门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单自动排序。",
+      "description": "宜搭应用左侧导航分组管理。查询导航树、新建或重命名分组、移动排序表单页面和外链；PRD 写明导航顺序时用 order，缺少明确页面清单时用 auto-order 兜底。",
       "category": "yida-skills/app",
       "tags": [
         "导航",
@@ -884,44 +932,6 @@
       "aliases": [
         "页面分享"
       ]
-    },
-    {
-      "name": "yida-page-uiux",
-      "path": "skills/yida-page-uiux/SKILL.md",
-      "display_name": "页面视觉方向决策",
-      "description": "单页自定义页面 UI/UX 视觉方向决策：页面实现前按工作台/看板/大屏/列表/详情/官网等类型产出视觉方向决策块，覆盖布局骨架、信息密度、视觉风格、素材图标、模板路由和去 AI 味自检。用户明确要美化、好看、高级、品牌化、UI 视觉、页面太丑/不够惊艳，或完整应用进入主页面实现阶段时触发。",
-      "category": "yida-skills/page",
-      "tags": [
-        "UIUX",
-        "ui_skill",
-        "fast_build",
-        "视觉方向",
-        "去 AI 味",
-        "页面类型"
-      ],
-      "aliases": [
-        "视觉决策"
-      ],
-      "positive_signals": [
-        "页面美化",
-        "主页面 UI 引导",
-        "ui_skill",
-        "视觉方向",
-        "去 AI 味",
-        "高级感",
-        "品牌化",
-        "页面太丑"
-      ],
-      "negative_signals": [
-        "创建页面资源",
-        "发布页面",
-        "表单字段建模",
-        "数据记录操作"
-      ],
-      "command_ids": [
-        "generate-page"
-      ],
-      "done_when": "输出可执行视觉方向决策块，并交给页面实现技能落地。"
     },
     {
       "name": "yida-ppt-slider",
@@ -1054,7 +1064,6 @@
         "只要原生报表"
       ],
       "command_ids": [
-        "sample",
         "publish"
       ],
       "done_when": "Recharts Canvas 页面本地编译通过；真实交付还需验证聚合数据源并成功发布目标页面。"
@@ -1084,23 +1093,6 @@
         "Code Canvas",
         "antd Table",
         "默认批量录入"
-      ]
-    },
-    {
-      "name": "yida-theme",
-      "path": "skills/yida-theme/SKILL.md",
-      "display_name": "应用主题与全局换肤",
-      "description": "应用主题色、品牌色、全局换肤、推荐应用主题 podBlue/podGreen/podOrange、style#yida-global-theme 注入、--color-brand1-* / --color-group token 语义与配置方案。",
-      "category": "yida-skills/app",
-      "tags": [
-        "主题",
-        "品牌色",
-        "全局换肤",
-        "theme token"
-      ],
-      "aliases": [
-        "应用主题",
-        "品牌色"
       ]
     },
     {
@@ -1158,16 +1150,30 @@
     {
       "name": "yida-skills/app",
       "display_name": "应用架构与设置",
-      "description": "从零搭建应用、应用级体验蓝图、导航树、主题、多语言等应用整体架构和配置。",
+      "description": "从零搭建应用、应用级导航树、多语言等应用整体架构和配置。",
       "signals": [
         "创建应用",
         "完整应用",
         "管理系统",
         "导航分组",
+        "多语言"
+      ]
+    },
+    {
+      "name": "yida-skills/design",
+      "display_name": "应用设计与主题",
+      "description": "宜搭应用设计、应用级体验蓝图、单页视觉方向、主题色、全局换肤、素材图标和去 AI 味检查。",
+      "signals": [
+        "应用设计",
+        "UI设计",
+        "视觉设计",
+        "页面美化",
+        "高级感",
+        "去AI味",
+        "页面结构规划",
         "应用主题",
         "品牌色",
-        "多语言",
-        "应用体验蓝图"
+        "全局换肤"
       ]
     },
     {
@@ -1206,7 +1212,7 @@
     {
       "name": "yida-skills/page",
       "display_name": "自定义页面",
-      "description": "自定义展示页创建、Code Canvas 链路、普通自定义页面 JSX/Jsx 组件链路、真实数据绑定、Canvas 迁移、页面发布、防覆盖、页面视觉、页面内导航壳和 PPT 页面。",
+      "description": "自定义展示页创建、Code Canvas 链路、普通自定义页面 JSX/Jsx 组件链路、真实数据绑定、Canvas 迁移、页面发布、防覆盖、页面内导航壳和 PPT 页面。",
       "signals": [
         "自定义页面",
         "Canvas",
@@ -1214,8 +1220,6 @@
         "JSX",
         "React",
         "发布页面",
-        "页面美化",
-        "去AI味",
         "导航壳",
         "PPT页面"
       ]

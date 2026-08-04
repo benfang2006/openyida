@@ -7,7 +7,7 @@ description: Code Canvas / YidaCodeCanvas 页面真实数据接入技能。用�
 
 ## 核心定位
 
-本技能只处理 Code Canvas 页面里的真实数据接入：把页面所需数据先声明成 `dataBinding` 契约，再由模板或业务组件生成统一的 `DataBridge`，在 `YidaComp` 内通过同源 `fetch` 读取数据并驱动 UI。
+本技能只处理 Code Canvas 页面里的真实数据接入：把页面所需数据先声明成 `dataBinding` 契约，再由页面生成器或业务组件生成统一的 `DataBridge`，在 `YidaComp` 内通过同源 `fetch` 读取数据并驱动 UI。
 
 Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自定义页实例对象。因此数据接入要显式写清来源、字段映射、刷新策略和异常处理，不能靠隐式页面实例补齐。
 
@@ -42,20 +42,19 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 
 | mode | 用途 | 必填 | 运行方式 |
 | --- | --- | --- | --- |
-| `seed` | 演示兜底 / 本地预览 | 无 | 只用模板 seed 数据 |
+| `seed` | 演示兜底 / 本地预览 | 无 | 只用本地演示数据 |
 | `form` | 读宜搭表单数据 | `appType`、`formUuid`、`fields` | 同源 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json` |
 | `connector` | 读平台连接器代理 | `endpoint` | 同源代理端点，鉴权留在平台侧 |
 | `url` | 读同源业务接口 | `endpoint` | 同源 `fetch` |
 | `report` | 读报表或聚合结果 | 报表 schema 参数 | 使用平台聚合结果，不在前端拉全量猜聚合 |
 
-OpenYida 模板可通过以下入口消费数据契约：
+页面实现通过以下入口消费数据契约：
 
-- `openyida generate-page --spec <file>` 中的 `dataBinding` 字段。
-- `openyida generate-page ... --data-binding <json>`。
-- `openyida generate-page ... --data-source <mode>` 的轻量模式。
-- 环境变量 `OPENYIDA_DATA_BINDING_JSON`。
+- `page-spec.json` 中的 `dataBinding` 字段。
+- 页面实现命令或源码中的 `OPENYIDA_DATA_BINDING_JSON`。
+- 手写 Code Canvas 页面里的 `DATA_BINDING` 常量。
 
-当前 `business-list` 和 `dashboard-overview` 模板已内置 `DataBridge` 结构；其他模板需要按本技能规则补齐数据桥后再交付真实数据页面。
+当前列表、看板和大屏页面结构可复用 `DataBridge` 状态模型；其他页面结构需要按本技能规则补齐数据桥后再交付真实数据页面。
 
 ## DataBridge 实现规则
 
@@ -67,7 +66,7 @@ OpenYida 模板可通过以下入口消费数据契约：
 6. `useEffect` 内请求要用 `AbortController` 或等价 cleanup，避免页面切换后继续 setState。
 7. 轮询间隔需要可控，常规业务页不低于 5 秒；实时大屏可更短，但必须避免重复并发请求。
 
-示例骨架：
+实现骨架：
 
 ```javascript
 function getCsrfToken() {
@@ -179,7 +178,6 @@ async function fetchFormRows(binding, signal) {
 验收命令：
 
 ```bash
-openyida generate-page dashboard-overview --spec .cache/openyida/page-spec.json --output project/pages/src/dashboard.canvas.jsx --compile
 openyida publish project/pages/src/dashboard.canvas.jsx <appType> <formUuid>
 openyida get-schema <appType> <formUuid> > .cache/openyida/dashboard-schema.json
 ```

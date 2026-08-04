@@ -117,8 +117,7 @@ async function submitInBatches(rows, writeBridge, batchSize) {
 # 1. 取得真实字段 ID
 openyida get-schema <appType> <formUuid> --field-map-json
 
-# 2. 获取 Canvas 样例
-openyida sample yida-canvas-table-form table-form-batch-submit --output project/pages/src/table-form-batch-submit.canvas.jsx
+# 2. 编写 Canvas 表格表单页面
 
 # 3. 接入并验证同源 fetch / 连接器 / 数据桥
 # 未验证前保持 writeBridge.verified !== true

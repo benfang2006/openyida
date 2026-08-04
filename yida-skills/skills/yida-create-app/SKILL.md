@@ -22,7 +22,7 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 ## 严格禁止 (NEVER DO)
 - 不要编造 appType，必须从命令返回的 JSON 中提取
 - 不要在未确认 corpId 的情况下创建应用（先运行 `openyida env` 确认登录态）
-- 不要在同一轮已成功创建应用后重复创建。若接口明确返回名称冲突，单点任务先询问用户；`yida-app fast_build` 可追加短后缀重试一次，不要为了查重额外探测。
+- 不要在同一轮已成功创建应用后重复创建。若接口明确返回名称冲突，单点任务先询问用户；`yida-app` 完整应用统一编排可追加短后缀重试一次，不要为了查重额外探测。
 - 已有 `appType`、应用 URL、已绑定 app 或 workspace app 时，不要创建新应用；除非用户明确要求新建另一个应用并确认。
 
 ## 严格要求 (MUST DO)
@@ -53,13 +53,13 @@ openyida create-app <appName> [description] [icon] [iconColor] [colour] [navThem
 | `description` | 否 | 同 appName | 应用描述 |
 | `icon` | 否 | `xian-yingyong` | 图标标识（见下方图标表） |
 | `iconColor` | 否 | `#0089FF` | 图标背景色 |
-| `colour` | 否 | `podBlue` | 平台壳层应用主题 key；完整主题清单见 `yida-theme/references/theme-token-presets.md`，设计默认主题优先从 `podBlue`、`podGreen`、`podOrange` 三选一 |
+| `colour` | 否 | `podBlue` | 平台壳层应用主题 key；完整主题清单见 `yida-design/references/theme/theme-token-presets.md`，设计默认主题优先从 `podBlue`、`podGreen`、`podOrange` 三选一 |
 | `navTheme` | 否 | 不传 | 导航风格：仅用户明确要求时传 `dark`（深色）/ `light`（浅色） |
 | `layoutDirection` | 否 | 不传 | 导航布局：仅用户明确要求时传 `slide`（侧边栏）/ `ver`（L 型顶导） |
 
 ## 行业默认创建建议
 
-如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、应用主题 key 和首屏自定义页模板；完整应用主题 key 只查 `yida-theme/references/theme-token-presets.md`。只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动切到该 key。
+如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、应用主题 key 和首屏自定义页模板；完整应用主题 key 只查 `yida-design/references/theme/theme-token-presets.md`。只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动切到该 key。
 
 | 场景语义 | 推荐应用主题 | create-app 壳层 fallback | 创建后的首屏页面 |
 |------|------|------|------|
@@ -77,7 +77,7 @@ CLI 已内置上述行业推断：当用户没有显式传 `icon/iconColor/colou
 
 这里的 `colour` / `--theme` 只能选平台预置 key；默认优先用 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新应用默认仍优先推荐 `podBlue`、`podGreen`、`podOrange`。
 
-完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-theme/references/theme-token-presets.md`，本技能不重复维护完整清单。
+完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-design/references/theme/theme-token-presets.md`，本技能不重复维护完整清单。
 
 ## 输出
 
@@ -104,18 +104,10 @@ CLI 已内置上述行业推断：当用户没有显式传 `icon/iconColor/colou
 
 **图标背景色**：`#0089FF` `#00B853` `#FFA200` `#FF7357` `#5C72FF` `#85C700` `#FFC505` `#FF6B7A` `#8F66FF` `#14A9FF`
 
-## 代码示例
-
-> 需要参考完整应用创建流程时，执行以下命令获取示例，再用 `read_file` 读取：
-
-```bash
-openyida sample yida-create-app ipd-app-template   # 完整应用创建示例（含多页面/表单/仪表盘的 IPD 应用模板）
-```
-
 ## 创建后交付约定
 
 - 将 `appType`、页面 `formUuid`、表单 `fieldId` 写入 `.cache/<项目名>-schema.json`，PRD 只保留业务语义。
-- 自定义页面源码默认使用 `.canvas.jsx`，通过 `yida-canvas-custom-page` / `openyida generate-page` 生成并走 Canvas 编译发布；明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖普通自定义页实例桥时才使用 `.oyd.jsx` / `.jsx`，并遵循 `yida-custom-page` 的事件绑定、timestamp 隐藏节点、loading 兜底等规范。
+- 自定义页面源码默认使用 `.canvas.jsx`，通过 `yida-canvas-custom-page` 生成或编写并走 Canvas 编译发布；明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖普通自定义页实例桥时才使用 `.oyd.jsx` / `.jsx`，并遵循 `yida-custom-page` 的事件绑定、timestamp 隐藏节点、loading 兜底等规范。
 - 造测试数据或修旧数据时，可以用 Python 或 JS 编写 `.cache/` 下的一次性脚本；优先选择更快更清晰的方式，但字段 ID 和记录 ID 必须来自真实查询。
 
 ## 异常处理

@@ -457,5 +457,5 @@ OSS 上传成功后，只是文件已存在临时附件地址。
 ## 推荐搭配阅读
 
 - [编码指南](./coding-guide.md)
-- 完整模板：执行 `openyida sample yida-custom-page custom-page-template`
+- 完整实现：按本指南的字段读取、上传、校验和保存步骤写入目标页面源码
 - [附件上传示例](../examples/attachment-upload.js)

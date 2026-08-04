@@ -46,7 +46,7 @@ description: Code Canvas + Recharts 默认高级图表技能。用于高级图�
 | KPI、求和、平均、分组、趋势、占比、排名 | `yida-report` 或已聚合接口 | 格式化、排序已聚合点、切换展示窗口 |
 | 已聚合时间序列 | 报表组件接口或聚合 API | 映射字段、过滤当前展示范围、渲染组合图 |
 | 明细记录 | 分页表单查询 | 展示明细、跳转详情，不在前端转成聚合指标 |
-| seed/sample 数据 | sample 内置 | 必须显式标注未接真实报表 |
+| seed 数据 | 本地演示 | 必须显式标注未接真实报表 |
 
 如果需求同时包含“创建统计口径”和“做定制图表”，先用 `yida-report` 形成聚合数据源，再用本技能展示。已有聚合 API 时，先用 `yida-canvas-data-binding` 验证请求、鉴权、返回体和错误态。
 
@@ -103,16 +103,13 @@ export default YidaComp;
 下面命令以仓库根为视角；如果 cwd 已是 `<workspace>/project`，把 `project/pages/src/...` 改成 `pages/src/...`。
 
 ```bash
-# 1. 获取本地样例
-openyida sample yida-rechart trend-combo --output project/pages/src/trend-combo.canvas.jsx
-
-# 2. 如需真实统计，先创建/确认原生报表或已聚合接口
+# 1. 如需真实统计，先创建/确认原生报表或已聚合接口
 # yida-report 负责统计口径；yida-canvas-data-binding 负责接口接入
 
-# 3. 本地 Canvas 快检
+# 2. 本地 Canvas 快检
 node -e "const fs=require('fs'); const {compileCanvasLocal}=require('./lib/app/canvas-compile'); const src=fs.readFileSync('project/pages/src/trend-combo.canvas.jsx','utf8'); console.log(compileCanvasLocal(src).importedModules)"
 
-# 4. 真实交付时发布
+# 3. 真实交付时发布
 openyida publish project/pages/src/trend-combo.canvas.jsx <appType> <displayPageFormUuid>
 ```
 
@@ -124,7 +121,7 @@ openyida publish project/pages/src/trend-combo.canvas.jsx <appType> <displayPage
 - [ ] 筛选控件受控，并真正改变展示数据或请求参数。
 - [ ] loading、空态、错误态、无权限状态可区分。
 - [ ] 响应式容器有明确高度，Tooltip、坐标轴和图例可读。
-- [ ] sample/seed 数据有可见标识；真实交付不把 seed 当真实数据。
+- [ ] seed 数据有可见标识；真实交付不把 seed 当真实数据。
 - [ ] 只有真实 `publish` 成功后才声明页面已发布。
 
 ## 完成证据

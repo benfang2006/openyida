@@ -60,7 +60,7 @@ description: 将 OpenYida 原普通自定义页面链路升级/迁移为宜搭 C
    - 把 `export function renderJsx()` 的 JSX 提取到 `function YidaComp(props)`。
    - 把 `_customState` 拆为 React state；复杂派生数据用 `useMemo`。
    - 把生命周期副作用放进 `useEffect` 并返回 cleanup。
-   - 把普通页面 API 胶水抽成 props 调用或明确的 TODO，不要假装可用。
+   - 把普通页面 API 适配逻辑抽成 props 调用或明确的 TODO，不要假装可用。
    - 保持 UI 结构和文案尽量不变，先做等价迁移，再考虑重构。
 
 4. **处理依赖**

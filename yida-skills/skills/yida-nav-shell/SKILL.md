@@ -154,7 +154,7 @@ const NAV_ITEMS = [
 | 文档 | 用途 |
 | --- | --- |
 | [导航壳形态目录](references/nav-shell-patterns.md) | 五种形态、Canvas-first 骨架、legacy/native 示例与自查 |
-| [yida-page-uiux Step 0](../yida-page-uiux/workflow/step-0-nav-shape.md) | 判定是否隐藏导航及视觉策略 |
+| `use_skill("yida-design", "判定导航与视觉策略")` | 判定是否隐藏导航及视觉策略 |
 | [字段与 URL 参考](../../references/field-and-url-reference.md) | 页面 URL 和参数规范 |
 | `yida-canvas-custom-page` | Canvas 运行时与发布 |
 | `yida-custom-page` | legacy 普通页面运行时 |

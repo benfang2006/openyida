@@ -293,7 +293,7 @@ export function renderJsx() {
 }
 ```
 
-> 完整可运行模板通过 `openyida sample yida-custom-page custom-page-template` 获取。
+> 完整页面实现按本指南的文件结构、状态管理、生命周期和 API 调用规则编写。
 > 原生 `renderJsx` 的每个 `return` 分支都必须包含隐藏 timestamp 节点；`.oyd.jsx` 兼容构建会自动补齐，但手写模板时仍建议显式保留。
 
 ---
@@ -383,6 +383,7 @@ export function renderCharts() {
 1. **功能摘要**：页面的核心功能列表（如"筛选 + 列表 + 详情跳转"）
 2. **关键配置**：使用的 formUuid、FIELDS 映射、API 调用方式
 3. **交互设计**：主要用户操作流程
+4. **UI-only 范围**：页面美感提升/页面重构只调整颜色、布局、密度、间距、视觉层级、素材和图标表达时，现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态保持原样
 
 确认后再开始编码，避免大量返工。
 
@@ -585,6 +586,21 @@ const wrongUrl = `${baseUrl}/${appType}/formDetail/${formUuid}`;
 // ✅ 正确：workbench 是运行态数据管理页
 const listUrl = `${baseUrl}/${appType}/workbench/${formUuid}?iframe=true`;
 ```
+
+新增/提交数据的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')`。默认做法是：PC 端打开右侧抽屉，抽屉内 iframe 指向原始提交页 URL；移动端空间有限，可以整页或新页打开提交页。提交成功后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台提交页会发送 postMessage 时，才接精确提交成功事件。
+
+```javascript
+// ✅ PC：抽屉内嵌提交页；移动端：打开原生提交页
+var submitUrl = baseUrl + '/' + appType + '/submission/' + formUuid;
+if (this.utils.isMobile()) {
+  this.utils.openPage(submitUrl);
+} else {
+  this.setCustomState({ submitDrawerVisible: true, submitIframeUrl: submitUrl });
+  this.forceUpdate();
+}
+```
+
+`renderJsx` 中根据 `submitDrawerVisible` 渲染右侧抽屉和 `<iframe src={state.submitIframeUrl}>`；关闭抽屉时清空 `submitIframeUrl` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法。
 
 > `viewUuid` 可选，从宜搭「数据管理」→「报表视图」页面的 URL 中获取，不传则使用默认视图。
 

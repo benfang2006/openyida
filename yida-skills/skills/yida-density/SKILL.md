@@ -131,7 +131,7 @@ export function didMount() {
 
 这段只用于 legacy/native 页面。新 Canvas 页面不得使用 `didMount`、`this.utils.isMobile()`、`_customState` 或 `forceUpdate`；应使用上面的 `matchMedia` hook 并 cleanup。
 
-现有 `openyida sample yida-density density-switch-page` 若输出普通页面，也只能作为 native 参考，不能据此改变新页面的 Canvas 默认路由。
+现有普通页面只能作为 native 兼容参考，不能据此改变新页面的 Canvas 默认路由。
 
 ## 异常处理
 

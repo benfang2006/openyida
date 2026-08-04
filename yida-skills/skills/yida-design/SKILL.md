@@ -2,7 +2,7 @@
 name: yida-design
 description: >
   宜搭应用设计统一技能。用于完整应用需求分析、产品定位、信息架构、页面结构、主题风格、视觉系统、交互状态、素材图标策略和去 AI 味检查。
-  当用户要求应用设计、产品设计、需求分析、应用体验蓝图、页面美化、高级感、品牌化、视觉规范、主题色、全局颜色策略或主页面 UI 设计时触发。
+  当用户要求应用设计、产品设计、需求分析、页面结构、页面美化、高级感、品牌化、视觉规范、主题色、全局颜色策略或主页面 UI 设计时触发。
   完成范围：结合宜搭应用形态完成需求定位、产品蓝图、主题系统、信息架构、页面原型、高保真视觉与状态规范，并产出 prd/<项目名>.md。
 ---
 
@@ -18,7 +18,7 @@ description: >
 
 | 用户诉求 | 判定为 | 唯一动作 |
 | --- | --- | --- |
-| 完整应用、多个角色、多页面、导航分组、应用门面、官网 + 看板 + 后台 | 完整应用设计 | 读 Step 1-6，输出 `prd/<项目名>.md` |
+| 完整应用、多个角色、多页面、导航分组、首页/入口页、官网 + 看板 + 后台 | 完整应用设计 | 读 Step 1-6，输出 `prd/<项目名>.md` |
 | 单个自定义页要求好看、高级、品牌化、去 AI 味、页面太丑、不够惊艳 | 单页设计 | 读 [page-design](sub_skill/page-design/SKILL.md)，先确认当前应用主题，再复用 Step 1-6 |
 | 应用主题色、品牌色、全局换肤、`--color-brand1-*`、`style#yida-global-theme`、`customThemeStyle.tokens` | 主题系统 | 读 Step 2、6，输出主题 PRD 章节 |
 | 页面 / 主页面 / 首页 / 工作台 UI 设计 | 完整主页面设计 | 读 Step 1-6，输出 `prd/<项目名>.md` |
@@ -33,7 +33,7 @@ description: >
 | --- | --- | --- | --- |
 | 1 | [需求定位](workflow/step-1-positioning.md) | 明确应用类型、用户角色、核心任务、业务对象、页面/表单/流程资源和设计范围 | 设计目标 + 角色任务 + 资源蓝图 |
 | 2 | [主题系统](workflow/step-2-theme-system.md) | 确定主色、辅助色、中性色、字体层级、组件基调和宜搭 token 作用域 | `themeProfile` |
-| 3 | [信息架构](workflow/step-3-information-architecture.md) | 规划应用门面、平台导航、页面组合、页面场景和表单/流程关系 | `appBlueprint` / 页面结构 |
+| 3 | [信息架构](workflow/step-3-information-architecture.md) | 规划首页/入口页、平台导航、页面清单、页面场景和表单/流程关系 | `appBlueprint` / 页面结构 |
 | 4 | [页面原型与交互](workflow/step-4-wireframe-interaction.md) | 确定布局骨架、内容区块、主操作、联动、交互、PC/移动端差异 | 低保真结构 + 交互路径 |
 | 5 | [高保真视觉与状态](workflow/step-5-visual-states.md) | 细化视觉方向、素材、图标、空/载/错态、数据状态和去 AI 味自检 | `visualProfile` + 状态规范 |
 | 6 | [交付 PRD](workflow/step-6-handoff.md) | 汇总应用基本信息、页面与功能、视觉规范、资源创建顺序、页面实现交付顺序、导航顺序和验收标准 | `prd/<项目名>.md` |
@@ -69,14 +69,14 @@ description: >
 | --- | --- | --- |
 | [Step 1：需求定位](workflow/step-1-positioning.md) | 应用类型、用户角色、核心任务、业务对象、资源蓝图 | 必读 |
 | [Step 2：主题系统](workflow/step-2-theme-system.md) | 主题 token、色彩、字体、组件基调 | 涉及主题或视觉 |
-| [Step 3：信息架构](workflow/step-3-information-architecture.md) | 应用门面、导航、页面组合、页面场景 | 应用级或单页设计 |
+| [Step 3：信息架构](workflow/step-3-information-architecture.md) | 首页/入口页、导航、页面清单、页面场景 | 应用级或单页设计 |
 | [Step 4：页面原型与交互](workflow/step-4-wireframe-interaction.md) | 布局骨架、内容区块、主操作、抽屉、响应式 | 页面设计 |
 | [Step 5：高保真视觉与状态](workflow/step-5-visual-states.md) | 视觉方向、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
 | [Step 6：交付 PRD](workflow/step-6-handoff.md) | PRD 必填内容、三种顺序、实现交接 | 输出前 |
 | [page-design 单页设计](sub_skill/page-design/SKILL.md) | 单页主题证据、页面级设计流程、输出补充字段 | 单个自定义页设计 |
 | [场景参考速查](workflow/scene-reference-lookup.md) | scene 文件和专项变体速查 | 场景判定不确定时 |
-| [PRD 模板](workflow/output-prd.md) | 完整 PRD 字段示例 | Step 6 需要模板时 |
-| [应用蓝图](references/app/blueprint.md) | 应用角色、导航、页面组合、页面/表单/流程资源蓝图 | 完整应用或主页面 |
+| [PRD 输出格式](workflow/output-prd.md) | 完整 PRD 字段示例 | Step 6 输出前 |
+| [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、默认主题、token profile | 需要主题 key 或 token |
 | [scene-workbench](references/scenes/workbench.md) | 工作台/门户首页 | 页面场景 = workbench |
 | [scene-dashboard](references/scenes/dashboard.md) | 数据看板/驾驶舱 | 页面场景 = dashboard |

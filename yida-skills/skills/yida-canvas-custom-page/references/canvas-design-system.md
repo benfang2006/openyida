@@ -1,24 +1,35 @@
-# Code Canvas 主色对齐与视觉落地
+# Code Canvas 主题 token 与视觉落地
 
-真实业务页默认从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；只有用户明确要求应用主题风格/应用主题色时才跟随运行态应用品牌主题色。官方 sample / 示例展示应用使用页面级固定主题和差异化色盘。`yida-page-uiux` 负责确定页面类型、差异化和去 AI 味方向；Code Canvas 实现层负责把这些决策落到 antd token、Tailwind、图表和控件状态。
+主题色决策来自 `yida-design` PRD 或 page spec。Code Canvas 负责把 `themeProfile`、`themeScope`、`themeColorSource`、`visualProfile` 落到 antd token、CSS 变量、Tailwind、图表和控件状态。
 
-> 决策层：`yida-page-uiux` 负责页面类型、导航形态、5 维差异化、去 AI 味和禁 emoji。
-> 实现层：Code Canvas 负责把真实业务页的应用主题 token、显式应用主题跟随、sample 页面独立主题落到 antd token / Tailwind / 图表 / 控件状态。
+真实业务页、页面重构和局部美化以当前应用主题色为基准；缺少主题证据时从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。独立品牌/活动页、隐藏导航沉浸页和用户明确要求完全不同风格的页面使用页面级固定主题和差异化色盘。
 
-> **前提是导航可见且是真实业务页**：默认仍先选 `podBlue`、`podGreen`、`podOrange` 等应用主题；显式要求应用主题风格时，跟随品牌主色是为了跟应用框架融合。只有用户明确要求隐藏平台导航、无导航全屏或 `isRenderNav=false`（由 `yida-page-uiux` Step 0 判定）时，主色相可自立。`lib/samples/**` 或官方 sample 展示应用也使用自立主色相：`followRuntimeTheme: false`，antd `colorPrimary` / 图表色 / CSS 变量都喂页面自己的固定色盘，语义色保持固定。
+## 平台品牌色变量
 
-## themeScope：页面级与应用级换肤
+| token | 平台含义 | Code Canvas 使用方式 |
+| --- | --- | --- |
+| `--color-brand1-6` | 主色 | 主按钮、链接、选中态、信息强调、图表主序列 |
+| `--color-brand1-1` / `--color-brand1-2` / `--color-brand1-3` | 浅底色阶 | 标签浅底、提示块、筛选选中底、弱强调背景 |
+| `--color-brand1-5` / `--color-brand1-7` | 交互色阶 | hover / active / pressed 状态 |
+| `--color-brand1-9` / `--color-brand1-10` | 深色阶 | 深色标题、深底按钮、深色主题强调 |
+| `--color-group` | 平台图表色组 | 多系列折线、柱状、排名、环形图配色 |
+| `--oyd-control-selected-bg` | 页面级选中浅底 | 下拉选中项、Tabs 选中底、轻量筛选块 |
+| `--oyd-control-info-bg` | 页面级信息浅底 | 提示块、空态引导、数据说明背景 |
 
-OpenYida 生成页会把主题拆成两个概念：
+语义色保持固定：成功、警告、错误继续用 antd 默认或平台语义变量，避免被主色覆盖。
+
+## themeScope：主题作用域落地
+
+Code Canvas page spec 会把主题拆成两个概念：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
-| `themeProfile` | `podBlue` / `podGreen` / `podOrange` | 推荐应用主题；用户明确要求应用主题风格/应用主题色时才用 `yida-app-theme` |
+| `themeProfile` | 当前应用主题；缺证据时 `podBlue` / `podGreen` / `podOrange` | 应用主题；页面重构/局部美化先沿用当前应用主题 |
 | `themeScope` | `page` | 主题作用域，决定只影响当前页还是请求应用壳层一起换肤 |
 
-`themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。只有用户明确要求应用主题风格/应用主题色时，才让页面跟随运行态 `style#yida-global-theme`。用户显式传了 `themeColor`，或当前文件是官方 sample 时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。sample 默认必须走覆盖模式。
+`themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。页面重构/局部美化即使是 page scope，也先以当前应用主题为基准，只补当前页密度、间距、状态色和图表色阶。用户明确要求完全不同风格、显式传了 `themeColor`，或页面是独立品牌/活动页时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。
 
-默认推荐主题是 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-theme/references/theme-token-presets.md` 为准。
+默认主题是 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。
 
 ```jsx
 var THEME_COLOR_LEVELS = {
@@ -65,20 +76,20 @@ React.useEffect(function () {
 }, []);
 ```
 
-命令侧：默认从 `podBlue`、`podGreen`、`podOrange` 三选一，例如 `openyida generate-page product-homepage --theme-profile podBlue --theme-scope page --compile`。页面级换肤写 scoped 变量；只有用户明确要求应用主题风格/应用主题色时，才使用 `--theme-profile yida-app-theme` 或显式 `themeScope: app`。
+页面重构先把当前应用主题写入 spec；缺少主题证据时从 `podBlue`、`podGreen`、`podOrange` 三选一。页面级换肤写 scoped 变量；用户明确要求应用主题风格/应用主题色时，使用 `themeProfile: yida-app-theme` 或显式 `themeScope: app`。
 
-## 自然语言推断规则
+## PRD 字段落地规则
 
-按用户自然语言直接推断 `themeScope` 并写入 spec：
+从 PRD / page spec 读取 `themeScope` 并落地：
 
 | 用户说法 | spec |
 | --- | --- |
 | 整个应用统一、全局换肤、系统整体主题、应用主题也改 | `{ "themeScope": "app" }` |
 | 左侧导航/菜单/顶部壳层也一起变色，导航和内容区同色 | `{ "themeScope": "app" }` |
-| 只说某个页面/首页/看板/自定义页变好看或换色 | `{ "themeScope": "page" }` |
+| 某个页面/首页/看板/自定义页变好看、页面重构或局部美化 | `{ "themeScope": "page", "themeBase": "current-app-theme" }` |
 | 明确说保持导航不变、其他页面不变、只改当前页 | `{ "themeScope": "page" }` |
 
-同一句话同时出现“整体应用”和“保持导航不变”这类冲突时，以限制更强的 `page` 为准，或者简短确认一次。
+设计输入冲突时，回到 `yida-design` 补齐明确值，再进入 Canvas 实现。
 
 ## 核心事实：CSS 变量直接级联，antd token 使用解析色值
 
@@ -159,7 +170,7 @@ export default YidaComp;
 
 ## 默认 light 模式避免灰黑主题
 
-业务列表、协同表、数据管理页、工作台和门户默认都是 light 模式。正文使用深色保证可读性；主操作、选中态、筛选焦点、批量操作和信息标签使用品牌色或 sample 自带主题色；卡片边框、表格分割线和下拉浮层边框使用浅色品牌混合，例如 `#DCE6F2`、`color-mix(in srgb, var(--oy-brand) 16%, #DDE8F4)`。用户明确要求暗色大屏、夜间模式或高对比风格时使用深色主视觉。
+业务列表、协同表、数据管理页、工作台和门户默认都是 light 模式。正文使用深色保证可读性；主操作、选中态、筛选焦点、批量操作和信息标签使用平台品牌色或当前页面确认的品牌色；卡片边框、表格分割线和下拉浮层边框使用浅色品牌混合，例如 `#DCE6F2`、`color-mix(in srgb, var(--oy-brand) 16%, #DDE8F4)`。用户明确要求暗色大屏、夜间模式或高对比风格时使用深色主视觉。
 
 ## 控件焦点态与下拉浮层 reset
 
@@ -264,7 +275,7 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-多色系列需要区分时，用 `--color-group` + 语义色，保持低饱和、分层明确的图表色组（见 `yida-page-uiux` 去 AI 味清单）。
+多色系列需要区分时，用 `--color-group` + 语义色，保持低饱和、分层明确的图表色组。
 
 ## 自查清单（主色相关）
 
@@ -273,4 +284,4 @@ export default YidaComp;
 - Tailwind 主色类用 `var(--color-brand1-*)`，没有散落的 `#1677ff` / `bg-blue-500`。
 - 图表 / canvas 绘制颜色走 `readBrandColor` 或 `--color-group`，无硬编码蓝。
 - 语义色（成功/警告/错误）保持 antd 默认或平台语义变量，未被主色覆盖。
-- 视觉方向已按 `yida-page-uiux` 决策：配色、圆角、图标和文案都完成业务化处理。
+- 视觉方向来自 `yida-design`：配色、圆角、图标和文案都完成业务化处理。

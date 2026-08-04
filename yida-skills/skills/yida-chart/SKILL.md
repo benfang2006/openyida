@@ -31,7 +31,7 @@ description: "ECharts 高级可视化报表。依赖宜搭原生报表 getDataAs
 3. **更新时双页面同步**：需求变化时先更新原生报表 Schema，再更新 ECharts 页面和绑定关系。
 4. **明细表走表单数据接口**：仅数据明细表可用 `this.utils.yida.searchFormDatas`，聚合图表仍走报表接口。
 5. **遵循自定义页面规范**：状态、生命周期、事件绑定、发布前校验按 `yida-custom-page` 执行。
-6. **当前应用报表绑定优先**：修复或迁移官方 sample / 现有 ECharts 页面时，不要复用其它应用的 `REPORT_xxx`、`prdId/topicId` 或 `cid`。必须在当前 app 内创建或同步原生报表，再批量替换绑定。
+6. **当前应用报表绑定优先**：修复或迁移现有 ECharts 页面时，不要复用其它应用的 `REPORT_xxx`、`prdId/topicId` 或 `cid`。必须在当前 app 内创建或同步原生报表，再批量替换绑定。
 
 ## 方案选择
 
@@ -64,7 +64,7 @@ openyida check-page project/pages/src/<页面名>.oyd.jsx
 openyida publish project/pages/src/<页面名>.oyd.jsx <appType> <echartsFormUuid> --health-check
 ```
 
-### 已有 chart sample / 跨应用迁移修复流程
+### 已有 ECharts 页面 / 跨应用迁移修复流程
 
 当页面报错 `no permission for the report`、图表数据加载失败，或发现源码里绑定的 `REPORT_xxx` 属于旧应用时，按下面流程修复：
 

@@ -111,8 +111,8 @@ openyida configure-process APP_XXX FORM-EXPENSE .cache/openyida/expense/process/
       "approver": "originator",
       "formConfig": {
         "behaviorList": [
-          { "fieldId": "textField_sampleId", "fieldBehavior": "NORMAL" },
-          { "fieldId": "textareaField_sampleNote", "fieldBehavior": "NORMAL" },
+          { "fieldId": "textField_demoId", "fieldBehavior": "NORMAL" },
+          { "fieldId": "textareaField_demoNote", "fieldBehavior": "NORMAL" },
           { "fieldId": "textareaField_inspectNote", "fieldBehavior": "HIDDEN" },
           { "fieldId": "radioField_result", "fieldBehavior": "HIDDEN" },
           { "fieldId": "attachmentField_photo", "fieldBehavior": "NORMAL" }
@@ -125,8 +125,8 @@ openyida configure-process APP_XXX FORM-EXPENSE .cache/openyida/expense/process/
       "approver": "originator",
       "formConfig": {
         "behaviorList": [
-          { "fieldId": "textField_sampleId", "fieldBehavior": "READONLY" },
-          { "fieldId": "textareaField_sampleNote", "fieldBehavior": "READONLY" },
+          { "fieldId": "textField_demoId", "fieldBehavior": "READONLY" },
+          { "fieldId": "textareaField_demoNote", "fieldBehavior": "READONLY" },
           { "fieldId": "textareaField_inspectNote", "fieldBehavior": "NORMAL" },
           { "fieldId": "radioField_result", "fieldBehavior": "HIDDEN" },
           { "fieldId": "attachmentField_photo", "fieldBehavior": "NORMAL" }
@@ -139,8 +139,8 @@ openyida configure-process APP_XXX FORM-EXPENSE .cache/openyida/expense/process/
       "approver": "originator",
       "formConfig": {
         "behaviorList": [
-          { "fieldId": "textField_sampleId", "fieldBehavior": "READONLY" },
-          { "fieldId": "textareaField_sampleNote", "fieldBehavior": "READONLY" },
+          { "fieldId": "textField_demoId", "fieldBehavior": "READONLY" },
+          { "fieldId": "textareaField_demoNote", "fieldBehavior": "READONLY" },
           { "fieldId": "textareaField_inspectNote", "fieldBehavior": "READONLY" },
           { "fieldId": "radioField_result", "fieldBehavior": "NORMAL" },
           { "fieldId": "attachmentField_photo", "fieldBehavior": "NORMAL" }

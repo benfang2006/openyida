@@ -1,30 +1,29 @@
-# Code Canvas 页面生成与视觉路由
+# Code Canvas 页面实现入口
 
-Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定和素材来源，再写 `page-spec.json` 或直接手写 `.canvas.jsx`。
+Code Canvas 消费 `yida-design` 输出的 PRD 或单页 page spec，把页面场景、区块、主题、交互、数据绑定和素材清单实现成 `.canvas.jsx` / `.canvas.tsx`。
 
-## 首次生成模板路由
+## 页面场景到实现入口
 
-用户描述页面目标后，按下表把自然语言需求路由到确定模板。
+用户描述页面目标后，先读取 `yida-design` 的 PRD 或单页 PRD 章节，确认页面场景、区块、数据来源、主操作、主题色和移动端要求。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
 
-`generate-page` 的模板提供运行时结构、数据桥、主题变量和首版 primitives。生成真实页面时，结合 `yida-page-uiux` 的视觉方向决策块，产出业务化区块顺序、信息层级、局部构图、文案和样式节奏。保留模板的编译安全结构和必要 primitive class，替换为当前业务的 Hero、卡片、卖点和文案。
+结构化实现工具提供可编译运行时结构、数据桥、主题变量和基础 primitives。真实业务页结合 `yida-design` 输出的 `prd/<项目名>.md`，落地业务化区块顺序、信息层级、局部构图、文案和样式节奏。
 
-页面生成路径二选一：走模板路径时，先写业务化 `page-spec.json` 并执行 `openyida generate-page ... --spec ... --compile`，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；已经明确最终页面结构、数据桥和视觉细节时，走手写路径，直接 Write 最终 `.canvas.jsx`。
+页面实现路径二选一：结构化实现路径先写业务化 `page-spec.json` 并生成可编译骨架，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；手写路径直接 Write 最终 `.canvas.jsx`。
 
-生成器会在 `.openyida-page.json` 中写入 `domainFidelity`，并在 CLI 输出中提示当前页面是否还依赖 sample fallback：
+实现工具会在 `.openyida-page.json` 中写入 `domainFidelity`，并在 CLI 输出中提示当前页面的业务化程度：
 
-- `domain-ready`：主要业务语义已覆盖，sample 只剩编译骨架。
+- `domain-ready`：主要业务语义已覆盖，可以作为真实业务页面继续校验和发布。
 - `draft-needs-domain-spec`：用户已有业务要求，但 page spec 仍缺业务对象、指标、交互或视觉方向；继续补 spec 或改源码。
-- `sample-reference`：业务化输入不足，结果定位为 sample 参考；继续补业务对象、字段、指标、视觉方向和数据绑定后再作为真实应用页面交付。
 
-真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页优先写 `assets` 或素材缺口。`domainFidelity.sampleFallbacks` 里出现 `features`、`metrics`、`roadmap`、`heroText` 等关键项时，继续补齐业务化规格。
+真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、视觉方向；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。业务区块、指标、行动文案或视觉方向不足时，回到 `yida-design` 补齐 PRD / page spec。
 
 数据真实性边界：
 
-- `openyida sample` 或模板原样发布可以展示 sample/seed 数据，但页面必须标注 sample/seed。
+- 明确做离线预览时可以展示 seed 数据，但页面必须标注演示数据状态。
 - 完整应用或真实交付页使用真实业务记录；需要演示数据时，先把 demo/mock records 写入真实宜搭表单，再由 Canvas 读取。
 - 真实数据暂未接入时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
 
-| 用户需求 | CLI 模板 | scene | 视觉要点 |
+| 已确认的页面场景 | 页面结构 | scene | 实现重点 |
 | --- | --- | --- | --- |
 | 官网首页、品牌官网、律所官网、茶叶官网、落地页、门户官网 | `official-homepage` | `landing` | 首屏叙事、可信视觉面板、服务矩阵、信任背书 |
 | 数据大屏、实时监控、预警系统、指挥舱、态势屏 | `data-screen` | `screen` | 中心态势图、左右信息塔、趋势、排行、预警 |
@@ -35,17 +34,17 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 | 主从分栏、工单处理台、左列表右详情 | `split-pane-detail` | `list` | 左侧队列、右侧详情、时间线、动作区 |
 | 页面内门户壳、多入口门户、隐藏导航门户 | `portal-shell-home` | `workbench` | 仅显式要求页面内门户壳、自绘导航或隐藏平台导航时使用；默认门户/工作台不自建导航 |
 
-如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，但按 [native-components-bridge.md](native-components-bridge.md) 选择 `portal-native-components` 示例或桥接规则。
+如果用户要求“门户组件 / 成员 / 部门 / 上传组件”，继续使用 Code Canvas，并按 [native-components-bridge.md](native-components-bridge.md) 的桥接规则实现。
 
-默认生成页保留平台应用导航，不在自定义页面里自建同级导航，也不默认写 `appBlueprint.renderNav: false` / `navConfig.isRenderNav: false`。页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，但仍保持平台导航可见；只有用户明确要求隐藏平台导航、无导航全屏体验或 `isRenderNav=false` 时，才在 spec 里写 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
+默认实现保留平台应用导航，同应用内页面入口写入 `appBlueprint.navigation` 或平台导航分组。页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，并保持平台导航可见；PRD 明确隐藏平台导航、无导航全屏体验或 `isRenderNav=false` 时，在 spec 里写 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
 
-快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；不要在默认工作台或门户内容区再生成同级页面入口卡。`quickEntries` 更适合当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。
+快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；默认工作台或门户内容区聚焦当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。表单新建/提交入口必须写清 `targetType: "submission"` 与 `openMode: "responsive-drawer"`：PC 端生成右侧抽屉 iframe，移动端整页或新页打开原生提交页。
 
 ## 官网与品牌页素材流程
 
-命中 `official-homepage` 时，写代码前先形成轻量设计规格和素材清单。
+实现 `official-homepage` 时，先读取 PRD 中的素材清单；缺少素材时按下方补齐素材清单。
 
-强视觉品牌先读 `yida-page-uiux/references/landing/realistic-brand-homepage.md`。官网完成条件包括：场景 Hero、产品/服务、过程/空间三类素材，从真实材质推导的页面级品牌 token，不同 section 的构图节奏，以及一个明确 CTA。
+强视觉品牌先读 `yida-design/references/scenes/landing.md`。官网完成条件包括：场景 Hero、产品/服务、过程/空间三类素材，从真实材质推导的页面级品牌 token，不同 section 的构图节奏，以及一个明确 CTA。
 
 素材清单至少包含：
 
@@ -69,13 +68,13 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 
 若 `openyida cdn-config --show` 显示缺少 `accessKeyId/accessKeySecret/cdnDomain/ossBucket`，交付状态标为“素材待上传”；可先用已验证公开 URL 测试，或提示用户补 CDN 配置。
 
-官方 Sample / 离线展示在无 CDN 时允许内嵌经过压缩的 JPEG/WebP data URI，保证源码原样发布也有真实图片；建议 3-5 张、单张不超过 250 KB、总量不超过 800 KB。生产页面使用稳定 CDN 素材 URL。
+离线展示在无 CDN 时允许内嵌经过压缩的 JPEG/WebP data URI，保证源码原样发布也有真实图片；建议 3-5 张、单张不超过 250 KB、总量不超过 800 KB。生产页面使用稳定 CDN 素材 URL。
 
-## 主题作用域
+## 主题实现
 
-默认主题先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。`themeProfile: { "name": "yida-app-theme" }` 只在用户明确要求应用主题风格/应用主题色时使用，表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
+主题色决策来自 `yida-design` PRD / page spec。页面重构 / 局部美化先以当前应用主题为基准；缺少主题证据时，再从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。`themeProfile: { "name": "yida-app-theme" }` 表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
 
-生成页默认用 `--theme-profile podBlue|podGreen|podOrange` 形成页面级 token profile；其中 `podBlue|podGreen|podOrange` 也是平台主题 key。`blue|green|orange` 仅作为旧 spec 可用主题，不再作为新页面默认推荐。
+page spec 使用 `themeProfile.name=podBlue|podGreen|podOrange|yida-app-theme` 形成页面级 token profile；其中 `podBlue|podGreen|podOrange` 也是平台主题 key。`blue|green|orange` 仅作为旧 spec 可用主题，新页面优先使用 `pod*` 主题。
 
 `themeScope` 决定主题影响范围：
 
@@ -84,29 +83,31 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 | `page` | 只在当前页面根节点注入主题变量，不影响导航和其他页面 | 默认安全选择 |
 | `app` | 页面加载时调用 `window.__YIDA__.updateShellConfig({ themeConfig })`，请求壳层一起换肤 | 需要左侧导航、顶部壳层和内容区统一 |
 
-自然语言推断：
+从 PRD / page spec 读取：
 
-| 用户表达 | 推断 |
+| 设计输入 | 实现方式 |
 | --- | --- |
-| “整个应用统一风格 / 全局换肤 / 应用主题也改一下” | `themeScope: app` |
-| “左侧导航也一起变色 / 菜单也跟着主题走” | `themeScope: app` |
-| “页面好看一点 / 这个自定义页换主题 / 首页美化” | `themeScope: page` |
-| “只改当前页 / 保持导航不变 / 其他页面不变” | `themeScope: page` |
+| 整个应用统一、全局换肤、系统整体主题、应用主题也改 | `themeScope: app` |
+| 左侧导航/菜单/顶部壳层也一起变色，导航和内容区同色 | `themeScope: app` |
+| 某个页面、首页、看板、自定义页变好看、页面重构或局部美化 | `themeScope: page`，主题基准为当前应用主题 |
+| 保持导航不变、其他页面不变、只改当前页 | `themeScope: page` |
 
-显式覆盖色只在用户给定品牌色、色值或明确要求覆盖当前应用主题时使用。
+PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做成和当前应用很不一样时，Canvas 在页面作用域写入覆盖色。
 
 ## Page Spec 结构化字段
 
-`openyida generate-page --spec <file>` 会读取结构化字段并写入 `.openyida-page.json` manifest，后续 AI 修改可以基于 manifest 更安全地更新。
+页面实现会读取结构化字段并写入 `.openyida-page.json` manifest，后续 AI 修改可以基于 manifest 更稳定地更新。
 
 | 字段 | 说明 | 默认 |
 | --- | --- | --- |
 | `researchLevel` | 官网/落地页调研深度：`none/light/enhanced/deep` | landing 默认 `light` |
 | `appBlueprint` | 应用名、角色、导航分组、页面组合、壳形态 | 单页自动生成当前页 entry |
+| `resourceBlueprint` | 完整应用的主页面、业务页面、普通表单、流程表单和报表资源 | 来自 `yida-design` |
 | `archetype` | 页面原型，如 `overview/analysis/monitor/profile` | 按 scene 推断 |
 | `interactionProfile` | 主操作、详情方式、批量动作、空/载/错状态 | 按 scene 推断 |
+| `functionContract` | 页面美感提升时保留的数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限、状态 | 现有页面契约 |
 | `insights` | 看板/报告/工作台的数据洞察 | 无则空数组或场景默认洞察 |
-| `domainFidelity` | 生成后由 CLI 回填，标记是否仍像 sample | 无需手写 |
+| `domainFidelity` | 实现后由 CLI 回填，标记业务化程度 | 无需手写 |
 
 示例：
 
@@ -130,6 +131,7 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
   "interactionProfile": {
     "primaryAction": "查看本周经营",
     "detailMode": "drawer",
+    "submitMode": "responsive-drawer",
     "bulkActions": ["导出巡店建议"],
     "states": ["empty", "loading", "error"]
   },
@@ -139,11 +141,11 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 }
 ```
 
-## 模板 primitives 验收
+## 页面 primitives 验收
 
-生成后至少确认源码包含对应场景的 primitive class，并且 `--compile` 通过。
+实现后至少确认源码包含对应场景的 primitive class，并且本地编译通过。
 
-| 模板 | 内置 UI primitives |
+| 页面结构 | 内置 UI primitives |
 | --- | --- |
 | `dashboard-overview` | KPI、Chart panel、Rank list、Insight callout、Freshness badge |
 | `workbench-home` | Workbench metric、Quick entry、Task feed、Insight strip |
@@ -154,4 +156,4 @@ Code Canvas 页面生成先确定页面类型、主题作用域、数据绑定�
 | `official-homepage` | Real-scene hero、Product/service visual、Process/space story、Visit/service section、CTA |
 | `data-screen` | Command map、Metric grid、Rank panel、Screen insight header |
 
-所有 Canvas 生成模板都必须带控件样式护栏：`ConfigProvider.getPopupContainer` 让 Select / DatePicker 弹层留在页面作用域，`OPENYIDA_CANVAS_CONTROL_CSS` 统一输入框、下拉、日期、运行态字段组件的 hover / focus / dropdown 样式。出现黑色粗边、浏览器原生 outline、下拉浮层脱离页面风格时，优先检查这两项是否被删掉。
+所有 Canvas 页面都带控件样式护栏：`ConfigProvider.getPopupContainer` 让 Select / DatePicker 弹层留在页面作用域，`OPENYIDA_CANVAS_CONTROL_CSS` 统一输入框、下拉、日期、运行态字段组件的 hover / focus / dropdown 样式。出现黑色粗边、浏览器原生 outline、下拉浮层脱离页面风格时，优先检查这两项是否保留。

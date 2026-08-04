@@ -12,9 +12,9 @@ Code Canvas 运行时提供 React 函数组件上下文；`YidaComp` 读写宜�
 
 选路原则：优先走连接器代理，让鉴权、密钥和数据源治理留在平台侧。真需要直连内部端点时，使用**同源相对路径** + `credentials: 'include'`，Cookie / CSRF / appSecret 由平台上下文或后端服务提供。
 
-## 推荐：先写 dataBinding，再生成数据桥
+## 推荐：先写 dataBinding，再实现数据桥
 
-OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `dataBinding`，模板会把它注入为 `OPENYIDA_DATA_BINDING_JSON` 并生成统一的数据桥状态、错误态和总数保护。
+Code Canvas 页面先把数据契约写成结构化 `dataBinding`，再在页面实现里注入为 `OPENYIDA_DATA_BINDING_JSON` 或 `DATA_BINDING` 常量，并生成统一的数据桥状态、错误态和总数保护。
 
 ```json
 {
@@ -41,8 +41,8 @@ OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `da
 
 - `mode=form` 使用真实 `appType/formUuid` 和字段 ID，字段来源为 `get-schema`、表单创建结果或已确认的业务 Schema。
 - `mode=connector/url` 使用同源代理端点，第三方密钥留在连接器或后端服务侧。
-- `mode=seed` 用于 `openyida sample`、离线预览或明确标注的演示页；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
-- 模板生成的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
+- `mode=seed` 用于离线预览或明确标注的演示页；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
+- 页面生成或手写的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
 
 ## 可复用读数据 Hook
 
@@ -208,7 +208,7 @@ function normalizeFormRow(row) {
 
 保护规则：
 
-- 首屏只有 sample/离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
+- 首屏只有离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
 - 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，展示“接口返回结构未识别”，并保留原始错误状态供定位。
 - 用 `openyida data query form <appType> <formUuid> --size 20` 或数据管理页核对总数，页面统计必须和真实表单一致。
 

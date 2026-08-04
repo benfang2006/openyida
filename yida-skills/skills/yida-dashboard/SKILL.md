@@ -72,7 +72,7 @@ metadata:
    ↓
 [Step 4] 用 yida-design 决定 dashboard/screen、主题、Shell、Archetype
    ↓
-[Step 5] 生成 dashboard-overview.canvas.jsx 或 data-screen.canvas.jsx
+[Step 5] 生成或编写 dashboard-overview.canvas.jsx / data-screen.canvas.jsx
    ↓
 [Step 6] 用 hooks 实现筛选、轮询、截图、hash/导航与 cleanup
    ↓
@@ -83,15 +83,12 @@ metadata:
 [Step 9] 隐藏导航、验证组织内 URL、截图、数据刷新和派单闭环
 ```
 
-Canvas 模板入口：
+Canvas 页面入口：
 
-```bash
-openyida generate-page dashboard-overview --spec <page-spec.json> \
-  --theme-profile podBlue \
-  --output project/pages/src/<name>.canvas.jsx --compile
-```
-
-默认主题从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题风格/应用主题色时，才把示例里的 `podBlue` 换成 `yida-app-theme`。用户强调“大屏 / 指挥舱 / 实时监控”时使用 `data-screen` 模板。Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
+- `page-spec.json` 决定页面目标、指标、区块、主题和交互。
+- 默认主题从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题风格/应用主题色时，才使用 `yida-app-theme`。
+- 用户强调“大屏 / 指挥舱 / 实时监控”时使用 `screen` 场景；普通经营看板使用 `dashboard` 场景。
+- Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。
 
 ## 数据与派单边界
 
@@ -101,7 +98,7 @@ openyida generate-page dashboard-overview --spec <page-spec.json> \
 - 明细查询必须分页；不得拉全量后 `reduce` 冒充生产聚合。
 - Canvas 页面使用 `dataBinding` + `DataBridge` + 同源 `fetch`，请求带 credentials、CSRF、错误态与 cleanup。
 - 不得在 Canvas 使用 `this.dataSourceMap`；连接器代理转 `yida-canvas-data-binding`。
-- demo/seed 只能用于 sample 或离线预览，并明确标记；真实交付无数据时展示真实空态。
+- demo/seed 只能用于离线预览，并明确标记；真实交付无数据时展示真实空态。
 
 ### 派单
 
@@ -187,7 +184,7 @@ use_skill("yida-chart", "实现明确要求的 ECharts 或维护旧 native 图�
 
 - Canvas 本地编译通过，依赖只包含白名单模块。
 - 发布后回读到 `YidaCodeCanvas` 与非空 `runtimeCode`。
-- 至少一个 KPI/列表/图表来自真实数据契约；否则标记 sample/draft。
+- 至少一个 KPI/列表/图表来自真实数据契约；否则标记 draft。
 - 筛选、刷新、移动端、截图、空/载/错态实际可用。
 - 常规图表已路由 `yida-rechart`；使用 `yida-chart` 时交付说明明确命中了哪条 ECharts 例外。
 - 需要派单时，真实待办 ConnectorCall 和字段映射验证通过。
