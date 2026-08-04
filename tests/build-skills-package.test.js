@@ -68,7 +68,31 @@ describe('build-skills-package', () => {
       expect(fs.readFileSync(
         path.join(outDir, 'references', 'subskills', 'yida-app', 'README.md'),
         'utf8'
-      )).toContain('fast_build');
+      )).toContain('完整应用统一编排');
+      const generatedDesignSkill = fs.readFileSync(
+        path.join(outDir, 'references', 'subskills', 'yida-design', 'README.md'),
+        'utf8'
+      );
+      expect(generatedDesignSkill).toContain('sub_skill/page-design/README.md');
+      expect(generatedDesignSkill).not.toContain('sub_skill/page-design/SKILL.md');
+      expect(fs.existsSync(path.join(
+        outDir,
+        'references',
+        'subskills',
+        'yida-design',
+        'sub_skill',
+        'page-design',
+        'README.md'
+      ))).toBe(true);
+      expect(fs.existsSync(path.join(
+        outDir,
+        'references',
+        'subskills',
+        'yida-design',
+        'sub_skill',
+        'page-design',
+        'SKILL.md'
+      ))).toBe(false);
       const generatedSetupGuide = fs.readFileSync(
         path.join(outDir, 'references', 'setup-and-env.md'),
         'utf8'
@@ -92,6 +116,8 @@ describe('build-skills-package', () => {
       expect(entryNames).toContain('openyida/SKILL.md');
       expect(entryNames).toContain('openyida/references/setup-and-env.md');
       expect(entryNames).toContain('openyida/references/subskills/yida-login/README.md');
+      expect(entryNames).toContain('openyida/references/subskills/yida-design/sub_skill/page-design/README.md');
+      expect(entryNames).not.toContain('openyida/references/subskills/yida-design/sub_skill/page-design/SKILL.md');
       expect(entryNames).not.toContain('openyida/skills-index.json');
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });

@@ -214,7 +214,7 @@ openyida agent-capabilities --summary-json
 
 该 compact 命令一次返回版本、登录态摘要、工作目录、缓存目录和命令 manifest digest，避免大 JSON 被宿主 offload，也避免反复探测 \`which\`、\`--version\`、\`--help\`、\`env\` 和 \`login --check-only\`。
 
-\`openyida agent-capabilities --json\` 是 full capabilities，只用于命令契约排障或深度诊断；不要放进完整应用 \`fast_build\` 默认链路。
+\`openyida agent-capabilities --json\` 是 full capabilities，只用于命令契约排障或深度诊断；不要放进常规完整搭建链路。
 
 字段映射：compact 输出的 \`workdir\` 对应 full capabilities 的 \`active.projectRoot\`；\`workdir_exists\` 对应 \`active.projectRootExists\`。
 
@@ -256,23 +256,23 @@ openyida copy
 
 ## 完整应用默认链路
 
-用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，加载 \`yida-app\` 并选择 \`fast_build\`。
+用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，加载 \`yida-app\` 走完整应用统一编排。
 
-\`fast_build\` 只做：创建应用 → 核心表单 → 主页面 → 编写主页面源码 → 发布 + 轻量导航排序 → 返回一个主访问链接和资源摘要。发布主页面成功后立刻执行 \`openyida publish ... --auto-nav-order\` 或 \`openyida nav-group auto-order <appType>\`，默认优先级为门户/首页/工作台入口 > 自定义页面 > 流程表单 > 表单。
+统一编排只做：解析资源上下文 → \`yida-design\` 输出 PRD → 创建/复用应用 → 核心表单/流程 → 主页面 → 编写主页面源码 → 发布 + 轻量导航排序 → 返回一个主访问链接和资源摘要。资源创建顺序按 PRD 执行：应用先落位，表单/流程先于自定义页面。发布主页面成功后，PRD 写明导航顺序时执行 \`openyida nav-group order <appType> <页面/表单...>\`；PRD 只写宽泛分组或缺少导航顺序时，执行 \`openyida publish ... --auto-nav-order\` 或 \`openyida nav-group auto-order <appType>\` 兜底，兜底顺序为门户/首页/工作台入口、业务办理、数据管理、经营分析、系统配置。
 
-表单页开发默认加载 \`yida-form-detail\` 做表单视觉引导，并把 Divider 分割线语义分组合并进字段 JSON；是否额外注入 formDetail CSS 按用户要求或交付模式决定。
+表单页开发默认加载 \`yida-form-detail\` 做表单视觉引导，并把 Divider 分割线语义分组合并进字段 JSON；是否额外注入 formDetail CSS 按用户要求或 PRD 决定。
 
-fast_build 页面源码默认不得使用 \`this.dataSourceMap.*\`，除非本轮已经明确创建并绑定设计器数据源；默认使用入口型页面或 \`this.utils.yida.*\` 查询已创建表单。
+完整应用页面源码默认不得使用 \`this.dataSourceMap.*\`，除非本轮已经明确创建并绑定设计器数据源；默认使用入口型页面或 \`this.utils.yida.*\` 查询已创建表单。
 
 最终结果只输出一个主访问链接：新增/修改/发布单个页面时输出当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景输出应用首页 \`{base_url}/{appType}/workbench\`。资源较多时只用表格列 \`资源类型 | 名称/用途 | ID | 状态\`，不要把 \`g.alicdn.com\` 静态资源、CDN 构建产物、locale JSON、\`/admin\` 管理页或中间文件 URL 当成最终结果。
 
-fast_build 创建/解析多个表单后，页面阶段需要字段映射时，对每个目标表单默认只执行一次 \`openyida get-schema <appType> <formUuid> --field-map-json\`，读取完整 JSON 并写入/复用 \`.cache/<项目名>-schema.json\`；不要用 \`head\` / \`tail\` / \`grep\` 截断 schema stdout 后重复拉取。
+完整应用创建/解析多个表单后，页面阶段需要字段映射时，对每个目标表单默认只执行一次 \`openyida get-schema <appType> <formUuid> --field-map-json\`，读取完整 JSON 并写入/复用 \`.cache/<项目名>-schema.json\`；不要用 \`head\` / \`tail\` / \`grep\` 截断 schema stdout 后重复拉取。
 
-Canvas 页面实现二选一：走模板路径时先写业务化 \`page-spec.json\` 再 \`openyida generate-page ... --spec ... --compile\`，之后只做必要小范围 Edit/patch；如果已经明确最终页面结构，跳过 \`generate-page\`，直接 Write 最终 \`.canvas.jsx\`。不要 generate-page 后马上 Read 大段源码并全量 Write 覆盖同一路径。
+Canvas 页面实现二选一：走生成器入口时先写业务化 \`page-spec.json\` 再 \`openyida generate-sample ... --spec ... --compile\`，之后只做必要小范围 Edit/patch；如果已经明确最终页面结构，跳过 \`generate-sample\`，直接 Write 最终 \`.canvas.jsx\`。不要 generate-sample 后马上 Read 大段源码并全量 Write 覆盖同一路径。
 
-所有模式的 PRD 都必须写入视觉规范（推荐主题、主题色来源、明暗模式、导航视觉、页面气质/布局）；fast_build 只写轻量视觉规范，不升级成长 PRD。完整应用主页面生成默认包含 \`yida-page-uiux\` 轻量 ui_skill 引导，产出页面类型、模板路由、\`visualProfile\` 和去 sample 化检查，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。这不等于 \`deep_design\`。
+完整应用需求分析和产品设计由 \`yida-design\` 承担，并写入 \`prd/<项目名>.md\`：应用基本信息、应用配置、数据结构、页面与功能、视觉规范、主题色、各页面布局、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准。页面实现从 PRD 提炼页面场景、\`visualProfile\`、\`themeProfile\`、页面区块、素材策略、原生表单入口和业务化自检，再交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。
 
-不要默认加载 \`yida-app-uiux\`、\`yida-data-source-connectors\`、\`yida-data-management\`、\`yida-dashboard\`，也不要默认做示例数据、精细导航分组、截图验收、公开访问、长 PRD、深度 UI 设计或深读 references；这些只在用户明确要求或 \`full_demo\` / \`deep_design\` 时执行。发布后的轻量导航排序是 fast_build 默认收尾，不等于 full_demo 导航整理。
+默认只加载当前阶段必需技能；示例数据、精细导航分组、截图验收、公开访问、数据源深接、数据管理和原生报表只在用户明确要求或 PRD 验收标准命中时执行。发布后的轻量导航排序是统一编排默认收尾，不等于精细导航分组。
 
 ## 子技能目录
 
@@ -281,10 +281,11 @@ Canvas 页面实现二选一：走模板路径时先写业务化 \`page-spec.jso
 | 大类目录 | 第一层意图信号 | 子技能 |
 | --- | --- | --- |
 | \`yida-skills/context\` | 登录、退出、组织信息、Schema、fieldId、只读预检 | \`yida-login\`, \`yida-logout\`, \`yida-basic-info\`, \`yida-get-schema\`, \`yida-corp-efficiency\` |
-| \`yida-skills/app\` | 从零搭应用、应用蓝图、导航、主题、多语言 | \`yida-app\`, \`yida-create-app\`, \`yida-app-uiux\`, \`yida-nav-group\`, \`yida-theme\`, \`yida-i18n\` |
+| \`yida-skills/app\` | 从零搭应用、导航、多语言 | \`yida-app\`, \`yida-create-app\`, \`yida-nav-group\`, \`yida-i18n\` |
+| \`yida-skills/design\` | UI 设计、应用蓝图、页面视觉、页面美化、品牌色、应用主题、全局换肤、去 AI 味 | \`yida-design\` |
 | \`yida-skills/form\` | 表单字段、公式、校验、业务规则、详情页、批量录入、数据记录 | \`yida-create-form-page\`, \`yida-formula\`, \`yida-formula-evaluate\`, \`yida-business-rule\`, \`yida-form-detail\`, \`yida-canvas-table-form\`, \`yida-table-form\`, \`yida-data-management\` |
 | \`yida-skills/process\` | 审批、流程表单、流程规则、代理人 | \`yida-create-process\`, \`yida-process-rule\`, \`yida-agent-center\` |
-| \`yida-skills/page\` | 自定义展示页、Code Canvas、普通自定义页面 JSX/Jsx 组件、发布、页面视觉、导航壳、PPT | \`yida-create-page\`, \`yida-canvas-custom-page\`, \`yida-custom-page\`, \`yida-canvas-data-binding\`, \`yida-canvas-upgrade\`, \`yida-publish-page\`, \`yida-openyida-publish-guard\`, \`yida-page-uiux\`, \`yida-density\`, \`yida-nav-shell\`, \`yida-ppt-slider\` |
+| \`yida-skills/page\` | 自定义展示页、Code Canvas、普通自定义页面 JSX/Jsx 组件、发布、导航壳、PPT | \`yida-create-page\`, \`yida-canvas-custom-page\`, \`yida-custom-page\`, \`yida-canvas-data-binding\`, \`yida-canvas-upgrade\`, \`yida-publish-page\`, \`yida-openyida-publish-guard\`, \`yida-density\`, \`yida-nav-shell\`, \`yida-ppt-slider\` |
 | \`yida-skills/analytics\` | 报表、统计、图表、Recharts、ECharts、看板、驾驶舱 | \`yida-report\`, \`yida-rechart\`, \`yida-chart\`, \`yida-dashboard\` |
 | \`yida-skills/integration\` | 连接器、外部 API、数据源、集成自动化 | \`yida-integration\`, \`yida-connector\`, \`yida-connector-safe-actions\`, \`yida-data-source-connectors\` |
 | \`yida-skills/access\` | 平台/应用/表单/页面权限、公开访问、分享 | \`yida-corp-manager\`, \`yida-app-permission\`, \`yida-form-permission\`, \`yida-page-config\` |

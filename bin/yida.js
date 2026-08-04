@@ -750,6 +750,7 @@ async function main() {
       break;
     }
 
+    case 'generate-sample':
     case 'generate-page': {
       const { run } = require('../lib/app/generate-page');
       await run(args);

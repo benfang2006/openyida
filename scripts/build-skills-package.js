@@ -35,30 +35,6 @@ function parseArgs(argv) {
   return options;
 }
 
-function copyDirRecursive(src, dest) {
-  if (!fs.existsSync(src)) {
-    return 0;
-  }
-
-  fs.mkdirSync(dest, { recursive: true });
-
-  let count = 0;
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      count += copyDirRecursive(srcPath, destPath);
-    } else if (entry.isFile()) {
-      fs.copyFileSync(srcPath, destPath);
-      count++;
-    }
-  }
-
-  return count;
-}
-
 function transformSkillReferences(content, subskillReferencePattern) {
   return content
     .replace(/yida-skills\/SKILL\.md/g, '../../../SKILL.md')
@@ -146,8 +122,34 @@ function transformSubskillReference(content) {
     .replace(/^---\n[\s\S]*?\n---\n?/, '')
     .replace(/yida-skills\/SKILL\.md/g, '../../../SKILL.md')
     .replace(/skills\/([a-z0-9-]+)\/SKILL\.md/g, '../$1/README.md')
+    .replace(/(sub_skill\/[^)\s]+\/)SKILL\.md/g, '$1README.md')
     .replace(/\.\.\/([a-z0-9-]+)\/SKILL\.md/g, '../$1/README.md')
     .replace(/详见 SKILL\.md/g, '详见 README.md');
+}
+
+function copySubskillTreeAsReference(sourceDir, destDir) {
+  fs.mkdirSync(destDir, { recursive: true });
+
+  let count = 0;
+  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destName = entry.name === 'SKILL.md' ? 'README.md' : entry.name;
+    const destPath = path.join(destDir, destName);
+
+    if (entry.isDirectory()) {
+      count += copySubskillTreeAsReference(sourcePath, destPath);
+    } else if (entry.isFile()) {
+      if (entry.name.endsWith('.md')) {
+        fs.writeFileSync(destPath, transformSubskillReference(readRequiredFile(sourcePath)), 'utf8');
+      } else {
+        fs.copyFileSync(sourcePath, destPath);
+      }
+      count++;
+    }
+  }
+
+  return count;
 }
 
 function copySubskillAsReference(skillDirName, outputRoot) {
@@ -158,27 +160,7 @@ function copySubskillAsReference(skillDirName, outputRoot) {
     return 0;
   }
 
-  fs.mkdirSync(destDir, { recursive: true });
-  let count = 0;
-  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
-  for (const entry of entries) {
-    const sourcePath = path.join(sourceDir, entry.name);
-    const destName = entry.name === 'SKILL.md' ? 'README.md' : entry.name;
-    const destPath = path.join(destDir, destName);
-
-    if (entry.isDirectory()) {
-      count += copyDirRecursive(sourcePath, destPath);
-    } else if (entry.isFile()) {
-      if (entry.name === 'SKILL.md') {
-        fs.writeFileSync(destPath, transformSubskillReference(readRequiredFile(sourcePath)), 'utf8');
-      } else {
-        fs.copyFileSync(sourcePath, destPath);
-      }
-      count++;
-    }
-  }
-
-  return count;
+  return copySubskillTreeAsReference(sourceDir, destDir);
 }
 
 function copySubskillsAsReferences(outputRoot) {

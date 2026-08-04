@@ -6,7 +6,7 @@
 
 | 问题 | 表现 | 根因 |
 | --- | --- | --- |
-| 官网首页模板感强 | 首屏像工作台，缺图片、动效、品牌叙事和 section 节奏 | 生成前缺少轻量行业调研和官网设计决策 |
+| 官网首页模板感强 | 首屏像工作台，缺图片、动效、品牌叙事和 section 节奏 | 生成前缺少轻量行业调研和官网 PRD |
 | 数据看板不够惊艳 | KPI 卡、图表、排行和洞察都偏平，像静态信息卡 | 只有页面模板，没有 dashboard 级组件契约和布局契约 |
 | 工作台/列表/详情等场景覆盖不足 | 方案容易只围绕官网和看板展开，忽略原有业务页形态 | 缺少统一的全场景路由矩阵和场景级契约 |
 | 应用整体缺 IA | 多页面应用只是创建多个页面，导航和用户角色路径没有被设计 | 缺少应用级 UI/信息架构决策层 |
@@ -29,16 +29,15 @@
 
 | 层级 | 职责 | 主要承载 |
 | --- | --- | --- |
-| 应用级体验蓝图 | 角色路径、页面组合、导航分组、门面页、应用壳形态 | 新增 `yida-app-uiux` 或 `yida-page-uiux` 的 app reference |
-| 页面级视觉决策 | 判断页面类型，输出视觉方向、素材策略、dashboard/landing 设计契约 | `yida-page-uiux` |
+| 应用级体验蓝图 | 角色路径、页面组合、导航分组、门面页、应用壳形态 | `yida-design` 的应用蓝图与 Step 1-3 |
+| 页面级 PRD | 判断页面类型，输出视觉方向、素材策略、dashboard/landing 设计契约 | `yida-design` 的 scene reference 与 Step 4-6 |
 | Code Canvas / 普通自定义页面 JSX 落地规则 | 把设计契约翻译成 JSX、主题 token、图表、交互 | `yida-canvas-custom-page` / `yida-custom-page` |
 | 可执行模板 | CLI 直接渲染并可编译发布的稳定 JSX 模板 | `lib/samples/*` |
 
 一句话分工：
 
 ```text
-应用级 UIUX 定“应用怎么组织”
-页面级 UIUX 定“页面应该长成什么”
+yida-design 定“应用怎么组织、页面应该长成什么”
 Code Canvas / 普通自定义页面 JSX skill 定“怎么写代码”
 lib/samples 提供“可执行模板”
 ```
@@ -60,7 +59,7 @@ OpenYida UI 生成不能只围绕官网和 dashboard。完整场景矩阵如下�
 | PPT/演示页 `presentation` | 路演、培训、幻灯片、演示文稿 | 全屏讲故事 | `yida-ppt-slider` | 键盘翻页、移动适配、视觉素材 |
 | 批量录入表格 `table-form` | Excel 式录入、批量提交 | 高效录入和校验 | `yida-table-form` | 行内校验、草稿、批量提交反馈 |
 
-全场景生成前都要先走 `yida-page-uiux` 的页面类型判断；只有落地链路不同：
+全场景生成前都要先走 `yida-design` 的设计对象判断和场景判断；只有落地链路不同：
 
 - 展示/看板/官网/工作台默认 Code Canvas。
 - 强依赖普通自定义页实例桥的页面选择普通自定义页面 JSX/Jsx 组件链路。
@@ -110,7 +109,7 @@ OpenYida 可以吸收为“应用级体验蓝图”，用于一句话建应用�
 | `split-pane` | 单页主从详情自定义页 | 工单、告警、客户详情、库存明细 |
 | `fullbleed-screen` | `isRenderNav=false` + `data-screen` | 投屏、监控大屏、指挥舱 |
 
-### 3.2 新增应用级决策块
+### 3.2 新增应用级 PRD
 
 建议在完整应用搭建流程中，PRD 后、创建页面前增加“应用体验蓝图”：
 
@@ -127,7 +126,7 @@ OpenYida 可以吸收为“应用级体验蓝图”，用于一句话建应用�
 
 ## 4. Dashboard 页面生成升级
 
-当前 `yida-page-uiux/references/scenes/dashboard.md` 已有 dashboard 场景，但需要从“方向提示”升级为“设计契约”。
+当前 `yida-design/references/scenes/dashboard.md` 已有 dashboard 场景，需要持续保持为“设计契约”而不只是方向提示。
 
 ### 4.1 Dashboard Archetype
 
@@ -144,7 +143,7 @@ OpenYida 可以吸收为“应用级体验蓝图”，用于一句话建应用�
 
 ### 4.2 Dashboard 组件契约
 
-建议在 `yida-page-uiux/references/dashboard/component-contracts.md` 中定义这些“视觉原子”，不一定做真实组件库，但模板生成要遵守。
+建议在 `yida-design` 的 dashboard 场景参考或 Canvas 设计系统中定义这些“视觉原子”，不一定做真实组件库，但模板生成要遵守。
 
 | 原子 | 必备槽位 | 规则 |
 | --- | --- | --- |
@@ -246,7 +245,7 @@ Code Canvas 当前模板可用 Recharts，也可逐步支持 ECharts。无论图
 | 诉求 | 推荐技能 | 原因 |
 | --- | --- | --- |
 | 美化宜搭原生表单详情页 | `yida-form-detail` | 只注入 CSS，保留字段、权限、流程、移动端能力 |
-| 做单对象展示页/档案页 | `yida-page-uiux detail` + `yida-canvas-custom-page` | 适合自定义叙事、关联数据、视觉展示 |
+| 做单对象展示页/档案页 | `yida-design detail` + `yida-canvas-custom-page` | 适合自定义叙事、关联数据、视觉展示 |
 | 编辑/提交字段 | 原生表单 / iframe | 不在自定义页重写复杂表单控件 |
 | 流程详情/审批上下文 | 原生流程详情优先 | 避免破坏流程任务和权限 |
 
@@ -308,7 +307,7 @@ Code Canvas 当前模板可用 Recharts，也可逐步支持 ECharts。无论图
 
 ## 6. 官网/落地页生成策略
 
-官网不是工作台，也不是普通展示卡片。它需要“轻量调研 + 设计决策 + 素材策略”。
+官网不是工作台，也不是普通展示卡片。它需要“轻量调研 + PRD + 素材策略”。
 
 ### 6.1 researchLevel 分级
 
@@ -356,10 +355,10 @@ Code Canvas 当前模板可用 Recharts，也可逐步支持 ECharts。无论图
 
 ### 7.1 推荐结构
 
-短期先增强 `yida-page-uiux`，避免新增过多顶层 skill 导致路由复杂。
+当前统一收敛到 `yida-design`，避免多个视觉类顶层 skill 互相抢路由。
 
 ```text
-yida-page-uiux/
+yida-design/
   SKILL.md
   workflow/
   references/
@@ -374,46 +373,24 @@ yida-page-uiux/
       blueprint.md
       navigation-patterns.md
       role-journey.md
-    dashboard/
-      theme-recipes.md
-      layout-patterns.md
-      component-contracts.md
-      chart-contracts.md
-      app-blueprint.md
-    workbench/
-      entry-patterns.md
-      task-feed.md
-      portal-layouts.md
-    list/
-      table-patterns.md
-      filter-patterns.md
-      drawer-detail.md
-      empty-loading-error.md
-    detail/
-      object-narrative.md
-      section-patterns.md
-      timeline-and-related.md
-    landing/
-      research-levels.md
-      section-patterns.md
-      assets-workflow.md
-      industry-playbooks.md
+    theme/
+      theme-token-presets.md
+  sub_skill/
+    page-design/
+      SKILL.md
 ```
 
 ### 7.2 是否新增顶层 skill
 
-如果后续发现 `yida-page-uiux` 过大，可以再拆：
+视觉和产品设计职责保持在 `yida-design` 内，不再新增分散的视觉类顶层 skill。场景差异放在 `references/scenes/`，单页专属流程放在 `sub_skill/page-design/`：
 
-| 新 skill | 触发 | 职责 |
+| 承载位置 | 触发 | 职责 |
 | --- | --- | --- |
-| `yida-app-uiux` | 从零创建多页面应用、应用整体规划 | 应用级信息架构、导航分组、页面组合 |
-| `yida-landing-page-uiux` | 官网、品牌页、落地页 | 调研分级、素材策略、section 节奏 |
-| `yida-dashboard-uiux` | 数据看板、驾驶舱、大屏 | dashboard archetype、组件契约、图表契约 |
-| `yida-workbench-uiux` | 工作台、门户、任务中心 | 入口分组、待办流、门户首页布局 |
-| `yida-list-uiux` | 列表、管理页、数据管理页 | 筛选、表格、批量操作、详情抽屉、三态 |
-| `yida-detail-uiux` | 详情、档案、展示页 | 单对象叙事、章节分组、时间线、关联对象 |
+| `yida-design/SKILL.md` | 完整应用、主题系统、主页面设计 | 需求分析、产品定位、主题、信息架构和交付决策 |
+| `yida-design/sub_skill/page-design/SKILL.md` | 单页美化、页面重构、单个自定义页设计 | 先读取当前应用主题，再完成单页布局、交互和视觉规范 |
+| `yida-design/references/scenes/*.md` | landing / dashboard / screen / workbench / list / detail | 场景纪律、布局模式、素材和状态要求 |
 
-不建议把真正独立技能放在 `yida-page-uiux/subskills/<name>/SKILL.md` 后期待自动触发。当前 OpenYida 技能校验和索引主要识别：
+不把真正独立技能放在任意 `subskills/<name>/SKILL.md` 后期待自动触发。当前 OpenYida 技能校验和索引主要识别：
 
 ```text
 yida-skills/skills/<skill-name>/SKILL.md
@@ -430,7 +407,7 @@ yida-skills/skills/<skill-name>/SKILL.md
 | `lib/samples` | 可执行 JSX / Canvas 模板 | CLI 可以直接读取、渲染、编译、测试 |
 | `yida-skills` | 行为说明、设计规则、路由策略 | 给 agent 读，控制生成行为 |
 | `references` | 长文档、设计契约、checklist | 按需 progressive disclosure |
-| `docs` | 方案、规划、设计决策记录 | 给研发和产品对齐 |
+| `docs` | 方案、规划、PRD 记录 | 给研发和产品对齐 |
 
 不建议把完整大模板放进 skill：
 
@@ -518,7 +495,7 @@ yida-skills/skills/<skill-name>/SKILL.md
 
 ### P0：skill 契约与模板基线并行
 
-目标：一边让 agent 做对设计决策，一边把当前最影响观感的模板基线同步升级。不能只改 skill 文档，也不能只改 CSS。
+目标：一边让 agent 写对 PRD，一边把当前最影响观感的模板基线同步升级。不能只改 skill 文档，也不能只改 CSS。
 
 #### P0-A：文档与 skill 契约
 
@@ -563,7 +540,7 @@ yida-skills/skills/<skill-name>/SKILL.md
 
 ### P1：IR 与 CLI 支持
 
-目标：让设计决策和新模板路由进入可执行 spec。
+目标：让 PRD 和新模板路由进入可执行 spec。
 
 - Page IR 支持 `researchLevel`、`appBlueprint`、`archetype`、`interactionProfile`、`insights`。
 - `generate-page` 支持从 spec 读取这些字段。
@@ -653,7 +630,7 @@ yida-skills/skills/<skill-name>/SKILL.md
 
 建议按以下顺序推进：
 
-1. 先做 P0-A + P0-B：同时补 `yida-page-uiux` 全场景 references，并新增/拆分 `dashboard-overview`、`workbench-home`、`business-list`、`detail-profile` 等模板。
+1. 先做 P0-A + P0-B：同时补 `yida-design` 全场景 references，并新增/拆分 `dashboard-overview`、`workbench-home`、`business-list`、`detail-profile` 等模板。
 2. 跑 routing eval + Canvas 编译测试，确认“选得对”和“模板能跑”同时成立。
 3. 做一次 generation eval 或线上测试，覆盖官网、看板、工作台、列表、详情，直接看截图质量。
 4. 再做 P1，把新决策字段和新模板路由沉淀到 Page IR、manifest 和 CLI。

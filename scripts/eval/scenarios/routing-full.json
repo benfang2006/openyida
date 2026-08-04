@@ -417,11 +417,11 @@
   {
     "id": "density-neg-1",
     "prompt": "帮我确定一下这个自定义页面的整体视觉风格和配色方案",
-    "expectedSkill": "yida-page-uiux",
+    "expectedSkill": "yida-design",
     "mustNotTrigger": ["yida-density"],
     "type": "negative",
     "category": "disambiguation",
-    "note": "视觉风格决策 → page-uiux，不是信息密度调整"
+    "note": "视觉风格决策 → yida-design，不是信息密度调整"
   },
 
   {
@@ -676,27 +676,27 @@
   },
 
   {
-    "id": "page-uiux-pos-1",
+    "id": "design-pos-1",
     "prompt": "帮我确定一下这个自定义页面应该走什么视觉方向，科技感还是简约风",
-    "expectedSkill": "yida-page-uiux",
+    "expectedSkill": "yida-design",
     "type": "positive",
-    "note": "自定义页面视觉方向决策"
+    "note": "自定义页面 PRD"
   },
   {
-    "id": "page-uiux-pos-2",
+    "id": "design-pos-2",
     "prompt": "这个页面的整体 UI 风格该怎么定？帮我出个设计方案",
-    "expectedSkill": "yida-page-uiux",
+    "expectedSkill": "yida-design",
     "type": "positive",
-    "note": "页面 UI/UX 设计决策"
+    "note": "页面 UI/UX PRD"
   },
   {
-    "id": "page-uiux-neg-1",
+    "id": "design-neg-1",
     "prompt": "页面内容排列太稀疏了，帮我收紧间距提高信息密度",
     "expectedSkill": "yida-density",
-    "mustNotTrigger": ["yida-page-uiux"],
+    "mustNotTrigger": ["yida-design"],
     "type": "negative",
     "category": "disambiguation",
-    "note": "信息密度调整 → density，不是视觉方向决策"
+    "note": "信息密度调整 → density，不是完整应用 PRD"
   },
 
   {

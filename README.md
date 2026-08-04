@@ -155,7 +155,7 @@ openyida/
 │   ├── core/                   # Environment detection, i18n, diagnostics, data commands
 │   ├── process/                # Process form creation, configuration, preview
 │   ├── report/                 # Yida report and chart generation
-│   └── samples/                # Templates emitted by openyida sample
+│   └── samples/                # Sample skeletons emitted by openyida sample
 ├── project/                    # Default workspace template for generated Yida projects
 ├── yida-skills/                # Source skill docs and Yida API references
 └── scripts/                    # CI, packaging, and installation helpers
@@ -185,20 +185,20 @@ Form definitions support 19 business field types plus verified presentation/layo
 
 ```bash
 openyida create-page APP_XXX "Dashboard" --mode dashboard
-openyida generate-page product-homepage --scene workbench --theme-profile yida-app-theme --theme-scope page --spec .cache/openyida/page-specs/home.json --output pages/src/home.canvas.jsx --compile
-openyida generate-page official-homepage --theme-profile yida-app-theme --spec .cache/openyida/page-specs/official-home.json --resolve-assets --upload-assets --output pages/src/official-home.canvas.jsx --compile
-openyida generate-page data-screen --theme-profile yida-app-theme --output pages/src/data-screen.canvas.jsx --compile
-openyida generate-page split-pane-detail --theme-profile yida-app-theme --output pages/src/split-pane-detail.canvas.jsx --compile
-openyida generate-page portal-shell-home --theme-profile yida-app-theme --output pages/src/portal-shell-home.canvas.jsx --compile
+openyida generate-sample product-homepage --scene workbench --theme-profile yida-app-theme --theme-scope page --spec .cache/openyida/page-specs/home.json --output pages/src/home.canvas.jsx --compile
+openyida generate-sample official-homepage --theme-profile yida-app-theme --spec .cache/openyida/page-specs/official-home.json --resolve-assets --upload-assets --output pages/src/official-home.canvas.jsx --compile
+openyida generate-sample data-screen --theme-profile yida-app-theme --output pages/src/data-screen.canvas.jsx --compile
+openyida generate-sample split-pane-detail --theme-profile yida-app-theme --output pages/src/split-pane-detail.canvas.jsx --compile
+openyida generate-sample portal-shell-home --theme-profile yida-app-theme --output pages/src/portal-shell-home.canvas.jsx --compile
 openyida sample yida-canvas-custom-page dashboard-starter --output pages/src/dashboard-starter.canvas.jsx
 openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx
 openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx
-openyida generate-page todo-mvc --output pages/src/todo-mvc.canvas.jsx --compile
+openyida generate-sample todo-mvc --output pages/src/todo-mvc.canvas.jsx --compile
 openyida publish pages/src/home.canvas.jsx APP_XXX FORM_XXX
 ```
 
-`generate-page` turns a structured spec into a Page IR, renders a curated template, writes a `.openyida-page.json` manifest, and optionally compiles the result. Code Canvas is the default output (`.canvas.jsx`); pass `--native` or output `.oyd.jsx` only when the page must use the 普通自定义页面 JSX/Jsx 组件链路. Pass `--scene workbench|dashboard|list|detail|landing|screen` and `--theme-profile <name-or-json>` / `--visual-profile <name-or-json>` to preserve the visual direction decision in both source comments and the manifest. The user-facing default theme profile is `yida-app-theme`, which follows Yida application theme styling, compact business density, and layered 12/8/6/4 radii. `--theme-scope page` only injects theme variables into the generated page root; `--theme-scope app` additionally calls `window.__YIDA__.updateShellConfig({ themeConfig })` so the application shell can adopt the same theme. Landing pages should declare `spec.assets.heroImage` / `productImages`; use `--resolve-assets` to verify public image URLs and `--upload-assets` to mirror local or verified external images to CDN when CDN is configured. Use `--offline-assets` only for draft/offline gating. The manifest makes follow-up AI edits safer because agents can update known blocks and visual constraints instead of rewriting a large JSX file by hand.
-Built-in templates currently include `official-homepage` for brand/law-firm/product official sites, `data-screen` for immersive monitoring screens, `dashboard-overview` for business dashboards, `workbench-home` for task/entry workbenches, `business-list` for list management pages, `detail-profile` for single-object detail pages, `split-pane-detail` for left-list/right-detail processing consoles, `portal-shell-home` for in-page portal shells, `native-components-smoke` for runtime probing existing Yida host components through `window.Deep` / `window.DeepYida`, `portal-native-components` for runtime-bridged portal, member, department, and upload components, `product-homepage` for legacy workbench-style pages, and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
+`generate-sample` turns a structured spec into a Page IR, renders a built-in sample skeleton, writes a `.openyida-page.json` manifest, and optionally compiles the result. Code Canvas is the default output (`.canvas.jsx`); pass `--native` or output `.oyd.jsx` only when the page must use the 普通自定义页面 JSX/Jsx 组件链路. Pass `--scene workbench|dashboard|list|detail|landing|screen` and `--theme-profile <name-or-json>` / `--visual-profile <name-or-json>` to preserve the visual direction decision in both source comments and the manifest. The user-facing default theme profile is `yida-app-theme`, which follows Yida application theme styling, compact business density, and layered 12/8/6/4 radii. `--theme-scope page` only injects theme variables into the generated page root; `--theme-scope app` additionally calls `window.__YIDA__.updateShellConfig({ themeConfig })` so the application shell can adopt the same theme. Landing pages should declare `spec.assets.heroImage` / `productImages`; use `--resolve-assets` to verify public image URLs and `--upload-assets` to mirror local or verified external images to CDN when CDN is configured. Use `--offline-assets` only for draft/offline gating. The manifest makes follow-up AI edits safer because agents can update known blocks and visual constraints instead of rewriting a large JSX file by hand.
+Built-in sample skeletons currently include `official-homepage` for brand/law-firm/product official sites, `data-screen` for immersive monitoring screens, `dashboard-overview` for business dashboards, `workbench-home` for task/entry workbenches, `business-list` for list management pages, `detail-profile` for single-object detail pages, `split-pane-detail` for left-list/right-detail processing consoles, `portal-shell-home` for in-page portal shells, `native-components-smoke` for runtime probing existing Yida host components through `window.Deep` / `window.DeepYida`, `portal-native-components` for runtime-bridged portal, member, department, and upload components, `product-homepage` for legacy workbench-style pages, and `todo-mvc` for a full interaction smoke page covering events, custom state, list rendering, editing, filtering, and localStorage persistence.
 
 For member, department, attachment, and image upload components, choose the page chain first. Code Canvas pages should start with `native-components-smoke` or `portal-native-components` and follow `yida-canvas-custom-page/references/native-components-bridge.md` for feature detection, fallback, and value normalization. 普通自定义页面 JSX/Jsx pages should use `.oyd.jsx`, read `yida-custom-page/references/component-jsx-guide.md`, and read `attachment-upload-guide.md` when upload fields are involved.
 
@@ -401,7 +401,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | Get one form Schema or all form Schemas |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | Export app entity relationship diagram |
 | `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
-| `openyida generate-page <template>` | Generate page from curated template |
+| `openyida generate-sample <sample>` | Generate a page skeleton from a built-in sample |
 | `openyida build-page <sourceFile> [--output file\|--write]` | Build Yida-compatible page source |
 | `openyida check-page <src> [--compat]` | Check custom page standards |
 | `openyida compile <src>` | Compile custom page locally |

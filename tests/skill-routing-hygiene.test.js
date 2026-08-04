@@ -36,9 +36,9 @@ describe('skill resource boundary copy', () => {
   test('root route keeps default command flow without internal architecture terms', () => {
     const root = fs.readFileSync(path.join(__dirname, '..', 'yida-skills', 'SKILL.md'), 'utf8');
 
-    expect(root).toMatch(/默认使用 `create-app \/ create-form \/ create-page \/ generate-page \/ publish`/);
+    expect(root).toMatch(/默认使用 `create-app \/ create-form \/ create-page \/ publish`/);
     expect(root).toMatch(/resolve_resource_context/);
-    expect(root).toMatch(/reserve main page → resolve forms/);
+    expect(root).toMatch(/resolve forms\/processes → reserve main page/);
     expect(root).toMatch(/字段级命令内置解析/);
     expect(root).not.toMatch(RETIRED_ARCHITECTURE_PATTERN);
   });

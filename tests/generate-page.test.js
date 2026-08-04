@@ -131,7 +131,7 @@ describe('generate-page command', () => {
 
     execFileSync(process.execPath, [
       BIN,
-      'generate-page',
+      'generate-sample',
       'dashboard-overview',
       '--brand-name',
       '访客看板',
@@ -148,6 +148,19 @@ describe('generate-page command', () => {
     expect(fs.existsSync(path.join(projectDir, 'pages', 'src', 'visitor-dashboard.canvas.jsx'))).toBe(true);
     expect(fs.existsSync(path.join(projectDir, 'pages', 'dist', 'visitor-dashboard.canvas.js'))).toBe(true);
     expect(fs.existsSync(path.join(projectDir, 'project', 'pages', 'src', 'visitor-dashboard.canvas.jsx'))).toBe(false);
+  });
+
+  test('prints generate-sample help without writing a default page', () => {
+    const output = execFileSync(process.execPath, [BIN, 'generate-sample', '--help'], {
+      cwd: tmpDir,
+      env: cliEnv(),
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    expect(output).toContain('openyida generate-sample <sample>');
+    expect(fs.existsSync(path.join(tmpDir, 'pages', 'src', 'home.canvas.jsx'))).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, 'pages', 'src', 'home.canvas.openyida-page.json'))).toBe(false);
   });
 
   test('rejects specs that would render emoji into generated page source before writing files', () => {
@@ -301,8 +314,8 @@ describe('generate-page command', () => {
     const compiled = fs.readFileSync(compiledPath, 'utf8');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-    expect(source).toContain('@openyida-theme-profile green-shell');
-    expect(source).toContain('@openyida-theme-scope app');
+    expect(source).toContain('@openyida-design-profile green-shell');
+    expect(source).toContain('@openyida-design-scope app');
     expect(source).toContain("const THEME_SCOPE = withFallback('app', 'page')");
     expect(source).toContain('updateShellConfig');
     expect(source).toContain('themeColor: getThemeColor');
@@ -339,8 +352,8 @@ describe('generate-page command', () => {
     expect(source).toContain('export default YidaComp');
     expect(source).toContain('@openyida-template product-homepage');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile podBlue');
-    expect(source).toContain('@openyida-theme-scope page');
+    expect(source).toContain('@openyida-design-profile podBlue');
+    expect(source).toContain('@openyida-design-scope page');
     expect(source).toContain('oy-hero-grid');
     expect(source).toContain('buildScopedThemeVars');
     expect(source).toContain('parseColorGroup');
@@ -669,7 +682,7 @@ describe('generate-page command', () => {
       expect(source).not.toContain("JSON.parse('{{");
       expect(compiled).not.toContain("JSON.parse('{{");
       if (item.template === 'split-pane-detail') {
-        expect(source).toContain('@openyida-theme-profile podBlue');
+        expect(source).toContain('@openyida-design-profile podBlue');
         expect(source).toContain("const THEME_SCOPE = withFallback('page', 'page')");
         expect(source).toContain('function parseTemplateJson');
         expect(source).toContain('const DATA_BINDING = parseTemplateJson');
@@ -1216,8 +1229,8 @@ describe('generate-page command', () => {
     expect(source).toContain('@openyida-template product-homepage');
     expect(source).toContain('@openyida-scene dashboard');
     expect(source).toContain('@openyida-visual-profile ops-dashboard');
-    expect(source).toContain('@openyida-theme-profile ops-shell');
-    expect(source).toContain('@openyida-theme-scope app');
+    expect(source).toContain('@openyida-design-profile ops-shell');
+    expect(source).toContain('@openyida-design-scope app');
     expect(source).toContain('@openyida-blocks hero,feature-grid,metric-strip,roadmap,cta');
     expect(source).toContain('name":"ops-dashboard');
     expect(source).toContain("featuresTitle: '核心模块'");
@@ -1332,8 +1345,8 @@ describe('generate-page command', () => {
     expect(source).toContain('@openyida-template todo-mvc');
     expect(source).toContain('@openyida-scene list');
     expect(source).toContain('@openyida-visual-profile yida-app-theme');
-    expect(source).toContain('@openyida-theme-profile podBlue');
-    expect(source).toContain('@openyida-theme-scope page');
+    expect(source).toContain('@openyida-design-profile podBlue');
+    expect(source).toContain('@openyida-design-scope page');
     expect(source).toContain('NATIVE_CONTROL_RESET_CSS');
     expect(source).toContain('--oyd-control-focus-ring');
     expect(source).toContain('className="oyd-page"');
