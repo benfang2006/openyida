@@ -70,7 +70,7 @@ metadata:
    ↓
 [Step 3] 需要派单时创建“看板派单触发表”并配置集成自动化
    ↓
-[Step 4] 用 yida-page-uiux 决定 dashboard/screen、主题、Shell、Archetype
+[Step 4] 用 yida-design 决定 dashboard/screen、主题、Shell、Archetype
    ↓
 [Step 5] 生成 dashboard-overview.canvas.jsx 或 data-screen.canvas.jsx
    ↓

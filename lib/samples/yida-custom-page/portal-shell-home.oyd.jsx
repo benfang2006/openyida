@@ -4,8 +4,8 @@
  * @openyida-ir-version {{OPENYIDA_IR_VERSION}}
  * @openyida-scene {{OPENYIDA_SCENE}}
  * @openyida-visual-profile {{OPENYIDA_VISUAL_PROFILE}}
- * @openyida-theme-profile {{OPENYIDA_THEME_PROFILE}}
- * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
+ * @openyida-design-profile {{OPENYIDA_THEME_PROFILE}}
+ * @openyida-design-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  *
  * 真实业务对象：企业员工数字工作台门户。欢迎头 + 关键待办统计 + 应用入口矩阵

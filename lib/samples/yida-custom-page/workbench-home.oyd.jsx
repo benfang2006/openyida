@@ -4,8 +4,8 @@
  * @openyida-ir-version {{OPENYIDA_IR_VERSION}}
  * @openyida-scene {{OPENYIDA_SCENE}}
  * @openyida-visual-profile {{OPENYIDA_VISUAL_PROFILE}}
- * @openyida-theme-profile {{OPENYIDA_THEME_PROFILE}}
- * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
+ * @openyida-design-profile {{OPENYIDA_THEME_PROFILE}}
+ * @openyida-design-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  *
  * 目标：给出一个「真实用户消费场景」的 native JSX 工作台样例，替代通用的

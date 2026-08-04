@@ -4,8 +4,8 @@
  * @openyida-ir-version {{OPENYIDA_IR_VERSION}}
  * @openyida-scene {{OPENYIDA_SCENE}}
  * @openyida-visual-profile {{OPENYIDA_VISUAL_PROFILE}}
- * @openyida-theme-profile {{OPENYIDA_THEME_PROFILE}}
- * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
+ * @openyida-design-profile {{OPENYIDA_THEME_PROFILE}}
+ * @openyida-design-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  *
  * 真实业务对象：供应商档案详情。档案头（评级/标签/操作）+ 关键指标 +

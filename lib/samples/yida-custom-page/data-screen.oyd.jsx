@@ -4,8 +4,8 @@
  * @openyida-ir-version {{OPENYIDA_IR_VERSION}}
  * @openyida-scene {{OPENYIDA_SCENE}}
  * @openyida-visual-profile {{OPENYIDA_VISUAL_PROFILE}}
- * @openyida-theme-profile {{OPENYIDA_THEME_PROFILE}}
- * @openyida-theme-scope {{OPENYIDA_THEME_SCOPE}}
+ * @openyida-design-profile {{OPENYIDA_THEME_PROFILE}}
+ * @openyida-design-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
  *
  * 真实业务对象：全国物流调度实时监控大屏。顶部 KPI 指标条 + 区域运力分布 +
