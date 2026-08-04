@@ -410,7 +410,7 @@
       "name": "yida-create-app",
       "path": "skills/yida-create-app/SKILL.md",
       "display_name": "创建宜搭应用",
-      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。已绑定或预创建 app 不调用 create-app，也不由 OpenYida 技能侧自动改名，应交给 yida-app 复用。",
+      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。创建成功后把 appType 交给 yida-design 生成或更新 PRD，再继续表单、流程、页面和发布。",
       "category": "yida-skills/app",
       "tags": [
         "创建应用",

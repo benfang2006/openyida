@@ -242,7 +242,9 @@ describe('OpenYida skill contracts', () => {
   });
 
   test('yida-design owns product design output and yida-app consumes it', () => {
+    const root = readSkill('yida-skills/SKILL.md');
     const skill = readSkill('yida-skills/skills/yida-app/SKILL.md');
+    const createApp = readSkill('yida-skills/skills/yida-create-app/SKILL.md');
     const contract = readSkill('yida-skills/skills/yida-app/references/app-build-contract.md');
     const design = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const step1 = readSkill('yida-skills/skills/yida-design/workflow/step-1-positioning.md');
@@ -257,6 +259,9 @@ describe('OpenYida skill contracts', () => {
 
     expect(skill).toContain('需求分析、产品定位、页面/表单/流程蓝图、主题色、各页面布局、交互状态和验收标准统一交给 `yida-design`');
     expect(skill).toContain('把 `yida-design` 输出的 PRD 写入 `prd/<项目名>.md`');
+    expect(root).toContain('`yida-create-app`；创建成功后把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>.md`');
+    expect(createApp).toContain('创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>.md`');
+    expect(createApp).toContain('创建应用后，先用 `yida-design` 产出或更新 PRD，再继续执行');
     expect(skill).toContain('进入本技能后，读取或生成 `prd/<项目名>.md`，并按 PRD 创建或复用资源、实现页面、发布应用主入口，最后返回一个主访问链接和资源摘要。');
     expect(skill).not.toContain('用户说“按默认方案”“不要追问”“直接创建”“尽快搭建”等');
     expect(skill).not.toContain('默认链路：`resolve context → yida-design PRD');
@@ -355,6 +360,7 @@ describe('OpenYida skill contracts', () => {
     expect(byName.get('yida-app').description).toContain('消费 yida-design PRD');
     expect(byName.get('yida-app').description).toContain('表单/流程先于自定义页面');
     expect(byName.get('yida-app').description).toContain('发布后优先按 PRD 导航顺序排序');
+    expect(byName.get('yida-create-app').description).toContain('交给 yida-design 生成或更新 PRD');
     expect(byName.get('yida-app').done_when).toContain('PRD 已写入 prd/<项目名>.md');
   });
 

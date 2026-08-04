@@ -28,13 +28,14 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 ## 严格要求 (MUST DO)
 
 - 创建成功后，将 appType 记录到 `.cache/<项目名>-schema.json`
+- 创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>.md`；后续表单、流程、页面和发布都按这份 PRD 执行。
 - 创建前确认当前登录的组织（corpId）与目标组织一致
 - **本技能不读写 memory**：appType 等信息输出到 stdout，通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景
 
-用户说"从零创建应用"、"新建另一个系统"、"新建应用并返回 appType"，且 resource context 没有目标 app 时使用此技能。
-创建应用后，通常需要继续执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
+用户说"只创建应用壳"、"新建应用并返回 appType"，且 resource context 没有目标 app 时使用此技能。
+创建应用后，先用 `yida-design` 产出或更新 PRD，再继续执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
 后续如果需要自定义页面，默认走 Code Canvas 链路：源码写到 `project/pages/src/<页面名>.canvas.jsx`，通过 Canvas 编译链路发布。用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥（`this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定深度耦合）时，选择 `.oyd.jsx` / `.jsx` 并执行 `openyida check-page` / `openyida compile`。
 
 ---

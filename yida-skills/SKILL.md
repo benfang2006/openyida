@@ -105,7 +105,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / publish`
 - 已解析到目标自定义页面 URL / `formUuid` / bound page 时，默认写源码并发布到该页面，不执行 `yida-create-page`；只有缺少目标 display page 且本次意图允许新增页面时才创建。
 - 已解析到目标表单 `formUuid` 时，字段结构诉求默认走 `yida-create-form-page` 的 update/patch/rule/bind-datasource 模式，不创建同名或同类表单。
 - 已解析到目标流程表单 / `processCode` 时，默认走 `yida-process-rule` 配置/更新流程，不从零执行 `yida-create-process`。
-- 完整应用统一编排也遵守本规则：先占位主页面，再建表单，最后回填发布。
+- 完整应用统一编排也遵守本规则：先由 `yida-design` 输出 PRD，再按 PRD 创建或复用应用；表单/流程先于自定义页面，页面实现消费 PRD 和真实资源 ID。
 
 验收心智模型：
 
@@ -185,7 +185,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / publish`
 | 按 taskUuid 读取钉钉听记 | `yida-tingji`，将听记任务 ID 原样传入命令 |
 | 用户给 taskUuid 并要求转 PRD | 先用 `yida-tingji` 读取听记内容，再把已有内容交给 `yida-flash-note-to-prd` 生成 PRD |
 | 已有会议纪要/闪记内容转 PRD | `yida-flash-note-to-prd`，只处理已有内容，不负责按 taskUuid 拉取听记 |
-| 只创建应用壳并拿 appType | `yida-create-app` |
+| 只创建应用壳并拿 appType | `yida-create-app`；创建成功后把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>.md`，后续表单、流程、页面和发布都消费这份 PRD |
 | 创建自定义展示页资源 | `yida-create-page`，之后默认接 `yida-canvas-custom-page` 和 `yida-publish-page` |
 | 开发表单字段结构 / 增删改字段 | 先加载 `yida-form-detail` 做表单视觉引导并合并 Divider 分割线，再用 `yida-create-form-page` 落地字段结构 |
 | 创建带审批的流程表单 | `yida-create-process` |
