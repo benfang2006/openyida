@@ -35,11 +35,15 @@ function isAgentEnvironment(env) {
     env.QODER_IDE ||
     env.QODER_AGENT ||
     env.QODERCLI_INTEGRATION_MODE ||
+    env.QWENWORK_INTEGRATION_MODE ||
+    env.QWENWORKCN_INTEGRATION_MODE ||
     env.CURSOR_TRACE_ID ||
     env.AGENT_WORK_ROOT ||
     env.OPENYIDA_AGENT_MODE ||
     (env.__CFBundleIdentifier || '').toLowerCase().includes('codex') ||
-    (env.__CFBundleIdentifier || '').toLowerCase().includes('qoder')
+    (env.__CFBundleIdentifier || '').toLowerCase().includes('qoder') ||
+    (env.__CFBundleIdentifier || '').toLowerCase().includes('qwenwork') ||
+    (env.__CFBundleIdentifier || '').toLowerCase().includes('qwen-work')
   );
 }
 

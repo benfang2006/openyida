@@ -581,10 +581,10 @@
   },
   {
     "id": "login-pos-2",
-    "prompt": "我要扫码登录宜搭平台",
+    "prompt": "我要通过浏览器登录宜搭平台",
     "expectedSkill": "yida-login",
     "type": "positive",
-    "note": "扫码登录"
+    "note": "浏览器 OAuth 登录"
   },
   {
     "id": "login-neg-1",

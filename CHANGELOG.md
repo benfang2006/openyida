@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.4] - 2026-08-04
+
+### Fixed
+- 千问办公登录优化。
+
 
 ## [2026.8.3] - 2026-08-03
 
