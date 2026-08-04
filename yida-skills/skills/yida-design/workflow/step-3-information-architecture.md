@@ -5,7 +5,7 @@
 ## 应用级结构
 
 1. 首页/入口页：官网首页、工作台、经营驾驶舱或其他入口。
-2. 页面清单：每个页面写清 scene、目标用户、主任务和需要设计的区块。
+2. 页面清单：每个页面写清 scene、目标用户、主任务和需要设计的区块；工作台、首页、门户、看板、展示页和业务入口页必须显式列出 10 个以上 `contentBlocks`。
 3. 导航分组：按角色路径和业务主次分组，门面页靠前，数据录入/配置类页面靠后。
 4. 表单/流程关系：录入、审批、权限、校验交给原生表单和流程。
 
@@ -35,7 +35,7 @@
 
 | 页面场景 | 场景参考 | 典型结构 |
 | --- | --- | --- |
-| workbench | `references/scenes/workbench.md` | 欢迎区 + 核心指标 + 快捷入口 + 我的待办 |
+| workbench | `references/scenes/workbench.md` | 标题上下文 + 状态摘要 + 高频动作 + 待办 + 最近记录 + 动态 + 提醒 + 右侧上下文 + 空态行动 |
 | dashboard | `references/scenes/dashboard.md` | KPI 卡组 + 图表 + 排行/明细 |
 | screen | `references/scenes/screen.md` | full-bleed 中心态势 + 左右信息塔 |
 | list | `references/scenes/list.md` | 筛选栏 + 表格/卡片 + 分页 + 详情抽屉 |
@@ -59,7 +59,7 @@
 - appBlueprint：<应用目标、角色、页面清单、导航分组>
 - resourceBlueprint：<pages: name/resourceType/scene/purpose；forms: name/formKind/fields/process>
 - 页面场景：<scene + 判定依据>
-- 页面区块：<每个页面的首屏、筛选、列表/卡片、图表、表单入口、详情抽屉、空态等区块>
+- 页面区块 / contentBlocks：<工作台、首页、门户、看板、展示页和业务入口页逐条列出至少 10 个区块；KPI 组和快捷入口组各只算 1 个区块>
 - 页面关系：<上一层入口、下钻目标、原生表单/流程关系>
 ```
 

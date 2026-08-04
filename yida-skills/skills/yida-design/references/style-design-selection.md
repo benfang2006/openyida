@@ -68,6 +68,7 @@
 | 视觉 DNA | 从 design.md 中提取 2-5 个必须保留的视觉 DNA |
 | 页面区块 | 当前业务页面实际需要的区块 |
 | 主题关系 | 默认写“跟随应用主题”；若 `design.md` 色相不同，写“应用主题主导，designMd 色彩降级为辅助色”；只有独立页面才说明页面级独立色盘原因 |
+| visualScaffold | 把 design.md 转成实现槽位：layoutRecipe、surfaceMap、sectionRhythm、densityRule、componentRecipe、emptyStateRecipe、acceptanceChecks |
 
 ## 实现交接
 
@@ -80,5 +81,6 @@
 | 布局配方 | 页面栅格、区域顺序、区块比例 |
 | 组件规则 | 卡片、表格、按钮、筛选、抽屉、标签 |
 | 状态规则 | 空态、加载、错误、无权限、禁用、选中 |
+| visualScaffold | 实现阶段先按槽位填业务内容，再写样式；执行稳定性较弱的模型不得跳过 |
 
 业务文案、字段、表单入口、流程处理、详情链接和导航顺序都从 PRD 读取；`design.md` 只提供视觉 DNA、布局和组件样式。

@@ -283,14 +283,22 @@ describe('OpenYida skill contracts', () => {
     expect(output).not.toContain('推荐模板');
     expect(output).not.toContain('区别于 sample 默认风格');
     expect(step3).toContain('每个页面写清 scene、目标用户、主任务和需要设计的区块');
-    expect(step3).toContain('页面区块：<每个页面的首屏、筛选、列表/卡片、图表、表单入口、详情抽屉、空态等区块>');
+    expect(step3).toContain('页面区块 / contentBlocks：<工作台、首页、门户、看板、展示页和业务入口页逐条列出至少 10 个区块');
     expect(step3).not.toContain('推荐模板');
     expect(step5).toContain('示例品牌名、默认指标和通用卖点');
     expect(step5).not.toContain('sample 品牌名');
+    expect(design).toContain('弱模型视觉脚手架');
+    expect(design).toContain('页面 PRD 必须输出 `visualScaffold`');
+    expect(step5).toContain('`visualScaffold`：给执行稳定性较弱的模型使用的硬骨架');
+    expect(step5).toContain('`surfaceMap` 写清每个区块的容器形态');
+    expect(step5).toContain('这些字段要能直接指导实现，而不是形容词');
+    expect(output).toContain('| 视觉脚手架 | <visualScaffold：layoutRecipe、surfaceMap、sectionRhythm、densityRule、componentRecipe、emptyStateRecipe、acceptanceChecks> |');
     expect(pageGeneration).toContain('## 页面场景到实现入口');
     expect(pageGeneration).toContain('确认页面场景、区块、数据来源、主操作、主题色、页面风格、`designMd` 和移动端要求');
     expect(pageGeneration).toContain('实现时按下表选择页面结构');
     expect(pageGeneration).toContain('PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-designs/*.design.md`');
+    expect(pageGeneration).toContain('`visualScaffold` 不足时，回到 `yida-design` 补齐 PRD / page spec');
+    expect(pageGeneration).toContain('执行稳定性较弱的模型按 `visualScaffold` 实现，不自由发明版式');
     expect(pageGeneration).not.toContain('## 首次生成模板路由');
     expect(output).toContain('## 1. 应用基本信息');
     expect(output).toContain('| 应用类型 | <企业管理 / 经营分析 / 流程审批 / 数据采集 / 客户服务 / 库存进销存 / 项目协作 / 资产设备 / 教育培训 / 知识内容 / 监控指挥 / 官网门户 / 活动报名 / 轻量工具> |');
@@ -344,6 +352,7 @@ describe('OpenYida skill contracts', () => {
     expect(step5).toContain('- pageVisualDesign：<pageStyle/designMd/styleReason/visualDna/sectionStyle/themeRelation>');
     expect(styleSelection).toContain('## PRD 输出字段');
     expect(styleSelection).toContain('`design.md` 只提供视觉 DNA、布局和组件样式');
+    expect(styleSelection).toContain('| visualScaffold | 把 design.md 转成实现槽位');
     expect(styleRegistry).toContain('| design_id | file | status | scenes | density | layout | tone | tags | avoid | visual_dna |');
     expect(styleRegistry).toContain('airy-blue-meeting-ops-workbench.design.md');
     expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'sub_skill', 'workhome-ui-skill', 'SKILL.md'))).toBe(false);
@@ -650,6 +659,53 @@ describe('OpenYida skill contracts', () => {
     expect(navGuide).toContain('同应用内页面优先在平台应用导航内切换');
   });
 
+  test('workbench pages avoid low-density giant card templates', () => {
+    const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
+    const workbenchScene = readSkill('yida-skills/skills/yida-design/references/scenes/workbench.md');
+    const step4 = readSkill('yida-skills/skills/yida-design/workflow/step-4-wireframe-interaction.md');
+    const step5 = readSkill('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
+    const step3 = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const outputPrd = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
+    const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
+    const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
+
+    expect(pageUiux).toContain('工作台禁低密大卡片模板');
+    expect(pageUiux).toContain('标题 + 4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡');
+    expect(pageUiux).toContain('页面丰富度保底');
+    expect(pageUiux).toContain('至少规划 10 个有业务目的的区块以上');
+    expect(pageUiux).toContain('KPI 卡片: 学生总数, 课程总数, 出勤率, 平均分');
+    expect(pageUiux).toContain('只能算 1 个状态摘要区块');
+    expect(pageUiux).toContain('只能算 1 个动作区块');
+    expect(workbenchScene).toContain('禁四张大 KPI 白卡撑首屏');
+    expect(workbenchScene).toContain('禁大空态白卡');
+    expect(workbenchScene).toContain('任务/动态/最近记录');
+    expect(workbenchScene).toContain('工作台页面至少规划 10 个有业务目的的区块以上');
+    expect(workbenchScene).toContain('4 个 KPI 子项仍然只是 1 个状态摘要区块');
+    expect(step3).toContain('必须显式列出 10 个以上 `contentBlocks`');
+    expect(step3).toContain('KPI 组和快捷入口组各只算 1 个区块');
+    expect(step4).toContain('禁止用 4 个等宽大 KPI 卡和大空态白卡撑首屏');
+    expect(step4).toContain('默认至少拆成 10 个有业务目的的区块以上');
+    expect(step4).toContain('内容区块：<至少 10 个区块列表 + 目的');
+    expect(step4).toContain('KPI 组只能算 1 个，快捷入口组只能算 1 个，列表组只能算 1 个');
+    expect(step4).toContain('视觉上只有 4 个聚合区块，不满足 10+');
+    expect(step5).toContain('4 个等宽大 KPI 卡 + 图标快捷卡 + 大空态白卡');
+    expect(step5).toContain('至少有 10 个有业务目的的区块以上');
+    expect(step5).toContain('KPI 子项、快捷入口子项和列表行不能分别计数');
+    expect(outputPrd).toContain('必须逐条列出至少 10 个 `contentBlocks`');
+    expect(outputPrd).toContain('KPI 组、快捷入口组、列表组各只算 1 个区块');
+    expect(pageGeneration).toContain('替代“4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”');
+    expect(pageGeneration).toContain('Workbench metric 必须是紧凑状态摘要');
+    expect(pageGeneration).toContain('`contentBlocks`');
+    expect(pageGeneration).toContain('不少于 10 个有业务目的的区块');
+    expect(pageGeneration).toContain('KPI 子项、快捷入口子项和列表行不计入区块数量');
+    expect(pageGeneration).toContain('这只构成 4 个聚合区块');
+    expect(canvasDesignSystem).toContain('## 工作台卡片密度红线');
+    expect(canvasDesignSystem).toContain('禁止使用“4 个等宽大 KPI 白卡 + 彩色图标盒 + 大数字 0”');
+    expect(canvasDesignSystem).toContain('禁止用 160-240px 高的大空态白卡');
+    expect(canvasDesignSystem).toContain('页面整体至少包含 10 个有业务目的的区块以上');
+    expect(canvasDesignSystem).toContain('KPI 子项、快捷入口子项和列表行不能分别计数');
+  });
+
   test('single page design checks current app theme before page-level decisions', () => {
     const design = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const pageDesign = readSkill('yida-skills/skills/yida-design/sub_skill/page-design/SKILL.md');
@@ -760,6 +816,9 @@ describe('OpenYida skill contracts', () => {
     expect(canvasDesignSystem).toContain('主题色决策来自 `yida-design` PRD 或 page spec');
     expect(canvasDesignSystem).toContain('| `--color-brand1-6` | 主色 |');
     expect(canvasDesignSystem).toContain('页面重构/局部美化即使是 page scope，也先以当前应用主题为基准');
+    expect(canvasDesignSystem).toContain('## 弱模型视觉落地顺序');
+    expect(canvasDesignSystem).toContain('先读取 page spec 的 `visualScaffold`');
+    expect(pageGeneration).toContain('| `visualScaffold` | 视觉实现脚手架');
     expect(pageGeneration).toContain('Code Canvas 消费 `yida-design` 输出的 PRD');
     expect(pageGeneration).toContain('页面重构 / 局部美化先以当前应用主题为基准');
     expect(pageGeneration).toContain('页面美感提升/页面重构写入 `functionContract`');

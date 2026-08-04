@@ -8,7 +8,7 @@ Code Canvas 消费 `yida-design` 输出的 PRD 或单页 page spec，把页面�
 
 结构化实现工具提供可编译运行时结构、数据桥、主题变量和基础 primitives。真实业务页结合 `yida-design` 输出的 `prd/<项目名>.md`，落地业务化区块顺序、信息层级、局部构图、文案和样式节奏。
 
-PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-designs/*.design.md`，再落实其中的视觉 DNA、布局配方、组件规则和状态规则。PRD 写有 `visualBaseline` 时，同步落实 `layoutRecipe`、`visualAnchor`、`sectionRhythm`、`densityRule`、`actionPlacement` 和 `responsiveRule`。列表/管理页通常需要顶部视觉区、搜索筛选区、左侧列表或表格、右侧详情预览、错误/空态下一步动作；实现阶段用这些结构替代单个渐变标题、单个指标卡和大块空白提示。
+PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-designs/*.design.md`，再落实其中的视觉 DNA、布局配方、组件规则和状态规则。PRD 写有 `visualBaseline` 时，同步落实 `layoutRecipe`、`visualAnchor`、`sectionRhythm`、`densityRule`、`actionPlacement` 和 `responsiveRule`。工作台/业务首页通常需要紧凑状态摘要、高频动作、待办/动态/最近记录和右侧上下文；实现阶段用这些结构替代“4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”。列表/管理页通常需要顶部视觉区、搜索筛选区、左侧列表或表格、右侧详情预览、错误/空态下一步动作；实现阶段用这些结构替代单个渐变标题、单个指标卡和大块空白提示。工作台、首页、门户、看板、展示页和业务入口页至少落地 10 个有业务目的的区块以上，区块可以紧凑组合，不能用重复 KPI 卡、重复快捷入口或大空白卡凑数；KPI 子项、快捷入口子项和列表行不计入区块数量。
 
 页面实现路径二选一：结构化实现路径先写业务化 `page-spec.json` 并生成可编译骨架，之后读取 CLI 摘要或 `.openyida-page.json`，再对生成源码做小范围 Edit/patch；手写路径直接 Write 最终 `.canvas.jsx`。
 
@@ -17,7 +17,7 @@ PRD 写有 `designMd` 时，先读取对应 `yida-design/references/style-design
 - `domain-ready`：主要业务语义已覆盖，可以作为真实业务页面继续校验和发布。
 - `draft-needs-domain-spec`：用户已有业务要求，但 page spec 仍缺业务对象、指标、交互或视觉方向；继续补 spec 或改源码。
 
-真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、页面风格、`designMd` 和视觉 DNA；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。业务区块、指标、行动文案或页面风格不足时，回到 `yida-design` 补齐 PRD / page spec。
+真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、页面风格、`designMd`、视觉 DNA 和 `visualScaffold`；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。业务区块、指标、行动文案、页面风格或 `visualScaffold` 不足时，回到 `yida-design` 补齐 PRD / page spec。
 
 数据真实性边界：
 
@@ -113,6 +113,8 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | `designMd` | 页面风格设计文档路径 | 来自 `yida-design` Step 5 |
 | `visualDna` | 必须保留的视觉 DNA | 来自选中的 `design.md` |
 | `visualBaseline` | 视觉保底配方，包含版式、视觉锚点、区块节奏、密度、操作位置和响应式规则 | 来自 `yida-design` Step 5 |
+| `visualScaffold` | 视觉实现脚手架：layoutRecipe、surfaceMap、sectionRhythm、densityRule、componentRecipe、emptyStateRecipe、responsiveSlots、acceptanceChecks | 来自 `yida-design` Step 5 |
+| `contentBlocks` | 页面区块清单，工作台/首页/门户/看板/展示页/业务入口页不少于 10 个有业务目的的区块；KPI 组、快捷入口组、列表组各只算 1 个区块 | 来自 `yida-design` Step 4 |
 | `domainFidelity` | 实现后由 CLI 回填，标记业务化程度 | 无需手写 |
 
 示例：
@@ -164,5 +166,17 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | `portal-shell-home` | Portal nav、Hero panel、Entry card、Dynamic card、Update feed |
 | `official-homepage` | Real-scene hero、Product/service visual、Process/space story、Visit/service section、CTA |
 | `data-screen` | Command map、Metric grid、Rank panel、Screen insight header |
+
+`workbench-home` 的 Workbench metric 必须是紧凑状态摘要，不是 180px 高的大白卡；Quick entry 必须有分组和主次，不能平铺成图标卡阵列；Task feed / Insight strip / 最近记录至少出现其一，空数据也用薄空态行 + 主操作入口，不渲染大块空白卡片。
+
+展示型 Canvas 页面验收时检查 `contentBlocks` 或源码结构：工作台、首页、门户、看板、展示页和业务入口页至少有 10 个有业务目的的区块以上；每个区块承担不同任务，例如判断状态、发起动作、筛选、处理待办、查看动态、看洞察、看异常、进入详情、处理空态或补充上下文。若 PRD 只写“`KPI 卡片: 学生总数, 课程总数, 本月出勤率, 平均分`、`快捷入口: 录入学生/登记成绩/记录考勤/管理课程`、`最近成绩列表`、`最近考勤记录`”，实现前必须退回补齐 `contentBlocks`，因为这只构成 4 个聚合区块。
+
+执行稳定性较弱的模型按 `visualScaffold` 实现，不自由发明版式：
+
+1. 先把 `contentBlocks` 映射到 `layoutRecipe` 的槽位。
+2. 按 `surfaceMap` 决定无框区、细线面板、浅底条、列表行、表格、右侧栏或抽屉，不能把所有区块都做成卡片。
+3. 按 `sectionRhythm` 排序和控制间距，保证首屏有主次和至少两层信息。
+4. 按 `componentRecipe` 统一按钮、入口、标签、图标、列表、图表和空态。
+5. 写完源码后逐条核对 `acceptanceChecks`，不通过就继续 patch。
 
 所有 Canvas 页面都带控件样式护栏：`ConfigProvider.getPopupContainer` 让 Select / DatePicker 弹层留在页面作用域，`OPENYIDA_CANVAS_CONTROL_CSS` 统一输入框、下拉、日期、运行态字段组件的 hover / focus / dropdown 样式。出现黑色粗边、浏览器原生 outline、下拉浮层脱离页面风格时，优先检查这两项是否保留。
