@@ -8,7 +8,7 @@
 
 OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
 
-[快速开始](#快速开始) · [核心能力](#核心能力) · [完整功能列表](./docs/capabilities.md) · [自定义页面开发](#自定义页面开发) · [常用命令](#常用命令) · [开发与校验](#开发与校验)
+[快速开始](#快速开始) · [帮助中心](https://xmtrf1.aliwork.com/o/openyida/help) · [核心能力](#核心能力) · [完整功能列表](./docs/capabilities.md) · [自定义页面开发](#自定义页面开发) · [常用命令](#常用命令) · [开发与校验](#开发与校验)
 
 [![npm version](https://img.shields.io/npm/v/openyida?color=brightgreen&label=npm)](https://www.npmjs.com/package/openyida)
 [![npm downloads](https://img.shields.io/npm/dm/openyida?color=blue)](https://www.npmjs.com/package/openyida)
