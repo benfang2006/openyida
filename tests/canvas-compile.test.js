@@ -403,6 +403,34 @@ describe('compileCanvasLocal', () => {
     expect(error.message).toContain('OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS');
   });
 
+  test('rejects manual package globals and requires import-based dependency tracking', () => {
+    const badSource = `
+      const { ConfigProvider, Button } = window.antd;
+      export default function App() {
+        return <ConfigProvider><Button>提交</Button></ConfigProvider>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource)).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_MANUAL_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        globalName: 'antd',
+        packageName: 'antd',
+      }),
+    }));
+
+    const goodSource = `
+      import React from 'react';
+      import { ConfigProvider, Button } from 'antd';
+      export default function App() {
+        return <ConfigProvider><Button>提交</Button></ConfigProvider>;
+      }
+    `;
+    const result = compileCanvasLocal(goodSource);
+    expect(JSON.parse(result.importedModules)).toEqual(['antd', 'react']);
+    expect(result.runtimeCode).toContain('window.antd');
+  });
+
   test('maps lucide-react named icons to LucideReact and DynamicIcon to its runtime global', () => {
     const src = `
       import React from 'react';

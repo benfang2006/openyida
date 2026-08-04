@@ -88,7 +88,7 @@
 | 类型 | 规则 |
 | --- | --- |
 | 表单提交后 | <刷新列表 / 回到当前工作台 / 触发流程 / 更新状态> |
-| 新增/提交入口 | <PC 侧边抽屉 iframe 承载原始 `submission/{formUuid}`；移动端整页或新页打开> |
+| 新增/提交入口 | <PC 侧边抽屉 iframe 承载 `submission/{formUuid}?isRenderNav=false`；移动端整页或新页打开；必要时用 `update-form-config` 持久化表单设置 `isRenderNav=false`> |
 | 详情查看 | <抽屉 / 独立详情页 / 原生 formDetail> |
 | 数据变更 | <自动计算、状态流转、通知或提醒> |
 | 权限规则 | <角色能看、能改、能审批的边界> |

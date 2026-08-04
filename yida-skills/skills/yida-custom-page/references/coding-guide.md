@@ -575,7 +575,7 @@ this.utils.toast({ title: '调试信息', type: 'info' });
 
 | 场景 | URL 格式 |
 |------|----------|
-| 表单提交页 | `{base_url}/{appType}/submission/{formUuid}` |
+| 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
 | 数据管理页（列表） | `{base_url}/{appType}/workbench/{formUuid}?iframe=true` |
 | 数据管理页（指定视图） | `{base_url}/{appType}/workbench/{formUuid}?viewUuid={viewUuid}&iframe=true` |
 
@@ -587,11 +587,11 @@ const wrongUrl = `${baseUrl}/${appType}/formDetail/${formUuid}`;
 const listUrl = `${baseUrl}/${appType}/workbench/${formUuid}?iframe=true`;
 ```
 
-新增/提交数据的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')`。默认做法是：PC 端打开右侧抽屉，抽屉内 iframe 指向原始提交页 URL；移动端空间有限，可以整页或新页打开提交页。提交成功后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台提交页会发送 postMessage 时，才接精确提交成功事件。
+新增/提交数据的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')`。默认做法是：PC 端打开右侧抽屉，抽屉内 iframe 指向隐藏导航提交页 URL；移动端空间有限，可以整页或新页打开提交页。提交成功后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台提交页会发送 postMessage 时，才接精确提交成功事件。
 
 ```javascript
 // ✅ PC：抽屉内嵌提交页；移动端：打开原生提交页
-var submitUrl = baseUrl + '/' + appType + '/submission/' + formUuid;
+var submitUrl = baseUrl + '/' + appType + '/submission/' + formUuid + '?isRenderNav=false';
 if (this.utils.isMobile()) {
   this.utils.openPage(submitUrl);
 } else {

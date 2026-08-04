@@ -40,7 +40,7 @@
 - 状态：`design-system.md` 标签（tag），语义色（告警红仅给逾期/失败等真异常）
 - 筛选：自定义下拉（**禁 `<select>`**，见 `yida-custom-page` FATAL 规则）+ 搜索框 + 时间范围
 - 行操作：图标按钮（功能性图标，克制）+ 「更多」收起长尾操作
-- 详情：**抽屉（drawer）而非跳页**，保留列表上下文；需查看列表数据则内嵌 `iframe workbench/{formUuid}?iframe=true`，需新增/提交则 PC 抽屉内嵌原始 `submission/{formUuid}` 提交页、iframe 地址仍使用原始 `submission/{formUuid}`，提交或关闭后刷新列表并保持筛选/滚动位置；移动端打开提交页
+- 详情：**抽屉（drawer）而非跳页**，保留列表上下文；需查看列表数据则内嵌 `iframe workbench/{formUuid}?iframe=true`，需新增/提交则 PC 抽屉内嵌 `submission/{formUuid}?isRenderNav=false` 提交页、iframe 地址默认带 `isRenderNav=false`，提交或关闭后刷新列表并保持筛选/滚动位置；移动端打开隐藏导航提交页
 - 空/错/载态：`design-system.md` 空状态 / 骨架屏 / 错误态**三态齐全**（列表最容易漏空态）
 
 ## 本场景专属去 AI 味要点

@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | 当前应用内自定义页、表单列表页、工作台页 | `targetType: "page"`，保留 `appType/formUuid/navUuid` | 同页进入 `/{appType}/workbench/{formUuid}`，让应用导航更新选中态 |
 | 当前应用首页 | `targetType: "app"`，保留 `appType` | 同页进入 `/{appType}/workbench` |
-| 当前应用提交页 | `targetType: "submission"`，保留目标表单 | PC 端右侧抽屉内嵌提交页 iframe；移动端整页或新页打开提交页 |
+| 当前应用提交页 | `targetType: "submission"`，保留目标表单 | PC 端右侧抽屉内嵌 `?isRenderNav=false` 的提交页 iframe；移动端整页或新页打开隐藏导航提交页 |
 | 当前应用详情页 | `targetType: "detail"`，保留目标表单和实例 ID | 优先抽屉/同页查看；不是新窗口，除非用户明确要求 |
 | 跨应用页面 | `targetType: "page"`，保留目标 `appType` | 默认同页进入目标应用工作台；用户要求保留当前页时才新开 |
 | 外部 URL、钉钉 OA、第三方系统 | `targetType: "url"` | 使用 `openPage` / 新窗口 / 钉钉打开能力 |
@@ -46,7 +46,8 @@
       "targetType": "submission",
       "appType": "APP_xxx",
       "formUuid": "FORM_xxx",
-      "openMode": "responsive-drawer"
+      "openMode": "responsive-drawer",
+      "hideNav": true
     },
     {
       "title": "外部帮助",
@@ -60,7 +61,7 @@
 
 ## Canvas fallback 点击骨架
 
-Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开：
+Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`：
 
 ```js
 function buildYidaPath(entry, currentAppType, options = {}) {
@@ -68,7 +69,7 @@ function buildYidaPath(entry, currentAppType, options = {}) {
   if (entry.targetType === 'app') return `/${appType}/workbench`;
   if (entry.targetType === 'page') return `/${appType}/workbench/${entry.navUuid || entry.formUuid}`;
   if (entry.targetType === 'submission') {
-    return `/${appType}/submission/${entry.formUuid}`;
+    return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;
   }
   if (entry.targetType === 'detail') {
     return `/${appType}/formDetail/${entry.formUuid}?formInstId=${entry.formInstId || ''}`;
@@ -92,6 +93,8 @@ function openEntry(entry, currentAppType, runtime) {
   window.location.href = href;
 }
 ```
+
+验收时检查抽屉 `iframeSrc` 或移动端打开地址包含 `isRenderNav=false`；如果目标表单已另有 query 参数，必须用统一 URL 构造函数合并为 `&isRenderNav=false`，不要丢掉 `corpid`、来源页或业务参数。
 
 如果运行态明确向 Canvas 暴露了壳层 router / history API，可把同应用 `page/app` 的同页跳转替换成壳层 `push/replace`；没有明确 API 时，不猜内部对象，使用上面的工作台 URL。
 

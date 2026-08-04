@@ -498,6 +498,9 @@ describe('OpenYida skill contracts', () => {
     const app = readSkill('yida-skills/skills/yida-app/SKILL.md');
     const createApp = readSkill('yida-skills/skills/yida-create-app/SKILL.md');
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
+    const step2 = readSkill('yida-skills/skills/yida-design/workflow/step-2-theme-system.md');
+    const styleSelection = readSkill('yida-skills/skills/yida-design/references/style-design-selection.md');
+    const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
     const presets = readSkill('yida-skills/skills/yida-design/references/theme/theme-token-presets.md');
     const expectedPresets = {
       podBlue: {
@@ -554,6 +557,12 @@ describe('OpenYida skill contracts', () => {
     expect(createApp).not.toContain('| `deepBlue` | 深蓝 |');
     expect(pageUiux).not.toContain('| `deepBlue` | 深蓝 |');
     expect(pageUiux).toContain('真实业务页默认先从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择');
+    expect(theme).toContain('应用主题先统领页面主色');
+    expect(theme).toContain('页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`');
+    expect(step2).toContain('若截图或预览中出现左侧导航选中态与页面主操作颜色不一致');
+    expect(styleSelection).toContain('应用主题主导，designMd 色彩降级为辅助色');
+    expect(canvasDesignSystem).toContain('## 应用主题与页面风格冲突处理');
+    expect(canvasDesignSystem).toContain('默认值是 `跟随应用主题`，不是 `跟随 designMd 色相`');
     expect(presets).toContain('## blue');
     expect(presets).toContain('## podBlue');
     expect(presets).toContain('| `podBule` | 平台兼容蓝色拼写 | 按需 |');
@@ -687,16 +696,20 @@ describe('OpenYida skill contracts', () => {
     const codingGuide = readSkill('yida-skills/skills/yida-custom-page/references/coding-guide.md');
 
     expect(pageUiux).toContain('PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单');
-    expect(pageUiux).toContain('新增/提交页 URL 仍使用原始 `submission/{formUuid}`');
-    expect(listScene).toContain('需新增/提交则 PC 抽屉内嵌原始 `submission/{formUuid}` 提交页');
-    expect(listScene).toContain('iframe 地址仍使用原始 `submission/{formUuid}`');
+    expect(pageUiux).toContain('新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`');
+    expect(listScene).toContain('需新增/提交则 PC 抽屉内嵌 `submission/{formUuid}?isRenderNav=false` 提交页');
+    expect(listScene).toContain('iframe 地址默认带 `isRenderNav=false`');
     expect(listScene).toContain('提交或关闭后刷新列表并保持筛选/滚动位置');
     expect(canvas).toContain('表单提交入口响应式打开');
     expect(navGuide).toContain('"openMode": "responsive-drawer"');
+    expect(navGuide).toContain('"hideNav": true');
+    expect(navGuide).toContain('return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;');
     expect(navGuide).toContain('提交页在 PC 端进入抽屉，移动端才整页或新页打开');
     expect(pageGeneration).toContain('`targetType: "submission"` 与 `openMode: "responsive-drawer"`');
-    expect(customPage).toContain('新增/提交入口 PC 端默认用抽屉 iframe 承载原始 `submission/{formUuid}`');
-    expect(codingGuide).toContain('抽屉内 iframe 指向原始提交页 URL');
+    expect(pageGeneration).toContain('默认 `hideNav: true` / `isRenderNav=false`');
+    expect(customPage).toContain('新增/提交入口 PC 端默认用抽屉 iframe 承载隐藏导航的 `submission/{formUuid}?isRenderNav=false`');
+    expect(codingGuide).toContain('抽屉内 iframe 指向隐藏导航提交页 URL');
+    expect(codingGuide).toContain("'/submission/' + formUuid + '?isRenderNav=false'");
   });
 
   test('custom-page-dependent skills keep Canvas-first and native fallback boundaries explicit', () => {
@@ -708,6 +721,8 @@ describe('OpenYida skill contracts', () => {
     const canvas = readSkill('yida-skills/skills/yida-canvas-custom-page/SKILL.md');
     const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
+    const dependencies = readSkill('yida-skills/skills/yida-canvas-custom-page/references/dependencies-and-cdn.md');
+    const authoringExamples = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-authoring-examples.md');
     const customPage = readSkill('yida-skills/skills/yida-custom-page/SKILL.md');
     const codingGuide = readSkill('yida-skills/skills/yida-custom-page/references/coding-guide.md');
     const nativeDesignSystem = readSkill('yida-skills/skills/yida-custom-page/references/design-system.md');
@@ -736,6 +751,12 @@ describe('OpenYida skill contracts', () => {
     expect(canvas).toContain('UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>.md`');
     expect(canvas).toContain('主题实现消费设计结果');
     expect(canvas).toContain('真实业务页、页面重构和局部美化以当前应用主题色为基准');
+    expect(canvas).toContain('必须写 `import ... from \'包名\'`');
+    expect(canvas).toContain('不要手写 `window.antd`、`window.icons` 或 `window.React` 解构');
+    expect(dependencies).toContain('不要在源码里写 `const { ConfigProvider } = window.antd`');
+    expect(dependencies).toContain('手写 window 包依赖不会进入 `importedModules`');
+    expect(authoringExamples).toContain('所有包依赖都用标准 `import`');
+    expect(authoringExamples).toContain('不要直接从 `window.*` 解构');
     expect(canvasDesignSystem).toContain('主题色决策来自 `yida-design` PRD 或 page spec');
     expect(canvasDesignSystem).toContain('| `--color-brand1-6` | 主色 |');
     expect(canvasDesignSystem).toContain('页面重构/局部美化即使是 page scope，也先以当前应用主题为基准');
