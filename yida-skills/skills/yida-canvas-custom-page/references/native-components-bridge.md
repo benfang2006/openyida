@@ -13,12 +13,7 @@ Code Canvas 里的平台运行态组件按“先探测、可用增强、fallback
 3. 找不到时渲染 Canvas 自绘 fallback。
 4. 对成员、部门、文件值做统一归一化，再进入页面状态和提交 payload。
 
-完整示例通过 sample 获取：
-
-```bash
-openyida sample yida-canvas-custom-page native-components-smoke --output project/pages/src/native-components-smoke.canvas.jsx
-openyida sample yida-canvas-custom-page portal-native-components --output project/pages/src/portal-native-components.canvas.jsx
-```
+需要验证运行态组件时，按本文件规则编写探测页和业务页。探测页只验证组件是否存在、props 是否稳定、fallback 是否生效，不作为业务页面设计依据。
 
 ## 组件查找顺序
 
@@ -115,11 +110,7 @@ openyida sample yida-canvas-custom-page portal-native-components --output projec
 }
 ```
 
-Smoke 页验证方式：
-
-```bash
-openyida sample yida-canvas-custom-page native-components-smoke --output project/pages/src/native-components-smoke.canvas.jsx
-```
+Smoke 页验证方式：编写最小 Code Canvas 探测页，只包含组件查找、props 传入、错误边界和 fallback。
 
 发布后在 URL 追加目标表单：
 

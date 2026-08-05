@@ -62,7 +62,6 @@
 |---|---|
 | 创建自定义页面 | `openyida create-page <appType> "<页面名称>"` |
 | 创建看板页 | `openyida create-page <appType> "<页面名称>" --mode dashboard` |
-| 从模板生成页面源码 | `openyida generate-page <template>` |
 | 构建宜搭兼容页面源码 | `openyida build-page <sourceFile> [--output file\|--write]` |
 | 检查普通自定义页面 JSX 规范 | `openyida check-page <src> [--compat]` |
 | 本地编译普通自定义页面 JSX | `openyida compile <src>` |
@@ -73,8 +72,8 @@
 | 更新页面/表单配置 | `openyida update-form-config <appType> ...` |
 | 查询页面/表单配置 | `openyida get-form-config <appType> <formUuid> [--json]` |
 | 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；明确要求普通自定义页面 JSX/Jsx，或强依赖普通自定义页实例桥时使用 `.oyd.jsx` + `check-page` / `compile` / `publish` |
-| Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | `openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx`；再参考 `yida-canvas-custom-page/references/native-components-bridge.md` |
-| Code Canvas 门户 + 成员/部门/上传组件示例 | `openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx` |
+| Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | 使用 `yida-canvas-custom-page`，参考 `yida-canvas-custom-page/references/native-components-bridge.md` 做运行态组件探测、fallback 和值归一化 |
+| Code Canvas 门户 + 成员/部门/上传组件 | 使用 `yida-canvas-custom-page`，按业务页面结构接入运行态组件桥 |
 | 普通自定义页面 JSX/Jsx 使用成员/部门组件 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/component-jsx-guide.md` |
 | 普通自定义页面 JSX/Jsx 使用附件/图片上传 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/attachment-upload-guide.md` |
 

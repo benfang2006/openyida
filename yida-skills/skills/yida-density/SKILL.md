@@ -7,7 +7,7 @@ description: 自定义页面信息密度设计规范，链路无关并优先给�
 
 ## 核心定位
 
-信息密度是页面设计决策，不绑定某一种运行时。`DENSITY_CONFIG`、场景选择、移动端降级和无障碍要求对 Code Canvas 与普通自定义页面都适用；实现示例默认使用 **Code Canvas + React hooks**。
+信息密度是页面密度配置，不绑定某一种运行时。`DENSITY_CONFIG`、场景选择、移动端降级和无障碍要求对 Code Canvas 与普通自定义页面都适用；实现示例默认使用 **Code Canvas + React hooks**。
 
 只有维护旧 `.oyd.jsx` 或用户明确选择普通自定义页面时，才使用 `didMount` / `this.utils.isMobile()` 的 legacy 写法。
 
@@ -131,7 +131,7 @@ export function didMount() {
 
 这段只用于 legacy/native 页面。新 Canvas 页面不得使用 `didMount`、`this.utils.isMobile()`、`_customState` 或 `forceUpdate`；应使用上面的 `matchMedia` hook 并 cleanup。
 
-现有 `openyida sample yida-density density-switch-page` 若输出普通页面，也只能作为 native 参考，不能据此改变新页面的 Canvas 默认路由。
+现有普通页面只能作为 native 兼容参考，不能据此改变新页面的 Canvas 默认路由。
 
 ## 异常处理
 

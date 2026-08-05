@@ -97,7 +97,7 @@ export default YidaComp;
 | ChartGrid | 主图跨 2 列，辅图 1 列 | 两列 | 单列 |
 | Detail/Ranking | 两列 | 两列或单列 | 单列 |
 
-图表容器必须有稳定的 `min-height`；PC 常规 320–400px，移动端 240–300px。具体取值服从页面视觉决策，不要所有卡片无差别等高。
+图表容器必须有稳定的 `min-height`；PC 常规 320–400px，移动端 240–300px。具体取值服从页面视觉规范，不要所有卡片无差别等高。
 
 ## 结构纪律
 
@@ -116,4 +116,4 @@ export default YidaComp;
 - `project/pages/src/supply-chain-dashboard.js`
 - `project/pages/src/shangri-la-executive-dashboard.js`
 
-它们只能参考信息架构、业务模块和视觉节奏。其中 `renderJsx`、`_customState`、`didMount`、ECharts CDN 与样式对象属于普通自定义页面实现，仅在维护既有 `.oyd.jsx` 时使用。新建看板不得因参考这些样本而从 Canvas 回退到 native。
+它们只能参考页面和导航关系、业务模块和视觉节奏。其中 `renderJsx`、`_customState`、`didMount`、ECharts CDN 与样式对象属于普通自定义页面实现，仅在维护既有 `.oyd.jsx` 时使用。新建看板不得因参考这些样本而从 Canvas 回退到 native。

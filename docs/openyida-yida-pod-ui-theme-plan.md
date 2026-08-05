@@ -251,10 +251,8 @@ Minified React error #130
 
 | 模块 | 改造内容 |
 | --- | --- |
-| `lib/app/page-ir.js` | 增加 `themeProfile` / `themeScope` / `visualProfile` 标准化字段 |
-| `lib/app/generate-page.js` | 新增用户侧 `--theme-profile yida-app-theme`，并设为默认 |
-| Canvas 模板 | 引入应用主题 token、overlay、圆角分层和页面类型骨架 |
-| Native 模板 | 与 Canvas 使用同一套视觉 token，避免两条链路风格不一致 |
+| 页面源码 | 引入应用主题 token、overlay、圆角分层和页面类型骨架 |
+| Code Canvas / 普通 JSX | 使用同一套视觉 token，避免两条链路风格不一致 |
 | `yida-skills` | 更新自定义页默认 UI 规范：默认 Code Canvas + 宜搭应用主题风格 |
 | 测试 | 增加生成源码断言：不出现 lucide 命名导入、不出现默认大 hero、包含主题 token |
 

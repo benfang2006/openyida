@@ -152,20 +152,13 @@ OpenYida 当前有两条自定义页面链路，先选链路再写页面：
 
 ```bash
 openyida create-page APP_XXX "首页看板" --mode dashboard
-openyida generate-page dashboard-overview --theme-profile yida-app-theme --output pages/src/dashboard.canvas.jsx --compile
+openyida check-page pages/src/dashboard.canvas.jsx --json
+openyida compile pages/src/dashboard.canvas.jsx
 openyida publish pages/src/dashboard.canvas.jsx APP_XXX FORM_XXX
 ```
 
-常用模板：
+页面源码直接基于 PRD 和 design.md 编写。默认使用 Code Canvas 的 `.canvas.jsx`；只有明确需要普通自定义页面 JSX/Jsx 组件链路时才使用 `.oyd.jsx`。
 
-```bash
-openyida generate-page official-homepage --theme-profile yida-app-theme --output pages/src/home.canvas.jsx --compile
-openyida generate-page data-screen --theme-profile yida-app-theme --output pages/src/screen.canvas.jsx --compile
-openyida generate-page workbench-home --theme-profile yida-app-theme --output pages/src/workbench.canvas.jsx --compile
-openyida generate-page business-list --theme-profile yida-app-theme --output pages/src/list.canvas.jsx --compile
-openyida generate-page detail-profile --theme-profile yida-app-theme --output pages/src/detail.canvas.jsx --compile
-openyida generate-page portal-shell-home --theme-profile yida-app-theme --output pages/src/portal.canvas.jsx --compile
-```
 
 ### 成员 / 部门 / 上传组件怎么用
 
@@ -173,15 +166,8 @@ openyida generate-page portal-shell-home --theme-profile yida-app-theme --output
 
 | 页面链路 | 做法 |
 |----------|------|
-| Code Canvas | 使用 `yida-canvas-custom-page`，先跑 `native-components-smoke` 或 `portal-native-components` 样例，按 `native-components-bridge.md` 做运行态组件探测、fallback 和值归一化 |
+| Code Canvas | 使用 `yida-canvas-custom-page`，按 `native-components-bridge.md` 做运行态组件探测、fallback 和值归一化 |
 | 普通 JSX / Jsx 组件链路 | 使用 `yida-custom-page`，读取 `references/component-jsx-guide.md`；涉及上传时同时读取 `references/attachment-upload-guide.md` |
-
-Code Canvas 组件桥示例：
-
-```bash
-openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx
-openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx
-```
 
 使用原则：
 
@@ -190,10 +176,9 @@ openyida sample yida-canvas-custom-page portal-native-components --output pages/
 - 组件不可用时提供 fallback，页面不能白屏。
 - 上传类能力需要验证 OSS 签名、权限、预览、删除和失败提示。
 
-普通 JSX 链路示例：
+普通 JSX 链路：
 
 ```bash
-openyida sample yida-custom-page custom-page-template --output pages/src/employee-upload.oyd.jsx
 openyida check-page pages/src/employee-upload.oyd.jsx
 openyida compile pages/src/employee-upload.oyd.jsx
 openyida publish pages/src/employee-upload.oyd.jsx APP_XXX FORM_XXX
@@ -298,13 +283,15 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | 获取单个或全部表单 Schema |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | 导出应用实体关系图 |
 | `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建自定义展示页面 |
-| `openyida generate-page <template>` | 基于高质量模板生成页面 |
 | `openyida build-page <sourceFile> [--output file\|--write]` | 构建宜搭兼容页面源码 |
 | `openyida check-page <src> [--compat]` | 检查自定义页面规范 |
 | `openyida compile <src>` | 本地编译自定义页面 |
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | 编译并发布自定义页面 |
 | `openyida update-form-config <appType> ...` | 更新表单配置 |
 | `openyida get-form-config <appType> <formUuid> [--json]` | 查询表单配置 |
+| `openyida form-detail-style apply <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | 管理表单详情页样式 |
+| `openyida form-detail-style remove <appType> <formUuid> [--json]` | 管理表单详情页样式 |
+| `openyida form-detail-style check <appType> <formUuid> [--json]` | 管理表单详情页样式 |
 
 ### 数据 & 权限
 
@@ -386,7 +373,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida a2a <serve\|agent-card> [options]` | 启动本地只读 A2A Adapter 或输出 Agent Card |
 | `openyida bridge start [--token <pair-token>] [--port 6736] [--origin https://demo.aliwork.com] [--open\|--no-open]` | 启动 OpenYida 本地网页桥接服务 |
 | `openyida copy [--force]` | 复制 project 工作目录 |
-| `openyida sample [--list]` | 输出代码示例/模板 |
+| `openyida sample [--list]` | 输出代码示例/骨架 |
 | `openyida doctor [--fix]` | 环境诊断与自动修复 |
 | `openyida eval --mode <mode> [--skill <name>] [--runs N]` | 技能多维评测（文档质量、路由准确率、安全合规等） |
 | `openyida db-seq-fix [--fix]` | PostgreSQL Sequence 漂移检测与修复 |

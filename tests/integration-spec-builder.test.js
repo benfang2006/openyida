@@ -234,6 +234,7 @@ describe('integration spec builder', () => {
 
     const messages = built.processJson.nodes.filter((node) => node.type === 'sendMessage');
     expect(messages).toHaveLength(2);
+    expect(messages[0].props.messageInfo.buttons[0].value).toBe('//yidalogin.aliwork.com/APP-SPEC/formDetail/FORM-A?formInstId=${formInstId}&isRenderNav=false');
     expect(messages[0].nodeId).not.toBe(messages[1].nodeId);
     expect(messages[0].nextId).toEqual([messages[1].nodeId]);
     expect(messages[0].nextId).not.toEqual([messages[0].nodeId]);

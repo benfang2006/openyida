@@ -45,7 +45,7 @@
   "formConfig": {
     "behaviorList": [
       { "fieldId": "textField_xxx", "fieldBehavior": "READONLY" },
-      { "fieldId": "textareaField_sample", "fieldBehavior": "NORMAL" },
+      { "fieldId": "textareaField_demo", "fieldBehavior": "NORMAL" },
       { "fieldId": "textareaField_inspect", "fieldBehavior": "HIDDEN" },
       { "fieldId": "radioField_result", "fieldBehavior": "HIDDEN" },
       { "fieldId": "attachmentField_xxx", "fieldBehavior": "NORMAL" }
@@ -62,7 +62,7 @@
   "formConfig": {
     "behaviorList": [
       { "fieldId": "textField_xxx", "fieldBehavior": "READONLY" },
-      { "fieldId": "textareaField_sample", "fieldBehavior": "READONLY" },
+      { "fieldId": "textareaField_demo", "fieldBehavior": "READONLY" },
       { "fieldId": "textareaField_inspect", "fieldBehavior": "NORMAL" },
       { "fieldId": "radioField_result", "fieldBehavior": "HIDDEN" },
       { "fieldId": "attachmentField_xxx", "fieldBehavior": "NORMAL" }
@@ -79,7 +79,7 @@
   "formConfig": {
     "behaviorList": [
       { "fieldId": "textField_xxx", "fieldBehavior": "READONLY" },
-      { "fieldId": "textareaField_sample", "fieldBehavior": "READONLY" },
+      { "fieldId": "textareaField_demo", "fieldBehavior": "READONLY" },
       { "fieldId": "textareaField_inspect", "fieldBehavior": "READONLY" },
       { "fieldId": "radioField_result", "fieldBehavior": "NORMAL" },
       { "fieldId": "attachmentField_xxx", "fieldBehavior": "NORMAL" }

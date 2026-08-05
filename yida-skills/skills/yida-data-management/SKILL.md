@@ -15,6 +15,20 @@ description: 宜搭数据管理。表单实例/子表/流程实例/任务中心�
 4. **批量逐条创建**：`openyida data create form/process` 每次只创建一条实例；多条记录按单次不超过 30 条循环/分批逐条调用。不要把多条实例数组塞进一个 `--data-file`，除非该数组是某个子表字段的字段值。
 5. **写后验收**：create/update 返回无报错后，必须执行 `openyida data query form|process <appType> <formUuid> ...` 抽查至少 1 条新记录，确认 `formData` 非空且包含本次写入字段值；流程记录可再用返回的 `processInstanceId` 执行 `get process` 复核。
 
+## 完整应用默认 seed records
+
+`yida-app` 从零生成完整应用时，表单创建完成后默认加载本技能，为核心业务普通表单写入 1-3 条业务化示例记录，再让自定义页面读取这些真实表单记录。
+
+执行规则：
+
+- 只对本轮新建或页面 `dataBinding.mode=form` 依赖的核心普通表单默认写入；配置字典表、权限表、敏感个人数据表、纯附件表或用户明确说不要造数时跳过，并在 final 说明原因。
+- 记录数量默认 1-3 条：单对象轻应用写 1 条；列表/工作台写 2 条；看板/排行/状态分布写 3 条。不要为了展示效果批量灌入大量数据。
+- 示例记录必须是当前业务语义，不写“测试1 / demo / mock”；例如客户、订单、学生、商品、工单、活动等对象要有合理名称、状态、金额、数量、负责人或日期。
+- 先执行 `openyida get-schema <appType> <formUuid> --field-map-json` 获取真实 `fieldId`；保存数据使用真实 fieldId 或 `--resolve-aliases` 可解析别名，禁止猜测字段 ID。
+- 日期字段必须转成 13 位毫秒时间戳；单选/多选必须使用表单已配置选项；成员/部门字段只有可安全确认 userId/deptId 时才填，否则留空或跳过该字段。
+- 每条实例单独执行一次 `openyida data create form`；不要把 1-3 条记录作为顶层数组塞进一个 `--data-file`。
+- 写完必须 `openyida data query form` 抽查至少 1 条，并把写入数量和抽查结果交给 `yida-app` 页面阶段使用。
+
 ## 严格禁止 (NEVER DO)
 
 - 不要混用表单接口和流程接口，两套接口完全独立，参数和返回结构不同
@@ -235,13 +249,9 @@ openyida data create form APP_xxx FORM-商机表 --data-json '{
 > 注意：字段名是 `instanceId`（不是 formInstId），三个字段缺一不可
 
 
-## 代码示例
+## 实现前准备
 
-> 需要参考表单字段定义和数据插入写法时，执行以下命令获取示例，再用 `read_file` 读取：
-
-```bash
-openyida sample yida-data-management form-field-template   # 表单字段定义模板（字段类型/必填/选项配置）及数据插入示例
-```
+按字段设计结果创建结构化表单配置，再执行表单创建、更新或数据写入命令。字段 ID 和关联记录 ID 都来自真实 Schema 或查询结果。
 
 ## 注意事项
 

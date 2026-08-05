@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'تجميع ونشر صفحة مخصصة',
     cmd_update_form_config: 'تحديث إعدادات النموذج',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'البيانات & الأذونات',
     cmd_data: 'إدارة البيانات الموحدة (نموذج/عملية/مهمة/نموذج فرعي)',
     cmd_task_center: 'مركز المهام العالمي (معلق/معالج/نسخة إلخ)',

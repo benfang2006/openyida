@@ -1,6 +1,6 @@
 ---
 name: yida-canvas-table-form
-description: Code Canvas + antd 默认批量录入技能。使用 Table、Input、Select、DatePicker、React hooks 实现草稿、行级校验、分批并发提交和行级错误保留。Canvas 没有 this.utils.yida.*；写入必须通过已验证的同源 fetch、连接器或显式数据桥，未验证时不得声称提交闭环。
+description: Code Canvas + antd 默认批量录入技能。使用 Table、Input、Select、DatePicker、React hooks 实现草稿、行级校验、分批并发提交和行级错误保留。Canvas 内不能直接调用 this.utils.yida.*；写入默认消费发布层注入的 window.__OPENYIDA_YIDA_API__，也可走已验证连接器或同源业务桥，未验证时不得声称提交闭环。
 ---
 
 # 宜搭 Code Canvas 表格批量录入
@@ -30,8 +30,8 @@ description: Code Canvas + antd 默认批量录入技能。使用 Table、Input�
 
 ## 致命规则（FATAL）
 
-1. **Canvas 没有普通页面实例桥**：禁止在 Canvas 源码中调用 `this.utils.yida.*`、`this.$(...)` 或 `this.dataSourceMap`。
-2. **写入桥必须先验证**：只允许使用已验证的同源 fetch、连接器代理或显式注入的数据桥。必须确认目标 `appType/formUuid`、鉴权、CSRF、请求体、返回体和错误码。
+1. **Canvas 组件内没有普通页面实例桥**：禁止在 `YidaComp` 源码中直接调用 `this.utils.yida.*`、`this.$(...)` 或 `this.dataSourceMap`；需要宜搭表单写入时消费发布层注入的 `window.__OPENYIDA_YIDA_API__`。
+2. **写入桥必须先验证**：默认使用 `window.__OPENYIDA_YIDA_API__.saveFormData/updateFormData`，也可使用已验证连接器代理或同源业务桥。必须确认目标 `appType/formUuid`、请求体、返回体和错误码。
 3. **未验证不得伪装闭环**：桥未配置或未验证时，提交按钮禁用或进入清晰的“待接入”状态；不得模拟成功、生成假 `formInstId` 或宣称数据已写入宜搭。
 4. **提交前先验证并确认**：先完成行级校验，再向用户展示待提交行数和关键字段摘要，获得确认后发起写入。
 5. **分批并发而非无限并发**：按固定批次切分，批次内使用 `Promise.all` 并发，批次间顺序推进；不得逐行串行，也不得一次性无限并发。
@@ -117,10 +117,9 @@ async function submitInBatches(rows, writeBridge, batchSize) {
 # 1. 取得真实字段 ID
 openyida get-schema <appType> <formUuid> --field-map-json
 
-# 2. 获取 Canvas 样例
-openyida sample yida-canvas-table-form table-form-batch-submit --output project/pages/src/table-form-batch-submit.canvas.jsx
+# 2. 编写 Canvas 表格表单页面
 
-# 3. 接入并验证同源 fetch / 连接器 / 数据桥
+# 3. 接入并验证 window.__OPENYIDA_YIDA_API__ / 连接器 / 数据桥
 # 未验证前保持 writeBridge.verified !== true
 
 # 4. 本地 Canvas 快检

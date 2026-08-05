@@ -201,7 +201,6 @@ describe('CLI offline smoke', () => {
     expect(output).toContain('dingtalk-link');
     expect(output).toContain('a2a <serve|agent-card> [options]');
     expect(output).toContain('sample [--list]');
-    expect(output).toContain('generate-page <template>');
     expect(output).toContain('build-page <sourceFile>');
     expect(output).toContain('check-page <src>');
     expect(output).toContain('compile <src>');
@@ -221,7 +220,7 @@ describe('CLI offline smoke', () => {
     const cases = [
       { args: ['create-form', '--help'], text: 'create-form create' },
       { args: ['create-page', '--help'], text: 'create-page' },
-      { args: ['sample', '--help'], text: 'Sample Templates' },
+      { args: ['sample', '--help'], text: 'Code Templates' },
       { args: ['publish', '--help'], text: 'openyida publish' },
     ];
 
@@ -425,33 +424,36 @@ describe('CLI offline smoke', () => {
       'connector.delete',
       'connector.delete-action',
     ]);
-    expect(parsed.summary.core_workflows.full_app_fast_build).toMatchObject({
-      mode: 'fast_build',
+    expect(parsed.summary.core_workflows.full_app_build).toMatchObject({
+      mode: 'unified_build',
       default_page_skill_id: 'yida-canvas-custom-page',
-      default_ui_guidance_skill_id: 'yida-page-uiux',
+      default_ui_guidance_skill_id: 'yida-design',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
         'create-app',
         'create-form.create',
+        'create-process',
         'create-page',
         'publish',
         'nav-group',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
-      default_nav_order_policy: expect.stringContaining('portal/home/workbench entry > custom display pages > process forms > receipt/forms'),
-      completion_contract: expect.stringContaining('Markdown table'),
+      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      ui_guidance_policy: expect.stringContaining('only design sources of truth'),
+      default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
+      completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
-    expect(parsed.summary.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
+    expect(parsed.summary.core_workflows.full_app_build.ui_guidance_policy).toContain('prd.md + design.md');
+    expect(parsed.summary.core_workflows.full_app_build.default_nav_order_policy).toContain('portal/home/workbench entry > business handling > data management > business analytics > system configuration');
+    expect(parsed.summary.core_workflows.full_app_build.do_not_default_skill_ids).not.toContain('yida-design');
     expect(commands).toContain('env');
     expect(commands).not.toContain('env-management');
     expect(commands).toContain('login');
@@ -578,14 +580,32 @@ describe('CLI offline smoke', () => {
         expect.stringContaining('openyida create-form create APP_XXX'),
       ]),
     });
-    expect(commandById['generate-page'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
+    expect(commandById['generate-page']).toBeUndefined();
     expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
       kind: 'remote_read',
       mutates_yida: false,
+      mutates_local: false,
+    });
+    expect(commandById['form-detail-style.check']).toMatchObject({
+      path: ['form-detail-style', 'check'],
+      side_effect: {
+        kind: 'remote_read',
+        mutates_yida: false,
+        mutates_local: false,
+      },
+      permission: {
+        mode: 'allow',
+        effect: 'read',
+      },
+    });
+    expect(commandById['form-detail-style.apply'].side_effect).toMatchObject({
+      kind: 'remote_write',
+      mutates_yida: true,
+      mutates_local: false,
+    });
+    expect(commandById['form-detail-style.remove'].side_effect).toMatchObject({
+      kind: 'remote_write',
+      mutates_yida: true,
       mutates_local: false,
     });
     expect(commandById['create-form.validate']).toBeUndefined();
@@ -959,7 +979,7 @@ describe('CLI offline smoke', () => {
       command_manifest_digest_algorithm: 'sha256',
       command_count: manifest.summary.command_count,
       full_capabilities_command: 'openyida agent-capabilities --json',
-      builder_fast_path: {
+      builder_path: {
         schema_version: 1,
         preflight: {
           recommended_command: 'openyida agent-capabilities --summary-json',
@@ -1021,19 +1041,19 @@ describe('CLI offline smoke', () => {
     expect(parsed.login).not.toHaveProperty('diagnostics');
     expect(parsed.login).not.toHaveProperty('cookies');
     expect(parsed.login).not.toHaveProperty('csrf_token');
-    expect(parsed.builder_fast_path.environment_check_simplification).not.toHaveProperty('skip_default_command_patterns');
-    expect(parsed.builder_fast_path.command_contract).not.toHaveProperty('supported_command_ids');
-    expect(parsed.builder_fast_path.command_contract).not.toHaveProperty('canonical_builder_commands');
-    expect(parsed.builder_fast_path.command_contract).not.toHaveProperty('forbidden_aliases');
-    expect(parsed.builder_fast_path.auth).not.toHaveProperty('prohibited_legacy_checks');
-    expect(parsed.builder_fast_path.resource_context_resolution).not.toHaveProperty('app_name_search');
-    expect(parsed.builder_fast_path.paths).not.toHaveProperty('page_source_examples');
-    expect(parsed.builder_fast_path.command_contract).toMatchObject({
+    expect(parsed.builder_path.environment_check_simplification).not.toHaveProperty('skip_default_command_patterns');
+    expect(parsed.builder_path.command_contract).not.toHaveProperty('supported_command_ids');
+    expect(parsed.builder_path.command_contract).not.toHaveProperty('canonical_builder_commands');
+    expect(parsed.builder_path.command_contract).not.toHaveProperty('forbidden_aliases');
+    expect(parsed.builder_path.auth).not.toHaveProperty('prohibited_legacy_checks');
+    expect(parsed.builder_path.resource_context_resolution).not.toHaveProperty('app_name_search');
+    expect(parsed.builder_path.paths).not.toHaveProperty('page_source_examples');
+    expect(parsed.builder_path.command_contract).toMatchObject({
       forbidden_aliases_available_in: 'openyida commands --json',
       forbidden_alias_count: manifest.forbidden_aliases.length,
       unknown_command_policy: 'deny_with_manifest_suggestion_before_asking_user',
     });
-    expect(parsed.builder_fast_path.auth).toMatchObject({
+    expect(parsed.builder_path.auth).toMatchObject({
       auth_runtime: 'token_oauth_session',
       cookie_auth_supported: false,
       cookie_check_required: false,
@@ -1058,9 +1078,9 @@ describe('CLI offline smoke', () => {
           allow: 1,
         },
         core_workflows: {
-          full_app_fast_build: {
+          full_app_build: {
             required_command_ids: ['agent-capabilities'],
-            mode: 'fast_build',
+            mode: 'unified_build',
           },
         },
       },
@@ -1086,8 +1106,8 @@ describe('CLI offline smoke', () => {
       }],
       summary: {
         core_workflows: {
-          full_app_fast_build: {
-            mode: 'fast_build',
+          full_app_build: {
+            mode: 'unified_build',
             required_command_ids: ['agent-capabilities'],
           },
         },
@@ -1142,45 +1162,48 @@ describe('CLI offline smoke', () => {
       'connector.delete-action',
     ]);
     expect(parsed.commands.read_only_command_ids).toContain('agent-capabilities');
-    expect(parsed.commands.core_workflows.full_app_fast_build).toMatchObject({
-      mode: 'fast_build',
+    expect(parsed.commands.core_workflows.full_app_build).toMatchObject({
+      mode: 'unified_build',
       default_page_skill_id: 'yida-canvas-custom-page',
-      default_ui_guidance_skill_id: 'yida-page-uiux',
+      default_ui_guidance_skill_id: 'yida-design',
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
         'create-form.create',
+        'create-process',
         'create-page',
         'publish',
         'nav-group',
       ]),
       do_not_default_skill_ids: expect.arrayContaining([
-        'yida-app-uiux',
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      ui_guidance_policy: expect.stringContaining('lightweight UI guidance'),
-      default_nav_order_policy: expect.stringContaining('portal/home/workbench entry > custom display pages > process forms > receipt/forms'),
-      completion_contract: expect.stringContaining('Markdown table'),
+      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      ui_guidance_policy: expect.stringContaining('only design sources of truth'),
+      default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
+      completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
       recommended_read_commands: expect.arrayContaining([
         expect.stringContaining('--summary-json'),
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
-    expect(parsed.commands.core_workflows.full_app_fast_build.do_not_default_skill_ids).not.toContain('yida-page-uiux');
+    expect(parsed.commands.core_workflows.full_app_build.ui_guidance_policy).toContain('prd.md + design.md');
+    expect(parsed.commands.core_workflows.full_app_build.default_nav_order_policy).toContain('portal/home/workbench entry > business handling > data management > business analytics > system configuration');
+    expect(parsed.commands.core_workflows.full_app_build.do_not_default_skill_ids).not.toContain('yida-design');
     expect(parsed.recommended.default_full_app_workflow).toMatchObject({
-      mode: 'fast_build',
-      completion_contract: expect.stringContaining('Create app'),
+      mode: 'unified_build',
+      completion_contract: expect.stringContaining('create or reuse app'),
     });
     expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('Markdown table');
-    expect(parsed.builder_fast_path.bound_context).toMatchObject({
+    expect(parsed.builder_path.bound_context).toMatchObject({
       existing_app_type_policy: 'do_not_call_app_list_by_default',
       skip_app_list_when: expect.arrayContaining([
         'appType is already provided by the user',
         'a bound app context is already available',
       ]),
     });
-    expect(parsed.builder_fast_path.resource_context_resolution).toMatchObject({
+    expect(parsed.builder_path.resource_context_resolution).toMatchObject({
       if_bound_app_type_unique: {
         action: 'reuse_bound_app_type',
         command: null,
@@ -1196,7 +1219,7 @@ describe('CLI offline smoke', () => {
         command_id: 'get-schema',
       },
     });
-    expect(parsed.builder_fast_path.environment_check_simplification).toMatchObject({
+    expect(parsed.builder_path.environment_check_simplification).toMatchObject({
       minimal_probe_commands: [
         'which openyida',
         'openyida agent-capabilities --summary-json',
@@ -1216,7 +1239,7 @@ describe('CLI offline smoke', () => {
       skip_cookie_or_playwright_checks_default: true,
       default_app_list_policy: 'skip_when_bound_app_type_unique',
     });
-    expect(parsed.builder_fast_path.command_contract.canonical_builder_commands.map(entry => entry.id)).toEqual(expect.arrayContaining([
+    expect(parsed.builder_path.command_contract.canonical_builder_commands.map(entry => entry.id)).toEqual(expect.arrayContaining([
       'agent-capabilities',
       'commands',
       'login',
@@ -1232,8 +1255,8 @@ describe('CLI offline smoke', () => {
     ]));
     expect(parsed.recommended.preflight_command).toBe('openyida agent-capabilities --summary-json');
     expect(parsed.recommended.full_capabilities_command).toBe('openyida agent-capabilities --json');
-    expect(parsed.recommended).not.toHaveProperty('builder_fast_path');
-    expect(parsed.builder_fast_path.preflight.run_once).toBe(true);
+    expect(parsed.recommended).not.toHaveProperty('builder_path');
+    expect(parsed.builder_path.preflight.run_once).toBe(true);
     expect(parsed.command_manifest.side_effect_schema).toMatchObject({
       version: 1,
       kinds: {
@@ -1259,9 +1282,9 @@ describe('CLI offline smoke', () => {
     expect(parsed.login).not.toHaveProperty('csrf_token');
     expect(parsed.sideEffects.read_only_preflight).toContain('openyida agent-capabilities --summary-json');
     expect(parsed.sideEffects.read_only_preflight).not.toContain('openyida agent-capabilities --json');
-    expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating the app');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating or reusing the app');
     expect(parsed.sideEffects.completion_contracts.full_app).toContain('Markdown table');
-    expect(parsed.sideEffects.fast_build_data_contract).toContain('this.dataSourceMap');
+    expect(parsed.sideEffects.full_app_data_contract).toContain('this.dataSourceMap');
     const commandIds = parsed.command_manifest.commands.map(entry => entry.id);
     const commandById = Object.fromEntries(parsed.command_manifest.commands.map(entry => [entry.id, entry]));
     expect(commandIds).toContain('agent-capabilities');
@@ -1296,11 +1319,7 @@ describe('CLI offline smoke', () => {
       mutates_yida: false,
       mutates_local: false,
     });
-    expect(commandById['generate-page'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
+    expect(commandById['generate-page']).toBeUndefined();
     expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
       kind: 'remote_read',
       mutates_yida: false,
@@ -1379,9 +1398,14 @@ describe('CLI offline smoke', () => {
 
   test('sample --list renders available templates without network access', () => {
     const output = runOk(['sample', '--list']);
-    expect(output).toContain('yida-custom-page');
-    expect(output).toContain('product-homepage');
-    expect(output).toContain('todo-mvc');
+    expect(output).toContain('Code Templates');
+    expect(output).toContain('yida-chart');
+    expect(output).toContain('yida-canvas-table-form');
+    expect(output).toContain('table-form-batch-submit');
+    expect(output).not.toContain('yida-custom-page');
+    expect(output).not.toContain('yida-canvas-custom-page');
+    expect(output).not.toContain('product-homepage');
+    expect(output).not.toContain('todo-mvc');
   });
 
   test('connector --help renders subcommands without network access', () => {
@@ -1603,7 +1627,7 @@ describe('CLI offline smoke', () => {
         status: 'ok',
         can_auto_use: true,
       });
-      expect(summary.builder_fast_path.auth).toMatchObject({
+      expect(summary.builder_path.auth).toMatchObject({
         mode: 'token',
         source: 'env',
         can_auto_use: true,
@@ -1614,22 +1638,22 @@ describe('CLI offline smoke', () => {
         browser_session_auth_allowed: false,
         missing_token_action: 'STOP_AND_REQUEST_HOST_TOKEN',
       });
-      expect(summary.builder_fast_path.preflight).toMatchObject({
+      expect(summary.builder_path.preflight).toMatchObject({
         recommended_command: 'openyida agent-capabilities --summary-json',
         run_once: true,
         additional_env_check_default: false,
         additional_login_check_default: false,
         trust_summary_json_as_builder_preflight: true,
       });
-      expect(summary.builder_fast_path.environment_check_simplification).toMatchObject({
+      expect(summary.builder_path.environment_check_simplification).toMatchObject({
         can_skip_default_exploration_when_summary_ok: true,
         skip_login_check_only_default: true,
         skip_browser_login_default: true,
         skip_cookie_or_playwright_checks_default: true,
         stop_when_host_token_missing: false,
       });
-      expect(summary.builder_fast_path.environment_check_simplification).not.toHaveProperty('skip_default_command_patterns');
-      expect(summary.builder_fast_path.bound_context.existing_app_type_policy).toBe('do_not_call_app_list_by_default');
+      expect(summary.builder_path.environment_check_simplification).not.toHaveProperty('skip_default_command_patterns');
+      expect(summary.builder_path.bound_context.existing_app_type_policy).toBe('do_not_call_app_list_by_default');
       expect(JSON.stringify(summary)).not.toContain('login.dingtalk.com/oauth2/auth');
       expect(JSON.stringify(summary)).not.toContain('cookies.json');
       expect(summary.login).not.toHaveProperty('cookies');
@@ -1682,14 +1706,14 @@ describe('CLI offline smoke', () => {
         status: 'not_logged_in',
         can_auto_use: false,
       });
-      expect(summary.builder_fast_path.auth).toMatchObject({
+      expect(summary.builder_path.auth).toMatchObject({
         host_injected_token_mode: true,
         host_token_env_detected: true,
         env_token_present: false,
         interactive_login_allowed: false,
         missing_token_action: 'STOP_AND_REQUEST_HOST_TOKEN',
       });
-      expect(summary.builder_fast_path.environment_check_simplification).toMatchObject({
+      expect(summary.builder_path.environment_check_simplification).toMatchObject({
         can_skip_default_exploration_when_summary_ok: true,
         skip_login_check_only_default: true,
         skip_browser_login_default: true,

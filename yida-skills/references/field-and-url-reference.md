@@ -33,15 +33,17 @@
 | 页面类型 | URL 格式 |
 |---------|---------|
 | 应用首页 | `{base_url}/{appType}/workbench` |
-| 表单提交页 | `{base_url}/{appType}/submission/{formUuid}` |
+| 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
 | 数据管理页（列表） | `{base_url}/{appType}/workbench/{formUuid}` |
 | 数据管理页（iframe 嵌入） | `{base_url}/{appType}/workbench/{formUuid}?iframe=true` |
 | 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
 | 自定义页面（隐藏导航） | 上行 + `?isRenderNav=false` |
-| 表单详情页 | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}` |
-| 表单详情页（编辑态） | 上行 + `&mode=edit` |
+| 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false` |
+| 表单详情页（编辑态） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit&navConfig.layout=1180&isRenderNav=false` |
 
 > 任意地址可追加 `corpid={corpId}` 自动切到对应组织；无 query 时用 `?corpid=...`，已有 query 时用 `&corpid=...`。
+
+> 自定义页里的新增/提交入口默认使用 `?isRenderNav=false`，对应表单设置里的 `isRenderNav=false`。需要持久化表单提交页导航设置时，可在创建表单后执行 `openyida update-form-config <appType> <formUuid> false "<表单标题>"`；已有 query 时按 `&isRenderNav=false` 合并。
 
 ## 页面内自定义导航 URL 参数规则
 

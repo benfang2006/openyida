@@ -28,11 +28,11 @@
     "note": "创建表单并定义字段结构 → create-form-page"
   },
   {
-    "id": "page-uiux-visual",
+    "id": "design-visual",
     "prompt": "写页面代码前先帮我定一下视觉方向，这是一个管理后台工作台",
-    "expectedSkill": "yida-page-uiux",
+    "expectedSkill": "yida-design",
     "group": "页面与表单",
-    "note": "定视觉方向去 AI 味 → page-uiux"
+    "note": "定视觉方向去 AI 味 → yida-design"
   },
   {
     "id": "canvas-custom-page-hooks",

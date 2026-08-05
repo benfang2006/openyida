@@ -1,20 +1,21 @@
 # Code Canvas 数据桥
 
-Code Canvas 运行时提供 React 函数组件上下文；`YidaComp` 读写宜搭数据时，在组件内使用 HTTP 数据桥、连接器代理或显式 props 注入。`this.utils.yida.*` / `dataSourceMap` / `this.$(fieldId)` 属于普通自定义页面实例桥能力。
+Code Canvas 运行时提供 React 函数组件上下文；`YidaComp` 内没有普通页面实例 `this`。读写宜搭表单数据时，发布层必须在外层普通自定义页面 `didMount` 中把 `this.utils.yida.*` 注册成 `window.__OPENYIDA_YIDA_API__`，Canvas 组件只消费这个 window 桥。连接器代理和自定义同源接口仍用 HTTP 数据桥。
 
 ## 三条数据路径，先选对
 
 | 路径 | 是否可在浏览器（Canvas）直接调 | 说明 |
 | --- | --- | --- |
+| 外层 yida JS-API 桥 `window.__OPENYIDA_YIDA_API__` | **表单默认** | 发布 Code Canvas 时由外层页面 `didMount` 自动注册，底层调用官方 `this.utils.yida.searchFormDatas` 等 API。 |
 | 宜搭开放 API（OpenAPI，`appKey`/`appSecret` 签名） | 服务端 / 连接器代理 | 需服务端签名；浏览器直连会泄露 secret。由后端 / 连接器代理调用。 |
 | 平台已配置**连接器**（HTTP 连接器暴露的同源代理端点） | **推荐** | 同源 `fetch(url, { credentials: 'include' })` 带 cookie 即可，鉴权与密钥留在平台侧，符合数据源治理。 |
-| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 受控可用 | 与普通自定义页面 `this.utils.yida.searchFormDatas` 命中的是同类端点；使用同源相对路径、`credentials: 'include'` 和运行态 CSRF token。 |
+| 内部表单数据端点（同源、依赖登录 cookie + CSRF） | 降级可用 | 仅在 yida JS-API 桥不存在时使用；必须使用同源相对路径、`credentials: 'include'` 和运行态 CSRF token。 |
 
-选路原则：优先走连接器代理，让鉴权、密钥和数据源治理留在平台侧。真需要直连内部端点时，使用**同源相对路径** + `credentials: 'include'`，Cookie / CSRF / appSecret 由平台上下文或后端服务提供。
+选路原则：读本应用或本轮创建的宜搭表单，默认走 yida JS-API 桥；读第三方或复杂后端数据，走连接器代理；只有桥不存在且必须读表单时，才同源直连内部端点。Cookie / CSRF / appSecret 由平台上下文、连接器或后端服务提供。
 
-## 推荐：先写 dataBinding，再生成数据桥
+## 推荐：先写 dataBinding，再实现数据桥
 
-OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `dataBinding`，模板会把它注入为 `OPENYIDA_DATA_BINDING_JSON` 并生成统一的数据桥状态、错误态和总数保护。
+Code Canvas 页面先把数据契约写成结构化 `dataBinding`，再在页面实现里注入为 `OPENYIDA_DATA_BINDING_JSON` 或 `DATA_BINDING` 常量，并生成统一的数据桥状态、错误态和总数保护。
 
 ```json
 {
@@ -41,13 +42,29 @@ OpenYida `generate-page --spec` 支持把 Canvas 数据契约写成结构化 `da
 
 - `mode=form` 使用真实 `appType/formUuid` 和字段 ID，字段来源为 `get-schema`、表单创建结果或已确认的业务 Schema。
 - `mode=connector/url` 使用同源代理端点，第三方密钥留在连接器或后端服务侧。
-- `mode=seed` 用于 `openyida sample`、离线预览或明确标注的演示页；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
-- 模板生成的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
+- `mode=seed` 只用于离线预览或明确标注的演示页；完整应用/真实交付页默认先由 `yida-app` 调用 `yida-data-management` 把 1-3 条 demo records 写入真实表单，再用 `mode=form` 读取。
+- 页面生成或手写的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
+
+`dataBinding.mode=form` 默认调用 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`。参数至少包含 `formUuid`、`currentPage`、`pageSize` 和 `searchFieldJson`；`appType` 可保留在 `dataBinding` 中用于校验和构造详情/提交链接。只有桥不存在时才同源直连 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`；直连 query 至少包含 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`，并设置 `credentials: 'include'` 与 `global_csrf_token` 头。`/query/form/searchFormDatas.json` 不是可用表单数据端点。
 
 ## 可复用读数据 Hook
 
 ```jsx
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+function getYidaApiBridge() {
+  var candidates = [];
+  try { candidates.push(window.__OPENYIDA_YIDA_API__); } catch (err) {}
+  try { candidates.push(window.parent && window.parent.__OPENYIDA_YIDA_API__); } catch (err) {}
+  try {
+    if (typeof parentWindow !== 'undefined') {
+      candidates.push(parentWindow.__OPENYIDA_YIDA_API__);
+    }
+  } catch (err) {}
+  return candidates.find(function (item) {
+    return item && typeof item.searchFormDatas === 'function';
+  }) || null;
+}
 
 function getCsrfToken() {
   var yida = window.__YIDA__ || {};
@@ -208,7 +225,7 @@ function normalizeFormRow(row) {
 
 保护规则：
 
-- 首屏只有 sample/离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
+- 首屏只有离线预览可以用 seed 数据做本地预览兜底；真实交付页未接表单数据时展示空态和登记入口。真实接口返回后以接口数据为准。
 - 如果 `getTotalCount(json) > 0` 且 `unwrapRows(json).length === 0`，展示“接口返回结构未识别”，并保留原始错误状态供定位。
 - 用 `openyida data query form <appType> <formUuid> --size 20` 或数据管理页核对总数，页面统计必须和真实表单一致。
 
@@ -221,7 +238,7 @@ function YidaComp(props) {
 
   var q = useYidaFetch(function () {
     return {
-      url: '/your-connector-proxy/searchFormDatas',    // 连接器同源代理端点（示意）
+      url: '/your-connector-proxy/searchFormDatas',    // 连接器同源代理端点（示意，不是宜搭表单直连端点）
       method: 'POST',
       body: { appType: appType, formUuid: formUuid, pageSize: 20, pageNumber: 1 },
     };
@@ -249,7 +266,7 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-`url`、`body` 字段按实际连接器 / 端点契约填写；示例结构用于说明数据桥写法。
+`url`、`body` 字段按实际连接器 / 端点契约填写；示例结构用于说明数据桥写法。直连宜搭表单数据时不要复用这个连接器代理示例，必须使用下文 `searchFormDatas.json` 请求契约。
 
 ## 轮询只刷新数据，不刷新整页
 
@@ -331,7 +348,8 @@ function YidaComp() {
 
 1. **`GET` + query 参数**：`formUuid`/`appType` 放 URL query。
 2. **分页参数名是 `currentPage`**；`searchFieldJson` 传 `'{}'` 表示不过滤。
-3. **返回列表在 `content.data`**：响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
+3. **CSRF 和登录态同时带上**：运行态 CSRF 写入 query 的 `_csrf_token`，请求头写 `global_csrf_token`，fetch 设置 `credentials: 'include'`。
+4. **返回列表在 `content.data`**：响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
 
 ```jsx
 // GET + query，读一个表单的数据

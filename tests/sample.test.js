@@ -3,8 +3,6 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const UglifyJS = require('uglify-js');
-const { default: babelTransform } = require('../lib/core/babel-transform');
 const { compileCanvasLocal } = require('../lib/app/canvas-compile');
 const { applyTemplateVariables, run } = require('../lib/core/sample');
 
@@ -33,66 +31,6 @@ describe('sample templates', () => {
     expect(output).toBe('Hello OpenKuma / OpenKuma');
   });
 
-  test('product-homepage sample supports variables and compiles', async () => {
-    const outputPath = path.join(tmpDir, 'openkuma-homepage.jsx');
-
-    await run([
-      'yida-custom-page',
-      'product-homepage',
-      '--output',
-      outputPath,
-      '--var',
-      'BRAND_NAME=OpenKuma',
-      '--var',
-      'BRAND_INITIALS=OK',
-      '--var',
-      'TAGLINE=开放项目首页工作台',
-      '--var',
-      'HERO_TEXT=把品牌展示、社区入口和运营反馈放进同一个宜搭页面',
-    ]);
-
-    const source = fs.readFileSync(outputPath, 'utf-8');
-    expect(source).toContain("brandName: 'OpenKuma'");
-    expect(source).toContain("brandInitials: 'OK'");
-    expect(source).not.toContain("PAGE.brandName === 'OpenKuma'");
-    expect(source).not.toContain('{{BRAND_NAME}}');
-
-    const babelResult = babelTransform(source, {}, false, { RE_VERSION: '7.4.0' });
-    expect(babelResult.error).toBeNull();
-
-    const minifyResult = UglifyJS.minify(babelResult.compiled);
-    expect(minifyResult.error).toBeUndefined();
-    expect(minifyResult.code.length).toBeGreaterThan(1000);
-  });
-
-  test('todo-mvc sample supports variables and compiles', async () => {
-    const outputPath = path.join(tmpDir, 'todo-mvc.oyd.jsx');
-
-    await run([
-      'yida-custom-page',
-      'todo-mvc',
-      '--output',
-      outputPath,
-      '--var',
-      'TODO_TITLE=团队待办',
-      '--var',
-      'TODO_PLACEHOLDER=输入任务并按 Enter',
-    ]);
-
-    const source = fs.readFileSync(outputPath, 'utf-8');
-    expect(source).toContain("title: '团队待办'");
-    expect(source).toContain("placeholder: '输入任务并按 Enter'");
-    expect(source).toContain('export function renderJsx()');
-    expect(source).not.toContain('{{TODO_TITLE}}');
-
-    const babelResult = babelTransform(source, {}, false, { RE_VERSION: '7.4.0' });
-    expect(babelResult.error).toBeNull();
-
-    const minifyResult = UglifyJS.minify(babelResult.compiled);
-    expect(minifyResult.error).toBeUndefined();
-    expect(minifyResult.code.length).toBeGreaterThan(1000);
-  });
-
   test('Canvas-first chart and table-form samples are discoverable and compile', async () => {
     const chartOutput = path.join(tmpDir, 'trend-combo.canvas.jsx');
     const tableOutput = path.join(tmpDir, 'table-form-batch-submit.canvas.jsx');
@@ -115,44 +53,8 @@ describe('sample templates', () => {
     expect(tableSource).not.toContain('this.utils.yida');
   });
 
-  test('light business samples avoid near-black theme borders and actions', () => {
-    const samplePaths = [
-      path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', 'business-list.canvas.jsx'),
-      path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', 'data-management.canvas.jsx'),
-      path.join(__dirname, '..', 'lib', 'samples', 'yida-table-form', 'table-form-batch-submit.js'),
-    ];
-    const nearBlackThemePattern = /#111827|#0f172a|#1f2937|#111(?![0-9a-fA-F])|rgba\(17,\s*24,\s*39|rgba\(23,\s*26,\s*29|rgba\(31,\s*41,\s*55/i;
-
-    samplePaths.forEach((samplePath) => {
-      const source = fs.readFileSync(samplePath, 'utf8');
-      expect(source).not.toMatch(nearBlackThemePattern);
-    });
-  });
-
-  test('light canvas samples avoid black visual blocks', () => {
-    const sampleNames = [
-      'business-list.canvas.jsx',
-      'dashboard-overview.canvas.jsx',
-      'data-management.canvas.jsx',
-      'portal-native-components.canvas.jsx',
-      'portal-shell-home.canvas.jsx',
-      'product-homepage.canvas.jsx',
-      'split-pane-detail.canvas.jsx',
-      'todo-mvc.canvas.jsx',
-      'workbench-home.canvas.jsx',
-    ];
-    const blackBlockPattern = /background:\s*#(?:111827|10131b|101418|101722|0f172a|1f2937)|rgba\(17,\s*24,\s*39|rgba\(23,\s*26,\s*29|rgba\(31,\s*41,\s*55/i;
-
-    sampleNames.forEach((filename) => {
-      const source = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', filename), 'utf8');
-      expect(source).not.toMatch(blackBlockPattern);
-    });
-  });
-
-  test('sample pages own their themes instead of inheriting app brand variables', () => {
+  test('remaining samples avoid near-black default business surfaces', () => {
     const sampleRoots = [
-      path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page'),
-      path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page'),
       path.join(__dirname, '..', 'lib', 'samples', 'yida-density'),
       path.join(__dirname, '..', 'lib', 'samples', 'yida-table-form'),
       path.join(__dirname, '..', 'lib', 'samples', 'yida-chart'),
@@ -194,49 +96,9 @@ describe('sample templates', () => {
     expect(dashboardSource).toContain("dataSetKey: 'youshuData'");
   });
 
-  test('canvas visual samples use distinct default theme colors', () => {
-    const sampleNames = [
-      'business-list.canvas.jsx',
-      'dashboard-overview.canvas.jsx',
-      'data-screen.canvas.jsx',
-      'data-management.canvas.jsx',
-      'detail-profile.canvas.jsx',
-      'official-homepage.canvas.jsx',
-      'portal-shell-home.canvas.jsx',
-      'product-homepage.canvas.jsx',
-      'split-pane-detail.canvas.jsx',
-      'todo-mvc.canvas.jsx',
-      'workbench-home.canvas.jsx',
-    ];
-    const colors = sampleNames.map((filename) => {
-      const source = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', filename), 'utf8');
-      expect(source).toContain('followRuntimeTheme: false');
-      const match = source.match(/themeColor:\s*'([^']+)'/);
-      expect(match).toBeTruthy();
-      return match[1].toLowerCase();
-    });
-
-    expect(new Set(colors).size).toBe(colors.length);
-  });
-
-  test('native jsx samples provide productized scenes and real actions', () => {
-    const customTemplate = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'custom-page-template.js'), 'utf8');
-    const productHomepage = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'product-homepage.jsx'), 'utf8');
-    const todoMvc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'todo-mvc.oyd.jsx'), 'utf8');
+  test('remaining native samples provide real actions', () => {
     const densityPage = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-density', 'density-switch-page.js'), 'utf8');
     const tableForm = fs.readFileSync(path.join(__dirname, '..', 'lib', 'samples', 'yida-table-form', 'table-form-batch-submit.js'), 'utf8');
-
-    expect(customTemplate).toContain('已加入业务数据预览');
-    expect(customTemplate).toContain('请替换为真实 formUuid 后再打开详情');
-    expect(customTemplate).not.toContain('OpenYida native sample');
-
-    expect(productHomepage).toContain('dark-product-launch');
-    expect(productHomepage).toContain('dark-violet');
-    expect(productHomepage).toContain('NexaFlow');
-
-    expect(todoMvc).toContain('addTodoFromButton');
-    expect(todoMvc).toContain('openyida-todo-input');
-    expect(todoMvc).not.toContain('高级交互样板');
 
     expect(densityPage).toContain('数据密度工作台');
     expect(densityPage).toContain('selectRecord');

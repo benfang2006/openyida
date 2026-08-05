@@ -416,7 +416,7 @@ export function refreshAllData() {
 export function getDetailUrl(formInstId) {
   var appType = window.pageConfig && window.pageConfig.appType;
   if (!appType || !formInstId) return '';
-  return 'https://www.aliwork.com/' + appType + '/formDetail/' + FORM_UUID + '?formInstId=' + formInstId;
+  return 'https://www.aliwork.com/' + appType + '/formDetail/' + FORM_UUID + '?formInstId=' + encodeURIComponent(formInstId) + '&navConfig.layout=1180&isRenderNav=false';
 }
 ```
 

@@ -750,12 +750,6 @@ async function main() {
       break;
     }
 
-    case 'generate-page': {
-      const { run } = require('../lib/app/generate-page');
-      await run(args);
-      break;
-    }
-
     case 'build-page': {
       const { run } = require('../lib/app/build-page');
       await run(args);
@@ -829,6 +823,12 @@ async function main() {
     case 'get-form-config': {
       const { run: runGetFormConfig } = require('../lib/app/get-form-config');
       await runGetFormConfig(args);
+      break;
+    }
+
+    case 'form-detail-style': {
+      const { run: runFormDetailStyle } = require('../lib/app/form-detail-style');
+      await runFormDetailStyle(args);
       break;
     }
 

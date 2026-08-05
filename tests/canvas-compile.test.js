@@ -9,6 +9,9 @@ const {
   extractImportedModules,
   resolveWindowAlias,
 } = require('../lib/app/canvas-compile');
+const {
+  buildCanvasPageSchemaObject,
+} = require('../lib/app/services/canvas-page-schema-builder');
 
 /**
  * 模拟 YidaCodeCanvas 运行时装配：
@@ -63,7 +66,7 @@ class StubReactComponent {
   }
 }
 
-function stubCanvasSampleWindow() {
+function stubCanvasTemplateWindow() {
   const React = {
     Component: StubReactComponent,
     createElement: (type, props, ...children) => ({
@@ -129,6 +132,40 @@ function stubCanvasSampleWindow() {
     getComputedStyle: () => ({ getPropertyValue: () => '' }),
   };
 }
+
+test('blocks rich display pages with too few content blocks', () => {
+  const source = `
+/**
+ * @openyida-scene workbench
+ * @openyida-content-blocks 状态摘要,快捷入口,最近订单,空态提示
+ */
+import React from 'react';
+
+export default function YidaComp() {
+  return <div>工作台</div>;
+}
+`;
+
+  expect(() => compileCanvasLocal(source, { sourcePath: '/tmp/workbench.canvas.jsx' }))
+    .toThrow(/至少需要 10 个|at least 10/);
+});
+
+test('allows rich display pages with enough content blocks', () => {
+  const source = `
+/**
+ * @openyida-scene workbench
+ * @openyida-content-blocks 上下文标题,范围筛选,状态摘要,风险提醒,主操作条,待处理队列,最近记录,协作动态,业务洞察,右侧上下文
+ */
+import React from 'react';
+
+export default function YidaComp() {
+  return <div>工作台</div>;
+}
+`;
+
+  const result = compileCanvasLocal(source, { sourcePath: '/tmp/workbench.canvas.jsx' });
+  expect(result.runtimeCode).toContain('YidaComp');
+});
 
 function renderCanvasRuntime(runtimeCode, stubWindow) {
   const wrapped = `${runtimeCode}\nreturn typeof YidaComp !== "undefined" ? YidaComp : (typeof exports !== "undefined" && exports.default);`;
@@ -213,100 +250,6 @@ function withCanvasGlobals(stubWindow, fn) {
   }
 }
 
-function renderCanvasSample(filename, transformSource) {
-  const samplePath = path.join(
-    __dirname,
-    '..',
-    'lib',
-    'samples',
-    'yida-canvas-custom-page',
-    filename
-  );
-  const rawSource = fs.readFileSync(samplePath, 'utf8');
-  const source = transformSource ? transformSource(rawSource) : rawSource;
-  const { runtimeCode } = compileCanvasLocal(source);
-  const stubWindow = stubCanvasSampleWindow();
-  const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-  return { source, runtimeCode, rendered, visibleText: collectVisibleStrings(rendered).join('\n') };
-}
-
-function renderCanvasSampleWithWindow(filename, extraWindow) {
-  const samplePath = path.join(
-    __dirname,
-    '..',
-    'lib',
-    'samples',
-    'yida-canvas-custom-page',
-    filename
-  );
-  const source = fs.readFileSync(samplePath, 'utf8');
-  const { runtimeCode } = compileCanvasLocal(source);
-  const stubWindow = Object.assign(stubCanvasSampleWindow(), extraWindow || {});
-  stubWindow.React.createElement = (type, props, ...children) => ({
-    type,
-    props: props || {},
-    children,
-  });
-  const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-  const expanded = expandFunctionComponents(rendered);
-  return { source, runtimeCode, rendered: expanded, visibleText: collectVisibleStrings(expanded).join('\n') };
-}
-
-function expandFunctionComponents(node, depth = 0) {
-  if (depth > 20 || node === null || node === undefined || typeof node === 'boolean') {
-    return node;
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    return node;
-  }
-  if (Array.isArray(node)) {
-    return node.map((item) => expandFunctionComponents(item, depth + 1));
-  }
-  if (typeof node === 'object') {
-    if (typeof node.type === 'function') {
-      const props = Object.assign({}, node.props || {}, { children: node.children });
-      if (node.type.prototype && typeof node.type.prototype.render === 'function') {
-        const instance = new node.type(props);
-        return expandFunctionComponents(instance.render(), depth + 1);
-      }
-      return expandFunctionComponents(node.type(props), depth + 1);
-    }
-    return Object.assign({}, node, {
-      children: expandFunctionComponents(node.children || [], depth + 1),
-    });
-  }
-  return node;
-}
-
-function renderCanvasSampleWithDataState(filename, transformSource, dataState) {
-  const samplePath = path.join(
-    __dirname,
-    '..',
-    'lib',
-    'samples',
-    'yida-canvas-custom-page',
-    filename
-  );
-  const rawSource = fs.readFileSync(samplePath, 'utf8');
-  const source = transformSource ? transformSource(rawSource) : rawSource;
-  const { runtimeCode } = compileCanvasLocal(source);
-  const stubWindow = stubCanvasSampleWindow();
-  stubWindow.React.useState = (value) => {
-    const initial = typeof value === 'function' ? value() : value;
-    if (
-      initial
-      && typeof initial === 'object'
-      && Object.prototype.hasOwnProperty.call(initial, 'rows')
-      && Object.prototype.hasOwnProperty.call(initial, 'totalCount')
-    ) {
-      return [dataState, () => {}];
-    }
-    return [initial, () => {}];
-  };
-  const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-  return { source, runtimeCode, rendered, visibleText: collectVisibleStrings(rendered).join('\n') };
-}
-
 describe('extractImportedModules', () => {
   test('collects bare package names, skips relative/absolute, dedups & sorts', () => {
     const code = `
@@ -380,6 +323,39 @@ describe('compileCanvasLocal', () => {
     }));
   });
 
+  test('rejects bare Chinese identifiers in JSX text expressions', () => {
+    expect(() => compileCanvasLocal(`
+      import React from 'react';
+      export default function Page() {
+        return <select><option value="">{所有级别}</option></select>;
+      }
+    `, {
+      sourcePath: 'pages/src/filter.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_JSX_TEXT_IDENTIFIER',
+      details: expect.objectContaining({
+        line: 4,
+        identifier: '所有级别',
+      }),
+    }));
+  });
+
+  test('allows plain JSX text and quoted Chinese string expressions in Canvas', () => {
+    expect(() => compileCanvasLocal(`
+      import React from 'react';
+      export default function Page() {
+        return <div>所有级别</div>;
+      }
+    `)).not.toThrow();
+
+    expect(() => compileCanvasLocal(`
+      import React from 'react';
+      export default function Page() {
+        return <div>{'所有级别'}</div>;
+      }
+    `)).not.toThrow();
+  });
+
   test('rejects unsupported bare package binding imports before runtime', () => {
     const src = `
       import { useDataBinding } from 'some-package';
@@ -401,6 +377,204 @@ describe('compileCanvasLocal', () => {
     expect(error.message).toContain('MODULE_ALIAS_MAP');
     expect(error.message).toContain('window.*');
     expect(error.message).toContain('OPENYIDA_CANVAS_ALLOW_UNSUPPORTED_IMPORTS');
+  });
+
+  test('rejects manual package globals and requires import-based dependency tracking', () => {
+    const badSource = `
+      const { ConfigProvider, Button } = window.antd;
+      export default function App() {
+        return <ConfigProvider><Button>提交</Button></ConfigProvider>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource)).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_MANUAL_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        globalName: 'antd',
+        packageName: 'antd',
+      }),
+    }));
+
+    const goodSource = `
+      import React from 'react';
+      import { ConfigProvider, Button } from 'antd';
+      export default function App() {
+        return <ConfigProvider><Button>提交</Button></ConfigProvider>;
+      }
+    `;
+    const result = compileCanvasLocal(goodSource);
+    expect(JSON.parse(result.importedModules)).toEqual(['antd', 'react']);
+    expect(result.runtimeCode).toContain('window.antd');
+  });
+
+  test('rejects bare antd globals before publish', () => {
+    const badSource = `
+      const { Drawer, Button } = antd;
+      export default function App() {
+        return <Drawer open><Button>新增</Button></Drawer>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_BARE_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        line: 2,
+        globalName: 'antd',
+        packageName: 'antd',
+      }),
+    }));
+  });
+
+  test('rejects bare lucide-react globals before publish', () => {
+    const badSource = `
+      const { Search, Plus } = lucideReact;
+      export default function App() {
+        return <div><Search size={16} /><Plus size={16} /></div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_BARE_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        line: 2,
+        globalName: 'lucideReact',
+        packageName: 'lucide-react',
+      }),
+    }));
+  });
+
+  test('rejects desktop form submission/detail new-tab opens before publish', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        const submitUrl = '/APP_XXX/submission/FORM_XXX?isRenderNav=false';
+        return <button onClick={() => window.open(submitUrl, '_blank')}>新增</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_OPEN_CONTAINER_REQUIRED',
+      details: expect.objectContaining({
+        line: 5,
+        callee: 'window.open',
+      }),
+    }));
+  });
+
+  test('allows mobile-only full-page form opens when desktop uses FormOpenContainer state', () => {
+    const source = `
+      import React, { useState } from 'react';
+      export default function App() {
+        const [formRequest, setFormRequest] = useState(null);
+        function openForm() {
+          const submitUrl = '/APP_XXX/submission/FORM_XXX?isRenderNav=false';
+          if (isMobileViewport()) {
+            window.location.href = submitUrl;
+            return;
+          }
+          setFormRequest({ type: 'submission', iframeUrl: submitUrl });
+        }
+        return <button onClick={openForm}>{formRequest ? '打开中' : '新增'}</button>;
+      }
+      function isMobileViewport() {
+        return window.matchMedia('(max-width: 767px)').matches;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
+  });
+
+  test('rejects detail open requests without formInstId', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX' });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'missing-formInstId',
+      }),
+    }));
+  });
+
+  test('rejects detail links that fallback formInstId to an empty string', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX', formInstId: row.formInstId || '' });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'empty-formInstId-fallback',
+      }),
+    }));
+  });
+
+  test('rejects legacy instance id fallback chains that skip row.formInstId', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({
+            type: 'detail',
+            title: '订单详情',
+            formUuid: 'FORM_XXX',
+            formInstId: row.formInstanceId || row.instanceId || row.id,
+          });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'missing-primary-formInstId',
+      }),
+    }));
+  });
+
+  test('allows detail opens that resolve row.formInstId first and block missing ids', () => {
+    const source = `
+      import React, { useState } from 'react';
+      export default function App() {
+        const [formRequest, setFormRequest] = useState(null);
+        function openDetail(row) {
+          const formInstId = row && (row.formInstId || row.formInstanceId || row.instanceId || row.id);
+          if (!formInstId) {
+            return;
+          }
+          setFormRequest({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX', formInstId });
+        }
+        return <button onClick={() => openDetail({ formInstId: 'FINST_1' })}>{formRequest ? '打开中' : '详情'}</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
   });
 
   test('maps lucide-react named icons to LucideReact and DynamicIcon to its runtime global', () => {
@@ -684,37 +858,8 @@ describe('compileCanvasLocal', () => {
     expect(Comp({ name: 'z' }).type).toBe('b');
   });
 
-  test('compiles the recommended dashboard starter sample', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'dashboard-starter.canvas.jsx'
-    );
-    const src = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode, importedModules } = compileCanvasLocal(src);
-    const mods = JSON.parse(importedModules);
-
-    expect(mods).toEqual(expect.arrayContaining([
-      'ahooks',
-      'antd',
-      'react',
-      'recharts',
-    ]));
-    expect(mods).not.toContain('lucide-react');
-    expect(mods).not.toContain('fs');
-    expect(runtimeCode).toMatch(/window\.antd/);
-    expect(runtimeCode).toMatch(/window\.Recharts/);
-    expect(runtimeCode).toMatch(/window\.ahooks/);
-    expectCanvasEntry(runtimeCode);
-    expect(runtimeCode).not.toMatch(/\bimport\s/);
-    expect(runtimeCode).not.toMatch(/\bexport\s/);
-  });
-
   test('compiles the Canvas-first Recharts trend sample', () => {
-    const samplePath = path.join(
+    const templatePath = path.join(
       __dirname,
       '..',
       'lib',
@@ -722,8 +867,8 @@ describe('compileCanvasLocal', () => {
       'yida-rechart',
       'trend-combo.canvas.jsx'
     );
-    const src = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: samplePath });
+    const src = fs.readFileSync(templatePath, 'utf8');
+    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: templatePath });
 
     expect(JSON.parse(importedModules)).toEqual(['antd', 'react', 'recharts']);
     expect(runtimeCode).toMatch(/window\.Recharts/);
@@ -732,7 +877,7 @@ describe('compileCanvasLocal', () => {
   });
 
   test('compiles the Canvas-first table form without a native page bridge', () => {
-    const samplePath = path.join(
+    const templatePath = path.join(
       __dirname,
       '..',
       'lib',
@@ -740,8 +885,8 @@ describe('compileCanvasLocal', () => {
       'yida-canvas-table-form',
       'table-form-batch-submit.canvas.jsx'
     );
-    const src = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: samplePath });
+    const src = fs.readFileSync(templatePath, 'utf8');
+    const { runtimeCode, importedModules } = compileCanvasLocal(src, { sourcePath: templatePath });
 
     expect(JSON.parse(importedModules)).toEqual(['antd', 'dayjs', 'react']);
     expect(runtimeCode).toMatch(/window\.dayjs/);
@@ -750,492 +895,32 @@ describe('compileCanvasLocal', () => {
     expectCanvasEntry(runtimeCode);
   });
 
-  test('compiles the portal native components bridge sample', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'portal-native-components.canvas.jsx'
-    );
-    const src = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode, importedModules } = compileCanvasLocal(src);
-    const mods = JSON.parse(importedModules);
-
-    expect(mods).toEqual(['react']);
-    expect(runtimeCode).toMatch(/window\.YidaNativeComponents/);
-    expect(runtimeCode).toMatch(/window\.Deep/);
-    expect(runtimeCode).toMatch(/window\.DeepYida/);
-    expectCanvasEntry(runtimeCode);
-    expect(runtimeCode).not.toMatch(/\bimport\s/);
-    expect(runtimeCode).not.toMatch(/\bexport\s/);
-    expect(runtimeCode).not.toMatch(/@ali\/deep/);
-    expect(runtimeCode).not.toMatch(/@ali\/vc-deep-yida/);
-  });
-
-  test('compiles the native components smoke sample', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'native-components-smoke.canvas.jsx'
-    );
-    const src = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode, importedModules } = compileCanvasLocal(src);
-    const mods = JSON.parse(importedModules);
-
-    expect(mods).toEqual(['react']);
-    expect(runtimeCode).toMatch(/window\.Deep/);
-    expect(runtimeCode).toMatch(/window\.DeepYida/);
-    expect(runtimeCode).toMatch(/window\.YidaNativeComponents/);
-    expect(runtimeCode).toMatch(/DataManageViews/);
-    expect(runtimeCode).toMatch(/formUuid/);
-    expectCanvasEntry(runtimeCode);
-    expect(runtimeCode).not.toMatch(/\bimport\s/);
-    expect(runtimeCode).not.toMatch(/\bexport\s/);
-    expect(runtimeCode).not.toMatch(/@ali\/deep/);
-    expect(runtimeCode).not.toMatch(/@ali\/vc-deep-yida/);
-  });
-
-  test('native component samples unwrap DeepYida descriptor objects before rendering', () => {
-    function EmployeeField() { return 'employee-node'; }
-    function QuickAccessCard() { return 'quick-node'; }
-
-    const portal = renderCanvasSampleWithWindow('portal-native-components.canvas.jsx', {
-      DeepYida: [
-        { displayName: 'EmployeeField', component: EmployeeField },
-        { displayName: 'QuickAccessCard', default: QuickAccessCard },
-        { displayName: 'DepartmentSelectField' },
-      ],
-    });
-
-    expect(portal.visibleText).toContain('employee-node');
-    expect(portal.visibleText).toContain('quick-node');
-    expect(portal.visibleText).not.toContain('[object Object]');
-    expect(portal.visibleText).toContain('DepartmentSelectField');
-
-    const smoke = renderCanvasSampleWithWindow('native-components-smoke.canvas.jsx', {
-      DeepYida: [
-        { displayName: 'EmployeeField', component: EmployeeField },
-        { displayName: 'DepartmentSelectField' },
-      ],
-    });
-
-    expect(smoke.visibleText).toContain('1');
-    expect(smoke.visibleText).toContain('window.DeepYida');
-    expect(smoke.visibleText).toContain('EmployeeField, DepartmentSelectField');
-    expect(smoke.visibleText).not.toContain('[object Object]');
-  });
-
-  test('keeps the official homepage sample self-contained and photographic', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'official-homepage.canvas.jsx'
-    );
-    const source = fs.readFileSync(samplePath, 'utf8');
-    const embeddedPhotos = source.match(/data:image\/jpeg;base64/g) || [];
-    const { runtimeCode, importedModules } = compileCanvasLocal(source);
-
-    expect(embeddedPhotos.length).toBeGreaterThanOrEqual(3);
-    expect(source).not.toContain('data:image/svg+xml');
-    expect(source).toMatch(/oy-hero-photo/);
-    expect(source).toMatch(/oy-blend-grid/);
-    expect(source).toMatch(/oy-story-photo/);
-    expect(source).toMatch(/oy-store-band/);
-    expect(JSON.parse(importedModules)).toEqual(['antd', 'react']);
-    expect(runtimeCode).not.toMatch(/window\.ahooks/);
-    expectCanvasEntry(runtimeCode);
-  });
-
-  test('form dataBinding Canvas templates carry CSRF in query and headers', () => {
-    const filenames = [
-      'business-list.canvas.jsx',
-      'dashboard-overview.canvas.jsx',
-      'data-management.canvas.jsx',
-      'split-pane-detail.canvas.jsx',
-    ];
-
-    filenames.forEach((filename) => {
-      const samplePath = path.join(
-        __dirname,
-        '..',
-        'lib',
-        'samples',
-        'yida-canvas-custom-page',
-        filename
-      );
-      const source = fs.readFileSync(samplePath, 'utf8');
-
-      expect(source).toContain('window.pageConfig');
-      expect(source).toContain("getCookieValue('tianshu_csrf_token')");
-      expect(source).toContain("params.set('_csrf_token', csrfToken)");
-      expect(source).toContain('headers.global_csrf_token = csrfToken');
-      expect(source).toContain("headers['x-csrf-token'] = csrfToken");
-      expect(source).toContain("credentials: 'include'");
-      expect(source).toContain('TIANSHU_000030');
-    });
-  });
-
-  test('business-list raw sample renders marked seed rows', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'business-list.canvas.jsx'
-    );
-    const source = fs.readFileSync(samplePath, 'utf8');
-    const { runtimeCode } = compileCanvasLocal(source);
-    const stubWindow = stubCanvasSampleWindow();
-
-    const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-    const table = findNodesByType(rendered, 'Table')[0];
-    const visibleText = collectVisibleStrings(rendered).join('\n');
-
-    expect(table).toBeTruthy();
-    expect(table.props.dataSource.length).toBeGreaterThan(0);
-    expect(visibleText).toContain('Sample seed');
-    expect(visibleText).toContain('当前为 sample/seed 预览数据，未接真实表单。');
-  });
-
-  test('business-list delivery render without dataBinding shows real empty state instead of seed table', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'business-list.canvas.jsx'
-    );
-    const source = fs.readFileSync(samplePath, 'utf8')
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none');
-    const { runtimeCode } = compileCanvasLocal(source);
-    const stubWindow = stubCanvasSampleWindow();
-
-    const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-    const tables = findNodesByType(rendered, 'Table');
-    const visibleText = collectVisibleStrings(rendered).join('\n');
-
-    expect(tables).toHaveLength(0);
-    expect(visibleText).toContain('未接入真实表单数据');
-    expect(visibleText).toContain('完整应用交付页不会用前端 seedRows 冒充业务记录。');
-    expect(visibleText).not.toContain('SO-240716-001');
-  });
-
-  test('business-list form dataBinding keeps DataBridge status and avoids seed fallback', () => {
-    const samplePath = path.join(
-      __dirname,
-      '..',
-      'lib',
-      'samples',
-      'yida-canvas-custom-page',
-      'business-list.canvas.jsx'
-    );
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_TEST',
-      formUuid: 'FORM_TEST',
-      sourceName: '订单表',
-      fields: {
-        code: 'textField_orderNo',
-        summary: 'textareaField_desc',
-        status: 'selectField_status',
-      },
-    });
-    const source = fs.readFileSync(samplePath, 'utf8')
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-      .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding);
-    const { runtimeCode } = compileCanvasLocal(source);
-    const stubWindow = stubCanvasSampleWindow();
-
-    const rendered = withCanvasGlobals(stubWindow, () => renderCanvasRuntime(runtimeCode, stubWindow));
-    const tables = findNodesByType(rendered, 'Table');
-    const visibleText = collectVisibleStrings(rendered).join('\n');
-
-    expect(source).toContain('APP_TEST');
-    expect(source).toContain('FORM_TEST');
-    expect(source).toContain('searchFormDatas.json');
-    expect(tables).toHaveLength(0);
-    expect(visibleText).toContain('DataBridge');
-    expect(visibleText).toContain('正在读取真实数据');
-    expect(visibleText).not.toContain('Sample seed');
-  });
-
-  test('data-management raw sample renders marked seed rows', () => {
-    const { rendered, visibleText } = renderCanvasSample('data-management.canvas.jsx');
-    const rows = findNodesByType(rendered, 'DataRow');
-
-    expect(rows.length).toBeGreaterThan(1);
-    expect(rows[0].props.row.task).toBe('openyida skill治理');
-    expect(visibleText).toContain('Sample seed');
-    expect(visibleText).toContain('当前为 sample/seed 预览数据，未接真实表单。');
-  });
-
-  test('data-management delivery render without dataBinding shows empty state instead of seed records', () => {
-    const { rendered, visibleText } = renderCanvasSample('data-management.canvas.jsx', (source) => source
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none'));
-    const dataRows = findNodesByType(rendered, 'DataRow');
-
-    expect(dataRows).toHaveLength(0);
-    expect(visibleText).toContain('未接入真实表单数据');
-    expect(visibleText).toContain('完整应用交付页不会用前端 seedRows 冒充业务记录');
-    expect(visibleText).not.toContain('openyida skill治理');
-  });
-
-  test('data-management form dataBinding keeps DataBridge status and avoids seed fallback', () => {
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_DATA',
-      formUuid: 'FORM_DATA',
-      sourceName: '任务台账',
-      fields: {
-        task: 'textField_task',
-        progress: 'selectField_status',
-        date: 'dateField_due',
-      },
-    });
-    const { source, visibleText } = renderCanvasSample('data-management.canvas.jsx', (raw) => raw
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-      .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding));
-
-    expect(source).toContain('APP_DATA');
-    expect(source).toContain('FORM_DATA');
-    expect(source).toContain('searchFormDatas.json');
-    expect(visibleText).toContain('DataBridge');
-    expect(visibleText).toContain('正在读取真实数据');
-    expect(visibleText).not.toContain('Sample seed');
-    expect(visibleText).not.toContain('openyida skill治理');
-  });
-
-  test('split-pane delivery render without dataBinding shows empty state instead of seed queue', () => {
-    const { rendered, visibleText } = renderCanvasSample('split-pane-detail.canvas.jsx', (source) => source
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none'));
-    const queue = findNodesByType(rendered, 'SplitQueue')[0];
-    const detail = findNodesByType(rendered, 'DetailPane')[0];
-
-    expect(queue.props.rows).toHaveLength(0);
-    expect(queue.props.emptyText).toContain('未接入真实表单数据');
-    expect(detail.props.item).toBeNull();
-    expect(visibleText).toContain('未配置真实表单 dataBinding，当前不显示前端 seed 队列。');
-    expect(visibleText).not.toContain('合同审核');
-  });
-
-  test('split-pane form dataBinding keeps DataBridge status and avoids seed fallback', () => {
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_SPLIT',
-      formUuid: 'FORM_SPLIT',
-      sourceName: '工单池',
-      fields: {
-        title: 'textField_title',
-        summary: 'textareaField_summary',
-        status: 'selectField_status',
-      },
-    });
-    const { source, rendered, visibleText } = renderCanvasSample('split-pane-detail.canvas.jsx', (raw) => raw
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-      .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding));
-    const queue = findNodesByType(rendered, 'SplitQueue')[0];
-
-    expect(source).toContain('APP_SPLIT');
-    expect(source).toContain('FORM_SPLIT');
-    expect(source).toContain('searchFormDatas.json');
-    expect(queue.props.rows).toHaveLength(0);
-    expect(visibleText).toContain('DataBridge');
-    expect(visibleText).toContain('正在读取真实数据');
-    expect(visibleText).not.toContain('合同审核');
-  });
-
-  test('dashboard raw sample renders marked seed charts', () => {
-    const { rendered, visibleText } = renderCanvasSample('dashboard-overview.canvas.jsx');
-
-    expect(findNodesByType(rendered, 'AreaChart')).toHaveLength(1);
-    expect(findNodesByType(rendered, 'BarChart')).toHaveLength(1);
-    expect(findNodesByType(rendered, 'KpiPrimitive')[0].props.item.value).toBe('4,286');
-    expect(visibleText).toContain('Sample seed');
-  });
-
-  test('dashboard delivery render without dataBinding shows empty chart states instead of static metrics', () => {
-    const { rendered, visibleText } = renderCanvasSample('dashboard-overview.canvas.jsx', (source) => source
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none'));
-
-    expect(findNodesByType(rendered, 'AreaChart')).toHaveLength(0);
-    expect(findNodesByType(rendered, 'BarChart')).toHaveLength(0);
-    expect(findNodesByType(rendered, 'DashboardEmptyState')[0].props.title).toBe('未接入真实表单数据');
-    expect(visibleText).toContain('未配置真实表单 dataBinding，当前不显示前端静态业务指标。');
-    expect(findNodesByType(rendered, 'KpiPrimitive')[0].props.item.value).toBe('0');
-    expect(visibleText).not.toContain('增长线索');
-  });
-
-  test('dashboard form dataBinding keeps DataBridge status without static chart fallback', () => {
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_DASH',
-      formUuid: 'FORM_DASH',
-      sourceName: '经营数据',
-      fields: {
-        name: 'textField_store',
-        value: 'numberField_amount',
-      },
-    });
-    const { source, rendered, visibleText } = renderCanvasSample('dashboard-overview.canvas.jsx', (raw) => raw
-      .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-      .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding));
-
-    expect(source).toContain('APP_DASH');
-    expect(source).toContain('FORM_DASH');
-    expect(source).toContain('searchFormDatas.json');
-    expect(source).not.toContain('Math.max(12, 88 - index * 9)');
-    expect(source).toContain('parseNumericMetric(rawValue)');
-    expect(source).toContain("typeof value !== 'number' && typeof value !== 'string'");
-    expect(source).toContain('dataState.rows.filter((row) => Number.isFinite(row.value))');
-    expect(source).toContain('缺少数值字段映射');
-    expect(findNodesByType(rendered, 'AreaChart')).toHaveLength(0);
-    expect(findNodesByType(rendered, 'BarChart')).toHaveLength(0);
-    expect(visibleText).toContain('DataBridge');
-    expect(visibleText).toContain('正在读取真实数据');
-    expect(visibleText).not.toContain('4,286');
-  });
-
-  test('dashboard form dataBinding with records but no numeric value shows chart empty states', () => {
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_DASH',
-      formUuid: 'FORM_DASH',
-      sourceName: '经营数据',
-      fields: {
-        name: 'textField_store',
-      },
-    });
-    const { rendered, visibleText } = renderCanvasSampleWithDataState(
-      'dashboard-overview.canvas.jsx',
-      (raw) => raw
-        .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-        .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding),
+  test('Canvas page schema installs yida JS API bridge for iframe data access', () => {
+    let nodeIndex = 0;
+    const schema = buildCanvasPageSchemaObject(
+      'function YidaComp() { return null; }',
+      'var YidaComp = function YidaComp() { return null; };',
+      '["react"]',
+      'FORM_CANVAS',
       {
-        loading: false,
-        error: '',
-        rows: [
-          { name: '华东门店', value: null },
-          { name: '华南门店', value: null },
-        ],
-        totalCount: 2,
+        nextNodeId: () => 'node_' + (++nodeIndex),
+        nextSuffix: () => 'stable',
       }
     );
-    const emptyStates = findNodesByType(rendered, 'DashboardEmptyState');
 
-    expect(findNodesByType(rendered, 'AreaChart')).toHaveLength(0);
-    expect(findNodesByType(rendered, 'BarChart')).toHaveLength(0);
-    expect(findNodesByType(rendered, 'KpiPrimitive')[0].props.item.value).toBe('2');
-    expect(emptyStates[0].props.title).toBe('缺少数值字段映射');
-    expect(emptyStates[0].props.text).toContain('没有可解析的数值字段');
-    expect(emptyStates[1].props.title).toBe('暂无可绘图数据');
-    expect(emptyStates[1].props.text).toContain('页面不会合成前端指标');
-    expect(visibleText).not.toContain('4,286');
-  });
-
-  test('dashboard form dataBinding renders charts only with real numeric values', () => {
-    const binding = JSON.stringify({
-      mode: 'form',
-      enabled: true,
-      appType: 'APP_DASH',
-      formUuid: 'FORM_DASH',
-      sourceName: '经营数据',
-      fields: {
-        name: 'textField_store',
-        value: 'numberField_amount',
-      },
+    const root = schema.pages[0].componentsTree[0];
+    expect(root.lifeCycles.componentDidMount).toMatchObject({
+      name: 'didMount',
+      type: 'actionRef',
     });
-    const { rendered } = renderCanvasSampleWithDataState(
-      'dashboard-overview.canvas.jsx',
-      (raw) => raw
-        .replace(/{{OPENYIDA_RESEARCH_LEVEL}}/g, 'none')
-        .replace(/{{OPENYIDA_DATA_BINDING_JSON}}/g, binding),
-      {
-        loading: false,
-        error: '',
-        rows: [
-          { name: '华东门店', value: 123 },
-          { name: '华南门店', value: 0 },
-        ],
-        totalCount: 2,
-      }
-    );
-    const areaChart = findNodesByType(rendered, 'AreaChart')[0];
-    const barChart = findNodesByType(rendered, 'BarChart')[0];
-
-    expect(areaChart.props.data.map((item) => item.value)).toEqual([123, 0]);
-    expect(areaChart.props.data.map((item) => item.target)).toEqual([123, 0]);
-    expect(barChart.props.data.map((item) => item.value)).toEqual([123, 0]);
+    expect(schema.actions.module.source).toContain('openyidaInstallYidaApiBridge');
+    expect(schema.actions.module.source).toContain('window.__OPENYIDA_YIDA_API__');
+    expect(schema.actions.module.source).toContain('this.utils.yida');
+    expect(schema.actions.module.source).toContain('searchFormDatas');
+    expect(schema.actions.module.compiled).toContain('openyidaInstallYidaApiBridge');
+    expect(schema.actions.module.compiled).toContain('exports.didMount = didMount');
   });
 
-  test('all Canvas samples are raw-publish safe', () => {
-    const samplesDir = path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page');
-    const sampleFiles = fs.readdirSync(samplesDir)
-      .filter((name) => name.endsWith('.canvas.jsx'))
-      .sort();
-
-    expect(sampleFiles.length).toBeGreaterThan(0);
-
-    const previousGlobals = {
-      document: global.document,
-      getComputedStyle: global.getComputedStyle,
-      fetch: global.fetch,
-      URLSearchParams: global.URLSearchParams,
-      AbortController: global.AbortController,
-      localStorage: global.localStorage,
-      window: global.window,
-    };
-
-    try {
-      for (const filename of sampleFiles) {
-        const sourcePath = path.join(samplesDir, filename);
-        const source = fs.readFileSync(sourcePath, 'utf8');
-
-        expect(source).not.toContain("JSON.parse('{{");
-
-        const { runtimeCode } = compileCanvasLocal(source);
-        const stubWindow = stubCanvasSampleWindow();
-        global.document = stubWindow.document;
-        global.getComputedStyle = stubWindow.getComputedStyle;
-        global.fetch = () => Promise.reject(new Error('fetch should not run in raw sample smoke'));
-        global.URLSearchParams = URLSearchParams;
-        global.AbortController = class {
-          constructor() { this.signal = {}; }
-          abort() {}
-        };
-        global.localStorage = stubWindow.localStorage;
-        global.window = stubWindow;
-
-        const rendered = renderCanvasRuntime(runtimeCode, stubWindow);
-        expect(rendered).toBeTruthy();
-
-        const visibleText = collectVisibleStrings(rendered).join('\n');
-        expect(visibleText).not.toMatch(/\{\{(?!OPENYIDA_CANVAS_CONTROL_CSS)[A-Z0-9_]+\}\}/);
-      }
-    } finally {
-      global.document = previousGlobals.document;
-      global.getComputedStyle = previousGlobals.getComputedStyle;
-      global.fetch = previousGlobals.fetch;
-      global.URLSearchParams = previousGlobals.URLSearchParams;
-      global.AbortController = previousGlobals.AbortController;
-      global.localStorage = previousGlobals.localStorage;
-      global.window = previousGlobals.window;
-    }
-  });
 });
 
 describe('compileCanvas (async wrapper)', () => {

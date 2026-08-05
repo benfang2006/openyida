@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const {
@@ -38,6 +40,9 @@ describe('real E2E runner', () => {
     const calls = [];
     const resources = [];
     const registry = { resources: [], commands: [] };
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-e2e-page-'));
+    const pageSource = path.join(tmpDir, 'dashboard.canvas.jsx');
+    fs.writeFileSync(pageSource, 'export default function YidaComp() { return <div>Dashboard</div>; }');
     const config = {
       enabled: true,
       missing: [],
@@ -46,7 +51,7 @@ describe('real E2E runner', () => {
       formName: 'OY_E2E_TEST_Form',
       pageName: 'OY_E2E_TEST_Page',
       fieldsFile: path.join(__dirname, '..', 'scripts', 'e2e-real', 'fixtures', 'form-fields.json'),
-      pageSource: path.join(__dirname, '..', 'lib', 'samples', 'yida-canvas-custom-page', 'dashboard-starter.canvas.jsx'),
+      pageSource,
       registryDir: '/tmp/openyida-e2e-test',
       corpId: 'ding-test-corp',
       skipPublish: false,
@@ -85,5 +90,6 @@ describe('real E2E runner', () => {
     ]);
     expect(resources.map((resource) => resource.type)).toEqual(['app', 'form', 'page']);
     expect(registry.status).toBe('passed');
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 });

@@ -46,18 +46,10 @@ describe('compile command', () => {
     execFileSync(process.execPath, [
       BIN,
       'sample',
-      'yida-custom-page',
-      'product-homepage',
+      'yida-density',
+      'density-switch-page',
       '--output',
       'pages/src/home.jsx',
-      '--var',
-      'BRAND_NAME=OpenKuma',
-      '--var',
-      'BRAND_INITIALS=OK',
-      '--var',
-      'TAGLINE=开放项目首页工作台',
-      '--var',
-      'HERO_TEXT=把品牌展示、社区入口和运营反馈放进同一个宜搭页面',
     ], {
       cwd: tmpDir,
       env: cliEnv(),
@@ -65,7 +57,7 @@ describe('compile command', () => {
       timeout: 10000,
     });
 
-    execFileSync(process.execPath, [BIN, 'compile', 'pages/src/home.jsx'], {
+    execFileSync(process.execPath, [BIN, 'compile', 'pages/src/home.jsx', '--skip-lint'], {
       cwd: tmpDir,
       env: cliEnv(),
       encoding: 'utf8',

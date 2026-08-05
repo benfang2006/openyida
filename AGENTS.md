@@ -224,6 +224,18 @@ openyida/
 - 新增子技能时，同步更新 `yida-skills/SKILL.md` 的索引表
 - 修改技能结构后运行 `npm run check:skills` 和 `npm run build:skills`，确认源码态和悟空发布态都正确
 
+### yida-skills 技能路由规则（Agent 必读）
+
+**当用户首次创建完整应用/系统/平台时，AI agent 必须加载 `yida-app` 子技能作为唯一编排入口**，由 `yida-app` 按阶段调度 `yida-design`（PRD 设计）、`yida-create-app`、`yida-create-form-page`、`yida-canvas-custom-page`、`yida-publish-page` 等子技能。
+
+| 禁止（NEVER DO） | 正确做法（MUST DO） |
+|------|------|
+| 首次搭建应用时直接调用 `openyida create-app` 然后手动拼接 create-form / create-page / publish | 首次搭建时加载 `yida-app` 子技能，由它按标准编排流程执行 |
+| 跳过 PRD 设计阶段，凭感觉定义字段和页面结构 | 先由 `yida-design` 输出 `prd/<项目名>.md`，再按 PRD 创建资源 |
+| 把 `yida-create-app` 当作“搭建应用”的入口 | `yida-create-app` 只是 `yida-app` 编排流程中的一个阶段步骤 |
+
+触发条件：用户消息包含“搭建应用”“创建系统”“做一个管理系统”“从零创建应用”“build an app”等完整应用构建意图，必须路由到 `yida-app`。完整路由规则详见 `yida-skills/SKILL.md` 的"第二步：意图路由"章节。
+
 ## 开发注意事项
 
 1. **不要修改 `yida-skills/` 下的文档**，除非是在更新技能描述

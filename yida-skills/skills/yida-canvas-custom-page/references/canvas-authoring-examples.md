@@ -60,7 +60,7 @@ export default YidaComp;
 
 ## 3. 可视化：recharts 图表
 
-`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读取当前应用主题 token；用户明确要求应用主题风格时才跟随运行态应用主题（见 [canvas-design-system.md](canvas-design-system.md)）。
+`recharts` 在可用资源清单内。标准 `import` 即可，CLI 本地编译会把它计入 `importedModules`。图表容器给定高度，保证首屏可渲染。图表颜色是 JS 传给库的字符串，用 `readBrandColor` 读取当前应用主题 token；用户明确要求应用主题风格时才跟随运行态应用主题（见 [canvas-style-implementation-guide.md](canvas-style-implementation-guide.md)）。
 
 ```jsx
 import React from 'react';
@@ -156,8 +156,9 @@ export default YidaComp;
 ## 通用自查清单
 
 - 入口：源码有 `export default YidaComp`（或返回组件函数），主组件已完成默认导出。
-- 依赖：所有 `import` 都在可用资源清单内，能出现在编译结果 `dependencies` 里。
+- 依赖：所有包依赖都用标准 `import`，并能出现在编译结果 `importedModules` 里；React、antd、Ant Design Icons、Recharts、ahooks 等不要直接从 `window.*` 解构。
+- 文案：JSX 文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；花括号里只放真实变量/表达式，不写 `{所有级别}` 这类裸中文表达式。
 - 副作用：每个 `useEffect` 的定时器 / 监听 / 图表实例都有 cleanup。
 - 数据：读写走同源 `fetch` + `credentials: 'include'`，无硬编码 Cookie / CSRF / appSecret。
-- 主色：antd 走 `ConfigProvider.colorPrimary`、Tailwind 走 `var(--color-brand1-*)`、图表走 `readBrandColor`，无散落的 `#1677ff` / `bg-blue-500`（见 [canvas-design-system.md](canvas-design-system.md)）。
+- 主色：antd 走 `ConfigProvider.colorPrimary`、Tailwind 走 `var(--color-brand1-*)`、图表走 `readBrandColor`，无散落的 `#1677ff` / `bg-blue-500`（见 [canvas-style-implementation-guide.md](canvas-style-implementation-guide.md)）。
 - 原生字段组件（`EmployeeField` 等）：先按 [employeefield-verification.md](employeefield-verification.md) 最小验证，缺证据就降级。

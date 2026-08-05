@@ -97,14 +97,9 @@ description: 宜搭表格形态批量表单提交页面开发。支持动态增�
 
 ---
 
-## 完整示例代码
+## 实现内容
 
-> 📖 完整的表格表单示例代码（含动态增删行、行内验证、Excel 粘贴导入、草稿暂存、批量提交）通过以下命令获取：
-
-```bash
-openyida sample yida-table-form table-form-batch-submit
-```
-
+表格表单页面需要包含动态增删行、行内验证、Excel 粘贴导入、草稿暂存和批量提交；字段 ID 先从目标表单 Schema 获取，再写入列配置。
 ---
 
 ## 功能说明
@@ -154,14 +149,6 @@ var COLUMNS = [
 ```
 
 ---
-
-## 代码示例
-
-> 编写表格表单页面前，执行以下命令获取完整示例，再用 `read_file` 读取：
-
-```bash
-openyida sample yida-table-form table-form-batch-submit   # 完整表格表单示例（行内编辑/验证/Excel粘贴/草稿/批量提交）
-```
 
 ## 注意事项
 

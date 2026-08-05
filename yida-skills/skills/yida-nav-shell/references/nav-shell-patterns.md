@@ -1,6 +1,6 @@
 # B 端导航壳形态目录
 
-当页面被用户显式要求隐藏应用导航（`isRenderNav=false`，见 [yida-page-uiux Step 0 导航形态判定](../../yida-page-uiux/workflow/step-0-nav-shape.md)），页面要**自带导航壳**接管应用级导航。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
+当页面被用户显式要求隐藏应用导航（`isRenderNav=false`，先用 `use_skill("yida-design", "判定导航与视觉策略")` 完成入口判断），页面要**自带导航壳**接管应用级导航。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
 
 > 这里给**方向 + 骨架 + 可直接改的代码示例**。默认先用 Code Canvas（React hooks + antd/自绘组件）；文中 `_customState`、`renderJsx`、`this.utils.isMobile()` 代码统一视为 **legacy/native 示例**，只用于维护普通自定义页面。
 
@@ -17,10 +17,10 @@
 ## 通用纪律（B 端 + 去 AI 味）
 
 - **选中态要一眼可辨**：左侧边用「左侧 3px 主色条 + 浅色底 + 字重加粗」；顶部用「底部 2px 主色下划线 + 主色文字」。别只靠淡淡变色。
-- **图标只作功能用途**：导航项用「功能性内联 SVG + 文字」，同页一套图标风格；**禁 emoji**、禁每项前配装饰图标（见 [yida-page-uiux 图标纪律](../../yida-page-uiux/workflow/step-5-icon-and-assets.md)）。
+- **图标只作功能用途**：导航项用 `lucide-react` 或 `@ant-design/icons` 的具体组件 + 文字，默认 `lucide-react`，同页一套图标风格；**禁 emoji**、CSS 绘制图形、字母占位和每项前配装饰图标（见 [yida-design UI 视觉和状态设计](../../yida-design/workflow/step-5-visual-states.md)）。
 - **不做营销脸**：没有巨 Logo Hero、没有渐变横幅。顶部条左侧放「应用名/模块名 + 面包屑」，右侧放「用户/操作」，克制。
 - **密度可偏高**：B 端导航允许信息密集，但要有主次；分组用小标题或分隔线，不要一长串平铺。
-- **主色策略**：导航隐藏时主色相可自立（见 yida-page-uiux Step 0）；仍要么走品牌 `var(--color-brand1-*)`、要么用自定主色一以贯之，语义色固定。
+- **主色策略**：导航隐藏时主色相可自立（见 yida-design 入口路由）；仍要么走品牌 `var(--color-brand1-*)`、要么用自定主色一以贯之，语义色固定。
 - **先关原导航**：只有用户显式要求隐藏平台导航时，发布目标页面才配置 `isRenderNav=false`；不要因为普通页面内 tab / 内容区导航默认关闭平台导航。
 - **URL 参数不丢失**：跨页导航项要保存 `params` 并统一构造 URL；自定义页目标至少带 `isRenderNav=false`，需要跨组织或深链时合并 `corpid`、`tab`、`view` 等白名单参数。
 
