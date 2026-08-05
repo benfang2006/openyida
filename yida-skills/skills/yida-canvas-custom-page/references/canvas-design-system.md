@@ -36,6 +36,73 @@
 5. `componentRecipe`：统一按钮、入口、标签、图标、列表、图表、空态和弹层。
 6. `acceptanceChecks`：逐项检查 10+ contentBlocks、无大空白卡、主色跟随应用主题、KPI/快捷入口子项不计数、移动端不挤压。
 
+## 背景层实现规则
+
+实现 `design.md` 的 `backgroundLayer` 时，先考虑页面根画布，再做内容面板。不要先堆白卡片再临时补装饰。展示型页面、工作台、看板、门户、官网、登录页和空状态页推荐有非纯空白的画布；近白画布可以保留，但要通过淡渐变、细线、星芒、局部装饰、素材或内容密度形成背景感。如果 `design.md` 指定 `topIrregularWash`、`radialGlowWash`、`flowLight` 或 `organicNoise`，必须在源码里落成对应 CSS。
+
+推荐结构：
+
+```jsx
+<div className="oy-page-root" data-yida-theme-root="true">
+  <style>{OPENYIDA_BACKGROUND_LAYER_CSS}</style>
+  <main className="oy-page-content">{/* content */}</main>
+</div>
+```
+
+推荐 CSS：
+
+```css
+.oy-page-root {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(120, 170, 255, .16), transparent 34%),
+    linear-gradient(135deg, #f7fbff 0%, #fff8f0 48%, #f4faf7 100%);
+}
+.oy-page-root::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 320px;
+  background: linear-gradient(120deg, rgba(255, 210, 222, .42), rgba(204, 238, 231, .38));
+  clip-path: polygon(0 0, 100% 0, 100% 68%, 78% 78%, 52% 68%, 29% 84%, 0 72%);
+  pointer-events: none;
+  z-index: -2;
+}
+.oy-page-root::after {
+  content: "";
+  position: absolute;
+  inset: -30% -20% auto -20%;
+  height: 240px;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .42), transparent);
+  transform: translateX(-28%);
+  animation: oy-flow-light 18s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+.oy-page-content {
+  position: relative;
+  z-index: 1;
+}
+@keyframes oy-flow-light {
+  0%, 100% { transform: translateX(-28%); opacity: .22; }
+  50% { transform: translateX(28%); opacity: .42; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oy-page-root::after { animation: none; opacity: .18; }
+}
+```
+
+落地要求：
+
+- `softTintCanvas`：根节点使用低饱和浅底、带弱渐变的近白画布或深色舞台；不要为了背景感强行铺满高饱和色。
+- `topIrregularWash`：用 `::before`、`clip-path`、局部 SVG 背景或伪元素形成顶部波浪、斜切、有机边界、细线曲线或图形标记；内容层固定在规则栅格上。
+- `radialGlowWash`：使用大面积柔和径向光或光洗，禁止离散装饰圆球、bokeh 和随机漂浮点。
+- `flowLight`：流光只做低速、低透明背景层，并写 `prefers-reduced-motion`。
+- `organicNoise`：微噪点只能用极低透明度背景图或 CSS 纹理，文字和表格区域保持干净。
+
 ## 源码结构验收
 
 页面源码不能只堆 section 或 Card。写完 `.canvas.jsx` 后，按下面结构自检：
@@ -49,10 +116,10 @@
 - `contextPrimitive`：有右侧洞察、风险、负责人、下一步建议或关联对象，避免页面只有左到右平铺卡片。
 - `statePrimitive`：loading、empty、error、未接数据都有薄空态、刷新、登记或补录动作。
 - `responsiveRule`：移动端分栏退化为单列，关键状态、动作和主内容保留，不让文字和按钮挤压。
-- `backgroundLayer` / `surfaceMaterial` / `colorRoles` / `depthRule`：有玻璃感、质感或丰富色彩诉求时，源码必须有分层背景、半透明玻璃面板、明确辅助色角色和深度规则。
+- `backgroundLayer` / `surfaceMaterial` / `colorRoles` / `depthRule`：源码按 `design.md` 落地分层背景、半透明玻璃或细线面板、明确辅助色角色和深度规则；近白画布可接受，但应有渐变、装饰、素材焦点或内容密度支撑。
 
 缺少 `prioritySurface`、`contentPrimitive` 或 `statePrimitive` 任意一项，不能交付为“已打磨页面”。
-要求玻璃感但源码只有纯白背景和纯白不透明卡片，也不能交付为“已打磨页面”。
+要求玻璃感但源码只有普通白底和纯白不透明卡片，也不能交付为“已打磨页面”；如果选择极简近白背景，需要在截图和源码中体现细节层次。
 
 ## 平台品牌色变量
 

@@ -304,6 +304,12 @@ describe('OpenYida skill contracts', () => {
     expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
     expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
     expect(outputDesign).toContain('collectYidaThemeDocuments');
+    expect(outputDesign).toContain('backgroundLayer:');
+    expect(outputDesign).toContain('### Background Layer Contract');
+    expect(outputDesign).toContain('softTintCanvas');
+    expect(outputDesign).toContain('topIrregularWash');
+    expect(outputDesign).toContain('flowLight');
+    expect(outputDesign).toContain('prefers-reduced-motion');
     expect(output).not.toContain('## PRD 模板');
     expect(output).not.toContain('推荐模板');
     expect(output).not.toContain('区别于 sample 默认风格');
@@ -330,6 +336,11 @@ describe('OpenYida skill contracts', () => {
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('## 5. 视觉层次门禁');
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('`backgroundLayer`');
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('`surfaceMaterial`');
+    expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('背景层推荐要求');
+    expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('背景可以不规则，内容必须规则');
+    expect(scaffoldRecipes).toContain('## 背景层配方');
+    expect(scaffoldRecipes).toContain('radialGlowWash');
+    expect(scaffoldRecipes).toContain('organicNoise');
     expect(design).toContain('[design.md 输出格式](workflow/output-design.md)');
     expect(output).toContain('- pageSpecHandoff：');
     expect(outputDesign).toContain('- visualScaffold：<rootShell / prioritySurface / statusPrimitive / actionPrimitive / contentPrimitive / contextPrimitive / statePrimitive / responsiveRule>');
@@ -351,7 +362,8 @@ describe('OpenYida skill contracts', () => {
     expect(pageGeneration).toContain('回写 `prd.md`，再重新派生 `page-spec.json`');
     expect(pageGeneration).toContain('回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现');
     expect(pageGeneration).toContain('只有实现偏差才对生成源码做小范围 Edit/patch');
-    expect(pageGeneration).toContain('纯白背景 + 纯白不透明卡片不满足玻璃感页面');
+    expect(pageGeneration).toContain('近白画布如果有渐变、装饰、素材焦点或足够内容密度，可以作为背景感方案');
+    expect(pageGeneration).toContain('`.oy-page-root` 承载基础底色');
     expect(pageGeneration).toContain('主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件规则、状态规则、响应式规则不足或错误');
     expect(pageGeneration).toContain('所有展示型页面都按当前项目 `design.md` 的 `visualScaffold` 实现');
     expect(pageGeneration).toContain('`visualScaffold` 必须来自 `design.md`');
@@ -898,6 +910,11 @@ describe('OpenYida skill contracts', () => {
     expect(canvasDesignSystem).toContain('## 视觉落地顺序');
     expect(canvasDesignSystem).toContain('先读取 `prd/<项目名>/design.md`');
     expect(canvasDesignSystem).toContain('theme-runtime-helpers.md');
+    expect(canvasDesignSystem).toContain('## 背景层实现规则');
+    expect(canvasDesignSystem).toContain('OPENYIDA_BACKGROUND_LAYER_CSS');
+    expect(canvasDesignSystem).toContain('.oy-page-root::before');
+    expect(canvasDesignSystem).toContain('clip-path');
+    expect(canvasDesignSystem).toContain('prefers-reduced-motion');
     expect(readSkill('yida-skills/skills/yida-canvas-custom-page/references/theme-runtime-helpers.md')).toContain('collectYidaThemeDocuments');
     expect(readSkill('yida-skills/skills/yida-canvas-custom-page/references/theme-runtime-helpers.md')).toContain('cursor.parent');
     expect(customPage).toContain('theme-runtime-helpers.md');

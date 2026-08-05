@@ -43,8 +43,11 @@
 - `componentRecipe` 写清按钮、入口、标签、列表、图表和空态的具体形态。
 - 源码槽位写清 `rootShell`、`prioritySurface`、`statusPrimitive`、`actionPrimitive`、`contentPrimitive`、`contextPrimitive`、`statePrimitive` 和 `responsiveRule`。
 - 视觉层次写清 `backgroundLayer`、`surfaceMaterial`、`colorRoles` 和 `depthRule`；需要玻璃感时，明确半透明表面、`backdrop-filter`、细边框、柔和阴影和背景层。
+- `backgroundLayer` 写清基础画布和推荐装饰方式，可选 `softTintCanvas`、`topIrregularWash`、`radialGlowWash`、`flowLight` 或 `organicNoise`。工作台、看板、门户、官网、登录页和空状态页推荐使用非纯空白的画布；如果选择近白画布，要说明渐变、细线、星芒、插图、局部光影或内容密度如何形成背景感。
+- 不规则背景只作用于页面壳、顶部首屏、功能引导卡或空状态安全区；内容布局继续使用规则栅格、稳定分栏和清晰对齐，做到“背景自由、内容严谨”。
+- `flowLight`、流动线条或光影动效必须低饱和、低对比、低速，并写 `prefers-reduced-motion` 静态降级；禁止离散装饰圆球、bokeh 或干扰文字阅读的背景动效。
 - 这些字段要能直接指导实现，而不是形容词；实现者应能按 `design.md` 写出根容器、分栏、背景层、表面材质、按钮状态和空态。
-- `acceptanceChecks` 至少包含：10+ `contentBlocks`、KPI/快捷入口子项不计数、首屏至少两层信息、没有大空白卡、主色跟随应用主题。
+- `acceptanceChecks` 至少包含：10+ `contentBlocks`、KPI/快捷入口子项不计数、首屏至少两层信息、没有大空白卡、主色跟随应用主题、背景或装饰层不干扰前景对比度。
 
 ## 3. 写组件和状态规则
 
@@ -77,6 +80,8 @@
 10. 自定义展示页是否在 PRD 中引用 `designFile` 和 `designRefs`，且 `design.md` 已写清视觉 DNA 和页面场景规则。
 11. 工作台 / 业务首页是否避开“4 个等宽大 KPI 卡 + 图标快捷卡 + 大空态白卡”的低密模板；空数据是否用薄空态行和主操作入口承接。
 12. 工作台、首页、门户、看板、展示页和业务入口页是否至少有 10 个有业务目的的区块以上，并且不是靠重复卡片或空白容器凑数；KPI 子项、快捷入口子项和列表行不能分别计数。
+13. 页面是否已考虑 `backgroundLayer`：优先选择淡色背景、顶部不规则色块、柔和光洗、低速流光、微噪点、细线装饰、插图或局部渐变之一；近白画布可以保留，但不能呈现为未设计的空白底。
+14. 不规则背景是否只服务氛围和视觉焦点，内容区是否仍保持规则栅格、稳定对齐、可读对比度和 reduced motion 降级。
 
 ## 产出
 

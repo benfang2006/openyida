@@ -44,7 +44,9 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 
 `visualScaffold` 必须来自 `design.md`，并映射到源码 primitive：`rootShell`、`prioritySurface`、`statusPrimitive`、`actionPrimitive`、`contentPrimitive`、`contextPrimitive`、`statePrimitive` 和 `responsiveRule`。如果只有区块名称，没有这些源码级槽位，先补 design.md，不要直接开始写 CSS。
 
-页面要求玻璃感、质感或丰富色彩时，必须消费 `backgroundLayer`、`surfaceMaterial`、`colorRoles` 和 `depthRule`：页面根节点至少有基础底色 + 弱渐变/径向光/素材遮罩；玻璃面板使用半透明 `rgba` 表面、`backdrop-filter`、细边框和柔和阴影；色彩角色至少区分应用主色、辅助色、语义色和图表色。纯白背景 + 纯白不透明卡片不满足玻璃感页面。
+页面要求玻璃感、质感、背景感、光影、流光、不规则顶部或丰富色彩时，必须消费 `backgroundLayer`、`surfaceMaterial`、`colorRoles` 和 `depthRule`：页面根节点优先使用 `softTintCanvas`、带弱渐变的近白画布、细线装饰或素材焦点，再按 `design.md` 选择 `topIrregularWash`、`radialGlowWash`、`flowLight` 或 `organicNoise`。`topIrregularWash` 用顶部波浪、斜切、有机色块、轻装饰曲线或图形标记形成首屏背景；`radialGlowWash` 使用大面积柔和光洗，不使用离散装饰圆球或 bokeh；`flowLight` 必须低速低透明，并写 `prefers-reduced-motion` 静态降级。玻璃面板使用半透明 `rgba` 表面、`backdrop-filter`、细边框和柔和阴影；色彩角色至少区分应用主色、辅助色、语义色和图表色。纯白背景 + 普通纯白不透明卡片不满足玻璃感页面；但近白画布如果有渐变、装饰、素材焦点或足够内容密度，可以作为背景感方案。
+
+实现背景层时先写根节点和伪元素，再写内容网格：`.oy-page-root` 承载基础底色、`::before` 承载不规则顶部色块或光洗、`::after` 承载低速流光或弱纹理，`.oy-page-content` 使用 `position: relative; z-index: 1;`。背景可以不规则，内容必须规则；标题、筛选、表格、图表、按钮和列表都保持稳定栅格、对齐和对比度。
 
 数据真实性边界：
 

@@ -56,6 +56,12 @@ colors:
   text-secondary: "#..."
   border-subtle: "#..."
   brand: "#..."
+backgroundLayer:
+  baseCanvas: <低饱和浅底、带装饰的近白画布或深色舞台；推荐避免无层次的纯空白画布>
+  primitives: [softTintCanvas, topIrregularWash, radialGlowWash, flowLight, organicNoise]
+  topIrregularWash: <可选；不规则顶部色块、波浪或斜切背景，内容仍按规则栅格排布>
+  motionLayer: <none / subtle-flow-light；必须有 prefers-reduced-motion 降级>
+  contrastGuard: <前景文字和控件对比度要求>
 typography:
   page-title:
     fontFamily: "<字体栈>"
@@ -123,6 +129,20 @@ inferred_modules:
 
 说明深度来自平面表面、边框、阴影、色调层、毛玻璃、覆盖层或空间效果，并说明哪些地方不该使用阴影。
 
+### Background Layer Contract
+
+展示型页面、工作台、看板、门户、官网、登录页和空状态页推荐使用有层次的页面画布，而不是无氛围的纯空白背景。画布可以接近白色，但应通过淡渐变、细线装饰、星芒、高光、插图、顶部不规则色块或内容密度形成背景感。背景层写成可实现字段 `backgroundLayer`，优先选择 1-2 个背景 primitive：
+
+| primitive | 适用场景 | 实现要求 |
+| --- | --- | --- |
+| `softTintCanvas` | 工作台、列表、管理后台 | 使用低饱和高明度底色，例如暖灰、浅青、浅粉、浅蓝紫，也可以是带弱渐变的近白画布；前景内容保持规则栅格 |
+| `topIrregularWash` | 官网、品牌页、主页面首屏、登录页、空状态页 | 顶部或首屏使用不规则色块、波浪、斜切、有机边界或轻装饰曲线；内容不跟随背景扭曲 |
+| `radialGlowWash` | AI 产品、SaaS、驾驶舱、视觉化工作台 | 使用大面积柔和径向光或光洗，不使用离散装饰圆球、bokeh 或随机漂浮点 |
+| `flowLight` | 科技感主视觉、数据看板、引导卡片 | 使用极慢速流光或光影位移动效；必须提供 `prefers-reduced-motion` 静态降级 |
+| `organicNoise` | 温暖亲和、生活方式、轻品牌页 | 叠加 0.02-0.06 透明度微噪点或细纹理，减少机械感，不影响阅读 |
+
+背景可以不规则，内容必须规则。所有主要内容仍使用明确网格、分栏、对齐和稳定间距，不能因为背景形状导致文字、按钮、图表或表格漂移。B 端页面的背景色保持低饱和、高明度；深色大屏可使用低亮度流动线条或光效纹理衬托数据，但正文对比度必须达标。若选择极简近白画布，必须用清晰内容结构、细线装饰、局部渐变或素材焦点证明页面不是未设计的空白底。
+
 ## 9. 形状
 
 定义圆角尺度，以及每个尺度分别用于哪里。
@@ -178,6 +198,8 @@ inferred_modules:
 - 在根组件中调用 `useYidaGlobalTheme(CUSTOM_THEME_TOKENS)`。
 - `CUSTOM_THEME_TOKENS` 必须来自本 design.md 的 `tokens`，不能临场另配。
 - 根节点写 `<div data-yida-theme-root className="...">`。
+- `backgroundLayer` 必须落到根节点背景、`::before` 顶部不规则色块或大面积光洗、`::after` 流光/纹理层；内容层使用相对定位和更高 `z-index`，保证背景不盖住操作区。
+- `flowLight` 动效必须写 `@media (prefers-reduced-motion: reduce)` 停止动画。
 
 ### 普通 JSX 实现要求
 
@@ -218,6 +240,8 @@ inferred_modules:
 - [ ] 组件包含状态规则，而不只是静态外观。
 - [ ] 响应式和可访问性规则完整。
 - [ ] `themeProfile`、`yidaThemeRuntime` 和 `tokens` 一致。
+- [ ] `backgroundLayer` 已说明基础画布、装饰方式和是否使用背景 primitive；若选择近白画布，已说明如何通过渐变、细线、素材或内容密度形成背景感。
+- [ ] 若使用 `topIrregularWash`、`flowLight` 或 `organicNoise`，已写清对比度、内容栅格和 reduced motion 降级。
 - [ ] 自定义色盘没有传给 `create-app/update-app --theme`。
 - [ ] 需要运行时主题时，已声明复制 `theme-runtime-helpers.md`，并覆盖当前窗口与同源父级窗口。
 - [ ] 不依赖原截图，也能指导生成一个新页面。
