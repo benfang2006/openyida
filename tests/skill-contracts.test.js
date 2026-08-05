@@ -130,6 +130,8 @@ describe('OpenYida skill contracts', () => {
 
     const design = byName.get('yida-design');
     expect(design.description).toContain('当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用');
+    expect(design.description).toContain('本技能基于需求分析和资源上下文');
+    expect(design.description).toContain('页面实现交给 yida-canvas-custom-page 或 yida-custom-page');
     expect(design.description).toContain('本技能不写页面源码');
     expect(design.done_when).toContain('prd/<项目名>/prd.md');
     expect(design.done_when).toContain('prd/<项目名>/design.md');
@@ -256,6 +258,7 @@ describe('OpenYida skill contracts', () => {
     const step3 = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
     const step5 = readSkill('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
     const output = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
+    const outputDesign = readSkill('yida-skills/skills/yida-design/workflow/output-design.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
     const styleSelection = readSkill('yida-skills/skills/yida-design/references/style-design-selection.md');
     const scaffoldRecipes = readSkill('yida-skills/skills/yida-design/references/visual-scaffold-recipes.md');
@@ -291,6 +294,16 @@ describe('OpenYida skill contracts', () => {
     expect(design).not.toContain('应用体验蓝图');
     expect(design).not.toContain('推荐模板');
     expect(output).toContain('## PRD 输出格式');
+    expect(output).not.toContain('## design.md 输出格式');
+    expect(outputDesign).toContain('## design.md 输出格式');
+    expect(outputDesign).toContain('themeProfile:');
+    expect(outputDesign).toContain('yidaThemeRuntime:');
+    expect(outputDesign).toContain('globalThemeInjection: <style#yida-global-theme / customThemeStyle.tokens / none>');
+    expect(outputDesign).toContain('## 16. 实现适配');
+    expect(outputDesign).toContain('### Yida Global Theme Runtime Contract');
+    expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
+    expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
+    expect(outputDesign).toContain('collectYidaThemeDocuments');
     expect(output).not.toContain('## PRD 模板');
     expect(output).not.toContain('推荐模板');
     expect(output).not.toContain('区别于 sample 默认风格');
@@ -317,8 +330,9 @@ describe('OpenYida skill contracts', () => {
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('## 5. 视觉层次门禁');
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('`backgroundLayer`');
     expect(readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md')).toContain('`surfaceMaterial`');
-    expect(output).toContain('## design.md 输出格式');
+    expect(design).toContain('[design.md 输出格式](workflow/output-design.md)');
     expect(output).toContain('- pageSpecHandoff：');
+    expect(outputDesign).toContain('- visualScaffold：<rootShell / prioritySurface / statusPrimitive / actionPrimitive / contentPrimitive / contextPrimitive / statePrimitive / responsiveRule>');
     expect(output).toContain('- designFile：<prd/<项目名>/design.md>');
     expect(output).toContain('- designRefs：<themeProfile / sceneRecipes.<scene> / components.<name> / states.<name>>');
     expect(design).toContain('[视觉脚手架配方库](references/visual-scaffold-recipes.md)');
@@ -442,7 +456,8 @@ describe('OpenYida skill contracts', () => {
     expect(formDetail).toContain('Divider 策略');
     expect(formDetail).toContain('作为表单视觉引导加载时，不要直接注入 formDetail CSS');
     expect(formDetail).not.toContain('后续可 CLI 化');
-    expect(formDetail).not.toContain('form-detail-style');
+    expect(formDetail).toContain('openyida form-detail-style check');
+    expect(formDetail).toContain('openyida form-detail-style apply');
     expect(manifest).toContain("default_form_visual_guidance_skill_id: 'yida-form-detail'");
     expect(manifest).toContain('merges Divider semantic grouping into field JSON');
   });

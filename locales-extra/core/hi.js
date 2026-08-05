@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'कस्टम पेज कंपाइल और प्रकाशित करें',
     cmd_update_form_config: 'फॉर्म कॉन्फ़िगरेशन अपडेट करें',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'डेटा & अनुमतियां',
     cmd_data: 'एकीकृत डेटा प्रबंधन (फॉर्म/प्रक्रिया/कार्य/उप-फॉर्म)',
     cmd_task_center: 'वैश्विक कार्य केंद्र (लंबित/संसाधित/CC आदि)',

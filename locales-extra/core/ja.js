@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'カスタムページをコンパイル＆公開',
     cmd_update_form_config: 'フォーム設定を更新',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'データ & 権限',
     cmd_data: '統合データ管理（フォーム/プロセス/タスク/サブフォーム）',
     cmd_task_center: 'グローバルタスクセンター（未処理/処理済/CC等）',

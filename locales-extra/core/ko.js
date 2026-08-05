@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: '사용자 정의 페이지 컴파일 및 게시',
     cmd_update_form_config: '양식 설정 업데이트',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: '데이터 & 권한',
     cmd_data: '통합 데이터 관리 (양식/프로세스/작업/하위양식)',
     cmd_task_center: '글로벌 작업 센터 (할일/처리됨/참조 등)',

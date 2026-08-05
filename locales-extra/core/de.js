@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'Benutzerdefinierte Seite kompilieren & veröffentlichen',
     cmd_update_form_config: 'Formularkonfiguration aktualisieren',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'Daten & Berechtigungen',
     cmd_data: 'Einheitliche Datenverwaltung (Formular/Prozess/Aufgabe/Unterformular)',
     cmd_task_center: 'Globales Aufgabenzentrum (Aufgaben/Bearbeitet/CC etc.)',

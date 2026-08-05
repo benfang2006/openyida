@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: '編譯並發布自訂頁面',
     cmd_update_form_config: '更新表單設定',
     cmd_get_form_config: '查询表单配置',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: '資料 & 權限',
     cmd_data: '統一資料管理（表單/流程/任務/子表單）',
     cmd_task_center: '全域任務中心（待辦/已處理/抄送等）',

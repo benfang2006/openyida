@@ -1,28 +1,28 @@
 # 应用主题与 token 参考
 
-本文件是 OpenYida 应用主题的统一参考。其他 skill 需要应用主题 key、默认推荐主题或 token 变量时，引用本文，不在各自文档里重复维护完整主题清单。
+本文件是 OpenYida 应用主题的统一参考。其他 skill 需要应用主题 key、平台候选主题或 token 变量时，引用本文，不在各自文档里重复维护完整主题清单。
 
-默认推荐使用 `podBlue`、`podGreen`、`podOrange` 等应用主题。`blue`、`green`、`orange` 也是应用主题 token profile，保留原名，不自动改写成其他主题名。
+主题选择先根据行业、品牌、业务情绪和视觉目标做创意判断，不能固定回到 `podBlue` 或 #1677ff，也不能套用“科技=蓝、宠物=橙、法律=蓝”这类行业刻板配色。`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是默认答案；`blue`、`green`、`orange` 也是应用主题 token profile，保留原名，不自动改写成其他主题名。
 
 `deepBlue`、`deepPurple`、`purple`、`yellow`、`magenta`、`red`、`greyBlue`、`coffee`、`black` 等属于平台支持主题；仅在用户明确指定、品牌匹配或业务确实需要时使用。普通业务页默认使用浅底主题，`black` 不作为默认主题。
 
-注意：`openyida create-app/update-app --theme` 只能传平台支持的应用主题 key；页面级 `--theme-profile` / `style#yida-global-theme` 可以使用本文的应用主题 token profile。
+注意：`openyida create-app/update-app --theme` 只能传平台支持的应用主题 key。若设计结果是任意自定义品牌色、渐变色盘或不在清单里的主题名，创建应用时不要显式传 `theme/colour`；把色盘写成 `style#yida-global-theme` 或 `customThemeStyle.tokens` 注入。页面级 `--theme-profile` / `style#yida-global-theme` 可以使用本文的应用主题 token profile。
 
 ## 应用主题 key 清单
 
-| key | 颜色倾向 | 默认推荐 |
+| key | 颜色倾向 | 使用口径 |
 | --- | --- | --- |
 | `blue` | 基础蓝 | 按需 |
 | `green` | 基础绿 | 按需 |
 | `orange` | 基础橙 | 按需 |
 | `podBule` | 平台兼容蓝色拼写 | 按需 |
-| `podBlue` | 平台蓝 | 是 |
+| `podBlue` | 平台蓝 | 常用候选，不默认 |
 | `teal` | 青色 | 按需 |
-| `podGreen` | 平台绿 | 是 |
+| `podGreen` | 平台绿 | 常用候选，不默认 |
 | `deepBlue` | 深蓝 | 按需 |
 | `deepPurple` | 深紫 | 按需 |
 | `purple` | 紫色 | 按需 |
-| `podOrange` | 平台橙 | 是 |
+| `podOrange` | 平台橙 | 常用候选，不默认 |
 | `yellow` | 黄色 | 按需 |
 | `magenta` | 玫红 | 按需 |
 | `red` | 红色 | 按需 |

@@ -604,6 +604,10 @@ if (this.utils.isMobile()) {
 
 > `viewUuid` 可选，从宜搭「数据管理」→「报表视图」页面的 URL 中获取，不传则使用默认视图。
 
+### 16.1 自定义主题注入到 iframe 父级窗口
+
+普通 JSX 页面需要自定义色盘、隐藏导航沉浸页或 iframe 中承载原生表单时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper。该 helper 会向当前文档和同源可访问的所有父级窗口文档注入 `style#yida-global-theme`；跨域父级静默降级。不要只向当前页面 `document.head` 写 style，否则嵌套 iframe 时父级壳层和抽屉内表单可能读不到同一套 token。
+
 ### 17. 下拉选项控制选项卡（Tabs）表格页显示/隐藏
 
 当页面中存在选项卡组件包含多个表格页，需要根据下拉选择框的值动态控制特定表格页的显示或隐藏时，使用状态驱动的条件渲染实现。

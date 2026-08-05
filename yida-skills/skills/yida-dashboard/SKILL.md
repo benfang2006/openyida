@@ -85,7 +85,7 @@ metadata:
 
 Canvas 页面入口：
 
-- `page-spec.json` 决定页面目标、指标、区块、主题和交互。
+- `prd.md` 决定页面目标、指标、区块和交互，`design.md` 决定主题、布局和视觉状态；`page-spec.json` 只作为生成器需要时的派生输入。
 - 默认主题从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择；用户明确要求应用主题风格/应用主题色时，才使用 `yida-app-theme`。
 - 用户强调“大屏 / 指挥舱 / 实时监控”时使用 `screen` 场景；普通经营看板使用 `dashboard` 场景。
 - Canvas 编译与发布细节以 `yida-canvas-custom-page` 为准；不要把 `openyida check-page`、`.oyd.jsx` 或 `renderJsx` 写成默认步骤。

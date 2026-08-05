@@ -833,6 +833,12 @@ async function main() {
       break;
     }
 
+    case 'form-detail-style': {
+      const { run: runFormDetailStyle } = require('../lib/app/form-detail-style');
+      await runFormDetailStyle(args);
+      break;
+    }
+
     case 'update-app': {
       if (args.length < 2) {
         throwCliUsage(t('cli.update_app_usage'), t('cli.update_app_example'));

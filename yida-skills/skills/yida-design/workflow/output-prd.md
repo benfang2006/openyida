@@ -1,6 +1,6 @@
-# 输出：宜搭 PRD 文档
+# 输出：prd.md
 
-> Step 6 自检通过后，只输出一份可写入 `prd/<项目名>.md` 的 PRD。PRD 记录业务语义、产品设计、页面布局、主题色配置、应用级运行上下文、资源创建顺序、页面实现交付顺序和导航顺序；表单、字段、页面等创建后的细节 ID 写入 `.cache/<项目名>-schema.json`，不直接输出 `page-spec.json`。
+> Step 6 自检通过后，写入 `prd/<项目名>/prd.md`。`prd.md` 记录业务语义、产品设计、页面结构、资源创建顺序、页面实现交付顺序和导航顺序。PRD 不写 UI 视觉设计规范，只写应用主题色和风格摘要，并引用 `design.md` 章节。
 
 ## PRD 输出格式
 
@@ -50,11 +50,10 @@
 - 页面定位：<主入口页面 / 核心业务页 / 详情页 / 报表页 / 配置页；说明为什么需要这个页面>
 - 页面目标：<这个页面帮助用户完成什么判断或操作>
 - 页面关系：<从哪里进入、下一步去列表 / 看板 / 表单提交 / 详情 / 报表中的哪一个>
-- 页面风格：<display-page 填 `design_id`；普通表单 / 流程表单写“跟随应用主题”>
-- designMd：<display-page 填 `references/style-designs/<design-id>.design.md`；普通表单 / 流程表单留空>
-- 风格理由：<一句话说明该风格为什么适合当前页面任务>
-- 视觉 DNA：<从 design.md 中提取 2-5 个必须保留的视觉 DNA>
-- 主题关系：<跟随应用主题色 / 页面级独立色盘原因>
+- 设计文件：<display-page 填 `prd/<项目名>/design.md`；普通表单 / 流程表单写“跟随应用主题与表单视觉引导”>
+- 设计引用：<引用 design.md 中的章节 ID，例如 themeProfile、sceneRecipes.workbench、components.table、states.empty>
+- 风格理由：<一句话说明该页面为什么采用 design.md 中的对应场景规则>
+- 主题关系：<跟随应用主题色 / 页面级独立色盘原因；只写摘要，具体 token 与 UI 规则见 design.md>
 - 关联资源：
   - 表单：<表单名称；用于新增、编辑、查询或作为列表数据来源>
   - 流程：<流程名称；用于提交、审批、处理或状态流转>
@@ -68,22 +67,28 @@
 - 核心组件：<KPI / 快捷入口 / 表格 / 图表 / 表单入口 / 状态标签等>
 - 主操作：<新增 / 提交 / 查看 / 审批 / 编辑 / 跳转>
 - PC / 移动端差异：<PC 抽屉 / 移动端整页 / 卡片堆叠 / 隐藏低频列>
+- pageSpecHandoff：
+  - pageStructure：<workbench-home / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
+  - scene：<workbench / dashboard / list / detail / landing / screen>
+  - contentBlocks：<10+ 区块；KPI/快捷入口/列表/图表子项不分别计数>
+  - themeSummary：<应用主题色 / 风格关键词 / themeScope 摘要；必须与 design.md 一致，不写 token 和视觉规则>
+  - designFile：<prd/<项目名>/design.md>
+  - designRefs：<themeProfile / sceneRecipes.<scene> / components.<name> / states.<name>>
+  - dataBinding：<form / report / connector / static-empty；真实资源 ID 由实现阶段回填>
+  - primaryAction：<主操作和打开方式>
 
-## 5. 视觉规范
+## 5. 应用主题与风格摘要
 
 | 项目 | 内容 |
 | --- | --- |
-| 主题配置 | <themeProfile.name、themeScope、themeColorSource、navTheme=light；与应用基本信息里的主题色一致> |
-| 主色使用 | <主操作、链接、选中态为什么使用该色；对应 `--color-brand1-6` 或品牌色> |
-| 辅助色 | <图表、标签、风险状态的辅助色策略> |
-| 中性色 | <背景、卡片、边框、分割线、文字层级> |
-| 明暗模式 | <light 默认；dark 只在明确暗色/夜间/高对比/黑金时使用> |
-| 页面气质 | <2-3 个关键词，如高效协同、稳重可信、经营洞察> |
-| 布局与密度 | <各页面布局骨架、信息密度、圆角/分割/阴影节奏> |
-| 页面风格设计 | <逐页列出 pageStyle、designMd、视觉 DNA 和区块落点> |
-| 视觉脚手架 | <visualScaffold：layoutRecipe、surfaceMap、sectionRhythm、densityRule、componentRecipe、emptyStateRecipe、acceptanceChecks> |
-| 素材与图标 | <官网/品牌页素材策略；按钮/入口图标风格> |
-| 差异化要点 | <3-5 条贴合当前业务、避免通用页面默认感的设计点> |
+| 设计文件 | `prd/<项目名>/design.md` |
+| 应用主题色 | <平台预置 key 或自定义色盘名称；必须与 design.md 的 Theme Profile 一致> |
+| 风格摘要 | <2-3 个业务风格关键词，例如高效协同、稳重可信、经营洞察；完整 UI 设计见 design.md> |
+| 主题作用域 | <app / page；只写摘要，具体 themeProfile、token、注入策略见 design.md> |
+| 明暗模式 | <light 默认；dark 只在明确暗色/夜间/高对比/黑金时使用；具体色阶见 design.md> |
+| 页面设计引用 | <逐页列出 designRefs，不复制 design.md 内容> |
+| 素材策略摘要 | <官网/品牌页是否需要真实图片或生成图片；具体视觉表达见 design.md> |
+| 一致性要求 | <PRD 中主题色和风格摘要必须与 design.md 保持一致；冲突时以 design.md 为准并修正 PRD 摘要> |
 
 ## 6. 业务逻辑与交互状态
 
@@ -156,6 +161,6 @@
 
 ## 交给实现阶段
 
-- `yida-app` 读取 `prd/<项目名>.md` 后创建或复用资源。
+- `yida-app` 读取 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md` 后创建或复用资源。
 - 真实 ID 写入 `.cache/<项目名>-schema.json`。
-- 页面实现阶段从 PRD 提炼 `page-spec.json`，再交给 Code Canvas 或普通自定义页实现。
+- 页面实现阶段读取 `prd.md` 的业务内容，并直接读取 `design.md` 的主题、布局、材质、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`，再交给 Code Canvas 或普通自定义页实现。

@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'Biên dịch và xuất bản trang tùy chỉnh',
     cmd_update_form_config: 'Cập nhật cấu hình biểu mẫu',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'Dữ liệu & Quyền',
     cmd_data: 'Quản lý dữ liệu thống nhất (biểu mẫu/quy trình/tác vụ/biểu mẫu con)',
     cmd_task_center: 'Trung tâm tác vụ toàn cầu (cần làm/đã xử lý/CC v.v.)',

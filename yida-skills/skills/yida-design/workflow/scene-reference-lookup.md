@@ -1,11 +1,11 @@
 # 场景参考速查
 
-> 这个文件是 Step 3「信息架构」的辅助材料，不是独立流程步骤。先判断页面场景，再按命中结果读取对应 `references/scenes/*.md`。
+> 这个文件是 Step 3「规划页面和导航」的辅助材料，不是独立流程步骤。先判断页面场景，再按命中结果读取对应 `references/scenes/*.md`。
 
 从命中的 scene 文件拿到：
 
 - 场景定位
-- 布局骨架 / 信息架构
+- 页面布局和入口关系
 - 信息密度
 - 焦点（hero）元素
 - 组件组合
@@ -46,4 +46,4 @@
 
 ## 下一步
 
-→ [Step 4：页面原型与交互](step-4-wireframe-interaction.md)
+→ [Step 4：页面结构和交互设计](step-4-wireframe-interaction.md)

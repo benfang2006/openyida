@@ -1,7 +1,7 @@
 ---
 name: yida-form-detail
 description: >
-  表单页视觉引导与表单详情页 formDetail 样式优化。表单页开发默认加载本技能做视觉引导，合并 Divider 分割线语义分组；需要落地详情页样式时，通过 Schema 注入 Html 组件承载 CSS，实现卡片化布局、字段视觉美化、评论区与操作栏调整。
+  表单页视觉引导与表单详情页 formDetail 样式优化。表单页开发默认加载本技能做视觉引导，合并 Divider 分割线语义分组；需要落地详情页样式时，使用 openyida form-detail-style 写入 Html 组件承载 CSS，实现卡片化布局、字段视觉美化、评论区与操作栏调整。
 license: MIT
 compatibility:
   - opencode
@@ -32,6 +32,7 @@ metadata:
 ## 何时使用
 
 - 表单页开发默认加载本技能作为视觉引导：创建表单、更新表单结构、设计字段分组、设计流程表单字段时都适用。
+- 完整应用已有 `prd/<项目名>/design.md` 时，表单视觉引导必须读取 design.md 的 `themeProfile`、表单/详情页场景规则和状态规则；PRD 只提供表单业务目的、填写路径和字段语义。
 - 用户说“表单详情页美化”“详情页优化”“formDetail 样式”“字段详情页不好看”。
 - 新建应用包含表单，且用户希望统一详情页风格。
 - 只调整表单详情页，不改自定义展示页面、不改数据记录。
@@ -70,7 +71,15 @@ metadata:
 
 ### formDetail 样式注入
 
-通过表单 Schema 在 `FormContainer` 首位注入或更新一个宜搭原生 `Html` 组件：
+优先使用 CLI 落地，不要手写接口请求：
+
+```bash
+openyida form-detail-style check <appType> <formUuid> --json
+openyida form-detail-style apply <appType> <formUuid> --preset clean-card --json
+openyida form-detail-style remove <appType> <formUuid> --json
+```
+
+`apply` 会在表单 Schema 的 `FormContainer` 首位注入或更新一个宜搭原生 `Html` 组件：
 
 - 组件 id 固定为 `yida-form-detail-css-html`，便于幂等更新。
 - `props.content` 写入 `<style>...</style>`。
@@ -78,7 +87,7 @@ metadata:
 - `hidden` 必须为 `false`，`isLocked` 建议为 `true`。
 - 同步写入 `root.css` 作为兜底，但以 Html 组件为主要持久化方式。
 
-完整步骤见 [注入流程](references/injection-guide.md)。完整默认 CSS 见 [默认样式](references/form-detail-css.md)。
+完整步骤见 [注入流程](references/injection-guide.md)，用于理解和排障；默认 CSS 见 [默认样式](references/form-detail-css.md)，`--preset clean-card` 默认读取这份样式。
 
 ## 执行流程
 
@@ -88,26 +97,16 @@ metadata:
    openyida login --check-only --json
    ```
 2. 确认目标 `appType` 与表单 `formUuid`。如果用户只给了表单名，先用应用表单列表或 `openyida get-schema <appType> --all` 辅助定位。
-3. 读取 [注入流程](references/injection-guide.md)，按步骤获取 Schema、注入 Html 组件、保存 Schema、刷新 `MINI_RESOURCE`。
+3. 先执行 `openyida form-detail-style check <appType> <formUuid> --json`，确认当前是否已注入。
 4. 需要改色、改圆角或只优化局部时，读取 [默认样式](references/form-detail-css.md)，只调整对应变量或 CSS 分区。
-5. 保存后再次获取 Schema，确认 `yida-form-detail-css-html` 存在，且 `props.content` 包含 `yida-form-detail` 版本注释。
+5. 使用 `openyida form-detail-style apply <appType> <formUuid> --preset clean-card --json` 写入默认样式；如有自定义 CSS，使用 `--css <file>`。
+6. 保存后再次执行 `openyida form-detail-style check <appType> <formUuid> --json`，确认 `yida-form-detail-css-html` 存在，且 `props.content` 包含 `yida-form-detail` 版本注释。
 
 ## 决策规则
 
 - 创建或更新表单结构：默认加载本技能做视觉引导，必须合并 Divider 分割线分组；不默认注入 CSS。
+- 完整应用表单：先读取 `prd.md` 的表单业务目标和字段语义，再读取 `design.md` 的主题、密度、Divider、详情页策略；不要从 PRD 复制视觉规则。
 - 用户要求完整美化：使用默认 CSS 全量注入。
 - 用户只要求某一区域：从默认 CSS 中截取对应分区，仍用同一个 Html 组件承载。
 - 用户有品牌色：优先改 CSS 顶部变量，不要大面积改选择器。
 - 新建应用完成后如包含表单：表单结构阶段已默认使用视觉引导；是否额外注入表单详情页优化样式，按用户要求或交付模式决定。
-
-## 后续可 CLI 化
-
-如果后续要把该技能变成确定性命令，建议新增：
-
-```bash
-openyida form-detail-style apply <appType> <formUuid> [--css file] [--preset clean-card]
-openyida form-detail-style remove <appType> <formUuid>
-openyida form-detail-style check <appType> <formUuid>
-```
-
-命令实现应复用本技能的 Html 组件 id、CSS marker 和保存/刷新流程。

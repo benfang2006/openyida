@@ -1,7 +1,7 @@
 # PRD 输出模板
 
 > 本文档是 `yida-flash-note-to-prd` 技能的参考文档，定义生成的 PRD 文件的标准结构。
-> 生成的高质量 prompt 遵循以下标准结构，写入 `prd/<项目名>.md`。
+> 生成的高质量 prompt 遵循以下标准结构，写入 `prd/<项目名>/prd.md`。
 
 ```markdown
 # <项目名称> — 产品需求文档

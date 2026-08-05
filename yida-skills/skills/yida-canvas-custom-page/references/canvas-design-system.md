@@ -1,19 +1,19 @@
 # Code Canvas 主题 token 与视觉落地
 
-主题色决策来自 `yida-design` PRD 或 page spec。Code Canvas 负责把 `themeProfile`、`themeScope`、`themeColorSource`、`visualProfile` 落到 antd token、CSS 变量、Tailwind、图表和控件状态。
+主题摘要来自 `yida-design` 的 `prd.md`，完整主题和视觉规则来自 `design.md`。Code Canvas 负责把 design.md 中的 `themeProfile`、`themeScope`、`themeColorSource`、tokens、`visualScaffold` 落到 antd token、CSS 变量、Tailwind、图表和控件状态。
 
-真实业务页、页面重构和局部美化以当前应用主题色为基准；缺少主题证据时从 `podBlue`、`podGreen`、`podOrange` 等应用主题中选择。独立品牌/活动页、隐藏导航沉浸页和用户明确要求完全不同风格的页面使用页面级固定主题和差异化色盘。
+真实业务页、页面重构和局部美化以当前应用主题色为基准；缺少主题证据时先按业务气质选择平台预置主题或自定义色盘，不固定回到 `podBlue` / #1677ff。独立品牌/活动页、隐藏导航沉浸页和用户明确要求完全不同风格的页面使用页面级固定主题和差异化色盘。
 
 ## 应用主题与页面风格冲突处理
 
 | 冲突现象 | 处理方式 |
 | --- | --- |
 | 左侧平台导航选中态是应用主题色，页面主按钮 / 标题强调 / 卡片选中态用了另一套主色 | 页面主操作、链接、选中态、重点标签和图表主序列改回应用主题 `--color-brand1-*` |
-| PRD 的 `designMd` 来自青绿、紫色、蓝色等风格，但当前应用主题是橙色或其他色 | 保留 `design.md` 的布局、卡片、密度、图表语言，把 `design.md` 色彩降为辅助色、浅底背景、分组色或第二图表序列 |
+| design.md 的参考风格来自青绿、紫色、蓝色等风格，但当前应用主题是橙色或其他色 | 保留 `design.md` 的布局、卡片、密度、图表语言，把参考色彩降为辅助色、浅底背景、分组色或第二图表序列 |
 | 用户要求导航和内容一起换色 | 走 `themeScope=app`，由应用主题配置或壳层主题更新统一处理 |
 | 页面是隐藏导航的独立官网、活动页、公开落地页 | 走 `themeScope=page`，页面根节点注入 scoped CSS vars，并在 PRD 写明独立色盘原因 |
 
-实现时先读取 `themeRelation`。默认值是 `跟随应用主题`，不是 `跟随 designMd 色相`。
+实现时先读取 `themeRelation`。默认值是 `跟随应用主题`，不是 `跟随参考风格色相`。
 
 ## 工作台卡片密度红线
 
@@ -25,9 +25,9 @@
 - 首屏必须至少有一个任务/动态/最近记录/待处理列表承接真实工作流；若当前没有记录，显示可执行空态，而不是把空白面积留给装饰。
 - 页面整体至少包含 10 个有业务目的的区块以上；这些区块应通过密度、主次、分栏和列表节奏形成丰富度，不通过重复大卡片形成面积。计数按区块组算，KPI 子项、快捷入口子项和列表行不能分别计数。
 
-## 弱模型视觉落地顺序
+## 视觉落地顺序
 
-执行稳定性较弱的模型不要从“高级、简洁、好看”等形容词直接写 CSS。先读取 page spec 的 `visualScaffold`，按固定顺序落地：
+页面实现不要从“高级、简洁、好看”等形容词直接写 CSS。先读取 `prd/<项目名>/design.md`，再用 PRD 的 `pageSpecHandoff.designRefs` 定位当前页面要遵守的 `visualScaffold`，按固定顺序落地：
 
 1. `layoutRecipe`：先确定页面骨架和分栏比例。
 2. `surfaceMap`：决定每个区块是无框、细线面板、浅底条、列表行、表格、右侧栏还是抽屉。
@@ -35,6 +35,24 @@
 4. `densityRule`：控制卡片高度、列表行高、按钮尺寸和信息密度。
 5. `componentRecipe`：统一按钮、入口、标签、图标、列表、图表、空态和弹层。
 6. `acceptanceChecks`：逐项检查 10+ contentBlocks、无大空白卡、主色跟随应用主题、KPI/快捷入口子项不计数、移动端不挤压。
+
+## 源码结构验收
+
+页面源码不能只堆 section 或 Card。写完 `.canvas.jsx` 后，按下面结构自检：
+
+- 文件输入：实现前已读取 `prd.md` 和 `design.md`；视觉规则来自 `design.md`，业务区块和数据来源来自 PRD。
+- `rootShell`：有页面根类、背景带、内容宽度、平台导航可见时的宽度处理。
+- `prioritySurface`：首屏最大视觉锚点是主图表、主任务、主对象摘要或主视觉区，不是纯标题或空白卡。
+- `statusPrimitive`：有紧凑状态摘要、数据在线、更新时间、主健康分或状态胶囊。
+- `actionPrimitive`：主按钮、次按钮、高频动作条或批量动作条能触发真实路径。
+- `contentPrimitive`：有表格、列表、任务流、事件流、排行、时间线、图表或详情预览之一作为主要承接。
+- `contextPrimitive`：有右侧洞察、风险、负责人、下一步建议或关联对象，避免页面只有左到右平铺卡片。
+- `statePrimitive`：loading、empty、error、未接数据都有薄空态、刷新、登记或补录动作。
+- `responsiveRule`：移动端分栏退化为单列，关键状态、动作和主内容保留，不让文字和按钮挤压。
+- `backgroundLayer` / `surfaceMaterial` / `colorRoles` / `depthRule`：有玻璃感、质感或丰富色彩诉求时，源码必须有分层背景、半透明玻璃面板、明确辅助色角色和深度规则。
+
+缺少 `prioritySurface`、`contentPrimitive` 或 `statePrimitive` 任意一项，不能交付为“已打磨页面”。
+要求玻璃感但源码只有纯白背景和纯白不透明卡片，也不能交付为“已打磨页面”。
 
 ## 平台品牌色变量
 
@@ -52,16 +70,16 @@
 
 ## themeScope：主题作用域落地
 
-Code Canvas page spec 会把主题拆成两个概念：
+Code Canvas 的 `page-spec.json` 会把主题拆成两个概念：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
-| `themeProfile` | 当前应用主题；缺证据时 `podBlue` / `podGreen` / `podOrange` | 应用主题；页面重构/局部美化先沿用当前应用主题 |
+| `themeProfile` | 当前应用主题；缺证据时按业务气质选择平台预置 key 或自定义 token | 应用主题；页面重构/局部美化先沿用当前应用主题 |
 | `themeScope` | `page` | 主题作用域，决定只影响当前页还是请求应用壳层一起换肤 |
 
 `themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。页面重构/局部美化即使是 page scope，也先以当前应用主题为基准，只补当前页密度、间距、状态色和图表色阶。用户明确要求完全不同风格、显式传了 `themeColor`，或页面是独立品牌/活动页时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。
 
-默认主题是 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。
+`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是固定默认。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。自定义品牌色必须在页面源码里注入 `style#yida-global-theme` 或 scoped vars，不能假装是平台 `--theme`。需要注入时复制 [Yida Global Theme Runtime Helpers](theme-runtime-helpers.md) 的 Code Canvas helper；它会同时写入当前文档和同源可访问的父级 iframe 文档。
 
 ```jsx
 var THEME_COLOR_LEVELS = {
@@ -108,11 +126,11 @@ React.useEffect(function () {
 }, []);
 ```
 
-页面重构先把当前应用主题写入 spec；缺少主题证据时从 `podBlue`、`podGreen`、`podOrange` 三选一。页面级换肤写 scoped 变量；用户明确要求应用主题风格/应用主题色时，使用 `themeProfile: yida-app-theme` 或显式 `themeScope: app`。
+页面重构先把当前应用主题写入 spec；缺少主题证据时按业务气质判断，而不是固定三选一。页面级换肤写 scoped 变量；用户明确要求应用主题风格/应用主题色时，使用 `themeProfile: yida-app-theme` 或显式 `themeScope: app`。
 
-## PRD 字段落地规则
+## PRD 与 design.md 字段落地规则
 
-从 PRD / page spec 读取 `themeScope` 并落地：
+从 PRD 或派生的 `page-spec.json` 读取业务边界，从 design.md 读取主题 token 与视觉执行规则，并落地 `themeScope`：
 
 | 用户说法 | spec |
 | --- | --- |

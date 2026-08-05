@@ -116,4 +116,4 @@ export default YidaComp;
 - `project/pages/src/supply-chain-dashboard.js`
 - `project/pages/src/shangri-la-executive-dashboard.js`
 
-它们只能参考信息架构、业务模块和视觉节奏。其中 `renderJsx`、`_customState`、`didMount`、ECharts CDN 与样式对象属于普通自定义页面实现，仅在维护既有 `.oyd.jsx` 时使用。新建看板不得因参考这些样本而从 Canvas 回退到 native。
+它们只能参考页面和导航关系、业务模块和视觉节奏。其中 `renderJsx`、`_customState`、`didMount`、ECharts CDN 与样式对象属于普通自定义页面实现，仅在维护既有 `.oyd.jsx` 时使用。新建看板不得因参考这些样本而从 Canvas 回退到 native。

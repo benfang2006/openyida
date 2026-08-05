@@ -23,7 +23,7 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 
 ## dataBinding 契约
 
-页面 spec 或生成命令中优先携带 `dataBinding`。没有真实数据时只能标记为 `seed`，不能声称已经接入线上数据。
+`page-spec.json` 或生成命令中优先携带 `dataBinding`。没有真实数据时只能标记为 `seed`，不能声称已经接入线上数据。
 
 ```json
 {

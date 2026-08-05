@@ -42,6 +42,7 @@ module.exports = {
     cmd_publish: 'Compiler et publier une page personnalisée',
     cmd_update_form_config: 'Mettre à jour la configuration du formulaire',
     cmd_get_form_config: 'Query form configuration',
+    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'Données & Permissions',
     cmd_data: 'Gestion unifiée des données (formulaire/processus/tâche/sous-formulaire)',
     cmd_task_center: 'Centre de tâches global (à faire/traité/CC etc.)',

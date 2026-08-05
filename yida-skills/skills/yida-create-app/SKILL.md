@@ -28,7 +28,7 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 ## 严格要求 (MUST DO)
 
 - 创建成功后，将 appType 记录到 `.cache/<项目名>-schema.json`
-- 创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>.md`；后续表单、流程、页面和发布都按这份 PRD 执行。
+- 创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；后续表单、流程、页面和发布都按 PRD 执行业务，按 design.md 执行视觉。
 - 创建前确认当前登录的组织（corpId）与目标组织一致
 - **本技能不读写 memory**：appType 等信息输出到 stdout，通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
@@ -54,15 +54,15 @@ openyida create-app <appName> [description] [icon] [iconColor] [colour] [navThem
 | `description` | 否 | 同 appName | 应用描述 |
 | `icon` | 否 | `xian-yingyong` | 图标标识（见下方图标表） |
 | `iconColor` | 否 | `#0089FF` | 图标背景色 |
-| `colour` | 否 | `podBlue` | 平台壳层应用主题 key；完整主题清单见 `yida-design/references/theme/theme-token-presets.md`，设计默认主题优先从 `podBlue`、`podGreen`、`podOrange` 三选一 |
+| `colour` | 否 | 平台默认 | 平台壳层应用主题 key；只在 PRD 的 `shouldPassCreateAppTheme=true` 且 `themePresetKey` 命中平台预置 key 时传。自定义品牌色不要传 `colour/theme`，改由页面或全局 `style#yida-global-theme` / `customThemeStyle.tokens` 注入 |
 | `navTheme` | 否 | 不传 | 导航风格：仅用户明确要求时传 `dark`（深色）/ `light`（浅色） |
 | `layoutDirection` | 否 | 不传 | 导航布局：仅用户明确要求时传 `slide`（侧边栏）/ `ver`（L 型顶导） |
 
-## 行业默认创建建议
+## 创建应用壳层兜底
 
-如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先按行业选择图标、应用主题 key 和首屏自定义页模板；完整应用主题 key 只查 `yida-design/references/theme/theme-token-presets.md`。只有用户明确说“换成 xxx 应用主题色”或指定平台主题 key 时，才主动切到该 key。
+如果用户只说“创建一个律所/茶叶官网/数据大屏应用”，不要直接使用通用默认壳。先由 `yida-design` 根据行业、品牌、业务情绪和视觉目标做创意色彩判断，再决定是否适合平台预置主题 key；禁止把行业词直接映射成固定颜色，例如“科技=蓝、宠物=橙、法律=蓝”。完整应用主题 key 只查 `yida-design/references/theme/theme-token-presets.md`。只有 PRD 明确 `themePresetKey` 命中平台预置 key 时，才把该 key 作为 `colour/theme` 传给创建命令；否则不传主题，由页面或全局 token 注入落地。
 
-| 场景语义 | 推荐应用主题 | create-app 壳层 fallback | 创建后的首屏页面 |
+| 场景语义 | CLI 壳层 fallback 主题（非设计结论） | create-app 壳层 fallback | 创建后的首屏页面 |
 |------|------|------|------|
 | 律所、律师、法律服务、法务合规 | `podBlue` | `xian-falv #5C72FF podBlue` | `official-homepage`，走专业服务官网叙事 |
 | 茶叶、茶园、生态、环保、健康品牌 | `podGreen` | `xian-diqiu #00B853 podGreen` | `official-homepage`，走品牌官网叙事 |
@@ -70,13 +70,13 @@ openyida create-app <appName> [description] [icon] [iconColor] [colour] [navThem
 | 咨询、审计、会计、投顾、企业服务 | `podBlue` | `xian-qiye #5C72FF podBlue` | `official-homepage` 或工作台，按用户目标选择 |
 | 普通内部管理、CRM、OA、项目管理 | `podBlue`，业务强调增长/活力时可选 `podOrange` | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
 
-CLI 已内置上述行业推断：当用户没有显式传 `icon/iconColor/colour` 时，会根据应用名和描述自动补齐；`navTheme/layoutDirection` 默认不传，只有用户明确要求时才传。显式参数始终优先。
+CLI 已内置上述行业推断作为创建壳层的兜底能力，不代表 `yida-design` 的主题结论。当用户没有显式传 `icon/iconColor/colour` 时，CLI 会根据应用名和描述自动补齐；`navTheme/layoutDirection` 默认不传，只有用户明确要求时才传。显式参数始终优先。
 
 **应用主题（colour）口径**：
 
-默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，应用主题默认先从 `podBlue`、`podGreen`、`podOrange` 三选一；`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下作为 fallback。
+默认不要把黑色、深灰或灰黑中性色作为普通应用主题色。创建业务系统、工作台、门户、数据管理类应用时，先根据行业、品牌、业务情绪和视觉目标做创意色彩判断；`podBlue`、`podGreen`、`podOrange` 只是常用浅底候选，不是固定默认，也不是行业刻板答案。`black` 仅在用户明确要求暗色模式、高对比、奢侈品牌或极简黑色视觉时使用，`greyBlue` 也只在工业制造、技术工程等稳重场景下作为 fallback。
 
-这里的 `colour` / `--theme` 只能选平台预置 key；默认优先用 `podBlue`、`podGreen`、`podOrange`。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新应用默认仍优先推荐 `podBlue`、`podGreen`、`podOrange`。
+这里的 `colour` / `--theme` 只能选平台预置 key；不能填 AI 自己设计的任意主题名或色值。`blue`、`green`、`orange` 作为应用主题 token profile 保留原名；新应用如果采用自定义色盘，创建应用时不要显式传 `theme/colour`，页面实现必须注入 `style#yida-global-theme` 或等价 scoped CSS vars。
 
 完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-design/references/theme/theme-token-presets.md`，本技能不重复维护完整清单。
 

@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。先解析资源上下文并消费 yida-design PRD，再按 PRD 创建或复用应用、表单、流程和页面；表单/流程先于自定义页面；发布后优先按 PRD 导航顺序排序，缺少明确页面清单时自动排序兜底。",
-      "done_when": "PRD 已写入 prd/<项目名>.md；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。先解析资源上下文并消费 yida-design 的 prd.md 与 design.md，再按 PRD 创建或复用应用、表单、流程和页面；表单/流程先于自定义页面；发布后优先按 PRD 导航顺序排序，缺少明确页面清单时自动排序兜底。",
+      "done_when": "PRD 已写入 prd/<项目名>/prd.md，design.md 已写入 prd/<项目名>/design.md；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",
@@ -43,7 +43,7 @@
       "name": "yida-design",
       "path": "skills/yida-design/SKILL.md",
       "display_name": "宜搭应用设计",
-      "description": "统一的宜搭应用设计技能，覆盖需求分析、产品定位、信息架构、页面结构、主题系统、各页面布局、视觉状态、素材图标、资源创建顺序、页面实现交付顺序、导航顺序和去 AI 味决策；输出 prd/<项目名>.md。",
+      "description": "当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准，design.md 写主题 token、布局、材质、组件和状态规则。本技能不写页面源码；页面实现交给 yida-canvas-custom-page 或 yida-custom-page。",
       "category": "yida-skills/design",
       "tags": [
         "应用设计",
@@ -84,7 +84,7 @@
         "数据记录操作"
       ],
       "command_ids": [],
-      "done_when": "输出 prd/<项目名>.md；PRD 写清资源创建顺序、页面实现交付顺序、导航顺序和验收标准，页面实现层再提炼 page-spec.json。"
+      "done_when": "输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；PRD 写清资源创建顺序、页面实现交付顺序、导航顺序和验收标准，design.md 写清所有页面共同遵守的视觉系统；只有走页面生成器或需要稳定交接时才派生 page-spec.json。"
     },
     {
       "name": "yida-app-permission",
@@ -694,7 +694,7 @@
       "name": "yida-form-detail",
       "path": "skills/yida-form-detail/SKILL.md",
       "display_name": "表单详情页美化",
-      "description": "表单页视觉引导与表单详情页 formDetail 样式优化。表单页开发默认加载本技能合并 Divider 分割线语义分组；需要落地详情页样式时，通过 Schema 注入 Html 组件承载 CSS。",
+      "description": "表单页视觉引导与表单详情页 formDetail 样式优化。表单页开发默认加载本技能合并 Divider 分割线语义分组；需要落地详情页样式时，使用 openyida form-detail-style 写入 Html 组件承载 CSS。",
       "category": "yida-skills/form",
       "tags": [
         "表单视觉引导",
@@ -707,6 +707,11 @@
       "aliases": [
         "详情页样式",
         "表单视觉"
+      ],
+      "command_ids": [
+        "form-detail-style.check",
+        "form-detail-style.apply",
+        "form-detail-style.remove"
       ]
     },
     {
