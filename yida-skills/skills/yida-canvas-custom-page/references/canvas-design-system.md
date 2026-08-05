@@ -9,11 +9,11 @@
 | 冲突现象 | 处理方式 |
 | --- | --- |
 | 左侧平台导航选中态是应用主题色，页面主按钮 / 标题强调 / 卡片选中态用了另一套主色 | 页面主操作、链接、选中态、重点标签和图表主序列改回应用主题 `--color-brand1-*` |
-| design.md 的参考风格来自青绿、紫色、蓝色等风格，但当前应用主题是橙色或其他色 | 保留 `design.md` 的布局、卡片、密度、图表语言，把参考色彩降为辅助色、浅底背景、分组色或第二图表序列 |
+| design.md 生成了青绿、紫色、蓝色等辅助色，但当前应用主题是橙色或其他色 | 保留 `design.md` 的布局、卡片、密度、图表语言，把生成色彩降为辅助色、浅底背景、分组色或第二图表序列 |
 | 用户要求导航和内容一起换色 | 走 `themeScope=app`，由应用主题配置或壳层主题更新统一处理 |
 | 页面是隐藏导航的独立官网、活动页、公开落地页 | 走 `themeScope=page`，页面根节点注入 scoped CSS vars，并在 PRD 写明独立色盘原因 |
 
-实现时先读取 `themeRelation`。默认值是 `跟随应用主题`，不是 `跟随参考风格色相`。
+实现时先读取 `themeRelation`。默认值是 `跟随应用主题`，不是 `跟随生成色盘色相`。
 
 ## 工作台卡片密度红线
 
@@ -156,11 +156,11 @@ var THEME_COLOR_LEVELS = {
   themeColorDeep: 9,
 };
 
-function getThemeColor(profile, key, fallback) {
+function getThemeColor(profile, key, defaultColor) {
   if (profile && profile.followRuntimeTheme && THEME_COLOR_LEVELS[key]) {
-    return readBrandColor(THEME_COLOR_LEVELS[key], fallback);
+    return readBrandColor(THEME_COLOR_LEVELS[key], defaultColor);
   }
-  return (profile && profile[key]) || fallback;
+  return (profile && profile[key]) || defaultColor;
 }
 
 function buildScopedThemeVars(scope, profile) {
@@ -174,7 +174,7 @@ function buildScopedThemeVars(scope, profile) {
 }
 ```
 
-`themeScope: app` 用于用户明确希望导航、顶部壳层和内容页统一换肤时。此时页面加载后调用壳层桥接能力；桥不存在时静默降级，不阻塞页面渲染。
+`themeScope: app` 用于用户明确希望导航、顶部壳层和内容页统一换肤时。此时页面加载后调用壳层桥接能力；桥不存在时静默跳过，不阻塞页面渲染。
 
 ```jsx
 React.useEffect(function () {
@@ -222,23 +222,23 @@ Canvas 的 `runtimeCode` 在**运行页面真实 `window`** 里 `new Function` �
 
 ## 读品牌色的 helper（JS 消费场景用）
 
-因为跑在真 window，直接读根节点计算样式即可。带兜底，读不到时退到 `podBlue` 应用主题主色。
+因为跑在真 window，直接读根节点计算样式即可。helper 必须带兜底逻辑：先读运行态 `--color-brand1-*`，读不到、空串或读取异常时返回传入的 `defaultColor`。`defaultColor` 必须来自当前项目 `design.md` 的 tokens 或当前应用主题 token profile，不能另起一套旧默认方案。
 
 ```jsx
 // 品牌色阶：1 最浅 → 6 主色 → 10 最深，与平台 --color-brand1-* 对齐
-function readBrandColor(level, fallback) {
+function readBrandColor(level, defaultColor) {
   try {
     var el = document.documentElement;
     var v = getComputedStyle(el).getPropertyValue('--color-brand1-' + (level || 6)).trim();
-    return v || fallback;
+    return v || defaultColor;
   } catch (e) {
-    return fallback;
+    return defaultColor;
   }
 }
 
 // hook 形式：首帧同步取值，无闪烁
-function useBrandColor(level, fallback) {
-  var s = React.useState(function () { return readBrandColor(level, fallback); });
+function useBrandColor(level, defaultColor) {
+  var s = React.useState(function () { return readBrandColor(level, defaultColor); });
   return s[0];
 }
 ```
@@ -253,16 +253,16 @@ function useBrandColor(level, fallback) {
 import React from 'react';
 import { ConfigProvider, Button, Table } from 'antd';
 
-function readBrandColor(level, fallback) {
+function readBrandColor(level, defaultColor) {
   try {
     var v = getComputedStyle(document.documentElement)
       .getPropertyValue('--color-brand1-' + (level || 6)).trim();
-    return v || fallback;
-  } catch (e) { return fallback; }
+    return v || defaultColor;
+  } catch (e) { return defaultColor; }
 }
 
 function YidaComp(props) {
-  var colorPrimary = readBrandColor(6, 'rgb(0, 137, 255)'); // 缺失时退到 podBlue 应用主题主色
+  var colorPrimary = readBrandColor(6, 'rgb(0, 137, 255)'); // 兜底值来自当前 design.md 或应用主题 token profile
   return (
     <ConfigProvider
       theme={{
@@ -357,12 +357,12 @@ Canvas 节点在页面 DOM 树内，Tailwind 运行时对普通元素直接用 a
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-function readBrandColor(level, fallback) {
+function readBrandColor(level, defaultColor) {
   try {
     var v = getComputedStyle(document.documentElement)
       .getPropertyValue('--color-brand1-' + (level || 6)).trim();
-    return v || fallback;
-  } catch (e) { return fallback; }
+    return v || defaultColor;
+  } catch (e) { return defaultColor; }
 }
 
 function YidaComp(props) {

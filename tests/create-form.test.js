@@ -248,7 +248,7 @@ describe('legacy create-form schema-aware update evidence', () => {
     const saveCall = mockUtils.httpPost.mock.calls.find(call => call[1].includes('/saveFormSchema.json'));
     const savedSchema = JSON.parse(querystring.parse(saveCall[2]).content);
     const savedContainer = findFormContainer(savedSchema.pages[0].componentsTree[0]);
-    const savedRemark = savedContainer.children.find(child => child.props.label.zh_CN === '备注');
+    const savedRemark = findDirectChildByLabel(savedContainer, '备注');
     expect(savedRemark.props.validation).toEqual(expect.arrayContaining([{ type: 'required' }]));
     expect(JSON.stringify(parseConsoleJsonPayloads(consoleSpy))).not.toContain('事项名称');
     const listItemText = mockChalk.listItem.mock.calls.map(call => call.join(' ')).join('\n');
@@ -676,9 +676,9 @@ describe('legacy create-form compact field resolver', () => {
     const saveCall = mockUtils.httpPost.mock.calls.find(call => call[1].includes('/saveFormSchema.json'));
     const savedSchema = JSON.parse(querystring.parse(saveCall[2]).content);
     const savedContainer = findFormContainer(savedSchema.pages[0].componentsTree[0]);
-    const topLevelStatus = savedContainer.children.find(child => child.props.label.zh_CN === '状态');
-    const table = savedContainer.children.find(child => child.props.label.zh_CN === '明细');
-    const tableStatus = table.children.find(child => child.props.label.zh_CN === '状态');
+    const topLevelStatus = findDirectChildByLabel(savedContainer, '状态');
+    const table = findDirectChildByLabel(savedContainer, '明细');
+    const tableStatus = findDirectChildByLabel(table, '状态');
     expect(topLevelStatus.props.onChange).toBeUndefined();
     expect(tableStatus.props.onChange).toMatchObject({
       type: 'actionRef',
@@ -704,7 +704,7 @@ describe('legacy create-form compact field resolver', () => {
     }).schema;
     initial.gmtModified = 100;
     const formContainer = findFormContainer(initial.pages[0].componentsTree[0]);
-    const statusFieldId = formContainer.children.find(child => child.props.label.zh_CN === '状态').props.fieldId;
+    const statusFieldId = findDirectChildByLabel(formContainer, '状态').props.fieldId;
     const { isolatedCreateForm, consoleSpy } = loadIsolatedLegacyForm(initial);
 
     await isolatedCreateForm.run([
@@ -961,7 +961,8 @@ describe('form presentation components', () => {
     );
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
 
-    expect(schema.pages[0].componentsMap.map((item) => item.componentName)).toEqual(expect.arrayContaining([
+    const componentsMapNames = schema.pages[0].componentsMap.map((item) => item.componentName);
+    expect(componentsMapNames).toEqual(expect.arrayContaining([
       'PageSection',
       'ColumnsLayout',
       'Column',
@@ -969,7 +970,14 @@ describe('form presentation components', () => {
       'TextField',
       'NumberField',
     ]));
+    expect(componentsMapNames).not.toContain('Html');
+    const pageSection = findDirectChildByComponentName(formContainer, 'PageSection');
     expect(formContainer.children[0]).toMatchObject({
+      componentName: 'Html',
+      id: 'yida-form-detail-css-html',
+      hidden: false,
+    });
+    expect(pageSection).toMatchObject({
       componentName: 'PageSection',
       props: {
         behavior: 'NORMAL',
@@ -978,10 +986,10 @@ describe('form presentation components', () => {
         sectionHeaderStyle: 'origin',
       },
     });
-    expect(formContainer.children[0].props.label).toBeUndefined();
-    expect(formContainer.children[0].props.title.zh_CN).toBe('基本信息');
+    expect(pageSection.props.label).toBeUndefined();
+    expect(pageSection.props.title.zh_CN).toBe('基本信息');
 
-    const columnsLayout = formContainer.children[0].children[0];
+    const columnsLayout = pageSection.children[0];
     expect(columnsLayout).toMatchObject({
       componentName: 'ColumnsLayout',
       props: {
@@ -995,7 +1003,7 @@ describe('form presentation components', () => {
     expect(columnsLayout.children[0].children[0].componentName).toBe('TextField');
     expect(columnsLayout.children[1].children[0].componentName).toBe('NumberField');
 
-    const divider = formContainer.children[0].children[1];
+    const divider = pageSection.children[1];
     expect(divider).toMatchObject({
       componentName: 'Divider',
       props: {
@@ -1009,6 +1017,32 @@ describe('form presentation components', () => {
     });
     expect(divider.props.label).toBeUndefined();
     expect(divider.props.title.zh_CN).toBe('联系方式');
+  });
+
+  test('buildFormSchema injects default formDetail CSS Html component', () => {
+    const schema = createForm._private.buildFormSchema(
+      '默认详情样式',
+      [{ type: 'TextField', label: '姓名' }],
+      'FORM_TEST',
+      'CORP_TEST',
+      'APP_TEST',
+      'single',
+      'default',
+      'top'
+    );
+    const root = schema.pages[0].componentsTree[0];
+    const formContainer = findFormContainer(root);
+    const detailCssNode = formContainer.children[0];
+
+    expect(detailCssNode).toMatchObject({
+      componentName: 'Html',
+      id: 'yida-form-detail-css-html',
+      hidden: false,
+      isLocked: true,
+    });
+    expect(detailCssNode.props.content).toContain('yida-form-detail detail page style');
+    expect(root.css).toContain('openyida:yida-form-detail:start');
+    expect(schema.pages[0].componentsMap.map((item) => item.componentName)).not.toContain('Html');
   });
 
   test('field definition type can come from componentName or componentType without charAt crashes', () => {
@@ -1037,7 +1071,7 @@ describe('form presentation components', () => {
       'top'
     );
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
-    const columnsLayout = formContainer.children[0];
+    const columnsLayout = findDirectChildByComponentName(formContainer, 'ColumnsLayout');
 
     expect(columnsLayout.componentName).toBe('ColumnsLayout');
     expect(columnsLayout.children[0].children[0].componentName).toBe('TextField');
@@ -1210,9 +1244,10 @@ describe('form presentation components', () => {
     );
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
 
-    expect(formContainer.children[0].children[0].children[0].componentName).toBe('TextField');
-    expect(formContainer.children[0].children[1].children[0].componentName).toBe('SelectField');
-    expect(formContainer.children[1].children[0].children[0].componentName).toBe('NumberField');
+    const layouts = formContainer.children.filter(child => child.componentName === 'ColumnsLayout');
+    expect(layouts[0].children[0].children[0].componentName).toBe('TextField');
+    expect(layouts[0].children[1].children[0].componentName).toBe('SelectField');
+    expect(layouts[1].children[0].children[0].componentName).toBe('NumberField');
   });
 
   test('field JSON gate intentionally rejects top-level Column without reporting unsupported type', () => {
@@ -1371,7 +1406,7 @@ describe('form presentation components', () => {
       'top'
     );
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
-    const divider = formContainer.children[0];
+    const divider = findDirectChildByComponentName(formContainer, 'Divider');
 
     expect(divider.componentName).toBe('Divider');
     expect(divider.props.type).toBe('bold-with-thin');
@@ -1395,15 +1430,16 @@ describe('form presentation components', () => {
     );
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
 
-    expect(formContainer.children[0].props.type).toBe('left-dot-title');
-    expect(formContainer.children[1].props.type).toBe('multi-parallelograms-end');
-    expect(formContainer.children[2].props.type).toBe('bold-with-thin');
+    const dividers = formContainer.children.filter(child => child.componentName === 'Divider');
+    expect(dividers[0].props.type).toBe('left-dot-title');
+    expect(dividers[1].props.type).toBe('multi-parallelograms-end');
+    expect(dividers[2].props.type).toBe('bold-with-thin');
   });
 
-  test('Divider forms inject yida global theme style through same-origin iframe parents', () => {
+  test('all forms inject yida global theme style through same-origin iframe parents', () => {
     const schema = createForm._private.buildFormSchema(
-      '分割线主题测试',
-      [{ type: 'Divider', title: '默认分割线' }],
+      '全局主题测试',
+      [{ type: 'TextField', label: '姓名' }],
       'FORM_TEST',
       'CORP_TEST',
       'APP_TEST',
@@ -1414,25 +1450,25 @@ describe('form presentation components', () => {
     const root = schema.pages[0].componentsTree[0];
 
     expect(root.lifeCycles.componentDidMount).toMatchObject({
-      name: 'openyidaDividerThemeDidMount',
+      name: 'openyidaGlobalThemeDidMount',
       type: 'actionRef',
     });
     expect(schema.actions.list).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        id: 'openyidaDividerThemeDidMount',
+        id: 'openyidaGlobalThemeDidMount',
         relatedEventId: 'lifecycle:didMount',
       }),
     ]));
-    expect(schema.actions.module.source).toContain('openyida:divider-theme:start');
+    expect(schema.actions.module.source).toContain('openyida:yida-global-theme:start');
     expect(schema.actions.module.source).toContain('yida-global-theme');
     expect(schema.actions.module.source).toContain('cursor.parent');
     expect(schema.actions.module.source).toContain('docs.indexOf(cursor.document)');
     expect(schema.actions.module.source).toContain('--color-brand1-9');
     expect(schema.actions.module.source).toContain("deepBlue: '#3954E4'");
-    expect(schema.actions.module.compiled).toContain('openyidaDividerThemeDidMount');
+    expect(schema.actions.module.compiled).toContain('openyidaGlobalThemeDidMount');
   });
 
-  test('forms without Divider do not inject divider theme action', () => {
+  test('forms without Divider still inject yida global theme action', () => {
     const schema = createForm._private.buildFormSchema(
       '普通字段测试',
       [{ type: 'TextField', label: '姓名' }],
@@ -1444,9 +1480,44 @@ describe('form presentation components', () => {
       'top'
     );
 
-    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('didMount');
+    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('openyidaGlobalThemeDidMount');
+    expect(schema.actions.module.source).toContain('openyida:yida-global-theme:start');
+    expect(schema.actions.module.source).toContain('yida-global-theme');
+  });
+
+  test('yida global theme action replaces legacy divider theme block', () => {
+    const schema = createForm._private.buildFormSchema(
+      '旧主题块迁移测试',
+      [{ type: 'TextField', label: '姓名' }],
+      'FORM_TEST',
+      'CORP_TEST',
+      'APP_TEST',
+      'single',
+      'default',
+      'top'
+    );
+    schema.actions.module.source = [
+      'export function didMount() {}',
+      '/* openyida:divider-theme:start */',
+      'export function openyidaDividerThemeDidMount() {}',
+      '/* openyida:divider-theme:end */',
+    ].join('\n');
+    schema.actions.list.push({
+      id: 'openyidaDividerThemeDidMount',
+      name: 'openyidaDividerThemeDidMount',
+      relatedEventId: 'lifecycle:didMount',
+      type: 'lifeCycleEvent',
+      params: {},
+    });
+
+    createForm._private.ensureYidaGlobalThemeAction(schema);
+
     expect(schema.actions.module.source).not.toContain('openyida:divider-theme:start');
-    expect(schema.actions.module.source).not.toContain('yida-global-theme');
+    expect(schema.actions.module.source).not.toContain('openyidaDividerThemeDidMount');
+    expect(schema.actions.module.source).toContain('openyida:yida-global-theme:start');
+    expect(schema.actions.list).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'openyidaDividerThemeDidMount' }),
+    ]));
   });
 
   test('update add can insert presentation components inside nested containers', () => {
@@ -1478,13 +1549,14 @@ describe('form presentation components', () => {
     ]);
 
     const formContainer = findFormContainer(schema.pages[0].componentsTree[0]);
-    const firstColumnChildren = formContainer.children[0].children[0].children;
+    const columnsLayout = findDirectChildByComponentName(formContainer, 'ColumnsLayout');
+    const firstColumnChildren = columnsLayout.children[0].children;
     expect(firstColumnChildren.map((child) => child.componentName)).toEqual(['TextField', 'Divider']);
     expect(firstColumnChildren[1].props.title.zh_CN).toBe('联系方式');
     expect(schema.pages[0].componentsMap.map((item) => item.componentName)).toContain('Divider');
   });
 
-  test('update schemas get divider theme action after adding Divider', () => {
+  test('update schemas keep yida global theme action after adding Divider', () => {
     const schema = createForm._private.buildFormSchema(
       '后续新增分割线',
       [{ type: 'TextField', label: '姓名' }],
@@ -1499,12 +1571,12 @@ describe('form presentation components', () => {
       { action: 'add', field: { type: 'Divider', title: '联系方式' }, after: '姓名' },
     ]);
 
-    const applied = createForm._private.ensureDividerThemeAction(schema);
+    const applied = createForm._private.ensureYidaGlobalThemeAction(schema);
 
     expect(applied).toBe(true);
-    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('openyidaDividerThemeDidMount');
-    expect(schema.actions.module.source).toContain('openyida:divider-theme:start');
-    expect(schema.actions.module.source).toContain('openyidaInjectDividerTheme');
+    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('openyidaGlobalThemeDidMount');
+    expect(schema.actions.module.source).toContain('openyida:yida-global-theme:start');
+    expect(schema.actions.module.source).toContain('openyidaInjectYidaGlobalTheme');
   });
 });
 
@@ -2707,6 +2779,14 @@ function findFormContainer(node) {
     }
   }
   return null;
+}
+
+function findDirectChildByComponentName(parent, componentName) {
+  return parent.children.find(child => child.componentName === componentName);
+}
+
+function findDirectChildByLabel(parent, label) {
+  return parent.children.find(child => child.props && child.props.label && child.props.label.zh_CN === label);
 }
 
 function parseConsoleJsonPayloads(consoleSpy) {

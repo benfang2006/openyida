@@ -84,6 +84,8 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 5. **使用 Canvas 函数组件契约**：Canvas 代码写 `YidaComp` React 函数组件；数据、生命周期和渲染都通过 hooks、props、fetch/连接器完成。需要 `renderJsx()`、`didMount()`、`this.forceUpdate()`、`this.utils.yida.*`、`this.dataSourceMap` 时切到 `yida-custom-page`。
 6. **副作用清理**：`useEffect` 注册事件、定时器、图表实例时必须返回 cleanup。
 7. **交互控件必须受控且真正驱动数据**：筛选 `Select`、搜索 `Input`/`Input.Search`、周期切换、`Tabs`/`Segmented`、批量/重置 `Button` 等控件都用 `useState` 建立受控状态，绑定 `onChange`/`onClick`，并让 `Table`/列表/卡片的数据源通过 `useMemo` 按状态派生后渲染。切换筛选后若当前选中项失效，回退选中态（如 `selected < filteredRows.length ? selected : 0`）。
+8. **视觉壳层必须消费 design.md**：工作台、门户、看板、首页、展示页和真实交付页写 Canvas 源码前，先从 `design.md` 抽取 `backgroundLayer`、`visualScaffold.rootShell`、`surfaceMap`、`componentRecipe`、`themeProfile` 和 `yidaThemeRuntime`。若 `design.md` 声明 `backgroundLayer`，源码完成标准是：页面根节点带 `data-yida-theme-root="true"`；根节点或注入 CSS 承载背景层；背景 primitive 落到根节点、`::before`、`::after` 或等价背景层；内容层使用相对定位和更高 `z-index`；antd 页面包 `ConfigProvider`，并使用 `readBrandColor`、`getPopupContainer` 和控件 reset CSS 让主题、焦点和浮层生效。
+9. **表单数据读取必须使用 dataBinding 契约**：完整应用、工作台、列表、看板、详情等真实交付页只要本轮已经创建或解析业务表单，先写入 `dataBinding.mode="form"`、真实 `appType/formUuid` 和字段 ID，再用本地 `useYidaData(binding)` / `DataBridge` 读取。直连宜搭表单数据时只使用 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`，并用 `GET + URLSearchParams` 放入 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`，请求设置 `credentials: 'include'` 与 `global_csrf_token` 头。页面不能使用 `/query/form/searchFormDatas.json`，也不能只写前端 seedRows 后声称已接真实数据。
 
 ### 重要规则（IMPORTANT）
 
@@ -103,7 +105,8 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 14. **实现骨架消费业务 spec**：品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明来自当前业务 spec。若 CLI 报业务内容不足，补齐/改写 spec 或 patch 源码后重新生成/编译。
 15. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、`page-spec.json` 中会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。页面生成、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。
 16. **同应用页面入口归入导航**：快捷入口目标如果是同应用内页面，优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换；自定义页内容区的 `quickEntries` 只放当前页动作、表单新建/查看、外部链接、跨应用资源，或显式隐藏平台导航后的页面内导航壳入口。
-17. **表单提交入口响应式打开**：自定义页内「新建 / 提交表单」保留原生表单能力；PC 端主操作使用右侧抽屉 + iframe 承载提交页，提交或关闭后回到当前列表/工作台并刷新数据；移动端可直接进入提交页或新页打开。
+17. **表单打开入口统一容器**：自定义页内「新建 / 提交表单 / 查看详情」保留原生表单能力，并统一封装为 `FormOpenContainer`。PC 端主操作使用右侧抽屉 + iframe 承载隐藏导航的提交页或详情页，关闭后回到当前列表/工作台并刷新数据；移动端可直接进入提交页/详情页或新页打开。不要在按钮里临时 `window.open('/submission/...')` 或 `window.open('/formDetail/...')`。
+18. **图标资源固定为可加载库**：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import。只有页面已经采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，才使用 `@ant-design/icons`。快捷入口、按钮、状态和导航图标在写源码前先建立 `actionIconMap` / `statusIconMap`，按业务语义映射到具体组件，例如 `Plus`、`Upload`、`Download`、`Eye`、`Building2`、`AlertCircle`、`Check`。
 
 ## 数据真实性边界
 
@@ -146,7 +149,7 @@ openyida get-schema <appType> <formUuid> --field-map-json
 | 文档 | 覆盖范围 | 何时阅读 |
 | --- | --- | --- |
 | [page-generation-guide.md](references/page-generation-guide.md) | PRD 到 Canvas 实现入口、官网素材、themeScope、Page Spec、primitives | 写页面前必读 |
-| [navigation-and-entry-guide.md](references/navigation-and-entry-guide.md) | 应用内页面、表单、外链和跨应用快捷入口的导航职责与跳转方式 | 工作台/门户含快捷入口或跨页跳转时必读 |
+| [navigation-and-entry-guide.md](references/navigation-and-entry-guide.md) | 应用内页面、表单、外链和跨应用快捷入口的导航职责与跳转方式；含 `FormOpenContainer` 标准容器 | 工作台/门户含快捷入口、表单新增或详情查看时必读 |
 | [native-components-bridge.md](references/native-components-bridge.md) | 门户、成员、部门、上传组件桥接和值归一化 | 需要宜搭运行态组件时必读 |
 | [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 可用前端资源、import 写法、运行时加载方式 | 选择或验证前端资源时必读 |
 | [employeefield-verification.md](references/employeefield-verification.md) | 运行时事实、原生组件验证、EmployeeField 验收 | 验证成员/字段组件时阅读 |
@@ -155,4 +158,3 @@ openyida get-schema <appType> <formUuid> --field-map-json
 | [theme-runtime-helpers.md](references/theme-runtime-helpers.md) | Code Canvas / 普通 JSX 自定义主题注入 helper，支持 iframe 父级窗口 | 自定义色盘、`style#yida-global-theme` 或隐藏导航沉浸页时阅读 |
 | [component-library-guide.md](references/component-library-guide.md) | 组件库推荐组合和页面选型建议 | 选择 UI/图表依赖时阅读 |
 | [canvas-authoring-examples.md](references/canvas-authoring-examples.md) | 最小组件、hooks、副作用、图表示例 | 手写 Canvas 代码时阅读 |
-| [scene-landing](../yida-design/references/scenes/landing.md) | 实景素材组、材质配色、品牌旅程和视觉验收 | 实现或改造强视觉官网时必读 |

@@ -20,6 +20,11 @@ function createSchema() {
   return {
     pages: [
       {
+        componentsMap: [
+          { componentName: 'RootContent' },
+          { componentName: 'FormContainer' },
+          { componentName: 'TextField' },
+        ],
         componentsTree: [
           {
             componentName: 'RootContent',
@@ -90,10 +95,15 @@ describe('form-detail-style schema helpers', () => {
     expect(action).toBe('inserted');
     expect(status.installed).toBe(true);
     expect(status.rootCssHasMarker).toBe(true);
+    expect(status.globalThemeFound).toBe(true);
+    expect(status.rootCssHasGlobalTheme).toBe(true);
     const formContainer = schema.pages[0].componentsTree[0].children[0];
     expect(formContainer.children[0].id).toBe('yida-form-detail-css-html');
     expect(formContainer.children[0].hidden).toBe(false);
-    expect(formContainer.children[0].props.content).toContain('<style>');
+    expect(formContainer.children[0].props.content).toContain('<style id="yida-global-theme">');
+    expect(formContainer.children[0].props.content).toContain('<style id="yida-form-detail-style">');
+    expect(formContainer.children[0].props.content).toContain('--color-brand1-6');
+    expect(schema.pages[0].componentsMap.map((item) => item.componentName)).not.toContain('Html');
   });
 
   test('upsertFormDetailCss updates the existing component instead of duplicating it', () => {
@@ -116,6 +126,7 @@ describe('form-detail-style schema helpers', () => {
     expect(action).toBe('removed');
     expect(status.installed).toBe(false);
     expect(schema.pages[0].componentsTree[0].css).not.toContain('openyida:yida-form-detail');
+    expect(schema.pages[0].componentsTree[0].css).not.toContain('openyida:yida-global-theme');
   });
 });
 

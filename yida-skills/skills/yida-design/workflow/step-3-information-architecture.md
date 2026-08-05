@@ -33,15 +33,17 @@
 
 ## 给页面标场景
 
-| 页面场景 | 场景参考 | 典型结构 |
+页面 `scene` 只作为分类标签和实现提示，不作为页面模板。页面结构必须来自当前业务目标、用户任务、资源关系和后续 `design.md`。
+
+| 页面场景 | 适用判断 | 结构来源 |
 | --- | --- | --- |
-| workbench | `references/scenes/workbench.md` | 标题上下文 + 状态摘要 + 高频动作 + 待办 + 最近记录 + 动态 + 提醒 + 右侧上下文 + 空态行动 |
-| dashboard | `references/scenes/dashboard.md` | KPI 卡组 + 图表 + 排行/明细 |
-| screen | `references/scenes/screen.md` | full-bleed 中心态势 + 左右信息塔 |
-| list | `references/scenes/list.md` | 筛选栏 + 表格/卡片 + 分页 + 详情抽屉 |
-| detail | `references/scenes/detail.md` | 单对象 Hero + 摘要指标 + 章节叙事 |
-| landing | `references/scenes/landing.md` | Hero + 差异化 Sections + 素材锚点 + CTA |
-| split-pane | `references/scenes/list.md` | 左列表 + 右详情/处理区 |
+| workbench | 进入应用后处理任务、看状态、做高频动作 | 当前业务 `contentBlocks` + `design.md.visualScaffold` |
+| dashboard | 经营分析、指标判断、趋势和排行 | 指标口径 + 图表目的 + `design.md.visualScaffold` |
+| screen | 投屏、监控、态势感知 | 实时信息层级 + 大屏展示目标 + `design.md.visualScaffold` |
+| list | 查询、筛选、批量操作、详情入口 | 数据字段、筛选条件、操作路径 + `design.md.visualScaffold` |
+| detail | 单对象总览、时间线、关联对象 | 对象信息架构 + 关联关系 + `design.md.visualScaffold` |
+| landing | 对外介绍、品牌表达、价值转化 | 价值路径、素材清单、CTA + `design.md.visualScaffold` |
+| split-pane | 左列表右详情、处理台 | 主从关系、处理路径 + `design.md.visualScaffold` |
 
 ## 排导航顺序
 

@@ -20,8 +20,8 @@
 | --- | --- | --- |
 | 当前应用内自定义页、表单列表页、工作台页 | `targetType: "page"`，保留 `appType/formUuid/navUuid` | 同页进入 `/{appType}/workbench/{formUuid}`，让应用导航更新选中态 |
 | 当前应用首页 | `targetType: "app"`，保留 `appType` | 同页进入 `/{appType}/workbench` |
-| 当前应用提交页 | `targetType: "submission"`，保留目标表单 | PC 端右侧抽屉内嵌 `?isRenderNav=false` 的提交页 iframe；移动端整页或新页打开隐藏导航提交页 |
-| 当前应用详情页 | `targetType: "detail"`，保留目标表单和实例 ID | 优先抽屉/同页查看；不是新窗口，除非用户明确要求 |
+| 当前应用提交页 | `targetType: "submission"`，保留目标表单 | 使用 `FormOpenContainer`；PC 端右侧抽屉内嵌 `?isRenderNav=false` 的提交页 iframe；移动端整页或新页打开隐藏导航提交页 |
+| 当前应用详情页 | `targetType: "detail"`，保留目标表单和实例 ID | 使用 `FormOpenContainer`；PC 端右侧抽屉内嵌详情页 iframe；移动端整页或新页打开隐藏导航详情页 |
 | 跨应用页面 | `targetType: "page"`，保留目标 `appType` | 默认同页进入目标应用工作台；用户要求保留当前页时才新开 |
 | 外部 URL、钉钉 OA、第三方系统 | `targetType: "url"` | 使用 `openPage` / 新窗口 / 钉钉打开能力 |
 
@@ -59,6 +59,109 @@
 }
 ```
 
+## 标准 FormOpenContainer
+
+自定义页面内凡是点击按钮去新增、提交或查看表单详情，默认都封装成同一个 `FormOpenContainer`。不要在按钮里临时 `window.open('/submission/...')` 或 `window.open('/formDetail/...')`；外部 URL 才允许新标签。PC 端容器表现为右侧抽屉 + iframe，移动端直接进入原生表单页，关闭抽屉后触发当前页刷新。
+
+Code Canvas 推荐使用 antd `Drawer`：
+
+```jsx
+import React, { useMemo, useState } from 'react';
+import { Button, Drawer } from 'antd';
+
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+}
+
+function appendQuery(url, params) {
+  const joiner = url.indexOf('?') === -1 ? '?' : '&';
+  const query = Object.keys(params).filter((key) => params[key] !== undefined && params[key] !== null && params[key] !== '').map((key) => (
+    encodeURIComponent(key) + '=' + encodeURIComponent(params[key])
+  )).join('&');
+  return query ? url + joiner + query : url;
+}
+
+function buildYidaFormUrl(request, currentAppType) {
+  const appType = request.appType || currentAppType;
+  if (request.type === 'submission') {
+    return appendQuery(`/${appType}/submission/${request.formUuid}`, { isRenderNav: false });
+  }
+  if (request.type === 'detail') {
+    return appendQuery(`/${appType}/formDetail/${request.formUuid}`, {
+      formInstId: request.formInstId,
+      isRenderNav: false,
+    });
+  }
+  return request.url || '';
+}
+
+function FormOpenContainer({ request, currentAppType, onClose, onAfterClose }) {
+  const iframeSrc = useMemo(() => request ? buildYidaFormUrl(request, currentAppType) : '', [request, currentAppType]);
+  return (
+    <Drawer
+      title={request && request.title ? request.title : '表单'}
+      open={!!request}
+      width={request && request.type === 'detail' ? 720 : 640}
+      destroyOnClose
+      onClose={() => {
+        onClose();
+        if (typeof onAfterClose === 'function') onAfterClose();
+      }}
+      bodyStyle={{ padding: 0, overflow: 'hidden' }}
+    >
+      {iframeSrc ? (
+        <iframe
+          title={request && request.title ? request.title : '表单'}
+          src={iframeSrc}
+          style={{ width: '100%', height: '100%', minHeight: 'calc(100vh - 56px)', border: 0, display: 'block' }}
+        />
+      ) : null}
+    </Drawer>
+  );
+}
+
+function useYidaFormOpen(currentAppType, refreshData) {
+  const [formRequest, setFormRequest] = useState(null);
+  function openForm(request) {
+    const href = buildYidaFormUrl(request, currentAppType);
+    if (isMobileViewport()) {
+      window.location.href = href;
+      return;
+    }
+    setFormRequest(request);
+  }
+  const container = (
+    <FormOpenContainer
+      request={formRequest}
+      currentAppType={currentAppType}
+      onClose={() => setFormRequest(null)}
+      onAfterClose={refreshData}
+    />
+  );
+  return { openForm, formOpenContainer: container };
+}
+
+function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload }) {
+  const { openForm, formOpenContainer } = useYidaFormOpen(appType, reload);
+  return (
+    <>
+      <Button type="primary" onClick={() => openForm({ type: 'submission', title: '新增客户', formUuid: customerFormUuid })}>
+        新增客户
+      </Button>
+      <Button
+        onClick={() => openForm({ type: 'detail', title: '客户详情', formUuid: customerFormUuid, formInstId: selectedCustomer && selectedCustomer.formInstId })}
+        disabled={!selectedCustomer}
+      >
+        查看详情
+      </Button>
+      {formOpenContainer}
+    </>
+  );
+}
+```
+
+如果项目没有使用 antd Drawer，可以用自绘 fixed 右侧面板，但组件名、状态结构和 URL 构造仍沿用 `FormOpenContainer / useYidaFormOpen / buildYidaFormUrl`。
+
 ## Canvas fallback 点击骨架
 
 Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`：
@@ -72,14 +175,14 @@ function buildYidaPath(entry, currentAppType, options = {}) {
     return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;
   }
   if (entry.targetType === 'detail') {
-    return `/${appType}/formDetail/${entry.formUuid}?formInstId=${entry.formInstId || ''}`;
+    return `/${appType}/formDetail/${entry.formUuid}?formInstId=${entry.formInstId || ''}&isRenderNav=false`;
   }
   return entry.url || '';
 }
 
 function openEntry(entry, currentAppType, runtime) {
   const isMobile = runtime && runtime.isMobile;
-  if (entry.targetType === 'submission' && !isMobile && entry.openMode !== 'new-tab') {
+  if ((entry.targetType === 'submission' || entry.targetType === 'detail') && !isMobile && entry.openMode !== 'new-tab') {
     runtime.openDrawer({ title: entry.title || '提交表单', iframeSrc: buildYidaPath(entry, currentAppType) });
     return;
   }
@@ -94,11 +197,11 @@ function openEntry(entry, currentAppType, runtime) {
 }
 ```
 
-验收时检查抽屉 `iframeSrc` 或移动端打开地址包含 `isRenderNav=false`；如果目标表单已另有 query 参数，必须用统一 URL 构造函数合并为 `&isRenderNav=false`，不要丢掉 `corpid`、来源页或业务参数。
+验收时检查抽屉 `iframeSrc` 或移动端打开地址包含 `isRenderNav=false`；详情页还必须包含真实 `formInstId`。如果目标表单已另有 query 参数，必须用统一 URL 构造函数合并为 `&isRenderNav=false`，不要丢掉 `corpid`、来源页或业务参数。
 
 如果运行态明确向 Canvas 暴露了壳层 router / history API，可把同应用 `page/app` 的同页跳转替换成壳层 `push/replace`；没有明确 API 时，不猜内部对象，使用上面的工作台 URL。
 
-PC 抽屉内的 iframe 高度随内容区拉满，抽屉宽度按页面密度控制在 520-720px；提交成功后的刷新可以先用抽屉关闭事件触发列表 reload，若平台 postMessage 事件已验证，再接入精确的提交完成回调。移动端不强塞抽屉，避免键盘和表单字段被压缩。
+PC 抽屉内的 iframe 高度随内容区拉满，提交页宽度按页面密度控制在 520-720px，详情页可放宽到 720-880px；提交成功或查看结束后的刷新可以先用抽屉关闭事件触发列表 reload，若平台 postMessage 事件已验证，再接入精确的提交完成回调。移动端不强塞抽屉，避免键盘和表单字段被压缩。
 
 ## PortalQuickEntry / QuickAccessCard 边界
 
@@ -109,8 +212,9 @@ PC 抽屉内的 iframe 高度随内容区拉满，抽屉宽度按页面密度控
 ## 验收
 
 - 点击同应用页面入口后，没有新浏览器标签或新钉钉窗口。
-- 点击 PC 端「新建 / 提交表单」后，在当前自定义页侧边抽屉打开原生提交页，不直接弹新标签。
+- 点击 PC 端「新建 / 提交表单 / 查看详情」后，在当前自定义页侧边抽屉打开原生表单页，不直接弹新标签。
 - 点击移动端「新建 / 提交表单」后，可以整页或新页进入原生提交页。
+- 点击移动端「查看详情」后，可以整页或新页进入原生详情页。
 - URL 进入 `/{appType}/workbench/{formUuid}` 或对应平台同页路径。
 - 应用左侧/顶部导航能跟随目标页面选中；若导航隐藏，则页面内导航壳有明确选中态。
 - 外部 URL、钉钉 OA、文件预览等仍按新窗口或端内打开能力处理。

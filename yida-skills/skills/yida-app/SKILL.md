@@ -1,6 +1,6 @@
 ---
 name: yida-app
-description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；先解析资源上下文并消费 yida-design 的 prd.md 与 design.md，再按 PRD 创建或复用应用、表单、流程和页面；最终只输出一个主访问链接和业务交付总结。
+description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；先解析资源上下文并消费 yida-design 的 prd.md 与 design.md，再按 PRD 创建或复用应用、表单、流程和页面；最终先输出 2-3 句业务交付总结，再给一个主入口链接。
 ---
 
 # yida-app — 完整应用编排契约
@@ -11,7 +11,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 用户要求从零创建、搭建、生成一个完整宜搭应用/系统/平台/管理工具，或已有 app/page 需要补齐成完整业务系统时使用本技能。
 
-进入本技能后，读取或生成 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，并按 PRD 创建或复用资源，按 design.md 统一实现所有页面视觉，发布应用主入口，最后返回一个主访问链接和业务交付总结。
+进入本技能后，读取或生成 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，并按 PRD 创建或复用资源，按 design.md 统一实现所有页面视觉，发布应用主入口，最后先返回 2-3 句业务交付总结，再给主入口链接。
 
 > 资源边界：本技能是默认完整应用编排。目标不明时先只读确认或询问用户。
 
@@ -55,7 +55,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 - 读取 PRD 的页面与功能设计、资源关系和页面实现交付顺序，读取 design.md 的主题、布局、材质、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`；
 - 调用页面技能实现并发布；
 - 发布后按 PRD 的导航顺序执行轻量导航排序；
-- 只输出一个主访问链接和业务交付总结。
+- 只输出 2-3 句业务交付总结和一个主入口链接，业务总结在前、链接在后。
 
 ## 预检
 
@@ -77,8 +77,8 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 [Step 3] 创建/复用应用 → use_skill("yida-create-app", "按 PRD 创建应用并获取 appType") → openyida create-app
               ↓      已有 appType 时直接复用；缺少 app 且 allowCreate=true 时按 PRD 创建应用
               ↓
-[Step 4] 创建必要表单/流程 → use_skill("yida-form-detail", "表单视觉引导") → use_skill("yida-create-form-page", "创建核心表单字段结构")
-              ↓      生成表单 schema 前先用 yida-form-detail 合并 Divider 分割线语义分组，再加载 yida-create-form-page 落地字段 JSON；字段配置文件写入 .cache/openyida/<项目名>/
+[Step 4] 创建必要表单/流程 → use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入") → use_skill("yida-create-form-page", "创建核心表单字段结构")
+              ↓      生成表单 schema 前先用 yida-form-detail 合并 Divider 分割线语义分组，再加载 yida-create-form-page 落地字段 JSON；拿到真实 formUuid 后默认注入 formDetail CSS；字段配置文件写入 .cache/openyida/<项目名>/
               ↓      PRD 含审批 / 流程 / 申请 / 审核 / 工单等流程对象时，use_skill("yida-create-process", "创建带审批流程表单")，流程表单也在自定义页面之前创建
               ↓
 [Step 5] 写入初始表单数据 → use_skill("yida-data-management", "为核心业务表单写入 1-3 条示例记录")
@@ -98,7 +98,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 [Step 8] 发布页面 → use_skill("yida-publish-page", "发布主页面") → openyida publish <源文件路径> <appType> <formUuid> --auto-nav-order [--health-check]
               ↓      发布成功后按 PRD 导航顺序执行 openyida nav-group order；PRD 缺少明确页面清单时用 --auto-nav-order / nav-group auto-order 兜底
               ↓
-[Step 9] 输出一个主访问链接和业务交付总结 → 完成
+[Step 9] 输出 2-3 句业务交付总结和一个主入口链接 → 完成
 ```
 
 公开访问、截图验收、报表/大屏、数据桥深度接入或精细导航分组仍属于可选追加；示例数据不再是默认后置项，完整应用生成时默认在页面实现前完成 1-3 条核心表单记录写入和抽查。
@@ -181,7 +181,7 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 4. 按 PRD 扩展交互和真实数据，按 design.md 打磨视觉；
 5. 验证所有参数名称与 CLI 一致。
 
-表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；当用户要求“详情页美化 / formDetail 样式优化”或 PRD 要求统一详情页风格时，再由 `yida-form-detail` 通过表单 Schema 注入 Html 组件承载 CSS。
+表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；拿到真实 `formUuid` 后默认由 `yida-form-detail` / `openyida form-detail-style apply` 通过表单 Schema 注入 Html 组件承载 CSS，重复执行必须幂等。
 
 ## 完整应用统一编排阶段
 
@@ -191,22 +191,22 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 | 1. 设计前上下文 | 无 | 合并本轮显式资源、workspace 配置/缓存、会话历史，确认已有 `appType` 或 `allowCreate=true`；不在本阶段创建资源 | PRD 所需的目标组织、应用名称候选、资源复用边界明确 |
 | 2. 产品设计 | `yida-design` | 输出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；PRD 必须包含应用基本信息、应用配置、数据结构、页面与功能、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准；design.md 必须包含主题色、视觉 DNA、各页面场景配方、布局密度、组件规则和状态规则。写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射位置 | 业务语义、视觉契约、页面布局、三种顺序、资源蓝图和 ID 存储位置明确 |
 | 3. create/reuse app | `yida-create-app` 仅在 app 缺失且允许创建时加载；不自动修改应用名称 | 已有 `appType`/应用 URL/已绑定 app 时直接复用；否则按 PRD 创建应用并提取真实 `appType` | 拿到真实目标 `appType`，且不会重复创建同类 app |
-| 4. resolve forms/processes | `yida-form-detail` 视觉引导，再 `yida-create-form-page`；PRD 命中审批/流程时加载 `yida-create-process` | 已有目标表单时 update/patch/rule/bind-datasource；创建或更新字段结构前先用 `yida-form-detail` 确定表单视觉引导、填写路径和 Divider 分割线语义分组，再由 `yida-create-form-page` 写字段 JSON；PRD 包含流程表单时在自定义页面之前创建流程表单；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json`；formDetail CSS 注入只在用户明确要求或 PRD 要求统一详情页风格时执行 | 拿到或确认表单/流程表单 `formUuid`，字段结构有 Divider 分组，必要时拿到真实 `fieldId` |
+| 4. resolve forms/processes | `yida-form-detail` 视觉引导与详情页样式默认注入，再 `yida-create-form-page`；PRD 命中审批/流程时加载 `yida-create-process` | 已有目标表单时 update/patch/rule/bind-datasource；创建或更新字段结构前先用 `yida-form-detail` 确定表单视觉引导、填写路径和 Divider 分割线语义分组，再由 `yida-create-form-page` 写字段 JSON；PRD 包含流程表单时在自定义页面之前创建流程表单；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json`；拿到或确认真实 `formUuid` 后默认执行或补齐 formDetail CSS 注入 | 拿到或确认表单/流程表单 `formUuid`，字段结构有 Divider 分组，formDetail CSS 已注入或有明确阻塞原因，必要时拿到真实 `fieldId` |
 | 5. seed records | `yida-data-management` | 完整应用默认给本轮新建或页面数据源依赖的核心普通表单写入 1-3 条业务化 seed records。先 `openyida get-schema <appType> <formUuid> --field-map-json` 获取真实字段 ID，生成字段值时遵守字段类型和日期毫秒时间戳规则，再逐条执行 `openyida data create form <appType> <formUuid> --data-file ...` 或 `--data-json ...`，最后 `openyida data query form` 抽查至少 1 条。用户明确不要造数、表单是配置字典/权限表、或字段缺少可安全构造值时可跳过并说明原因 | 核心表单有 1-3 条真实表单记录，或有明确跳过原因和空态方案 |
 | 6. reserve main page | `yida-create-page` 仅在主页面缺失且允许创建时加载 | 已有页面 URL / `formUuid` / 已绑定页面时直接作为主页面；若需要首页/工作台/智能助手/门户门面且缺少主页面，在表单/流程创建和 seed records 完成后创建空 display page 占位，暂不写最终源码 | 拿到真实主页面 `formUuid`，且不会重复创建页面 |
 | 7. 编写/更新页面 | 默认 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 按 PRD 的页面实现交付顺序读取页面场景、业务区块、素材策略、原生表单入口和业务化自检；同时读取 design.md 的 themeProfile、visualScaffold、材质、组件和状态规则，再生成或修改页面源码。实现 PRD 里的核心首屏和核心操作。展示业务列表/看板/详情记录时，必须接本轮真实表单 `dataBinding.mode=form`；默认读取 Step 5 写入的 1-3 条 demo records，没写入成功才展示空态和登记入口 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
 | 8. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid> --auto-nav-order` 发布主页面。发布成功后，PRD 写明导航顺序时执行 `openyida nav-group order <appType> <页面/表单...>`；PRD 缺少明确页面清单时用 `--auto-nav-order` / `nav-group auto-order` 兜底 | 发布成功、获得可访问 URL，且 PRD 导航顺序已执行，或兜底自动排序已执行/给出明确 warning |
-| 9. 输出结果 | 无 | 只返回一个主访问链接：若本轮意图是新增/修改/发布某个具体页面，输出当前页面 URL；其他完整应用、建表单、建流程、权限、主题、导航或批量资源场景，输出应用首页 `{base_url}/{appType}/workbench`。最后一段写业务交付总结：概括创建/复用/更新了哪些表单、流程和页面，以及完成了哪些功能；不要输出资源 ID 表格，除非用户明确要排障 ID | 用户一眼看到下一步该打开哪里，并理解完成了哪些业务能力 |
+| 9. 输出结果 | 无 | 先写 2-3 句业务交付总结，再给一个主入口链接。若本轮意图是新增/修改/发布某个具体页面，主入口是当前页面 URL；其他完整应用、建表单、建流程、权限、主题、导航或批量资源场景，主入口是应用首页 `{base_url}/{appType}/workbench`。不要输出表格、资源 ID 清单或长列表，除非用户明确要排障 ID | 用户先理解完成了哪些业务能力，再打开唯一主入口 |
 
 发布主页面成功后默认只做一次轻量导航排序：PRD 写明页面/表单清单顺序时用 `nav-group order`；PRD 只写宽泛分组或缺少导航顺序时用 `nav-group auto-order` / `--auto-nav-order` 兜底，兜底顺序采用门户/首页/工作台入口、业务办理、数据管理、经营分析、系统配置。数据桥深接、数据源连接器、原生报表、精细导航分组、截图验收、公开访问配置和 TaskCreate 只在用户明确要求或 PRD 验收标准命中时追加；seed records 是完整应用默认阶段，不放到可选后置。
 
 ## 结果输出格式
 
-- **主链接只保留一个**：新增/修改/发布单个页面时输出当前页面 URL；其他情况输出应用首页 `{base_url}/{appType}/workbench`。
+- **先总结再给链接**：最终回复先写 2-3 句业务交付总结，再给一个主入口链接。新增/修改/发布单个页面时主入口是当前页面 URL；其他情况主入口是应用首页 `{base_url}/{appType}/workbench`。
 - **不要输出静态资源清单**：不要把 `g.alicdn.com` 的 `index.css`、`index.js`、`index.html`、`locales/*.json`、构建产物 URL、CDN 资源 URL 或中间文件链接当成最终结果展示。
-- **不要输出资源 ID 摘要表**：最后一遍输出不要列 `资源类型 | 名称/用途 | ID | 状态`，也不要默认暴露 appType、formUuid、pageId、reportId。改用业务总结，例如“创建了订单表单、商品表单、客户表单等 5 个表单；创建了首页、订单管理、库存看板等 4 个页面；完成订单录入、库存预警、销售统计和表单提交入口”。只有用户明确要求排障、复盘资源 ID 或复制配置时，才补充 ID。
+- **业务总结 2-3 句完成**：最后一遍输出不要列 `资源类型 | 名称/用途 | ID | 状态`，也不要默认暴露 appType、formUuid、pageId、reportId。改用 2-3 句自然语言，例如“已完成订单、商品和客户等核心表单，并发布首页、订单管理和库存看板入口。当前应用已支持订单录入、库存预警、销售统计和表单详情查看，示例记录与轻量导航排序也已就绪。主入口：{base_url}/{appType}/workbench”。只有用户明确要求排障、复盘资源 ID 或复制配置时，才补充 ID。
 - **管理态链接默认隐藏**：不要默认输出 `/admin`、配置页、Schema 页、分享配置页等管理链接；只有用户明确要管理后台、配置入口或排障证据时才提供。
-- 未发布或仅本地修改的资源，在 `状态` 列标注“未发布 / 待验证 / 本地已修改”，不要附访问 URL。
+- 未发布或仅本地修改的资源，用一句话说明“源码已修改，尚未发布”或“远端待验证”，不要用表格状态列表达。
 
 ## 关键决策树
 
@@ -278,11 +278,12 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 完整应用的默认完成条件：
 
 1. 主页面发布成功；
-2. 输出可访问 URL；
-3. 输出业务交付总结，说明创建/复用/更新了哪些表单、页面和流程，以及完成了哪些功能；默认不输出 appType、formUuid、pageId 等资源 ID；
-4. 轻量导航自动排序已执行；若排序失败，必须给出明确 warning，不能静默跳过；
-5. 新建或作为页面数据源的核心普通表单已默认写入 1-3 条示例记录并 query 抽查，或明确说明跳过原因；
-6. 未继续执行可选后置动作。
+2. 输出 2-3 句业务交付总结，说明创建/复用/更新了哪些表单、页面和流程，以及完成了哪些功能；
+3. 在业务总结之后给出一个可访问主入口链接；
+5. 默认不输出表格、长列表、appType、formUuid、pageId 等资源 ID；
+6. 轻量导航自动排序已执行；若排序失败，必须给出明确 warning，不能静默跳过；
+7. 新建或作为页面数据源的核心普通表单已默认写入 1-3 条示例记录并 query 抽查，或明确说明跳过原因；
+8. 未继续执行可选后置动作。
 
 若本轮修改过页面源码但没有成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`，完整应用仍未达到 doneWhen；只能交付本地源码修改说明和未发布原因，不能宣称远端主页面已更新。
 

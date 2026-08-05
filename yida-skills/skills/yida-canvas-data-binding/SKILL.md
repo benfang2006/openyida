@@ -20,6 +20,7 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 - Cookie 由浏览器同源请求自动携带，前端代码不能硬编码 Cookie、appSecret、accessKey 或外部密钥。
 - 调宜搭同源端点时，请求必须带 `credentials: 'include'`。
 - CSRF 优先从 `window.g_config`、`window.pageConfig`、`window.__YIDA__` 运行态配置读取；预览域名里缺少这些字段时，可兜底读取 meta 或同源 cookie（如 `tianshu_csrf_token`）。内部端点常同时需要 `_csrf_token` query 参数和 `global_csrf_token` 请求头。
+- `mode=form` 读取宜搭表单数据时，固定使用 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。请求方式是 `GET + URLSearchParams`，query 至少包含 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`；`/query/form/searchFormDatas.json` 不是可用表单数据端点。
 
 ## dataBinding 契约
 
@@ -43,7 +44,7 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 | mode | 用途 | 必填 | 运行方式 |
 | --- | --- | --- | --- |
 | `seed` | 演示兜底 / 本地预览 | 无 | 只用本地演示数据 |
-| `form` | 读宜搭表单数据 | `appType`、`formUuid`、`fields` | 同源 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json` |
+| `form` | 读宜搭表单数据 | `appType`、`formUuid`、`fields` | 同源 `GET /dingtalk/web/<appType>/v1/form/searchFormDatas.json`，query 带 `formUuid/appType/currentPage/pageSize/searchFieldJson/_csrf_token` |
 | `connector` | 读平台连接器代理 | `endpoint` | 同源代理端点，鉴权留在平台侧 |
 | `url` | 读同源业务接口 | `endpoint` | 同源 `fetch` |
 | `report` | 读报表或聚合结果 | 报表 schema 参数 | 使用平台聚合结果，不在前端拉全量猜聚合 |
@@ -127,6 +128,8 @@ function unwrapTotal(payload, rows) {
 ## 表单数据读取要点
 
 表单查询请求必须同源、带 Cookie、带 CSRF，并根据字段映射把宜搭字段 ID 归一成页面业务字段。
+
+实现前先确认 `dataBinding.mode === 'form'`、`appType/formUuid` 和 `fields` 都来自真实表单 Schema。下面的 `fetchFormRows` 是直连宜搭表单数据的标准实现，手写页面和生成器都以它为准；连接器代理可以使用自己的 endpoint，但不能把连接器代理示例改写成 `/query/form/searchFormDatas.json`。
 
 ```javascript
 async function fetchFormRows(binding, signal) {

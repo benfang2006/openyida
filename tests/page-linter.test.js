@@ -220,6 +220,28 @@ export function renderJsx() {
     expect(warningRules).toContain('iframe-self-navigation');
   });
 
+  test('warns when form submission or detail pages open in a new tab from custom pages', () => {
+    const source = `
+export function openCreate() {
+  var submitUrl = '/APP_XXX/submission/FORM_XXX?isRenderNav=false';
+  window.open(submitUrl, '_blank');
+}
+
+export function openMobileCreate() {
+  var submitUrl = '/APP_XXX/submission/FORM_XXX?isRenderNav=false';
+  if (this.utils.isMobile()) {
+    this.utils.openPage(submitUrl);
+  }
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/form-open.jsx');
+    const formOpenWarnings = result.warnings.filter(issue => issue.rule === 'form-open-container');
+
+    expect(formOpenWarnings).toHaveLength(1);
+    expect(formOpenWarnings[0].line).toBe(4);
+  });
+
   test('custom page template uses verified Tailwind preflight and native control reset', () => {
     const sourcePath = path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'custom-page-template.js');
     const source = fs.readFileSync(sourcePath, 'utf-8');
@@ -453,7 +475,7 @@ export function loadRows() {
     expect(errorResult.warnings.map(issue => issue.rule)).not.toContain('page-size-recommend');
   });
 
-  test('flags direct searchFormDatas.json misuse (POST / pageNumber / no content unwrap)', () => {
+  test('flags direct searchFormDatas.json misuse (POST / pageNumber / missing query contract / no content unwrap)', () => {
     const badSource = `
 export function YidaComp() {
   return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json', {
@@ -468,16 +490,41 @@ export function YidaComp() {
     const badRules = badResult.errors.concat(badResult.warnings).map(issue => issue.rule);
     expect(badRules).toContain('searchformdata-http-post');
     expect(badRules).toContain('searchformdata-http-pagenumber');
+    expect(badRules).toContain('searchformdata-http-query-params');
+    expect(badRules).toContain('searchformdata-http-csrf');
+    expect(badRules).toContain('searchformdata-http-credentials');
     expect(badRules).toContain('searchformdata-http-unwrap');
     expect(badResult.errors.map(issue => issue.rule)).toContain('searchformdata-http-post');
+  });
+
+  test('flags invalid /query/form/searchFormDatas.json endpoint path', () => {
+    const badSource = `
+export function YidaComp() {
+  var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: '1', pageSize: '50', searchFieldJson: '{}', _csrf_token: csrfToken }).toString();
+  return fetch('/dingtalk/web/APP_X/query/form/searchFormDatas.json?' + qs, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { global_csrf_token: csrfToken }
+  }).then(function (res) { return res.json(); }).then(function (json) {
+    return (json.content && json.content.data) || [];
+  });
+}
+`;
+    const result = lintYidaSource(badSource, '/tmp/searchformdata-path-bad.canvas.jsx');
+    const rules = result.errors.concat(result.warnings).map(issue => issue.rule);
+    expect(rules).toContain('searchformdata-http-path');
+    expect(result.errors.map(issue => issue.rule)).toContain('searchformdata-http-path');
   });
 
   test('accepts correct GET + query + content unwrap searchFormDatas.json usage', () => {
     const goodSource = `
 export function YidaComp() {
-  var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: '1', pageSize: '50', searchFieldJson: '{}' }).toString();
+  var csrfToken = getCsrfToken();
+  var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: '1', pageSize: '50', searchFieldJson: '{}', _csrf_token: csrfToken }).toString();
   return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json?' + qs, {
-    method: 'GET'
+    method: 'GET',
+    credentials: 'include',
+    headers: { global_csrf_token: csrfToken }
   }).then(function (res) { return res.json(); }).then(function (json) {
     return (json.content && json.content.data) || json.data || [];
   });
@@ -487,6 +534,9 @@ export function YidaComp() {
     const goodRules = goodResult.errors.concat(goodResult.warnings).map(issue => issue.rule);
     expect(goodRules).not.toContain('searchformdata-http-post');
     expect(goodRules).not.toContain('searchformdata-http-pagenumber');
+    expect(goodRules).not.toContain('searchformdata-http-query-params');
+    expect(goodRules).not.toContain('searchformdata-http-csrf');
+    expect(goodRules).not.toContain('searchformdata-http-credentials');
     expect(goodRules).not.toContain('searchformdata-http-unwrap');
   });
 
@@ -494,8 +544,8 @@ export function YidaComp() {
     const commentedSource = `
 export function YidaComp() {
   // 注意：searchFormDatas.json 不能用 POST，也不要写 pageNumber，用 currentPage。
-  var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: String(binding.pageNumber || 1), pageSize: '50', searchFieldJson: '{}' }).toString();
-  return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json?' + qs, { method: 'GET' })
+  var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: String(binding.pageNumber || 1), pageSize: '50', searchFieldJson: '{}', _csrf_token: csrfToken }).toString();
+  return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json?' + qs, { method: 'GET', credentials: 'include', headers: { global_csrf_token: csrfToken } })
     .then(function (res) { return res.json(); })
     .then(function (json) { return (json.content && json.content.data) || []; });
 }
@@ -504,6 +554,9 @@ export function YidaComp() {
     const rules = result.errors.concat(result.warnings).map(issue => issue.rule);
     expect(rules).not.toContain('searchformdata-http-post');
     expect(rules).not.toContain('searchformdata-http-pagenumber');
+    expect(rules).not.toContain('searchformdata-http-query-params');
+    expect(rules).not.toContain('searchformdata-http-csrf');
+    expect(rules).not.toContain('searchformdata-http-credentials');
     expect(rules).not.toContain('searchformdata-http-unwrap');
   });
 
@@ -517,6 +570,9 @@ export function loadRows() {
     const rules = result.errors.concat(result.warnings).map(issue => issue.rule);
     expect(rules).not.toContain('searchformdata-http-post');
     expect(rules).not.toContain('searchformdata-http-pagenumber');
+    expect(rules).not.toContain('searchformdata-http-query-params');
+    expect(rules).not.toContain('searchformdata-http-csrf');
+    expect(rules).not.toContain('searchformdata-http-credentials');
     expect(rules).not.toContain('searchformdata-http-unwrap');
   });
 });

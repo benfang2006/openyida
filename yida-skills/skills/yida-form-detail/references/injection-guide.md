@@ -2,7 +2,12 @@
 
 ## 核心原则
 
-`formDetail` 详情页不会执行表单页面 JS，因此样式必须进入 Schema 渲染树。推荐在 `FormContainer` 中注入宜搭原生 `Html` 组件，并将 CSS 放入 `<style>` 标签。
+表单详情页样式统一进入 Schema 渲染树。注入内容固定由两层组成：
+
+- `style#yida-global-theme`：全局主题 token，和表单页 JS 注入使用同一个主题合约。
+- `style#yida-form-detail-style`：详情页结构样式，覆盖卡片、字段预览、评论区和底部操作栏。
+
+详情页通过 `Html` 组件和 `root.css` 同步持久化上述样式，保证详情页 iframe 内消费同一套主题 token。
 
 ## API 顺序
 
@@ -16,11 +21,24 @@ GET /alibaba/web/{appType}/_view/query/formdesign/getFormSchema.json?formUuid={f
 
 ### 2. 注入或更新 Html 组件
 
-推荐使用固定 id，保证重复执行是幂等更新：
+使用固定 id，保证重复执行是幂等更新：
+
+只修改渲染树里的 `Html` 节点和 `root.css` 兜底样式，不主动修改 `componentsMap`。
+
+`Html.props.content` 必须包含两个 style：
+
+- `style#yida-global-theme`：全局主题 token，和表单页 JS 注入使用同一个 id。
+- `style#yida-form-detail-style`：详情页结构样式，包括卡片、字段预览、底部操作栏等。
 
 ```js
 const FORM_DETAIL_HTML_ID = 'yida-form-detail-css-html';
 const FORM_DETAIL_FIELD_ID = 'html_yida_detail_css';
+const globalThemeCss = `/* openyida:yida-global-theme:form-detail */
+:root {
+  --color-brand1-6: rgba(57, 84, 228, 1);
+  --color-brand-3: rgba(57, 84, 228, 1);
+  --color-brand1-9: rgba(40, 59, 160, 1);
+}`;
 
 function readNodeChildren(node) {
   if (!node) {
@@ -71,7 +89,7 @@ function upsertFormDetailCss(schema, css) {
     throw new Error('Schema 中未找到 RootContent');
   }
 
-  rootNode.css = 'body{background-color:#f6f7f9;}' + css;
+  rootNode.css = `${globalThemeCss}\n${css}`;
 
   const formContainer = findNode(rootNode, 'FormContainer');
   if (!formContainer) {
@@ -79,7 +97,7 @@ function upsertFormDetailCss(schema, css) {
   }
 
   const children = ensureNodeChildren(formContainer);
-  const content = `<style>${css}</style>`;
+  const content = `<style id="yida-global-theme">${globalThemeCss}</style>\n<style id="yida-form-detail-style">${css}</style>`;
   const existing = children.find((item) => item && item.id === FORM_DETAIL_HTML_ID);
 
   if (existing) {
@@ -176,6 +194,8 @@ Body:
 1. 重新获取 Schema，确认存在：
    - `id: "yida-form-detail-css-html"`
    - `componentName: "Html"`
+   - `props.content` 包含 `id="yida-global-theme"`
+   - `props.content` 包含 `id="yida-form-detail-style"`
    - `hidden: false`
    - `props.content` 包含 `yida-form-detail`
 2. 如果已有一条数据记录，可以打开：

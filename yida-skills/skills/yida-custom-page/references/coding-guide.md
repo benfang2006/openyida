@@ -576,6 +576,7 @@ this.utils.toast({ title: '调试信息', type: 'info' });
 | 场景 | URL 格式 |
 |------|----------|
 | 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
+| 表单详情页（默认隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false` |
 | 数据管理页（列表） | `{base_url}/{appType}/workbench/{formUuid}?iframe=true` |
 | 数据管理页（指定视图） | `{base_url}/{appType}/workbench/{formUuid}?viewUuid={viewUuid}&iframe=true` |
 
@@ -587,20 +588,41 @@ const wrongUrl = `${baseUrl}/${appType}/formDetail/${formUuid}`;
 const listUrl = `${baseUrl}/${appType}/workbench/${formUuid}?iframe=true`;
 ```
 
-新增/提交数据的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')`。默认做法是：PC 端打开右侧抽屉，抽屉内 iframe 指向隐藏导航提交页 URL；移动端空间有限，可以整页或新页打开提交页。提交成功后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台提交页会发送 postMessage 时，才接精确提交成功事件。
+新增/提交/查看详情的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')` 或 `window.open(detailUrl, '_blank')`。默认做法是统一封装 `FormOpenContainer`：PC 端打开右侧抽屉，抽屉内 iframe 指向隐藏导航提交页或详情页 URL；移动端空间有限，可以整页或新页打开原生表单页。提交成功或关闭后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台表单页会发送 postMessage 时，才接精确完成事件。
 
 ```javascript
-// ✅ PC：抽屉内嵌提交页；移动端：打开原生提交页
-var submitUrl = baseUrl + '/' + appType + '/submission/' + formUuid + '?isRenderNav=false';
-if (this.utils.isMobile()) {
-  this.utils.openPage(submitUrl);
-} else {
-  this.setCustomState({ submitDrawerVisible: true, submitIframeUrl: submitUrl });
+// ✅ PC：FormOpenContainer 抽屉内嵌表单页；移动端：打开原生表单页
+export function buildYidaFormUrl(type, appType, formUuid, formInstId) {
+  if (type === 'detail') {
+    return '/' + appType + '/formDetail/' + formUuid + '?formInstId=' + encodeURIComponent(formInstId || '') + '&isRenderNav=false';
+  }
+  return '/' + appType + '/submission/' + formUuid + '?isRenderNav=false';
+}
+
+export function openYidaForm(type, title, appType, formUuid, formInstId) {
+  var url = this.buildYidaFormUrl(type, appType, formUuid, formInstId);
+  if (this.utils.isMobile()) {
+    this.utils.openPage(url);
+    return;
+  }
+  this.setCustomState({
+    formOpenRequest: {
+      type: type,
+      title: title || '表单',
+      iframeUrl: url,
+    },
+  });
+  this.forceUpdate();
+}
+
+export function closeYidaForm() {
+  this.setCustomState({ formOpenRequest: null });
+  this.loadData();
   this.forceUpdate();
 }
 ```
 
-`renderJsx` 中根据 `submitDrawerVisible` 渲染右侧抽屉和 `<iframe src={state.submitIframeUrl}>`；关闭抽屉时清空 `submitIframeUrl` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法。
+`renderJsx` 中根据 `formOpenRequest` 渲染右侧抽屉和 `<iframe src={state.formOpenRequest.iframeUrl}>`；关闭抽屉时清空 `formOpenRequest` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法，也不要为提交和详情各写一套 drawer 状态。
 
 > `viewUuid` 可选，从宜搭「数据管理」→「报表视图」页面的 URL 中获取，不传则使用默认视图。
 

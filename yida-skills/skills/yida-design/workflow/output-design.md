@@ -1,6 +1,6 @@
 # 输出：design.md
 
-> Step 6 自检通过后，写入 `prd/<项目名>/design.md`。`design.md` 是应用级 UI 视觉设计系统，结构参考 `references/style-designs/_design-md-template.md`：先写可复用视觉 DNA、token、布局、组件、状态和自检，再在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。
+> Step 6 自检通过后，写入 `prd/<项目名>/design.md`。`design.md` 是应用级 UI 视觉设计系统，结构参考 `references/style-designs/_design-md-template.md`：先写可复用视觉 DNA、token、布局、组件、状态和自检，再在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。配色、视觉 DNA、布局配方和组件规则必须根据当前业务生成，不复制示例文件的业务、颜色、字段或页面顺序。
 
 ## design.md 输出格式
 
@@ -11,6 +11,7 @@ name: <应用或风格系统英文 slug>
 description: <内容中立的中文用途说明>
 design_id: <design-id>
 design_status: ready
+baseDesignSource: generated-from-business-context
 scenes: [工作台, 列表, 详情, 看板]
 density: <compact / medium / comfortable>
 layout: <preferred archetype or custom layout>
@@ -36,10 +37,10 @@ tokens:
   --color-brand1-6: <主色>
   --color-brand1-9: <深主色>
   --color-brand1-2: <浅背景>
-  --color-brand-1: <旧版/移动端桥接色 1>
-  --color-brand-2: <旧版/移动端桥接色 2>
-  --color-brand-3: <旧版/移动端桥接色 3>
-  --color-brand-4: <旧版/移动端桥接色 4>
+  --color-brand-1: <移动端品牌色 1>
+  --color-brand-2: <移动端品牌色 2>
+  --color-brand-3: <移动端品牌色 3>
+  --color-brand-4: <移动端品牌色 4>
   --color-group: <图表和分组色板，逗号分隔>
 visual_dna:
   - name: <可识别的设计记忆点名称>
@@ -60,8 +61,21 @@ backgroundLayer:
   baseCanvas: <低饱和浅底、带装饰的近白画布或深色舞台；推荐避免无层次的纯空白画布>
   primitives: [softTintCanvas, topIrregularWash, radialGlowWash, flowLight, organicNoise]
   topIrregularWash: <可选；不规则顶部色块、波浪或斜切背景，内容仍按规则栅格排布>
-  motionLayer: <none / subtle-flow-light；必须有 prefers-reduced-motion 降级>
+  motionLayer: <none / subtle-flow-light；必须有 prefers-reduced-motion 静态降级>
   contrastGuard: <前景文字和控件对比度要求>
+iconSystem:
+  defaultLibrary: lucide-react
+  allowedLibraries: [lucide-react, "@ant-design/icons"]
+  style: <线性描边 / Outlined；同一页面保持一致>
+  strokeWidth: <默认 1.75 或 2>
+  sizes:
+    toolbar: 16
+    quickAction: 18
+    status: 16
+  actionIconMap:
+    <业务动作名>: <lucide-react 或 @ant-design/icons 的具体组件名>
+  statusIconMap:
+    <业务状态名>: <lucide-react 或 @ant-design/icons 的具体组件名>
 typography:
   page-title:
     fontFamily: "<字体栈>"
@@ -149,11 +163,13 @@ inferred_modules:
 
 ## 10. 组件样式
 
-覆盖顶部栏、按钮、图标按钮、卡片/面板、输入框/选择器、表格/列表、图表、标签/徽标、快捷入口、空状态、弹窗/浮层。相关组件要包含 default、hover、active、focus、disabled、loading、selected、error 等状态。
+覆盖顶部栏、按钮、图标按钮、卡片/面板、输入框/选择器、表格/列表、图表、标签/徽标、快捷入口、空状态、弹窗/浮层。相关组件要包含 default、hover、active、focus、disabled、loading、selected、error 等状态。图标规则写入 `iconSystem`：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import；快捷入口、按钮、状态和导航必须给出可实现的 `actionIconMap` / `statusIconMap`。
 
 ## 11. 快捷入口区域
 
 工作台、仪表盘、管理后台或运营首页必须输出快捷入口区域规则。说明位置、容器、条目、数量、图标、文字、状态、响应式、与 DNA 的关系和禁止漂移。
+
+快捷入口的图标使用 `iconSystem` 中的具体组件名。常用映射示例：新增/创建用 `Plus`，搜索/查询用 `Search`，刷新用 `RefreshCw`，查看用 `Eye`，入库/上传用 `Upload`，出库/下载用 `Download`，供应商/组织用 `Building2`，告警用 `AlertCircle`，完成用 `Check`。
 
 ## 12. 页面结构配方
 
@@ -186,8 +202,8 @@ inferred_modules:
 | 平台预置主题 | 只有 `themePresetKey` 命中平台预置 key 且 `shouldPassCreateAppTheme=true` 时，`create-app/update-app` 才传 `theme/colour` |
 | 自定义色盘 | `shouldPassCreateAppTheme=false`，创建应用时不传 `theme/colour` |
 | 页面注入 | 自定义色盘、隐藏导航沉浸页、页面级独立主题使用 `style#yida-global-theme` |
-| 应用级换肤 | 需要全应用换肤时写 `customThemeStyle.tokens`，并保留 `style#yida-global-theme` 作为页面运行态兜底 |
-| 注入目标 | 当前窗口 `document` 和所有同源可访问父级窗口 `document`；跨域父级静默降级 |
+| 应用级换肤 | 需要全应用换肤时写 `customThemeStyle.tokens`，页面运行态统一注入 `style#yida-global-theme` |
+| 注入目标 | 当前窗口 `document` 和所有同源可访问父级窗口 `document`；跨域父级静默跳过 |
 | Helper | Code Canvas 和普通 JSX 都复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md`，使用其中的 `collectYidaThemeDocuments` 收集当前文档和同源父级文档，不要临场重写 |
 | 样式 ID | 固定为 `yida-global-theme`，重复执行只更新同一个 style |
 | 根节点 | 页面根节点加 `data-yida-theme-root="true"`，让 token 在当前页和父级 iframe 壳层都能命中 |
@@ -200,6 +216,7 @@ inferred_modules:
 - 根节点写 `<div data-yida-theme-root className="...">`。
 - `backgroundLayer` 必须落到根节点背景、`::before` 顶部不规则色块或大面积光洗、`::after` 流光/纹理层；内容层使用相对定位和更高 `z-index`，保证背景不盖住操作区。
 - `flowLight` 动效必须写 `@media (prefers-reduced-motion: reduce)` 停止动画。
+- 页面图标使用 `lucide-react` 或 `@ant-design/icons` 的标准 import，默认从 `lucide-react` named import 具体组件；源码按 `iconSystem.actionIconMap` / `statusIconMap` 渲染图标。
 
 ### 普通 JSX 实现要求
 
@@ -238,10 +255,11 @@ inferred_modules:
 - [ ] 若页面类型是工作台、仪表盘、管理后台或运营首页，文档已包含快捷入口区域。
 - [ ] 可推断的 token 已给出具体值。
 - [ ] 组件包含状态规则，而不只是静态外观。
+- [ ] `iconSystem` 已声明默认图标库、可用图标库、尺寸、描边风格，并为快捷入口、按钮、状态和导航提供具体 `actionIconMap` / `statusIconMap`。
 - [ ] 响应式和可访问性规则完整。
 - [ ] `themeProfile`、`yidaThemeRuntime` 和 `tokens` 一致。
 - [ ] `backgroundLayer` 已说明基础画布、装饰方式和是否使用背景 primitive；若选择近白画布，已说明如何通过渐变、细线、素材或内容密度形成背景感。
-- [ ] 若使用 `topIrregularWash`、`flowLight` 或 `organicNoise`，已写清对比度、内容栅格和 reduced motion 降级。
+- [ ] 若使用 `topIrregularWash`、`flowLight` 或 `organicNoise`，已写清对比度、内容栅格和 reduced motion 静态降级。
 - [ ] 自定义色盘没有传给 `create-app/update-app --theme`。
 - [ ] 需要运行时主题时，已声明复制 `theme-runtime-helpers.md`，并覆盖当前窗口与同源父级窗口。
 - [ ] 不依赖原截图，也能指导生成一个新页面。

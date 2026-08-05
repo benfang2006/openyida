@@ -2,23 +2,23 @@
 
 > 这一步写 `design.md` 草稿。`design.md` 规定所有页面共同遵守的 UI 视觉、组件样式、状态样式和响应式规则。
 
-## 1. 选择 design.md 基准风格
+## 1. 生成 design.md 基准系统
 
-先为完整应用确定一套主设计契约，再为不同页面场景写局部变体。自定义展示页、工作台、列表管理页、处理台、看板和首页门户都遵守同一个 `prd/<项目名>/design.md`。
+先为完整应用生成一套主设计契约，再为不同页面场景写局部变体。自定义展示页、工作台、列表管理页、处理台、看板和首页门户都遵守同一个 `prd/<项目名>/design.md`。
 
-1. 读取 [页面风格设计文档选择](../references/style-design-selection.md)。
-2. 读取 [页面风格设计文档索引](../references/style-designs/registry.md)。
-3. 根据应用目标、业务领域、信息密度、数据形态和页面组合选择一个主风格作为 `design.md` 基准。
-4. 完整读取选中的参考 `design.md`，提取视觉 DNA、布局配方、组件规则和状态规则。
+1. 读取 [design.md 生成规则](../references/style-design-selection.md)。
+2. 读取 [design.md 模板与示例索引](../references/style-designs/registry.md)，再读取 `_design-md-template.md`。
+3. 需要判断详略时读取唯一示例 `generated-business-design.example.md`；只学习结构和粒度，不复制示例业务、色盘、字段、页面顺序或组件组合。
+4. 根据应用目标、业务领域、角色、信息密度、数据形态、应用主题和用户偏好生成新的视觉 DNA、配色、布局原则、组件规则和状态规则。
 5. 读取 [视觉脚手架配方库](../references/visual-scaffold-recipes.md)，把应用内各类页面映射到统一 `visualScaffold` 规则。
 6. 读取 [页面质量门禁](../references/page-quality-gates.md)，把质量门禁补进 `acceptanceChecks`。
-7. 完整应用内默认保持同一套主风格；页面场景差异很大时，在同一份 `design.md` 里写页面场景变体，不为每个页面另起独立设计文件。
+7. 完整应用内默认保持同一套主设计系统；页面场景差异很大时，在同一份 `design.md` 里写页面场景变体，不为每个页面另起独立设计文件。
 
 输出字段：
 
 ```markdown
 - designFile：prd/<项目名>/design.md
-- baseDesignSource：<references/style-designs/<design-id>.design.md 或 自定义业务风格>
+- baseDesignSource：generated-from-business-context
 - styleReason：<为什么适合当前应用和页面组合>
 - Visual DNA：<所有页面都必须保留的 2-5 个视觉 DNA>
 - sceneRecipes：<workbench/list/detail/dashboard/landing/screen 各自如何遵守同一 design.md>
@@ -51,7 +51,7 @@
 
 ## 3. 写组件和状态规则
 
-- 按主题统一按钮、输入、卡片、表格、标签、弹窗、抽屉和图标样式。
+- 按主题统一按钮、输入、卡片、表格、标签、弹窗、抽屉和图标样式；图标输出 `iconSystem`，只选择 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`。
 - 页面美感提升、重构和改 UI 时保留当前功能契约：数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态继续有效。
 - 明确正常、hover/active、禁用、加载、空态、错误、无权限、无数据状态。
 - 表单验证、成功/失败提示使用平台语义色和原生能力。
@@ -62,7 +62,7 @@
 - 官网、产品首页、品牌页、视觉化工作台默认要有真实图片或生成图片。
 - 强视觉官网至少形成“场景 Hero + 产品/服务 + 过程/空间”的素材故事。
 - 素材暂缺时标注 draft，并写清缺口，例如 heroImage、productImages、brandLogo、caseImages。
-- 图标使用功能性内联 SVG，同一页面保持一套图标风格。
+- 图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react`。在 `design.md` 中输出 `iconSystem`、尺寸、描边/Outlined 风格、`actionIconMap` 和 `statusIconMap`，把新增、查询、刷新、查看、入库、出库、组织、告警、完成等业务语义映射到具体图标组件。
 
 ## 5. 检查页面是否像真实产品
 
@@ -72,7 +72,7 @@
 2. 首屏是否只有一个明确主张或核心判断。
 3. 每个区块是否有不同的信息目的和构图节奏。
 4. 颜色是否服务业务语义，语义色是否稳定。
-5. 图标是否功能化，页面渲染文案是否使用纯文本。
+5. 图标是否来自 `lucide-react` 或 `@ant-design/icons` 的具体组件映射，页面渲染文案是否使用纯文本。
 6. 空态、加载态、错误态是否符合当前业务。
 7. 列表、看板、详情是否保留用户当前上下文。
 8. 新增/提交/编辑是否使用原生表单入口。
@@ -81,7 +81,7 @@
 11. 工作台 / 业务首页是否避开“4 个等宽大 KPI 卡 + 图标快捷卡 + 大空态白卡”的低密模板；空数据是否用薄空态行和主操作入口承接。
 12. 工作台、首页、门户、看板、展示页和业务入口页是否至少有 10 个有业务目的的区块以上，并且不是靠重复卡片或空白容器凑数；KPI 子项、快捷入口子项和列表行不能分别计数。
 13. 页面是否已考虑 `backgroundLayer`：优先选择淡色背景、顶部不规则色块、柔和光洗、低速流光、微噪点、细线装饰、插图或局部渐变之一；近白画布可以保留，但不能呈现为未设计的空白底。
-14. 不规则背景是否只服务氛围和视觉焦点，内容区是否仍保持规则栅格、稳定对齐、可读对比度和 reduced motion 降级。
+14. 不规则背景是否只服务氛围和视觉焦点，内容区是否仍保持规则栅格、稳定对齐、可读对比度和 reduced motion 静态降级。
 
 ## 产出
 
@@ -89,6 +89,7 @@
 - designFile：<prd/<项目名>/design.md>
 - designSystem：<themeProfile / Visual DNA / 基础版式 / visualScaffold / sceneRecipes>
 - componentSpec：<按钮/表格/卡片/标签/抽屉/图标>
+- iconSystem：<defaultLibrary / allowedLibraries / sizes / actionIconMap / statusIconMap>
 - stateSpec：<正常/禁用/加载/空态/错误/无权限>
 - assetStrategy：<图片/图标/素材缺口/materialStatus>
 - pageDesignRefs：<每个 display 页面在 PRD 中引用 design.md 的章节 ID>

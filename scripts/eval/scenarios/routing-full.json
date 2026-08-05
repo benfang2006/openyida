@@ -465,10 +465,9 @@
     "id": "form-detail-neg-1",
     "prompt": "帮我给这个表单新增几个字段，加上「联系电话」和「备注」",
     "expectedSkill": "yida-create-form-page",
-    "mustNotTrigger": ["yida-form-detail"],
     "type": "negative",
     "category": "disambiguation",
-    "note": "新增表单字段 → create-form-page，不是详情页样式"
+    "note": "新增表单字段主路由仍是 create-form-page；执行阶段默认加载 yida-form-detail 做视觉引导和详情页样式补齐"
   },
 
   {

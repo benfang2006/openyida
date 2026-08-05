@@ -65,9 +65,10 @@ description: >
 15. **design.md 是全局设计契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、表单入口、列表、详情、看板和工作台都必须遵守它；PRD 不再复制或二次抽象 `design.md`，只引用 `design.md` 的章节和规则。
 16. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件形态、空态规则和响应式规则写入 `design.md`；PRD 只写业务目标、资源关系、区块目的、数据来源、主操作、应用主题色/风格摘要和 `designRefs`，摘要必须与 `design.md` 一致。
 17. **实现交接必须结构化但保持薄**：每个 display 页面在 PRD 中输出 `pageSpecHandoff`，只写 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile=prd/<项目名>/design.md`、`designRefs`、数据来源和主操作；实现阶段必须读取 `prd.md` 与 `design.md` 后才能写页面。
-18. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
-19. **页面文案和图标使用专业表达**：渲染内容使用纯文本和功能性内联 SVG。
-20. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
+18. **设计事实源唯一**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。页面 `scene` 只作为分类标签，不对应参考文件、模板文件或实现阶段读取入口。
+19. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
+20. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作和状态到图标组件的映射。
+21. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
 
 ---
 
@@ -82,20 +83,13 @@ description: >
 | [Step 5：UI 视觉和状态设计](workflow/step-5-visual-states.md) | 应用级 `design.md`、视觉 DNA、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
 | [Step 6：写入 prd.md 和 design.md](workflow/step-6-handoff.md) | `prd.md` + `design.md` 必填内容、三种顺序、实现交接 | 输出前 |
 | [page-design 单页设计](sub_skill/page-design/SKILL.md) | 单页主题证据、页面级设计流程、输出补充字段 | 单个自定义页设计 |
-| [场景参考速查](workflow/scene-reference-lookup.md) | scene 文件和专项变体速查 | 场景判定不确定时 |
 | [PRD 输出格式](workflow/output-prd.md) | `prd.md` 字段示例 | Step 6 输出前 |
 | [design.md 输出格式](workflow/output-design.md) | `design.md` 字段示例 | Step 6 输出前 |
-| [页面风格选择](references/style-design-selection.md) | 选择应用级 `design.md` 基准风格的信号、步骤和输出字段 | Step 5 |
+| [design.md 生成规则](references/style-design-selection.md) | 按模板生成应用级 `design.md`，配色和视觉 DNA 由当前业务推导 | Step 5 |
 | [视觉脚手架配方库](references/visual-scaffold-recipes.md) | 将高质量页面结构转成 `visualScaffold` 槽位，约束页面实现落地 | Step 5 |
 | [页面质量门禁](references/page-quality-gates.md) | 区块数量、源码槽位、低密大卡片、主题一致性和 `pageSpecHandoff` 检查 | Step 4-6 输出前 |
-| [页面风格设计文档索引](references/style-designs/registry.md) | 可选页面风格、适用场景、信息密度、布局和视觉 DNA | Step 5 |
+| [design.md 模板与示例索引](references/style-designs/registry.md) | `_design-md-template.md` 与唯一示例的消费规则 | Step 5 |
 | [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、候选主题、token profile | 需要主题 key 或 token |
-| [scene-workbench](references/scenes/workbench.md) | 工作台/门户首页 | 页面场景 = workbench |
-| [scene-dashboard](references/scenes/dashboard.md) | 数据看板/驾驶舱 | 页面场景 = dashboard |
-| [scene-screen](references/scenes/screen.md) | 数据大屏/监控屏 | 页面场景 = screen |
-| [scene-list](references/scenes/list.md) | 列表/管理页 | 页面场景 = list |
-| [scene-detail](references/scenes/detail.md) | 详情/展示页 | 页面场景 = detail |
-| [scene-landing](references/scenes/landing.md) | 官网/落地页/品牌展示页 | 页面场景 = landing |
 | [Canvas 设计系统](../yida-canvas-custom-page/references/canvas-design-system.md) | Code Canvas token、antd token、图表配色 | 实现阶段 |
 | [字段与 URL 参考](../../references/field-and-url-reference.md) | `isRenderNav=false`、页面 URL、跨页跳转 | 拼接页面/表单 URL |

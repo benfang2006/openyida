@@ -44,6 +44,8 @@ Code Canvas 页面先把数据契约写成结构化 `dataBinding`，再在页面
 - `mode=seed` 只用于离线预览或明确标注的演示页；完整应用/真实交付页默认先由 `yida-app` 调用 `yida-data-management` 把 1-3 条 demo records 写入真实表单，再用 `mode=form` 读取。
 - 页面生成或手写的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
 
+`dataBinding.mode=form` 的直连接口只使用 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。请求方式是 `GET + URLSearchParams`，query 至少包含 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`，同时设置 `credentials: 'include'` 与 `global_csrf_token` 头。`/query/form/searchFormDatas.json` 不是可用表单数据端点。
+
 ## 可复用读数据 Hook
 
 ```jsx
@@ -221,7 +223,7 @@ function YidaComp(props) {
 
   var q = useYidaFetch(function () {
     return {
-      url: '/your-connector-proxy/searchFormDatas',    // 连接器同源代理端点（示意）
+      url: '/your-connector-proxy/searchFormDatas',    // 连接器同源代理端点（示意，不是宜搭表单直连端点）
       method: 'POST',
       body: { appType: appType, formUuid: formUuid, pageSize: 20, pageNumber: 1 },
     };
@@ -249,7 +251,7 @@ function YidaComp(props) {
 export default YidaComp;
 ```
 
-`url`、`body` 字段按实际连接器 / 端点契约填写；示例结构用于说明数据桥写法。
+`url`、`body` 字段按实际连接器 / 端点契约填写；示例结构用于说明数据桥写法。直连宜搭表单数据时不要复用这个连接器代理示例，必须使用下文 `searchFormDatas.json` 请求契约。
 
 ## 轮询只刷新数据，不刷新整页
 
@@ -331,7 +333,8 @@ function YidaComp() {
 
 1. **`GET` + query 参数**：`formUuid`/`appType` 放 URL query。
 2. **分页参数名是 `currentPage`**；`searchFieldJson` 传 `'{}'` 表示不过滤。
-3. **返回列表在 `content.data`**：响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
+3. **CSRF 和登录态同时带上**：运行态 CSRF 写入 query 的 `_csrf_token`，请求头写 `global_csrf_token`，fetch 设置 `credentials: 'include'`。
+4. **返回列表在 `content.data`**：响应形如 `{ content: { data: [...], totalCount, currentPage }, success: true }`。上文的 `unwrapRows` 已递归兜底解包，直接用即可。每行字段值在 `row.formData[fieldId]`，`SelectField`/`RadioField` 已是纯字符串，`DateField` 是 13 位毫秒数。
 
 ```jsx
 // GET + query，读一个表单的数据
