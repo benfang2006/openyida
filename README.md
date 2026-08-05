@@ -399,7 +399,9 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | Compile and publish custom page |
 | `openyida update-form-config <appType> ...` | Update form configuration |
 | `openyida get-form-config <appType> <formUuid> [--json]` | Query form configuration |
-| `openyida form-detail-style <apply\|remove\|check> <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | Manage form detail page style |
+| `openyida form-detail-style apply <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | Manage form detail page style |
+| `openyida form-detail-style remove <appType> <formUuid> [--json]` | Manage form detail page style |
+| `openyida form-detail-style check <appType> <formUuid> [--json]` | Manage form detail page style |
 
 ### Data & Permissions
 

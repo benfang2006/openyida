@@ -289,7 +289,9 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | 编译并发布自定义页面 |
 | `openyida update-form-config <appType> ...` | 更新表单配置 |
 | `openyida get-form-config <appType> <formUuid> [--json]` | 查询表单配置 |
-| `openyida form-detail-style <apply\|remove\|check> <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | 管理表单详情页样式 |
+| `openyida form-detail-style apply <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | 管理表单详情页样式 |
+| `openyida form-detail-style remove <appType> <formUuid> [--json]` | 管理表单详情页样式 |
+| `openyida form-detail-style check <appType> <formUuid> [--json]` | 管理表单详情页样式 |
 
 ### 数据 & 权限
 
