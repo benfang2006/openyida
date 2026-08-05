@@ -462,7 +462,7 @@ export function renderJsx() {
 
 ### 6. 样式方式
 
-所有样式通过 JavaScript 对象定义（内联样式），在 `renderJsx` 中通过 `style` 属性应用，不使用外部 CSS 文件。详细的设计系统和组件样式模板见 [设计规范](design-system.md)。
+所有样式通过 JavaScript 对象定义（内联样式），在 `renderJsx` 中通过 `style` 属性应用，不使用外部 CSS 文件。普通 JSX 的样式实现适配和组件模板见 [普通自定义页面样式实现适配](design-system.md)。
 
 ### 7. 异步操作
 
@@ -528,7 +528,7 @@ var styles = {
 };
 ```
 
-> 完整的响应式页面容器样式（含 isMobile 判断）见 [设计规范](design-system.md) 的「页面容器」部分。
+> 完整的响应式页面容器样式（含 isMobile 判断）见 [普通自定义页面样式实现适配](design-system.md) 的「页面容器」部分。
 
 ### 13. 性能优化
 

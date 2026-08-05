@@ -1,6 +1,6 @@
-# Code Canvas 主题 token 与视觉落地
+# Code Canvas 样式实现指南
 
-主题摘要来自 `yida-design` 的 `prd.md`，完整主题和视觉规则来自 `design.md`。Code Canvas 负责把 design.md 中的 `themeProfile`、`themeScope`、`themeColorSource`、tokens、`visualScaffold` 落到 antd token、CSS 变量、Tailwind、图表和控件状态。
+本文件是 Code Canvas 的样式实现适配指南，不是新的设计系统，也不产出配色、视觉 DNA 或页面风格。设计事实唯一来自 `yida-design` 输出的 `prd.md` 与 `design.md`：PRD 给业务场景和页面边界，`design.md` 给完整主题、token、视觉 DNA、布局、材质、圆角、密度、呼吸感、背景层、组件和状态规则。Code Canvas 只负责把这些规则落到 antd token、CSS 变量、Tailwind、图表、控件状态、背景 CSS 和表单 iframe 主题同步。
 
 真实业务页、页面重构和局部美化以当前应用主题色为基准；缺少主题证据时先按业务气质选择平台预置主题或自定义色盘，不固定回到 `podBlue` / #1677ff。独立品牌/活动页、隐藏导航沉浸页和用户明确要求完全不同风格的页面使用页面级固定主题和差异化色盘。
 
@@ -135,14 +135,17 @@ Code Canvas 必须把 `design.md` 的 `roundedRule`、`densityRule` 和 `breathi
 要求玻璃感但源码只有普通白底和纯白不透明卡片，也不能交付为“已打磨页面”；如果选择极简近白背景，需要在截图和源码中体现细节层次。
 要求圆角范围、padding 或 gap 但源码没有落实，或要求高密但截图出现大面积空白容器，也不能交付为“已打磨页面”。
 
-## 平台品牌色变量
+## 品牌 token 实现消费
 
-| token | 平台含义 | Code Canvas 使用方式 |
+品牌 token 的完整语义由 `yida-design/workflow/output-design.md` 与 `yida-design/references/theme/theme-token-presets.md` 维护。Code Canvas 不重新解释 token，只按 `design.md` 的 `tokens` 和 token 语义把它们接到组件、CSS 和图表。
+
+| token | design.md 语义 | Code Canvas 使用方式 |
 | --- | --- | --- |
 | `--color-brand1-6` | 主色 | 主按钮、链接、选中态、信息强调、图表主序列 |
 | `--color-brand1-1` / `--color-brand1-2` / `--color-brand1-3` | 浅底色阶 | 标签浅底、提示块、筛选选中底、弱强调背景 |
 | `--color-brand1-5` / `--color-brand1-7` | 交互色阶 | hover / active / pressed 状态 |
 | `--color-brand1-9` / `--color-brand1-10` | 深色阶 | 深色标题、深底按钮、深色主题强调 |
+| `--color-brand-1` ~ `--color-brand-4` | 移动端品牌色阶 | 移动端桥接、原生表单、表单提交/详情 iframe 和平台移动壳层 |
 | `--color-group` | 平台图表色组 | 多系列折线、柱状、排名、环形图配色 |
 | `--oyd-control-selected-bg` | 页面级选中浅底 | 下拉选中项、Tabs 选中底、轻量筛选块 |
 | `--oyd-control-info-bg` | 页面级信息浅底 | 提示块、空态引导、数据说明背景 |
@@ -160,7 +163,7 @@ Code Canvas 的 `page-spec.json` 会把主题拆成两个概念：
 
 `themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。页面重构/局部美化即使是 page scope，也先以当前应用主题为基准，只补当前页密度、间距、状态色和图表色阶。用户明确要求完全不同风格、显式传了 `themeColor`，或页面是独立品牌/活动页时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。
 
-`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是固定默认。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。自定义品牌色必须在页面源码里注入 `style#yida-global-theme` 或 scoped vars，不能假装是平台 `--theme`。需要注入时复制 [Yida Global Theme Runtime Helpers](theme-runtime-helpers.md) 的 Code Canvas helper；它会同时写入当前文档、同源可访问的父级 iframe 文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档。
+`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是固定默认。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量和语义以 `yida-design/references/theme/theme-token-presets.md` 为准。自定义品牌色必须在页面源码里注入 `style#yida-global-theme` 或 scoped vars，不能假装是平台 `--theme`。需要注入时复制 [Yida Global Theme Runtime Helpers](theme-runtime-helpers.md) 的 Code Canvas helper；它会同时写入当前文档、同源可访问的父级 iframe 文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档。
 
 ```jsx
 var THEME_COLOR_LEVELS = {
@@ -361,7 +364,7 @@ Canvas 节点在页面 DOM 树内，Tailwind 运行时对普通元素直接用 a
 </button>
 ```
 
-色阶对应（与 native `design-system.md` 一致）：主色 `brand1-6`、填充按钮 hover 亮一档 `brand1-5`、按下深一档 `brand1-7`、通用浅色 hover 底 `brand1-1`、选中/标签浅底 `brand1-2`。
+色阶对应以 `design.md` 和 yida-design 主题 token 语义为准：主色 `brand1-6`、填充按钮 hover 亮一档 `brand1-5`、按下深一档 `brand1-7`、通用浅色 hover 底 `brand1-1`、选中/标签浅底 `brand1-2`。
 
 ## 图表 / recharts：用解析后的品牌色组
 

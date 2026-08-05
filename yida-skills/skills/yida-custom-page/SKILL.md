@@ -227,7 +227,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | `coding-guide` | `references/coding-guide.md` | check-page 报错、复杂交互、状态管理问题 |
 | `runtime-guardrails` | `references/runtime-guardrails.md` | 页面运行时报错、check-page 规则不清、编译兼容边界不清 |
 | `component-jsx-guide` | `references/component-jsx-guide.md` | 输入控件、日期、选择、成员/部门、附件、表格或筛选栏 |
-| `design-system` | `references/design-system.md` | 用户明确要求视觉细化，或已进入 `yida-design` 后落地样式 |
+| `design-system` | `references/design-system.md` | 普通 JSX 样式实现适配；已进入 `yida-design` 后把 `design.md` 落到内联样式和组件状态 |
 | `theme-runtime-helpers` | `../yida-canvas-custom-page/references/theme-runtime-helpers.md` | 自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页、iframe 父级或表单抽屉同源子 iframe 主题同步 |
 
 ## 参考文档
@@ -238,7 +238,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | `yida-design` 子技能 | 产品定位、页面场景、主题色和 token、UI 视觉、状态规则、去 AI 味自检、图标策略 | 页面实现前加载；完整应用统一编排使用 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，用户明确要求好看/去 AI 味时按入口路由读取更多 reference |
 | [编码指南](references/coding-guide.md) | 文件结构模板、状态管理、生命周期、19 条编码规范 | check-page 报错、复杂交互、状态管理问题时阅读 |
 | [运行时护栏](references/runtime-guardrails.md) | pageSize、loading 恢复、ECharts DOM 时序、setState 约束、check-page 规则映射 | 页面运行时报错、check-page 规则不清或编译兼容边界不清时阅读 |
-| [设计规范](references/design-system.md) | 色彩/圆角/字体/间距系统、组件样式模板和设计执行清单 | 用户明确要求视觉细化，或已进入 `yida-design` 后阅读 |
+| [普通 JSX 样式实现适配](references/design-system.md) | 将 `design.md` 的色彩、圆角、字体、间距、组件和状态规则落到普通自定义页面 | 用户明确要求视觉细化，或已进入 `yida-design` 后阅读 |
 | [主题运行时 helper](../yida-canvas-custom-page/references/theme-runtime-helpers.md) | 普通 JSX 自定义主题 token 注入，支持 iframe 父级窗口和表单抽屉同源子 iframe | 自定义色盘、隐藏导航沉浸页或 iframe 主题同步时阅读 |
 | [素材资源](references/assets-guide.md) | 图片/音乐/Icon 素材库、CDN 安全规范 | 需要引入图片、图标、音效时阅读 |
 | **全局共享文档** | | |

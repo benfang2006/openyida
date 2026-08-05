@@ -154,7 +154,7 @@ openyida get-schema <appType> <formUuid> --field-map-json
 | [dependencies-and-cdn.md](references/dependencies-and-cdn.md) | 可用前端资源、import 写法、运行时加载方式 | 选择或验证前端资源时必读 |
 | [employeefield-verification.md](references/employeefield-verification.md) | 运行时事实、原生组件验证、EmployeeField 验收 | 验证成员/字段组件时阅读 |
 | [data-bridge-guide.md](references/data-bridge-guide.md) | Canvas 内自建 HTTP 数据桥 | 接入真实数据时阅读 |
-| [canvas-design-system.md](references/canvas-design-system.md) | App 主题色、antd token、控件焦点/下拉 reset、图表配色 | 写样式和主题时阅读 |
+| [canvas-style-implementation-guide.md](references/canvas-style-implementation-guide.md) | 将 `design.md` 的 App 主题色、antd token、背景层、圆角密度、控件焦点/下拉 reset、图表配色落到 Code Canvas | 写样式和主题时阅读 |
 | [theme-runtime-helpers.md](references/theme-runtime-helpers.md) | Code Canvas / 普通 JSX 自定义主题注入 helper，支持 iframe 父级窗口和表单抽屉同源子 iframe | 自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页或 FormOpenContainer 时阅读 |
 | [component-library-guide.md](references/component-library-guide.md) | 组件库推荐组合和页面选型建议 | 选择 UI/图表依赖时阅读 |
 | [canvas-authoring-examples.md](references/canvas-authoring-examples.md) | 最小组件、hooks、副作用、图表示例 | 手写 Canvas 代码时阅读 |

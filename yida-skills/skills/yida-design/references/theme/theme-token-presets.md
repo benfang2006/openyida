@@ -34,7 +34,25 @@
 
 ## 应用主题 token profile
 
-每个 profile 都按平台变量名记录。`--color-brand1-6` 是主色，`--color-brand1-1/2/3` 是浅色或透明背景，`--color-brand1-9/10` 是深色或透明强调，`--color-group` 用于图表和分组配色。
+每个 profile 都按平台变量名记录。`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶，`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，不能删掉、改名或替换为别的变量。`--color-group` 用于图表和分组配色。
+
+## 平台 token 语义
+
+| token | 语义 | 典型用途 |
+| --- | --- | --- |
+| `--color-brand1-1` | 明亮品牌浅色或浅 hover 色 | 列表 hover、菜单 hover、轻量背景，不直接当深色文字 |
+| `--color-brand1-2` | 品牌浅底 | 标签浅底、提示块、选中底、弱强调背景 |
+| `--color-brand1-3` | 品牌透明/浅边界 | 选中边框、禁用/弱化品牌态、浅描边 |
+| `--color-brand1-5` | 主色 hover 档 | 主按钮 hover、链接 hover、可点击强调 hover |
+| `--color-brand1-6` | 主品牌色 | 主按钮、链接、选中态、重点标签、图表主序列 |
+| `--color-brand1-7` | 主色 active 档 | 按下态、active、pressed |
+| `--color-brand1-9` | 深主色 | 深色强调、深底按钮、强调标题、深色场景锚点 |
+| `--color-brand1-10` | 深色或透明强调档 | 深色 hover、强强调背景、深色主题补充 |
+| `--color-brand-1` | 移动端品牌浅/透明档 1 | 移动端壳层、移动端表单、旧版移动组件浅品牌态 |
+| `--color-brand-2` | 移动端品牌浅/中档 2 | 移动端 hover、轻量强调、移动端组件浅色面 |
+| `--color-brand-3` | 移动端主品牌档 3 | 移动端主操作、选中态、原生表单移动主色 |
+| `--color-brand-4` | 移动端深品牌档 4 | 移动端 active、深色强调、移动壳层深色态 |
+| `--color-group` | 图表和分类色组 | 多系列图表、排行、状态分组；第一色通常跟随主色 |
 
 ## blue
 

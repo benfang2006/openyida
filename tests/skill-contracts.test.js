@@ -317,6 +317,8 @@ describe('OpenYida skill contracts', () => {
     expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
     expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
     expect(outputDesign).toContain('collectYidaThemeDocuments');
+    expect(outputDesign).toContain('--color-brand1-1: <明亮品牌浅色或浅 hover 色>');
+    expect(outputDesign).toContain('--color-brand1-10: <深色或透明强调档>');
     expect(outputDesign).toContain('--color-brand-1: <移动端品牌色 1>');
     expect(outputDesign).toContain('--color-brand-4: <移动端品牌色 4>');
     expect(outputDesign).toContain('backgroundLayer:');
@@ -679,7 +681,7 @@ describe('OpenYida skill contracts', () => {
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const step2 = readSkill('yida-skills/skills/yida-design/workflow/step-2-theme-system.md');
     const styleSelection = readSkill('yida-skills/skills/yida-design/references/style-design-selection.md');
-    const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
+    const canvasStyleGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-style-implementation-guide.md');
     const presets = readSkill('yida-skills/skills/yida-design/references/theme/theme-token-presets.md');
     const expectedPresets = {
       podBlue: {
@@ -742,11 +744,19 @@ describe('OpenYida skill contracts', () => {
     expect(theme).toContain('页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`');
     expect(step2).toContain('若截图或预览中出现左侧导航选中态与页面主操作颜色不一致');
     expect(styleSelection).toContain('应用主题主导，生成色彩作为辅助色');
-    expect(canvasDesignSystem).toContain('## 应用主题与页面风格冲突处理');
-    expect(canvasDesignSystem).toContain('默认值是 `跟随应用主题`，不是 `跟随生成色盘色相`');
-    expect(canvasDesignSystem).toContain('helper 必须带兜底逻辑');
-    expect(canvasDesignSystem).toContain('读不到、空串或读取异常时返回传入的 `defaultColor`');
-    expect(canvasDesignSystem).toContain('`defaultColor` 必须来自当前项目 `design.md` 的 tokens 或当前应用主题 token profile');
+    expect(canvasStyleGuide).toContain('本文件是 Code Canvas 的样式实现适配指南，不是新的设计系统');
+    expect(canvasStyleGuide).toContain('设计事实唯一来自 `yida-design` 输出的 `prd.md` 与 `design.md`');
+    expect(canvasStyleGuide).toContain('## 应用主题与页面风格冲突处理');
+    expect(canvasStyleGuide).toContain('默认值是 `跟随应用主题`，不是 `跟随生成色盘色相`');
+    expect(canvasStyleGuide).toContain('helper 必须带兜底逻辑');
+    expect(canvasStyleGuide).toContain('读不到、空串或读取异常时返回传入的 `defaultColor`');
+    expect(canvasStyleGuide).toContain('`defaultColor` 必须来自当前项目 `design.md` 的 tokens 或当前应用主题 token profile');
+    expect(step2).toContain('`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶');
+    expect(step2).toContain('`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶');
+    expect(step2).toContain('| `--color-brand1-1` | 明亮品牌浅色或浅 hover 色 |');
+    expect(step2).toContain('| `--color-brand-4` | 移动端深品牌档 4 |');
+    expect(presets).toContain('## 平台 token 语义');
+    expect(presets).toContain('`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶');
     expect(presets).toContain('## blue');
     expect(presets).toContain('## podBlue');
     expect(presets).toContain('| `podBule` | 平台蓝色 key | 按需 |');
@@ -833,7 +843,7 @@ describe('OpenYida skill contracts', () => {
     const step3 = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
     const outputPrd = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
-    const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
+    const canvasStyleGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-style-implementation-guide.md');
     const qualityGates = readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md');
 
     expect(pageUiux).toContain('工作台禁低密大卡片模板');
@@ -866,16 +876,16 @@ describe('OpenYida skill contracts', () => {
     expect(pageGeneration).toContain('不少于 10 个有业务目的的区块');
     expect(pageGeneration).toContain('KPI 子项、快捷入口子项和列表行不计入区块数量');
     expect(pageGeneration).toContain('这只构成 4 个聚合区块');
-    expect(canvasDesignSystem).toContain('## 工作台卡片密度红线');
-    expect(canvasDesignSystem).toContain('禁止使用“4 个等宽大 KPI 白卡 + 彩色图标盒 + 大数字 0”');
-    expect(canvasDesignSystem).toContain('禁止用 160px 以上的大空态白卡');
-    expect(canvasDesignSystem).toContain('## 默认圆润高密与呼吸感落地');
-    expect(canvasDesignSystem).toContain('卡片 `border-radius` 范围 `0px-32px`');
-    expect(canvasDesignSystem).toContain('页面布局必须有呼吸感');
-    expect(canvasDesignSystem).toContain('卡片和卡片的 gap 默认 `12px-18px` 且必须小于 `20px`');
-    expect(canvasDesignSystem).toContain('卡片 padding 默认 `22px-28px` 且必须大于 `20px`');
-    expect(canvasDesignSystem).toContain('页面整体至少包含 10 个有业务目的的区块以上');
-    expect(canvasDesignSystem).toContain('KPI 子项、快捷入口子项和列表行不能分别计数');
+    expect(canvasStyleGuide).toContain('## 工作台卡片密度红线');
+    expect(canvasStyleGuide).toContain('禁止使用“4 个等宽大 KPI 白卡 + 彩色图标盒 + 大数字 0”');
+    expect(canvasStyleGuide).toContain('禁止用 160px 以上的大空态白卡');
+    expect(canvasStyleGuide).toContain('## 默认圆润高密与呼吸感落地');
+    expect(canvasStyleGuide).toContain('卡片 `border-radius` 范围 `0px-32px`');
+    expect(canvasStyleGuide).toContain('页面布局必须有呼吸感');
+    expect(canvasStyleGuide).toContain('卡片和卡片的 gap 默认 `12px-18px` 且必须小于 `20px`');
+    expect(canvasStyleGuide).toContain('卡片 padding 默认 `22px-28px` 且必须大于 `20px`');
+    expect(canvasStyleGuide).toContain('页面整体至少包含 10 个有业务目的的区块以上');
+    expect(canvasStyleGuide).toContain('KPI 子项、快捷入口子项和列表行不能分别计数');
   });
 
   test('single page design checks current app theme before page-level decisions', () => {
@@ -977,7 +987,7 @@ describe('OpenYida skill contracts', () => {
     const navShell = readSkill('yida-skills/skills/yida-nav-shell/SKILL.md');
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const canvas = readSkill('yida-skills/skills/yida-canvas-custom-page/SKILL.md');
-    const canvasDesignSystem = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-design-system.md');
+    const canvasStyleGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-style-implementation-guide.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
     const dependencies = readSkill('yida-skills/skills/yida-canvas-custom-page/references/dependencies-and-cdn.md');
     const authoringExamples = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-authoring-examples.md');
@@ -1008,6 +1018,8 @@ describe('OpenYida skill contracts', () => {
     expect(pageUiux).toContain('页面重构/单页美化默认以当前应用主题色为基准');
     expect(canvas).toContain('UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`');
     expect(canvas).toContain('主题实现消费设计结果');
+    expect(canvas).toContain('canvas-style-implementation-guide.md');
+    expect(canvas).not.toContain('canvas-design-system.md');
     expect(canvas).toContain('references/theme-runtime-helpers.md');
     expect(canvas).toContain('真实业务页、页面重构和局部美化以当前应用主题色为基准');
     expect(canvas).toContain('必须写 `import ... from \'包名\'`');
@@ -1016,22 +1028,26 @@ describe('OpenYida skill contracts', () => {
     expect(dependencies).toContain('手写 window 包依赖不会进入 `importedModules`');
     expect(authoringExamples).toContain('所有包依赖都用标准 `import`');
     expect(authoringExamples).toContain('不要直接从 `window.*` 解构');
-    expect(canvasDesignSystem).toContain('主题摘要来自 `yida-design` 的 `prd.md`，完整主题和视觉规则来自 `design.md`');
-    expect(canvasDesignSystem).toContain('| `--color-brand1-6` | 主色 |');
-    expect(canvasDesignSystem).toContain('页面重构/局部美化即使是 page scope，也先以当前应用主题为基准');
-    expect(canvasDesignSystem).toContain('## 视觉落地顺序');
-    expect(canvasDesignSystem).toContain('先读取 `prd/<项目名>/design.md`');
-    expect(canvasDesignSystem).toContain('theme-runtime-helpers.md');
-    expect(canvasDesignSystem).toContain('## 背景层实现规则');
-    expect(canvasDesignSystem).toContain('OPENYIDA_BACKGROUND_LAYER_CSS');
-    expect(canvasDesignSystem).toContain('.oy-page-root::before');
-    expect(canvasDesignSystem).toContain('clip-path');
-    expect(canvasDesignSystem).toContain('prefers-reduced-motion');
+    expect(canvasStyleGuide).toContain('本文件是 Code Canvas 的样式实现适配指南，不是新的设计系统');
+    expect(canvasStyleGuide).toContain('设计事实唯一来自 `yida-design` 输出的 `prd.md` 与 `design.md`');
+    expect(pageUiux).toContain('Canvas 样式实现指南');
+    expect(pageUiux).not.toContain('Canvas 设计系统');
+    expect(canvasStyleGuide).toContain('| `--color-brand1-6` | 主色 |');
+    expect(canvasStyleGuide).toContain('| `--color-brand-1` ~ `--color-brand-4` | 移动端品牌色阶 |');
+    expect(canvasStyleGuide).toContain('页面重构/局部美化即使是 page scope，也先以当前应用主题为基准');
+    expect(canvasStyleGuide).toContain('## 视觉落地顺序');
+    expect(canvasStyleGuide).toContain('先读取 `prd/<项目名>/design.md`');
+    expect(canvasStyleGuide).toContain('theme-runtime-helpers.md');
+    expect(canvasStyleGuide).toContain('## 背景层实现规则');
+    expect(canvasStyleGuide).toContain('OPENYIDA_BACKGROUND_LAYER_CSS');
+    expect(canvasStyleGuide).toContain('.oy-page-root::before');
+    expect(canvasStyleGuide).toContain('clip-path');
+    expect(canvasStyleGuide).toContain('prefers-reduced-motion');
     expect(readSkill('yida-skills/skills/yida-canvas-custom-page/references/theme-runtime-helpers.md')).toContain('collectYidaThemeDocuments');
     expect(readSkill('yida-skills/skills/yida-canvas-custom-page/references/theme-runtime-helpers.md')).toContain('cursor.parent');
     expect(customPage).toContain('theme-runtime-helpers.md');
-    expect(canvasDesignSystem).toContain('## 源码结构验收');
-    expect(canvasDesignSystem).toContain('缺少 `prioritySurface`、`contentPrimitive` 或 `statePrimitive` 任意一项');
+    expect(canvasStyleGuide).toContain('## 源码结构验收');
+    expect(canvasStyleGuide).toContain('缺少 `prioritySurface`、`contentPrimitive` 或 `statePrimitive` 任意一项');
     expect(pageGeneration).toContain('| `themeSummary` | 应用主题色、风格关键词、themeScope 摘要 |');
     expect(pageGeneration).toContain('`page-spec.json` 不复制 `visualScaffold`、`surfaceMap`、`componentRecipe`、tokens、完整色盘或组件规则');
     expect(pageGeneration).toContain('| `sourceOfTruth` |');

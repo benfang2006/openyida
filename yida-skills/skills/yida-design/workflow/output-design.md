@@ -34,9 +34,14 @@ yidaThemeRuntime:
   injectTargets: [currentDocument, sameOriginParentDocuments]
   rootAttribute: data-yida-theme-root
 tokens:
-  --color-brand1-6: <主色>
-  --color-brand1-9: <深主色>
+  --color-brand1-1: <明亮品牌浅色或浅 hover 色>
   --color-brand1-2: <浅背景>
+  --color-brand1-3: <透明/浅边界>
+  --color-brand1-5: <主色 hover 档>
+  --color-brand1-6: <主色>
+  --color-brand1-7: <主色 active 档>
+  --color-brand1-9: <深主色>
+  --color-brand1-10: <深色或透明强调档>
   --color-brand-1: <移动端品牌色 1>
   --color-brand-2: <移动端品牌色 2>
   --color-brand-3: <移动端品牌色 3>
@@ -152,10 +157,21 @@ inferred_modules:
 
 | token | 取值 | 用途 |
 | --- | --- | --- |
+| `--color-brand1-1` | <明亮品牌浅色或浅 hover 色> | 列表 hover、菜单 hover、轻量背景，不直接当深色文字 |
+| `--color-brand1-2` | <品牌浅底> | 弱强调背景、浅底提示、选中底色、标签浅底 |
+| `--color-brand1-3` | <透明/浅边界> | 选中边框、禁用/弱化品牌态、浅描边 |
+| `--color-brand1-5` | <主色 hover 档> | 主按钮 hover、链接 hover、可点击强调 hover |
 | `--color-brand1-6` | <主色> | 主按钮、链接、选中态、重点标签、图表主序列 |
-| `--color-brand1-9` | <深主色> | hover、强调文字、深色强调块 |
-| `--color-brand1-2` | <浅背景> | 弱强调背景、浅底提示、选中底色 |
+| `--color-brand1-7` | <主色 active 档> | 按下态、active、pressed |
+| `--color-brand1-9` | <深主色> | 强调文字、深底按钮、深色强调块 |
+| `--color-brand1-10` | <深色或透明强调档> | 深色 hover、强强调背景、深色主题补充 |
+| `--color-brand-1` | <移动端品牌浅/透明档 1> | 移动端壳层、移动端表单、旧版移动组件浅品牌态 |
+| `--color-brand-2` | <移动端品牌浅/中档 2> | 移动端 hover、轻量强调、移动端组件浅色面 |
+| `--color-brand-3` | <移动端主品牌档 3> | 移动端主操作、选中态、原生表单移动主色 |
+| `--color-brand-4` | <移动端深品牌档 4> | 移动端 active、深色强调、移动壳层深色态 |
 | `--color-group` | <色组> | 图表、分类、状态序列 |
+
+`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶；`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，必须保留，不能删掉、改名或替换成其他 token。
 
 ## 6. 字体规则
 

@@ -1,6 +1,6 @@
 # Yida Global Theme Runtime Helpers
 
-本文件提供自定义主题 token 的复制型 helper。页面需要自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页，或页面在 iframe 中承载原生表单时，优先复制对应 helper 到页面源码，不要临场重写。
+本文件提供自定义主题 token 的复制型 helper。它不是设计事实源，不生成配色，也不解释视觉 DNA；调用方必须先从 `yida-design` 输出的 `design.md` 读取 `tokens`，再把同一份 token 交给本 helper。页面需要自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页，或页面在 iframe 中承载原生表单时，优先复制对应 helper 到页面源码，不要临场重写。
 
 ## 推荐策略
 
@@ -8,6 +8,7 @@
 - 只有平台预置主题 key 才传给 `create-app/update-app --theme`；任意自定义色盘都走 `style#yida-global-theme` 或 scoped CSS vars。
 - 注入目标必须包含当前窗口文档、同源可访问的所有父级窗口文档，以及 `FormOpenContainer` 打开的同源子 iframe 文档。跨域窗口会抛异常，必须静默降级。
 - 样式 id 固定为 `yida-global-theme`；重复执行时更新内容，不插入多个 style。
+- tokens 必须来自当前项目 `design.md`；若 design.md 声明移动端支持色阶，`--color-brand-1` ~ `--color-brand-4` 必须和 `--color-brand1-*` 一起注入。
 
 ## Code Canvas Helper
 
@@ -80,6 +81,10 @@ const CUSTOM_THEME_TOKENS = {
   '--color-brand1-6': '#0F766E',
   '--color-brand1-2': '#E6FFFB',
   '--color-brand1-9': '#134E4A',
+  '--color-brand-1': 'rgba(15, 118, 110, 0.3)',
+  '--color-brand-2': '#5EEAD4',
+  '--color-brand-3': '#0F766E',
+  '--color-brand-4': '#134E4A',
   '--color-group': '#0F766E,#2563EB,#F59E0B,#EF4444,#8B5CF6',
 };
 
@@ -157,6 +162,10 @@ var CUSTOM_THEME_TOKENS = {
   '--color-brand1-6': '#0F766E',
   '--color-brand1-2': '#E6FFFB',
   '--color-brand1-9': '#134E4A',
+  '--color-brand-1': 'rgba(15, 118, 110, 0.3)',
+  '--color-brand-2': '#5EEAD4',
+  '--color-brand-3': '#0F766E',
+  '--color-brand-4': '#134E4A',
   '--color-group': '#0F766E,#2563EB,#F59E0B,#EF4444,#8B5CF6'
 };
 

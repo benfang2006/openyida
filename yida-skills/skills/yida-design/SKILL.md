@@ -93,5 +93,5 @@ description: >
 | [design.md 模板索引](references/style-designs/registry.md) | `_design-md-template.md` 的消费规则 | Step 5 |
 | [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、候选主题、token profile | 需要主题 key 或 token |
-| [Canvas 设计系统](../yida-canvas-custom-page/references/canvas-design-system.md) | Code Canvas token、antd token、图表配色 | 实现阶段 |
+| [Canvas 样式实现指南](../yida-canvas-custom-page/references/canvas-style-implementation-guide.md) | 将 `design.md` 的 token、背景、圆角、密度和组件规则落到 Code Canvas、antd、CSS、图表和控件状态 | 实现阶段 |
 | [字段与 URL 参考](../../references/field-and-url-reference.md) | `isRenderNav=false`、页面 URL、跨页跳转 | 拼接页面/表单 URL |
