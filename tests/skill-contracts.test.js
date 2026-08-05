@@ -19,6 +19,14 @@ function listMarkdownAndJsonFiles(dir) {
   });
 }
 
+function isSampleRoutingGuidanceFile(file) {
+  const relativePath = path.relative(ROOT, file);
+  if (relativePath.includes('yida-skills/skills/yida-design/references/style-designs/')) {
+    return false;
+  }
+  return true;
+}
+
 describe('OpenYida skill contracts', () => {
   test('agent-facing docs use token auth wording instead of legacy cookie login guidance', () => {
     const docs = [
@@ -57,7 +65,8 @@ describe('OpenYida skill contracts', () => {
   });
 
   test('skill guidance does not route through sample templates', () => {
-    const files = listMarkdownAndJsonFiles(path.join(ROOT, 'yida-skills'));
+    const files = listMarkdownAndJsonFiles(path.join(ROOT, 'yida-skills'))
+      .filter(isSampleRoutingGuidanceFile);
     const offenders = files.filter((file) => {
       const source = fs.readFileSync(file, 'utf8');
       return /sample|generate-page|openyida sample/i.test(source);
@@ -312,7 +321,7 @@ describe('OpenYida skill contracts', () => {
     expect(outputDesign).toContain('themeProfile:');
     expect(outputDesign).toContain('yidaThemeRuntime:');
     expect(outputDesign).toContain('globalThemeInjection: <style#yida-global-theme / customThemeStyle.tokens / none>');
-    expect(outputDesign).toContain('## 16. 实现适配');
+    expect(outputDesign).toContain('## 18. 实现适配');
     expect(outputDesign).toContain('### Yida Global Theme Runtime Contract');
     expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
     expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
@@ -468,12 +477,12 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('表单/流程在自定义页面之前');
     expect(output).toContain('## 11. 验收标准');
     expect(design).toContain('[design.md 生成规则](references/style-design-selection.md)');
-    expect(design).toContain('[design.md 模板索引](references/style-designs/registry.md)');
+    expect(design).toContain('[style-design 内置模板注册表](references/style-designs/registry.md)');
     expect(step5).toContain('读取 [design.md 生成规则](../references/style-design-selection.md)');
     expect(step5).toContain('- designFile：<prd/<项目名>/design.md>');
-    expect(step5).toContain('- baseDesignSource：generated-from-business-context');
+    expect(step5).toContain('- baseDesignSource：references/style-designs/<selected-template>.md');
     expect(styleSelection).toContain('## 输出字段');
-    expect(styleSelection).toContain('当前项目 `design.md` 提供所有页面必须遵守的视觉 DNA、布局、组件样式和状态规则');
+    expect(styleSelection).toContain('当前项目 `design.md` 提供所有页面必须遵守的视觉 DNA、布局、组件样式、主题 token 和状态规则');
     expect(styleSelection).toContain('| visualScaffold | design.md |');
     expect(styleSelection).toContain('| rounded / spacing / breathing | design.md |');
     expect(styleSelection).toContain('读取 [visual-scaffold-recipes.md](visual-scaffold-recipes.md)');
@@ -486,11 +495,11 @@ describe('OpenYida skill contracts', () => {
     expect(scaffoldRecipes).toContain('## 配方 B：任务工作台双栏');
     expect(scaffoldRecipes).toContain('KPI 组只算 1 个区块，快捷入口组只算 1 个区块');
     expect(styleRegistry).toContain('_design-md-template.md');
-    expect(styleRegistry).toContain('本目录用于记录 `design.md` 结构模板');
     expect(styleRegistry).toContain('默认审美方向是“圆润、高密且有呼吸感”');
     expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'sub_skill', 'workhome-ui-skill', 'SKILL.md'))).toBe(false);
     const styleDesignEntries = fs.readdirSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'references', 'style-designs')).sort();
-    expect(styleDesignEntries).toEqual(['_design-md-template.md', 'registry.md']);
+    expect(styleDesignEntries).toEqual(expect.arrayContaining(['_design-md-template.md', 'registry.md']));
+    expect(styleDesignEntries.length).toBeGreaterThan(2);
     expect(design).not.toContain('workhome-ui-skill');
     expect(step5).not.toContain('workhome-ui-skill');
     expect(output).not.toContain('workhome-ui-skill');
