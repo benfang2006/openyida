@@ -11,7 +11,7 @@ const SKILLS_DIR = path.join(ROOT, 'yida-skills', 'skills');
 const SKILL_COVERAGE = {
   'yida-app': { level: 'real-e2e', stages: ['app', 'form', 'page', 'data', 'report', 'dashboard'] },
   'yida-app-permission': { level: 'offline-unit', tests: ['tests/app-permission.test.js'], reason: 'app admin mutations affect real application access; shared real E2E only validates safe read paths' },
-  'yida-design': { level: 'offline-unit', tests: ['skill metadata and packaging validation', 'routing eval scenarios'], reason: 'application experience blueprint skill produces PRD before missing app/form/process/page resources are created; validate routing and packaging rather than mutating Yida resources' },
+  'yida-design': { level: 'offline-unit', tests: ['skill metadata and packaging validation', 'routing eval scenarios', 'tests/create-form.test.js', 'tests/skill-contracts.test.js'], reason: 'application experience blueprint, visual direction and theme token guidance produce PRD/design artifacts before missing app/form/process/page resources are created; validate routing, packaging, skill contracts and form theme payloads rather than mutating Yida resources or tenant-wide theme config' },
   'yida-basic-info': { level: 'offline-unit', tests: ['tests/basic-info.test.js'], reason: 'basic-info reads org admin metadata and can update domains; unit coverage avoids mutating shared real org settings' },
   'yida-business-rule': { level: 'opt-in', reason: 'business association rules mutate form event configuration; validate in a dedicated real-form/UI stage before adding to deterministic shared E2E' },
   'yida-canvas-custom-page': { level: 'offline-unit', tests: ['skill metadata and packaging validation'], reason: 'Code Canvas authoring skill has no dedicated CLI command; runtimeCode/importedModules are produced by the platform compile service and a YidaCodeCanvas schema cannot be published via openyida, so shared real E2E validates skill metadata and routing rather than mutating a real page' },
@@ -50,7 +50,6 @@ const SKILL_COVERAGE = {
   'yida-nav-shell': { level: 'offline-unit', tests: ['skill metadata and packaging validation'], reason: 'page-internal JSX navigation shell is an authoring pattern, not a standalone CLI command; validate skill packaging and use custom-page/design generation fixtures for runtime page coverage' },
   'yida-openyida-publish-guard': { level: 'offline-unit', tests: ['skill metadata and packaging validation'], reason: 'publish guard is an agent workflow safety rule for comparing live schema before publish; real page publish behavior remains covered by yida-publish-page E2E stages' },
   'yida-page-config': { level: 'real-e2e', stages: ['share'], commands: ['get-page-config', 'verify-short-url', 'save-share-config'] },
-  'yida-design': { level: 'offline-unit', tests: ['skill metadata and packaging validation', 'routing eval scenarios'], reason: 'visual direction skill emits a decision block before JSX authoring and should be validated through routing/packaging rather than mutating Yida resources' },
   'yida-ppt-slider': { level: 'offline-unit', reason: 'presentation-style custom page skill should be validated by page generation/check-page fixtures' },
   'yida-process-rule': { level: 'opt-in-real-e2e', stages: ['process'], commands: ['configure-process'], reason: 'process stage publishes workflow rules on the disposable E2E form and is excluded from default full E2E unless explicitly requested' },
   'yida-publish-page': { level: 'real-e2e', stages: ['page', 'dashboard'], commands: ['publish --health-check'] },
@@ -58,7 +57,6 @@ const SKILL_COVERAGE = {
   'yida-report': { level: 'real-e2e', stages: ['report'], commands: ['create-report', 'append-chart'] },
   'yida-table-form': { level: 'offline-unit', reason: 'table-form custom page template should be validated with check-page fixture before real publish stage is added' },
   'yida-tingji': { level: 'offline-unit', tests: ['tests/document-tools.test.js'], reason: 'Tingji content depends on authenticated tenant data; unit coverage validates taskUuid passthrough, response handling, and error behavior' },
-  'yida-design': { level: 'offline-unit', tests: ['tests/create-form.test.js', 'tests/skill-contracts.test.js'], reason: 'application theme tokens can affect app shell, form runtime and page rendering; shared real E2E should validate skill contracts and form theme payloads without mutating tenant-wide theme config' },
   'yida-skill-evaluator': { level: 'offline-unit', tests: ['skill metadata and packaging validation', 'eval test suites'], reason: 'evaluator skill reads and scores other skills; no Yida API mutation' },
   'yida-voc': { level: 'offline-unit', reason: 'VOC formatting skill is local text transformation, not Yida API mutation' },
 };
