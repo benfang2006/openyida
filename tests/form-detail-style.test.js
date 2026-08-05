@@ -87,37 +87,35 @@ describe('form-detail-style parseArgs', () => {
 });
 
 describe('form-detail-style schema helpers', () => {
-  test('upsertFormDetailCss inserts a visible Html component and root css marker', () => {
+  test('upsertFormDetailCss writes runtime detail CSS into the form action', () => {
     const schema = createSchema();
     const action = formDetailStyle.upsertFormDetailCss(schema, '/* yida-form-detail */ body { background: red; }');
     const status = formDetailStyle.inspectFormDetailCss(schema);
 
     expect(action).toBe('inserted');
     expect(status.installed).toBe(true);
-    expect(status.rootCssHasMarker).toBe(true);
-    expect(status.globalThemeFound).toBe(true);
-    expect(status.rootCssHasGlobalTheme).toBe(true);
+    expect(status.formDetailStyleActionFound).toBe(true);
+    expect(status.globalThemeActionFound).toBe(true);
     const formContainer = schema.pages[0].componentsTree[0].children[0];
-    expect(formContainer.children[0].id).toBe('yida-form-detail-css-html');
-    expect(formContainer.children[0].hidden).toBe(false);
-    expect(formContainer.children[0].props.content).toContain('<style id="yida-global-theme">');
-    expect(formContainer.children[0].props.content).toContain('<style id="yida-form-detail-style">');
-    expect(formContainer.children[0].props.content).toContain('--color-brand1-6');
+    expect(formContainer.children.map(item => item.componentName)).not.toContain('Html');
+    expect(schema.actions.module.source).toContain('openyida:theme:start');
+    expect(schema.actions.module.source).toContain('openyidaThemeDidMount');
+    expect(schema.actions.module.source).toContain('yida-form-detail-style');
+    expect(schema.actions.module.source).toContain('body { background: red; }');
     expect(schema.pages[0].componentsMap.map((item) => item.componentName)).not.toContain('Html');
   });
 
-  test('upsertFormDetailCss updates the existing component instead of duplicating it', () => {
+  test('upsertFormDetailCss updates action CSS instead of adding Html nodes', () => {
     const schema = createSchema();
     formDetailStyle.upsertFormDetailCss(schema, '/* yida-form-detail */ .a { color: red; }');
     const action = formDetailStyle.upsertFormDetailCss(schema, '/* yida-form-detail */ .a { color: blue; }');
-    const formContainer = schema.pages[0].componentsTree[0].children[0];
 
     expect(action).toBe('updated');
-    expect(formContainer.children.filter(item => item.id === 'yida-form-detail-css-html')).toHaveLength(1);
-    expect(formContainer.children[0].props.content).toContain('blue');
+    expect(schema.actions.module.source).toContain('blue');
+    expect(schema.actions.module.source).not.toContain('red');
   });
 
-  test('removeFormDetailCss removes the Html component and marker block', () => {
+  test('removeFormDetailCss removes detail CSS and keeps global theme action', () => {
     const schema = createSchema();
     formDetailStyle.upsertFormDetailCss(schema, '/* yida-form-detail */ .a { color: red; }');
     const action = formDetailStyle.removeFormDetailCss(schema);
@@ -125,8 +123,33 @@ describe('form-detail-style schema helpers', () => {
 
     expect(action).toBe('removed');
     expect(status.installed).toBe(false);
-    expect(schema.pages[0].componentsTree[0].css).not.toContain('openyida:yida-form-detail');
-    expect(schema.pages[0].componentsTree[0].css).not.toContain('openyida:yida-global-theme');
+    expect(status.globalThemeActionFound).toBe(true);
+    expect(status.formDetailStyleActionFound).toBe(false);
+    expect(schema.actions.module.source).not.toContain('.a { color: red; }');
+  });
+
+  test('ensureYidaGlobalThemeAction injects submission page theme action', () => {
+    const schema = createSchema();
+    const applied = formDetailStyle._private.ensureYidaGlobalThemeAction(schema);
+    const root = schema.pages[0].componentsTree[0];
+    const status = formDetailStyle.inspectFormDetailCss(schema);
+
+    expect(applied).toBe(true);
+    expect(root.lifeCycles.componentDidMount).toMatchObject({
+      name: 'openyidaThemeDidMount',
+      type: 'actionRef',
+    });
+    expect(schema.actions.list).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'openyidaThemeDidMount',
+        relatedEventId: 'lifecycle:didMount',
+      }),
+    ]));
+    expect(schema.actions.module.source).toContain('openyida:theme:start');
+    expect(schema.actions.module.source).toContain("'yida-global-theme'");
+    expect(schema.actions.module.source).toContain('openyidaThemeIsFormDetail');
+    expect(schema.actions.module.compiled).toContain('openyidaThemeDidMount');
+    expect(status.globalThemeActionFound).toBe(true);
   });
 });
 
@@ -162,7 +185,10 @@ describe('form-detail-style api calls', () => {
     expect(saveBody.schemaVersion).toBe('V5');
     expect(saveBody.importSchema).toBe('true');
     expect(saveBody.gmtModified).toBe('8');
-    expect(saveBody.content).toContain('yida-form-detail-css-html');
+    expect(saveBody.content).toContain('openyida:theme:start');
+    expect(saveBody.content).toContain('openyidaThemeDidMount');
+    expect(saveBody.content).toContain('yida-form-detail-style');
+    expect(output.themeAction).toBe('upserted');
 
     expect(utils.httpPost.mock.calls[1][1]).toBe('/dingtalk/web/APP_X/query/formdesign/updateFormConfig.json');
     const configBody = querystring.parse(utils.httpPost.mock.calls[1][2]);

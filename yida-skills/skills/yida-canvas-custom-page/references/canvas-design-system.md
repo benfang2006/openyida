@@ -19,11 +19,24 @@
 
 工作台、门户首页、业务首页默认是“进入应用后马上处理事情”的工具页，不是通用 SaaS 展示页。实现 `workbench-home` 时：
 
-- 禁止使用“4 个等宽大 KPI 白卡 + 彩色图标盒 + 大数字 0”作为首屏主体；统计摘要只能作为 72-96px 的紧凑条、分段摘要或右侧小面板。
-- 禁止用 160-240px 高的大空态白卡显示“暂无数据”；空态应是薄行、列表内空态或右侧提示条，并带登记/发布/刷新等下一步动作。
-- 快捷入口不要做孤立图标大卡片阵列；高频动作放按钮组、工具条或 44-64px 的紧凑入口，低频动作折叠到更多。
+- 禁止使用“4 个等宽大 KPI 白卡 + 彩色图标盒 + 大数字 0”作为首屏主体；统计摘要只能作为 64-88px 的圆润紧凑条、分段摘要或右侧小面板。
+- 禁止把状态摘要做成横跨整页但内容稀疏的空矩形；如果占满宽度，必须放入趋势、更新时间、筛选、主操作或风险状态。
+- 禁止用 160px 以上的大空态白卡显示“暂无数据”；空态应是薄行、列表内空态或右侧提示条，并带登记/发布/刷新等下一步动作。
+- 快捷入口不要做孤立图标大卡片阵列；高频动作放按钮组、工具条或 40-56px 的紧凑入口，低频动作折叠到更多。
 - 首屏必须至少有一个任务/动态/最近记录/待处理列表承接真实工作流；若当前没有记录，显示可执行空态，而不是把空白面积留给装饰。
 - 页面整体至少包含 10 个有业务目的的区块以上；这些区块应通过密度、主次、分栏和列表节奏形成丰富度，不通过重复大卡片形成面积。计数按区块组算，KPI 子项、快捷入口子项和列表行不能分别计数。
+
+## 默认圆润高密与呼吸感落地
+
+Code Canvas 必须把 `design.md` 的 `roundedRule`、`densityRule` 和 `breathingRule` 落成具体 CSS 与 antd token。若 design.md 未写明数值，先回写 design.md，不要在源码里凭感觉补。
+
+- 卡片 `border-radius` 范围 `0px-32px`，业务面板 / 卡片默认 `20px-24px`，主面板、抽屉和重点容器默认 `22px-32px`。
+- Button、Input、Select、DatePicker 等控件 `borderRadius` 默认 `10px-14px`；状态标签和徽标使用 `999px` 胶囊。
+- 页面 padding 默认 `20px-28px`，卡片和卡片的 gap 默认 `12px-18px` 且必须小于 `20px`，卡片 padding 默认 `22px-28px` 且必须大于 `20px`。
+- 页面布局必须有呼吸感：主区、右侧上下文、工具条和列表之间通过 `12px-18px` 的紧凑 gap 和清晰分组形成节奏；列表行内部 `10px-12px`，文字、按钮和标签不能贴边。
+- 列表行高 `44px-56px`，高频按钮高度 `36px-40px`，状态摘要高度 `64px-88px`。
+- 空态默认高度 `88px-120px`；超过 `120px` 必须有说明、主操作或配置入口，超过 `160px` 的纯空白不通过。
+- 大圆角和呼吸感只负责形状性格与阅读节奏，不负责撑版面；出现大面积空白时，优先压缩容器或补任务、动态、风险、负责人、下一步动作。
 
 ## 视觉落地顺序
 
@@ -31,7 +44,7 @@
 
 1. `layoutRecipe`：先确定页面骨架和分栏比例。
 2. `surfaceMap`：决定每个区块是无框、细线面板、浅底条、列表行、表格、右侧栏还是抽屉。
-3. `sectionRhythm`：确定首屏主次、区块间距、阅读顺序和滚动节奏。
+3. `sectionRhythm` / `breathingRule`：确定首屏主次、区块间距、阅读顺序、组内/组间节奏和移动端折叠间距。
 4. `densityRule`：控制卡片高度、列表行高、按钮尺寸和信息密度。
 5. `componentRecipe`：统一按钮、入口、标签、图标、列表、图表、空态和弹层。
 6. `acceptanceChecks`：逐项检查 10+ contentBlocks、无大空白卡、主色跟随应用主题、KPI/快捷入口子项不计数、移动端不挤压。
@@ -116,10 +129,11 @@
 - `contextPrimitive`：有右侧洞察、风险、负责人、下一步建议或关联对象，避免页面只有左到右平铺卡片。
 - `statePrimitive`：loading、empty、error、未接数据都有薄空态、刷新、登记或补录动作。
 - `responsiveRule`：移动端分栏退化为单列，关键状态、动作和主内容保留，不让文字和按钮挤压。
-- `backgroundLayer` / `surfaceMaterial` / `colorRoles` / `depthRule`：源码按 `design.md` 落地分层背景、半透明玻璃或细线面板、明确辅助色角色和深度规则；近白画布可接受，但应有渐变、装饰、素材焦点或内容密度支撑。
+- `backgroundLayer` / `surfaceMaterial` / `colorRoles` / `depthRule` / `roundedRule` / `densityRule` / `breathingRule`：源码按 `design.md` 落地分层背景、半透明玻璃或细线面板、明确辅助色角色、深度规则、大圆角、紧凑密度和呼吸节奏；近白画布可接受，但应有渐变、装饰、素材焦点或内容密度支撑。
 
 缺少 `prioritySurface`、`contentPrimitive` 或 `statePrimitive` 任意一项，不能交付为“已打磨页面”。
 要求玻璃感但源码只有普通白底和纯白不透明卡片，也不能交付为“已打磨页面”；如果选择极简近白背景，需要在截图和源码中体现细节层次。
+要求圆角范围、padding 或 gap 但源码没有落实，或要求高密但截图出现大面积空白容器，也不能交付为“已打磨页面”。
 
 ## 平台品牌色变量
 
@@ -146,7 +160,7 @@ Code Canvas 的 `page-spec.json` 会把主题拆成两个概念：
 
 `themeScope: page` 是默认安全模式：真实业务页默认使用应用主题 token profile，不污染应用其他页面。页面重构/局部美化即使是 page scope，也先以当前应用主题为基准，只补当前页密度、间距、状态色和图表色阶。用户明确要求完全不同风格、显式传了 `themeColor`，或页面是独立品牌/活动页时，在当前 Canvas 根节点注入 CSS 变量做页面级覆盖。
 
-`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是固定默认。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。自定义品牌色必须在页面源码里注入 `style#yida-global-theme` 或 scoped vars，不能假装是平台 `--theme`。需要注入时复制 [Yida Global Theme Runtime Helpers](theme-runtime-helpers.md) 的 Code Canvas helper；它会同时写入当前文档和同源可访问的父级 iframe 文档。
+`podBlue`、`podGreen`、`podOrange` 是常用浅底候选，不是固定默认。`blue`、`green`、`orange`、`podBlue`、`podGreen`、`podOrange` 都作为应用主题 token profile 保留原名，不互相改写；完整变量以 `yida-design/references/theme/theme-token-presets.md` 为准。自定义品牌色必须在页面源码里注入 `style#yida-global-theme` 或 scoped vars，不能假装是平台 `--theme`。需要注入时复制 [Yida Global Theme Runtime Helpers](theme-runtime-helpers.md) 的 Code Canvas helper；它会同时写入当前文档、同源可访问的父级 iframe 文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档。
 
 ```jsx
 var THEME_COLOR_LEVELS = {
@@ -268,12 +282,12 @@ function YidaComp(props) {
       theme={{
         token: {
           colorPrimary: colorPrimary,   // 主色来自应用主题 token；显式要求时才跟随应用品牌
-          borderRadius: 8,              // 圆角等非主色 token 可按视觉方向调
+          borderRadius: 12,             // 控件圆角来自 design.md；业务面板的大圆角用 CSS 单独写
         },
         // 不覆盖 colorSuccess/colorWarning/colorError，语义色保持固定
       }}
     >
-      <div style={{ padding: 16 }}>
+      <div style={{ padding: 24 }}>
         <Button type="primary">主操作</Button>
       </div>
     </ConfigProvider>
@@ -305,7 +319,7 @@ Code Canvas 页面只要出现搜索框、筛选下拉、日期选择、文本�
 ```jsx
 <ConfigProvider
   getPopupContainer={(triggerNode) => (triggerNode && triggerNode.parentElement) || document.body}
-  theme={{ token: { colorPrimary: brand, borderRadius: 8 } }}
+  theme={{ token: { colorPrimary: brand, borderRadius: 12 } }}
 >
   <div className="oy-business-list" style={{ '--oy-brand': brand, '--oy-brand-deep': brandDeep }}>
     <style>{`

@@ -43,7 +43,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 
 影响代码质量和用户体验：
 
-0. **视觉方向先于编码**：单点页面美化、页面重构、用户明确要求好看/去 AI 味，或完整应用进入页面实现阶段时，调用 `use_skill("yida-design", "确定自定义页面视觉方向")` 完成产品设计或 UI 设计。默认产出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec；PRD 包含页面场景、页面区块、`functionContract`、素材策略、原生表单入口和业务化自检，design.md 包含 `themeProfile`、tokens、视觉 DNA、`visualScaffold`、组件和状态规则。页面重构默认以当前应用主题色为基准，并保持现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态，独立品牌/活动页或用户明确要求完全不同风格时使用页面级独立主题。普通 JSX 需要自定义主题 token 时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper，向当前文档和同源可访问父级窗口注入 `style#yida-global-theme`。
+0. **视觉方向先于编码**：单点页面美化、页面重构、用户明确要求好看/去 AI 味，或完整应用进入页面实现阶段时，调用 `use_skill("yida-design", "确定自定义页面视觉方向")` 完成产品设计或 UI 设计。默认产出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec；PRD 包含页面场景、页面区块、`functionContract`、素材策略、原生表单入口和业务化自检，design.md 包含 `themeProfile`、tokens、视觉 DNA、`visualScaffold`、圆角、密度、组件和状态规则。页面重构默认以当前应用主题色为基准，并保持现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态，独立品牌/活动页或用户明确要求完全不同风格时使用页面级独立主题。普通 JSX 需要自定义主题 token 时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper，向当前文档、同源可访问父级窗口和 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 注入 `style#yida-global-theme`。
 1. **代码生成前确认功能摘要**：详见 [编码指南 编注 0](references/coding-guide.md)
 2. **pageSize 推荐 50，最大 100**：列表/看板默认 `pageSize: 50`；分页接口 `searchFormDatas` 等的 `pageSize` 最大 100
 3. **didUnmount 清理定时器**：在 `didUnmount` 中清理所有 `setInterval`/`setTimeout`，防止内存泄漏
@@ -52,7 +52,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 6. **forceUpdate 后延迟操作 DOM**：`forceUpdate()` 后 DOM 不会立即更新，ECharts/Canvas/第三方组件初始化必须放入 `setTimeout` 或 `requestAnimationFrame`
 7. **多端适配**：使用 `this.utils.isMobile()` 判断设备类型，适配 PC 和移动端
 8. **输入法组合输入处理**：使用 `_isComposing` 标记配合 `compositionstart`/`compositionend` 事件，避免输入过程中触发提交
-9. **表单打开入口统一容器**：数据列表用 `workbench/{formUuid}?iframe=true`，禁止用 `formDetail` 冒充列表；新增/提交/查看详情入口统一封装为 `FormOpenContainer`。PC 端默认用抽屉 iframe 承载隐藏导航的 `submission/{formUuid}?isRenderNav=false` 或 `formDetail/{formUuid}?formInstId=...&isRenderNav=false`，移动端才整页或新页打开原生表单页；不要在按钮里直接 `window.open`
+9. **表单打开入口统一容器**：数据列表用 `workbench/{formUuid}?iframe=true`，禁止用 `formDetail` 冒充列表；新增/提交/查看详情入口统一封装为 `FormOpenContainer`。PC 端默认用半屏 `50vw` 抽屉 iframe 承载隐藏导航的 `submission/{formUuid}?isRenderNav=false` 或 `formDetail/{formUuid}?formInstId=...&isRenderNav=false`，提交页和详情页使用同一宽度规则，并在 iframe 加载后把当前主题 tokens 注入同源子文档；移动端才整页或新页打开原生表单页；不要在按钮里直接 `window.open`
 10. **Tabs 显隐控制**：下拉值变更后自动回退到第一个可见 Tab，内容区用 `display: none` 保留 DOM
 11. **加载态必须可恢复**：列表/看板页默认保留空态或演示数据；接口失败、超时或返回异常时必须把 `loading` 置回 `false`，不要只渲染“正在加载...”挡住整页
 12. **禁止可见原生下拉**：筛选、预约、审批等用户可见下拉交互不要使用 `<select>`；普通自定义页也不要把表单设计器里的 `SelectField` 当 React 筛选组件直接渲染。默认使用 Tailwind className 组合 `button + menu + option` 的自定义下拉组件，并带 `.oyd-select-arrow` 下箭头、`.oyd-select-check` 选中标记和页面级 focus reset；light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 这类低透明度浅色 token，不要直接用 `--color-brand1-1`
@@ -228,7 +228,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | `runtime-guardrails` | `references/runtime-guardrails.md` | 页面运行时报错、check-page 规则不清、编译兼容边界不清 |
 | `component-jsx-guide` | `references/component-jsx-guide.md` | 输入控件、日期、选择、成员/部门、附件、表格或筛选栏 |
 | `design-system` | `references/design-system.md` | 用户明确要求视觉细化，或已进入 `yida-design` 后落地样式 |
-| `theme-runtime-helpers` | `../yida-canvas-custom-page/references/theme-runtime-helpers.md` | 自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页或 iframe 父级主题同步 |
+| `theme-runtime-helpers` | `../yida-canvas-custom-page/references/theme-runtime-helpers.md` | 自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页、iframe 父级或表单抽屉同源子 iframe 主题同步 |
 
 ## 参考文档
 
@@ -239,7 +239,7 @@ openyida check-page pages/src/home.oyd.jsx --json      # 输出机器可读的�
 | [编码指南](references/coding-guide.md) | 文件结构模板、状态管理、生命周期、19 条编码规范 | check-page 报错、复杂交互、状态管理问题时阅读 |
 | [运行时护栏](references/runtime-guardrails.md) | pageSize、loading 恢复、ECharts DOM 时序、setState 约束、check-page 规则映射 | 页面运行时报错、check-page 规则不清或编译兼容边界不清时阅读 |
 | [设计规范](references/design-system.md) | 色彩/圆角/字体/间距系统、组件样式模板和设计执行清单 | 用户明确要求视觉细化，或已进入 `yida-design` 后阅读 |
-| [主题运行时 helper](../yida-canvas-custom-page/references/theme-runtime-helpers.md) | 普通 JSX 自定义主题 token 注入，支持 iframe 父级窗口 | 自定义色盘、隐藏导航沉浸页或 iframe 父级主题同步时阅读 |
+| [主题运行时 helper](../yida-canvas-custom-page/references/theme-runtime-helpers.md) | 普通 JSX 自定义主题 token 注入，支持 iframe 父级窗口和表单抽屉同源子 iframe | 自定义色盘、隐藏导航沉浸页或 iframe 主题同步时阅读 |
 | [素材资源](references/assets-guide.md) | 图片/音乐/Icon 素材库、CDN 安全规范 | 需要引入图片、图标、音效时阅读 |
 | **全局共享文档** | | |
 | [宜搭 API](../../references/yida-api.md) | 表单/流程/工具 API 完整参数文档 | 复杂参数不确定、接口返回结构异常或正文速查不够时阅读 |

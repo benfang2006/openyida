@@ -1,6 +1,6 @@
 # 生成 design.md 规则
 
-本文件用于在 Step 5 为完整应用生成一份应用级 `prd/<项目名>/design.md`。`style-designs/_design-md-template.md` 是结构模板，`style-designs/generated-business-design.example.md` 是唯一示例；它们只约束字段完整度和描述粒度，不提供可套用的页面样式。业务对象、字段、表单、流程、导航、权限和页面结构都从当前 PRD 读取。
+本文件用于在 Step 5 为完整应用生成一份应用级 `prd/<项目名>/design.md`。`style-designs/_design-md-template.md` 是唯一结构模板，只约束章节结构、字段完整度和描述粒度。业务对象、字段、表单、流程、导航、权限和页面结构都从当前 PRD 读取。
 
 ## 何时使用
 
@@ -25,16 +25,19 @@
 | 数据形态 | KPI、队列、趋势、排行、明细表、日程、快捷入口、预警 |
 | 页面区块 | 顶部概览、搜索筛选、表格、图表、右侧详情、表单入口、空态 |
 | 主题证据 | 当前应用主题、用户指定品牌、行业气质、是否隐藏平台导航 |
+| 圆角、密度与呼吸感 | 默认圆润高密且有呼吸感；卡片 padding >20px，卡片间 gap <20px，卡片圆角 0-32px，控件 10-14px，状态摘要 64-88px，列表行 44-56px；区块间距用于分组和扫读，不用于撑空白 |
 
 ## 生成步骤
 
 1. 读取 [style-designs/registry.md](style-designs/registry.md)。
 2. 读取 [style-designs/_design-md-template.md](style-designs/_design-md-template.md)，用它作为最终 `design.md` 的结构基准。
-3. 只在不确定详略时读取 [style-designs/generated-business-design.example.md](style-designs/generated-business-design.example.md)，只学习“写到多细”，不学习示例业务、色盘、字段、页面顺序或组件组合。
-4. 根据当前业务生成 2-5 个 `visual_dna`。每个 DNA 必须有名称、证据、规则、实现钩子、失败表现和置信度。
-5. 根据行业、品牌、业务情绪、应用主题和用户偏好生成配色。不要复制示例颜色，不要固定使用蓝色、绿色、紫色或任何预置色。
-6. 读取 [visual-scaffold-recipes.md](visual-scaffold-recipes.md)，选择适合当前页面组合的中性槽位，写入当前项目的 `prd/<项目名>/design.md`。
-7. 如果平台导航可见，页面主按钮、链接、选中态、重点标签和图表主序列默认跟随应用主题；自定义色盘只能作为辅助色、浅背景、图表第二序列或页面级独立主题。
+3. 根据当前业务生成 2-5 个 `visual_dna`。每个 DNA 必须有名称、证据、规则、实现钩子、失败表现和置信度。
+4. 根据行业、品牌、业务情绪、应用主题和用户偏好生成配色。不要固定使用蓝色、绿色、紫色或任何预置色，也不要复用历史样例色盘。
+5. 读取 [visual-scaffold-recipes.md](visual-scaffold-recipes.md)，选择适合当前页面组合的中性槽位，写入当前项目的 `prd/<项目名>/design.md`。
+6. 写入 `densityRule`、`breathingRule`、`spacing` 和 `rounded` 的具体数值。默认业务工具页使用 high density + 圆润形状 + 有呼吸感的分组节奏：页面边距 20-28px，卡片与卡片 gap 12-18px 且必须小于 20px，卡片 padding 默认 22-28px 且必须大于 20px，卡片圆角范围 0-32px；只有品牌展示、官网或用户明确要求舒展时才降低密度。
+7. 写入 `surfaceContrast`：页面背景与卡片背景必须形成明显层次对比，不可相近或相同；默认浅色背景保持清爽，但必须按“白色/浅色背景 + 有边框卡片、浅灰背景（如 `#F3F4F6`）+ 白色无边框卡片、浅彩色背景 + 白色无边框卡片、渐变背景 + 玻璃感卡片”四类方案选择。
+8. 写入 `emptyStateRecipe` 和 `acceptanceChecks`：空态必须是薄行、面板内提示或右侧上下文，不使用 160px 以上大白卡；状态摘要不能是横跨整页且内容稀疏的空矩形。
+9. 如果平台导航可见，页面主按钮、链接、选中态、重点标签和图表主序列默认跟随应用主题；自定义色盘只能作为辅助色、浅背景、图表第二序列或页面级独立主题。
 
 ## 主题关系判定
 
@@ -58,7 +61,8 @@ Step 5 生成 `design.md`，并让 PRD 的每个自定义展示页只引用它�
 | 视觉 DNA | design.md | 所有页面都必须保留的 2-5 个视觉 DNA |
 | 页面区块 | PRD 页面章节 | 当前业务页面实际需要的区块 |
 | 主题关系 | design.md + PRD 摘要 | 默认写“跟随应用主题”；若生成色相不同，写“应用主题主导，生成色彩作为辅助色”；只有独立页面才说明页面级独立色盘原因 |
-| visualScaffold | design.md | layoutRecipe、surfaceMap、sectionRhythm、densityRule、componentRecipe、emptyStateRecipe、acceptanceChecks |
+| visualScaffold | design.md | layoutRecipe、surfaceMap、sectionRhythm、densityRule、breathingRule、componentRecipe、emptyStateRecipe、acceptanceChecks |
+| rounded / spacing / breathing | design.md | 大圆角、紧凑间距和呼吸节奏的具体数值，不能只写“圆润”“留白舒适”“有呼吸感” |
 
 ## 实现交接
 
@@ -72,5 +76,6 @@ Step 5 生成 `design.md`，并让 PRD 的每个自定义展示页只引用它�
 | 组件规则 | 卡片、表格、按钮、筛选、抽屉、标签 |
 | 状态规则 | 空态、加载、错误、无权限、禁用、选中 |
 | visualScaffold | 实现阶段先按槽位填业务内容，再写样式；任何页面实现不得跳过 |
+| rounded / spacing / densityRule / breathingRule | Code Canvas 的 CSS、antd token、列表行高、面板内距、卡片 gap、空态高度和首屏分组节奏；实现阶段必须保持卡片 padding >20px、卡片 gap <20px、卡片圆角 0-32px |
 
 业务文案、字段、表单入口、流程处理、详情链接和导航顺序都从 PRD 读取；当前项目 `design.md` 提供所有页面必须遵守的视觉 DNA、布局、组件样式和状态规则。

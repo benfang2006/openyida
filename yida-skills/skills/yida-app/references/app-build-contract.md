@@ -1,6 +1,6 @@
 # yida-app 执行编排参考
 
-本文件只记录完整应用落地过程中的执行细节。需求分析、产品设计、数据结构、页面布局、应用主题色/风格摘要和验收标准由 `yida-design` 输出到 `prd/<项目名>/prd.md`；完整 UI 设计规范、主题 token、布局密度、组件和状态规则输出到 `prd/<项目名>/design.md`。
+本文件只记录完整应用落地过程中的执行细节。需求分析、产品设计、数据结构、页面布局、应用主题色/风格摘要和验收标准由 `yida-design` 输出到 `prd/<项目名>/prd.md`；完整 UI 设计规范、主题 token、布局密度、圆角规则、组件和状态规则输出到 `prd/<项目名>/design.md`。
 
 ## PRD 输入
 
@@ -9,9 +9,9 @@
 | 产物 | 用途 |
 | --- | --- |
 | PRD | 描述应用基本信息、应用配置、数据结构、页面与功能、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准 |
-| design.md | 描述主题 token、视觉 DNA、布局密度、场景配方、组件规则、状态规则和页面视觉验收 |
+| design.md | 描述主题 token、视觉 DNA、布局密度、圆角规则、场景配方、组件规则、状态规则和页面视觉验收 |
 
-PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fieldId`、`pageId` 等细节 ID 写入 `.cache/<项目名>-schema.json`。页面实现阶段读取 PRD 的业务输入，并直接读取 design.md 的主题、布局、材质、组件和状态规则；走生成器时再派生 `page-spec.json`，手写时直接按 PRD + design.md 实现。
+PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fieldId`、`pageId` 等细节 ID 写入 `.cache/<项目名>-schema.json`。页面实现阶段读取 PRD 的业务输入，并直接读取 design.md 的主题、布局、材质、圆角、密度、组件和状态规则；走生成器时再派生 `page-spec.json`，手写时直接按 PRD + design.md 实现。
 
 ## 字段文件示例
 
@@ -49,7 +49,7 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 
 - 默认使用 `yida-canvas-custom-page`：现代 React 交互、hooks、图表、工作台、看板、列表、详情、官网、门户壳等面向用户页面。
 - 仅当强依赖原生实例数据桥时使用 `yida-custom-page`：`this.$(fieldId)`、`this.utils.yida.*`、`dataSourceMap`、提交流程或设计器数据源深度耦合。
-- PRD 中的资源蓝图、页面与功能设计、交互状态、页面实现交付顺序、各页面布局和主题风格摘要，必须进入 `page-spec.json` 或页面实现备注。design.md 中的主题 token、完整 UI 设计、组件和状态规则由页面实现阶段重新读取，不复制进 `page-spec.json`。`page-spec.json` 必须标记 `sourceOfTruth`；与 PRD/design.md 冲突时重生成 spec。生成源码后发现业务事实缺失时回写 `prd.md`，发现视觉事实缺失时回写 `design.md`；只有实现偏差才小范围 patch 源码。
+- PRD 中的资源蓝图、页面与功能设计、交互状态、页面实现交付顺序、各页面布局和主题风格摘要，必须进入 `page-spec.json` 或页面实现备注。design.md 中的主题 token、完整 UI 设计、圆角、密度、组件和状态规则由页面实现阶段重新读取，不复制进 `page-spec.json`。`page-spec.json` 必须标记 `sourceOfTruth`；与 PRD/design.md 冲突时重生成 spec。生成源码后发现业务事实缺失时回写 `prd.md`，发现视觉事实缺失时回写 `design.md`；只有实现偏差才小范围 patch 源码。
 - 截图验收、公开访问、数据源深接和精细导航分组只在用户明确要求或 PRD 验收标准命中时追加。完整应用默认在表单创建后注入 formDetail CSS，并写入 1-3 条核心普通表单 seed records，不再作为可选后置。
 
 ## 常用 URL
@@ -60,7 +60,7 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 | 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
 | 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
 | 自定义页面隐藏导航 | `{base_url}/{appType}/custom/{formUuid}?isRenderNav=false` |
-| 表单详情页 | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}` |
+| 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false` |
 
 建议在链接末尾拼接 `corpid={corpId}`，便于切换到正确组织。
 

@@ -6,7 +6,7 @@
 
 - Code Canvas 和普通 JSX 都使用复制型 helper。页面源码发布后应自包含，不依赖本仓库运行时文件。
 - 只有平台预置主题 key 才传给 `create-app/update-app --theme`；任意自定义色盘都走 `style#yida-global-theme` 或 scoped CSS vars。
-- 注入目标必须包含当前窗口文档，以及同源可访问的所有父级窗口文档。跨域父级会抛异常，必须静默降级。
+- 注入目标必须包含当前窗口文档、同源可访问的所有父级窗口文档，以及 `FormOpenContainer` 打开的同源子 iframe 文档。跨域窗口会抛异常，必须静默降级。
 - 样式 id 固定为 `yida-global-theme`；重复执行时更新内容，不插入多个 style。
 
 ## Code Canvas Helper
@@ -57,6 +57,13 @@ function installYidaGlobalTheme(tokens, startWindow) {
       style.innerHTML = cssText;
     }
   });
+}
+
+function installYidaGlobalThemeIntoFrame(tokens, iframeElement) {
+  try {
+    if (!iframeElement || !iframeElement.contentWindow) { return; }
+    installYidaGlobalTheme(tokens, iframeElement.contentWindow);
+  } catch (e) {}
 }
 
 function useYidaGlobalTheme(tokens) {
@@ -134,6 +141,13 @@ function installYidaGlobalTheme(tokens, startWindow) {
     }
   });
 }
+
+function installYidaGlobalThemeIntoFrame(tokens, iframeElement) {
+  try {
+    if (!iframeElement || !iframeElement.contentWindow) { return; }
+    installYidaGlobalTheme(tokens, iframeElement.contentWindow);
+  } catch (e) {}
+}
 ```
 
 使用示例：
@@ -151,4 +165,4 @@ didMount: function () {
 }
 ```
 
-根节点建议加 `data-yida-theme-root="true"`，方便当前页面 scoped token 和父级窗口 token 同时命中。
+根节点建议加 `data-yida-theme-root="true"`，方便当前页面 scoped token 和父级窗口 token 同时命中。PC 端用 `FormOpenContainer` 抽屉 iframe 打开提交页或详情页时，必须在 iframe `onload` 后调用 `installYidaGlobalThemeIntoFrame(CUSTOM_THEME_TOKENS, iframeElement)`；父页面 CSS 变量不会自动继承到子 iframe 文档。

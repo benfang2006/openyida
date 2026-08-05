@@ -588,7 +588,7 @@ const wrongUrl = `${baseUrl}/${appType}/formDetail/${formUuid}`;
 const listUrl = `${baseUrl}/${appType}/workbench/${formUuid}?iframe=true`;
 ```
 
-新增/提交/查看详情的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')` 或 `window.open(detailUrl, '_blank')`。默认做法是统一封装 `FormOpenContainer`：PC 端打开右侧抽屉，抽屉内 iframe 指向隐藏导航提交页或详情页 URL；移动端空间有限，可以整页或新页打开原生表单页。提交成功或关闭后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台表单页会发送 postMessage 时，才接精确完成事件。
+新增/提交/查看详情的入口不要在 PC 端直接 `window.open(submitUrl, '_blank')` 或 `window.open(detailUrl, '_blank')`。默认做法是统一封装 `FormOpenContainer`：PC 端打开右侧抽屉，抽屉默认半屏 `50vw`，抽屉内 iframe 指向隐藏导航提交页或详情页 URL；移动端空间有限，可以整页或新页打开原生表单页。提交成功或关闭后的刷新先绑定抽屉关闭事件重新查询列表；只有确认平台表单页会发送 postMessage 时，才接精确完成事件。
 
 ```javascript
 // ✅ PC：FormOpenContainer 抽屉内嵌表单页；移动端：打开原生表单页
@@ -610,6 +610,7 @@ export function openYidaForm(type, title, appType, formUuid, formInstId) {
       type: type,
       title: title || '表单',
       iframeUrl: url,
+      drawerWidth: '50vw',
     },
   });
   this.forceUpdate();
@@ -622,13 +623,13 @@ export function closeYidaForm() {
 }
 ```
 
-`renderJsx` 中根据 `formOpenRequest` 渲染右侧抽屉和 `<iframe src={state.formOpenRequest.iframeUrl}>`；关闭抽屉时清空 `formOpenRequest` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法，也不要为提交和详情各写一套 drawer 状态。
+`renderJsx` 中根据 `formOpenRequest` 渲染右侧抽屉和 `<iframe src={state.formOpenRequest.iframeUrl}>`；PC 抽屉宽度使用 `state.formOpenRequest.drawerWidth || '50vw'`，提交页和详情页默认一致。iframe 必须带 `ref` 或 DOM 查询句柄，并在 `onload` 后调用 `installYidaGlobalThemeIntoFrame(CUSTOM_THEME_TOKENS, iframeElement)`，把当前主题同步到同源提交页/详情页子文档。关闭抽屉时清空 `formOpenRequest` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法，也不要为提交和详情各写一套 drawer 状态。
 
 > `viewUuid` 可选，从宜搭「数据管理」→「报表视图」页面的 URL 中获取，不传则使用默认视图。
 
-### 16.1 自定义主题注入到 iframe 父级窗口
+### 16.1 自定义主题注入到 iframe 窗口
 
-普通 JSX 页面需要自定义色盘、隐藏导航沉浸页或 iframe 中承载原生表单时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper。该 helper 会向当前文档和同源可访问的所有父级窗口文档注入 `style#yida-global-theme`；跨域父级静默降级。不要只向当前页面 `document.head` 写 style，否则嵌套 iframe 时父级壳层和抽屉内表单可能读不到同一套 token。
+普通 JSX 页面需要自定义色盘、隐藏导航沉浸页或 iframe 中承载原生表单时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper。该 helper 会向当前文档、同源可访问的所有父级窗口文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档注入 `style#yida-global-theme`；跨域窗口静默降级。不要只向当前页面 `document.head` 写 style，否则嵌套 iframe 时父级壳层和抽屉内表单可能读不到同一套 token。
 
 ### 17. 下拉选项控制选项卡（Tabs）表格页显示/隐藏
 

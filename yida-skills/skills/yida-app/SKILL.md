@@ -52,7 +52,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 - 解析并复用已有 app/page/form/process；
 - 把 `yida-design` 输出的 PRD 写入 `prd/<项目名>/prd.md`，把所有页面共同遵守的 UI 视觉规则写入 `prd/<项目名>/design.md`；
 - 按 PRD 的资源创建顺序创建缺失且允许创建的应用、表单、流程和主页面；其中表单/流程先于自定义页面；
-- 读取 PRD 的页面与功能设计、资源关系和页面实现交付顺序，读取 design.md 的主题、布局、材质、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`；
+- 读取 PRD 的页面与功能设计、资源关系和页面实现交付顺序，读取 design.md 的主题、布局、材质、圆角、密度、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`；
 - 调用页面技能实现并发布；
 - 发布后按 PRD 的导航顺序执行轻量导航排序；
 - 只输出 2-3 句业务交付总结和一个主入口链接，业务总结在前、链接在后。
@@ -90,7 +90,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
               ↓
 [Step 7] 编写自定义页面代码 → use_skill("yida-canvas-custom-page", "生成 Code Canvas 主页面")
               ↓      按 PRD 的页面实现交付顺序逐页实现；每个页面实现前必须读取 prd.md 与 design.md
-              ↓      先读取 PRD 中的业务对象、页面区块、数据来源和主操作，再读取 design.md 的主题、visualScaffold、材质、组件和状态规则；需要生成器时派生 page-spec.json，可直接手写时跳过 spec 写最终 .canvas.jsx
+              ↓      先读取 PRD 中的业务对象、页面区块、数据来源和主操作，再读取 design.md 的主题、visualScaffold、材质、圆角、密度、组件和状态规则；需要生成器时派生 page-spec.json，可直接手写时跳过 spec 写最终 .canvas.jsx
               ↓      字段映射优先来自 create/update 命令输出和 `.cache/<项目名>-schema.json`；同一表单不要重复 get-schema，除非页面/数据链路确实需要 fieldId 且缓存不完整
               ↓      本轮已创建/解析业务表单且页面需要列表/看板/详情数据时，必须在 spec.dataBinding 写 mode=form + 真实 appType/formUuid/fieldId；深度接入再加载 yida-canvas-data-binding
               ↓      明确要求普通自定义页面 JSX/Jsx 组件链路，或强依赖 this.$ / this.utils.yida.* / this.dataSourceMap 等实例桥时选择 yida-custom-page
@@ -119,7 +119,7 @@ UI/体验不是 `yida-app` 内部模式，而是由 `yida-design` 在 Step 2 一
 
 主题补充：主题先由 `yida-design` 按业务气质判断。`podBlue`、`podGreen`、`podOrange` 等只是平台预置候选；只有 PRD 摘要和 design.md 都写明 `shouldPassCreateAppTheme=true` 且 `themePresetKey` 命中平台 key，`yida-app` 才把它传给 `create-app/update-app --theme`。若 PRD 给的是自定义品牌色、渐变色盘或非预置主题名，创建应用时不显式传 `theme/colour`，tokens 必须写在 design.md，由页面实现读取 design.md 后注入 `style#yida-global-theme` / `customThemeStyle.tokens`。
 
-首次生成面向用户的主页面时，先执行 `use_skill("yida-design", "完整应用产品设计")` 产出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，再由 `yida-app` 从 PRD 提炼业务 spec，并在实现阶段直接读取 design.md 的主题、布局、材质、组件和状态规则，交给 `yida-canvas-custom-page` 或 `yida-custom-page` 落地。用户明确要求“好看 / 去 AI 味 / 高级视觉 / 品牌化 / 多页面体验”时，仍然在 `yida-design` 内补足 design.md 设计细节，不在 `yida-app` 内另分模式。
+首次生成面向用户的主页面时，先执行 `use_skill("yida-design", "完整应用产品设计")` 产出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，再由 `yida-app` 从 PRD 提炼业务 spec，并在实现阶段直接读取 design.md 的主题、布局、材质、圆角、密度、组件和状态规则，交给 `yida-canvas-custom-page` 或 `yida-custom-page` 落地。用户明确要求“好看 / 去 AI 味 / 高级视觉 / 品牌化 / 多页面体验”时，仍然在 `yida-design` 内补足 design.md 设计细节，不在 `yida-app` 内另分模式。
 
 ## 页面链路原则
 
@@ -144,7 +144,7 @@ UI/体验不是 `yida-app` 内部模式，而是由 `yida-design` 在 Step 2 一
 
 使用生成器入口时，必须把当前页面从 `prd.md + design.md` 派生成业务化 `page-spec.json`，至少覆盖：
 
-- PRD 中已有 `pageSpecHandoff` 时，优先从 `pageSpecHandoff` 提取 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile`、`designRefs`、`dataBinding` 和 `primaryAction`；`page-spec.json` 只保存这些业务参数和 design 指针。实现页面时再读取 `designFile` 中对应章节，获取 `visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件和状态规则。
+- PRD 中已有 `pageSpecHandoff` 时，优先从 `pageSpecHandoff` 提取 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile`、`designRefs`、`dataBinding` 和 `primaryAction`；`page-spec.json` 只保存这些业务参数和 design 指针。实现页面时再读取 `designFile` 中对应章节，获取 `visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、组件和状态规则。
 - `sourceOfTruth`：写明 `prdFile`、`designFile`、`designRefs` 和 `conflictPolicy: "prd-design-win"`。若 `page-spec.json` 与 PRD/design.md 不一致，丢弃或重生成 spec；不得用 spec 覆盖 PRD/design.md。
 - `brandName` / `tagline` / `heroText`：使用当前应用的业务名称、角色和问题域，不沿用模板默认标题。
 - `features`：写真实业务对象、模块入口或处理事项，不写“统一入口 / 状态跟进 / 流程闭环”这类通用模板卖点。
@@ -161,7 +161,7 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 | 问题类型 | 必须修改哪里 | 不允许的做法 |
 | --- | --- | --- |
 | 页面目标、业务对象、指标口径、主操作、表单入口、数据来源、`contentBlocks`、空/载/错业务语义不足或错误 | 回写 `prd.md`，再重新派生 `page-spec.json` | 只在 `page-spec.json` 或源码里新增业务区块、指标和动作 |
-| 主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件规则、状态规则、响应式规则不足或错误 | 回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现 | 只在源码里临时写 CSS、主色、玻璃感、卡片材质或状态样式 |
+| 主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、组件规则、状态规则、响应式规则不足或错误 | 回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现 | 只在源码里临时写 CSS、主色、玻璃感、卡片材质、圆角、密度或状态样式 |
 | `page-spec.json` 缺少 `sourceOfTruth`、`designFile/designRefs`、`dataBinding` 字段，或与 `prd.md/design.md` 不一致 | 丢弃并从最新 `prd.md + design.md` 重新生成 `page-spec.json` | 修改 PRD/design.md 来迎合旧 spec，或把 design.md 的完整视觉规则复制进 spec |
 | PRD、design.md 和 spec 都完整，但生成源码存在 className、布局比例、字段映射、响应式、loading/empty/error 渲染、编译错误等实现偏差 | 小范围 Edit/patch 源码 | 借源码 patch 新增 PRD 未定义的页面区块、业务动作或 design.md 未定义的视觉风格 |
 
@@ -181,7 +181,7 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 4. 按 PRD 扩展交互和真实数据，按 design.md 打磨视觉；
 5. 验证所有参数名称与 CLI 一致。
 
-表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；拿到真实 `formUuid` 后默认由 `yida-form-detail` / `openyida form-detail-style apply` 通过表单 Schema 注入 Html 组件承载 CSS，重复执行必须幂等。
+表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；拿到真实 `formUuid` 后默认由 `yida-form-detail` / `openyida form-detail-style apply` 写入表单 Schema JS，在 `openyidaThemeDidMount` 中统一注入全局主题并按 formDetail 条件注入详情页样式，重复执行必须幂等。
 
 ## 完整应用统一编排阶段
 
@@ -189,12 +189,12 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 |------|--------|----------|----------|
 | 0. 解析资源上下文 | 无 | 合并本轮显式资源、已绑定资源上下文、workspace 配置/缓存、会话历史；本轮显式目标覆盖已绑定上下文；判定 app/page/form/process 的 `source` 和 `allowCreate` | 明确复用、创建缺口或需要 ask_human |
 | 1. 设计前上下文 | 无 | 合并本轮显式资源、workspace 配置/缓存、会话历史，确认已有 `appType` 或 `allowCreate=true`；不在本阶段创建资源 | PRD 所需的目标组织、应用名称候选、资源复用边界明确 |
-| 2. 产品设计 | `yida-design` | 输出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；PRD 必须包含应用基本信息、应用配置、数据结构、页面与功能、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准；design.md 必须包含主题色、视觉 DNA、各页面场景配方、布局密度、组件规则和状态规则。写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射位置 | 业务语义、视觉契约、页面布局、三种顺序、资源蓝图和 ID 存储位置明确 |
+| 2. 产品设计 | `yida-design` | 输出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；PRD 必须包含应用基本信息、应用配置、数据结构、页面与功能、业务逻辑、交互状态、资源蓝图、资源创建顺序、页面实现交付顺序、导航顺序和验收标准；design.md 必须包含主题色、视觉 DNA、各页面场景配方、布局密度、圆角规则、组件规则和状态规则。写/更新 `.cache/<项目名>-schema.json` 本地 ID 映射位置 | 业务语义、视觉契约、页面布局、三种顺序、资源蓝图和 ID 存储位置明确 |
 | 3. create/reuse app | `yida-create-app` 仅在 app 缺失且允许创建时加载；不自动修改应用名称 | 已有 `appType`/应用 URL/已绑定 app 时直接复用；否则按 PRD 创建应用并提取真实 `appType` | 拿到真实目标 `appType`，且不会重复创建同类 app |
 | 4. resolve forms/processes | `yida-form-detail` 视觉引导与详情页样式默认注入，再 `yida-create-form-page`；PRD 命中审批/流程时加载 `yida-create-process` | 已有目标表单时 update/patch/rule/bind-datasource；创建或更新字段结构前先用 `yida-form-detail` 确定表单视觉引导、填写路径和 Divider 分割线语义分组，再由 `yida-create-form-page` 写字段 JSON；PRD 包含流程表单时在自定义页面之前创建流程表单；简单字段属性更新直接用 compact changes 让 CLI 内部按 label 读 schema/定位字段并输出 resolved evidence；缺少支撑 MVP 的核心表单且允许创建时才 create；字段配置文件写入 `.cache/openyida/<项目名>/`；页面/数据/流程/公式确需多字段映射时，对每个目标表单最多一次性获取完整 `--field-map-json` 并合并写回 `.cache/<项目名>-schema.json`；拿到或确认真实 `formUuid` 后默认执行或补齐 formDetail CSS 注入 | 拿到或确认表单/流程表单 `formUuid`，字段结构有 Divider 分组，formDetail CSS 已注入或有明确阻塞原因，必要时拿到真实 `fieldId` |
 | 5. seed records | `yida-data-management` | 完整应用默认给本轮新建或页面数据源依赖的核心普通表单写入 1-3 条业务化 seed records。先 `openyida get-schema <appType> <formUuid> --field-map-json` 获取真实字段 ID，生成字段值时遵守字段类型和日期毫秒时间戳规则，再逐条执行 `openyida data create form <appType> <formUuid> --data-file ...` 或 `--data-json ...`，最后 `openyida data query form` 抽查至少 1 条。用户明确不要造数、表单是配置字典/权限表、或字段缺少可安全构造值时可跳过并说明原因 | 核心表单有 1-3 条真实表单记录，或有明确跳过原因和空态方案 |
 | 6. reserve main page | `yida-create-page` 仅在主页面缺失且允许创建时加载 | 已有页面 URL / `formUuid` / 已绑定页面时直接作为主页面；若需要首页/工作台/智能助手/门户门面且缺少主页面，在表单/流程创建和 seed records 完成后创建空 display page 占位，暂不写最终源码 | 拿到真实主页面 `formUuid`，且不会重复创建页面 |
-| 7. 编写/更新页面 | 默认 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 按 PRD 的页面实现交付顺序读取页面场景、业务区块、素材策略、原生表单入口和业务化自检；同时读取 design.md 的 themeProfile、visualScaffold、材质、组件和状态规则，再生成或修改页面源码。实现 PRD 里的核心首屏和核心操作。展示业务列表/看板/详情记录时，必须接本轮真实表单 `dataBinding.mode=form`；默认读取 Step 5 写入的 1-3 条 demo records，没写入成功才展示空态和登记入口 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
+| 7. 编写/更新页面 | 默认 `yida-canvas-custom-page`；明确要求 JSX/Jsx 组件链路或实例桥强依赖时选择 `yida-custom-page` | 按 PRD 的页面实现交付顺序读取页面场景、业务区块、素材策略、原生表单入口和业务化自检；同时读取 design.md 的 themeProfile、visualScaffold、材质、圆角、密度、组件和状态规则，再生成或修改页面源码。实现 PRD 里的核心首屏和核心操作。展示业务列表/看板/详情记录时，必须接本轮真实表单 `dataBinding.mode=form`；默认读取 Step 5 写入的 1-3 条 demo records，没写入成功才展示空态和登记入口 | 本地源码通过对应页面技能的基础校验；未执行 publish 时仍是“源码已修改，尚未发布” |
 | 8. 发布页面 | `yida-publish-page` | 按页面链路校验后发布到已解析主页面：Canvas `.canvas.jsx` 使用 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检；普通自定义页面 `.oyd.jsx` / `.jsx` 跑 `check-page` / `compile`；再执行 `openyida publish <source> <appType> <displayPageFormUuid> --auto-nav-order` 发布主页面。发布成功后，PRD 写明导航顺序时执行 `openyida nav-group order <appType> <页面/表单...>`；PRD 缺少明确页面清单时用 `--auto-nav-order` / `nav-group auto-order` 兜底 | 发布成功、获得可访问 URL，且 PRD 导航顺序已执行，或兜底自动排序已执行/给出明确 warning |
 | 9. 输出结果 | 无 | 先写 2-3 句业务交付总结，再给一个主入口链接。若本轮意图是新增/修改/发布某个具体页面，主入口是当前页面 URL；其他完整应用、建表单、建流程、权限、主题、导航或批量资源场景，主入口是应用首页 `{base_url}/{appType}/workbench`。不要输出表格、资源 ID 清单或长列表，除非用户明确要排障 ID | 用户先理解完成了哪些业务能力，再打开唯一主入口 |
 
@@ -318,8 +318,8 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 | 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
 | 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
 | 自定义页面（隐藏导航） | `{base_url}/{appType}/custom/{formUuid}?isRenderNav=false` |
-| 表单详情页 | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}` |
-| 表单详情页（编辑模式） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit` |
+| 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false` |
+| 表单详情页（编辑模式） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit&isRenderNav=false` |
 
 ## 参考
 

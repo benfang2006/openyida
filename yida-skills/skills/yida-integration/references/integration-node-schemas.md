@@ -83,7 +83,7 @@ trigger
         {
           "name": "查看详情",
           "type": "commit",
-          "value": "//yidalogin.aliwork.com/{appType}/formDetail/{formUuid}?formInstId=${formInstId}",
+          "value": "//yidalogin.aliwork.com/{appType}/formDetail/{formUuid}?formInstId=${formInstId}&isRenderNav=false",
           "buttonUuid": "button-XXXX"
         }
       ]

@@ -129,6 +129,7 @@ describe('integration process builder', () => {
     expect(processJson.nodes[1].nextId).toEqual(['add']);
     expect(processJson.nodes[2].nextId).toEqual(['message']);
     expect(processJson.nodes[3].props.messageInfo.buttons[0].buttonUuid).toBe('button-fixed');
+    expect(processJson.nodes[3].props.messageInfo.buttons[0].value).toBe('//yidalogin.aliwork.com/APP-A/formDetail/FORM-A?formInstId=${formInstId}&isRenderNav=false');
   });
 
   test('buildViewJson keeps get-data before add-data on the canvas', () => {
@@ -157,6 +158,7 @@ describe('integration process builder', () => {
     ]);
     expect(viewJson.schema.children[1].id).toBe('data');
     expect(viewJson.schema.children[2].id).toBe('add');
+    expect(viewJson.schema.children[3].props.sendMessageRules.messageInfo.buttons[0].value).toBe('//yidalogin.aliwork.com/APP-A/formDetail/FORM-A?formInstId=${formInstId}&isRenderNav=false');
   });
 
   test('buildProcessJson can omit the message node and point trigger directly to finish', () => {
@@ -264,6 +266,7 @@ describe('integration process builder', () => {
     expect(processJson.nodes[1].nextId).toEqual(['connector']);
     expect(processJson.nodes[2].nextId).toEqual(['message']);
     expect(processJson.nodes[3].nextId).toEqual(['end']);
+    expect(processJson.nodes[3].props.messageInfo.buttons[0].value).toBe('//yidalogin.aliwork.com/APP-A/formDetail/FORM-A?formInstId=${formInstId}&isRenderNav=false');
   });
 
   test('buildProcessJson inserts initiateApproval node with captured designer rules', () => {

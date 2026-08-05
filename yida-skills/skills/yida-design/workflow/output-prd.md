@@ -105,8 +105,8 @@
 | 类型 | 规则 |
 | --- | --- |
 | 表单提交后 | <刷新列表 / 回到当前工作台 / 触发流程 / 更新状态> |
-| 新增/提交入口 | <PC 侧边抽屉 iframe 承载 `submission/{formUuid}?isRenderNav=false`；移动端整页或新页打开；必要时用 `update-form-config` 持久化表单设置 `isRenderNav=false`> |
-| 详情查看 | <抽屉 / 独立详情页 / 原生 formDetail> |
+| 新增/提交入口 | <PC 侧边抽屉 iframe 承载 `submission/{formUuid}?isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；必要时用 `update-form-config` 持久化表单设置 `isRenderNav=false`> |
+| 详情查看 | <PC 侧边抽屉 iframe 承载 `formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；formInstId 来自真实数据记录> |
 | 数据变更 | <自动计算、状态流转、通知或提醒> |
 | 权限规则 | <角色能看、能改、能审批的边界> |
 | 空状态 | <无数据时的说明、主操作入口和下一步> |
@@ -175,4 +175,4 @@
 
 - `yida-app` 读取 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md` 后创建或复用资源。
 - 真实 ID 写入 `.cache/<项目名>-schema.json`。
-- 页面实现阶段读取 `prd.md` 的业务内容，并直接读取 `design.md` 的主题、布局、材质、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`，再交给 Code Canvas 或普通自定义页实现。
+- 页面实现阶段读取 `prd.md` 的业务内容，并直接读取 `design.md` 的主题、布局、材质、圆角、密度、呼吸感、组件和状态规则；只有走页面生成器或需要稳定交接时才派生 `page-spec.json`，再交给 Code Canvas 或普通自定义页实现。

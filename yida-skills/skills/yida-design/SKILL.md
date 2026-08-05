@@ -3,7 +3,7 @@ name: yida-design
 description: >
   当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。
   本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md。
-  prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准；design.md 写主题 token、布局、材质、组件和状态规则。
+  prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准；design.md 写主题 token、布局、材质、圆角、密度、呼吸感、组件和状态规则。
   本技能不写页面源码；页面实现交给 yida-canvas-custom-page 或 yida-custom-page。
 ---
 
@@ -54,21 +54,23 @@ description: >
 5. **美感提升保持功能契约**：页面美化、视觉升级和页面重构默认只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态保持原样。
 6. **默认页面保留平台应用导航**：页面内 tab、自绘侧边栏或独立门户壳写 `appBlueprint.hasPageNavigation: true`，同时保持平台导航可见。
 7. **同应用页面入口归导航**：同应用页面优先放入平台导航或导航分组；自定义页内容区放当前页动作、原生表单新建/查看、外部链接和跨应用资源。
-8. **表单入口响应式**：新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`；PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单，移动端整页或新页打开。
+8. **表单入口响应式**：新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`；详情页 URL 默认使用 `formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false`，且 `formInstId` 必须来自真实数据记录；PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；移动端整页或新页打开。
 9. **主题作用域写清楚**：应用级换肤写 `themeScope=app`；单页美化写 `themeScope=page`；页面重构/单页美化默认以当前应用主题色为基准，用户明确要求很不一样的独立风格时再做页面级独立色盘；`--theme` / `colour` 只使用平台预置主题 key，自定义品牌色绝不能传给 create-app/update-app。
 10. **默认主题先做业务判断**：工作台、门户、列表、详情、普通看板和数据大屏默认都是浅底 / light 模式，但主色不固定为 `podBlue` 或 #1677ff；先根据行业、品牌、业务情绪和视觉目标做创意色彩判断，选择最贴合当前业务的色彩关系，禁止套用“科技=蓝、宠物=橙、法律=蓝”这类刻板配色。若命中平台预置主题 key，再传给 `create-app/update-app --theme`；若是任意自定义色盘，创建应用时不显式传 `theme/colour`，PRD 只写主题色和风格摘要，`style#yida-global-theme` / `customThemeStyle.tokens` 注入方案写入 design.md。只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸。
     默认浅底业务屏，只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸。
 11. **页面布局要到可实现粒度**：每个页面至少写清顶部/左侧/主体/右侧/底部区域、核心组件、信息密度、主操作位置、PC/移动端差异和空/载/错态。
 12. **页面丰富度保底**：工作台、首页、门户、看板、展示页和业务入口页至少规划 10 个有业务目的的区块以上，例如上下文标题、状态摘要、主操作、筛选、任务列表、最近记录、动态流、洞察、提醒、空态行动、右侧上下文和底部辅助信息。计数按“区块组”算，不按子项算：`KPI 卡片: 学生总数, 课程总数, 出勤率, 平均分` 只能算 1 个状态摘要区块，`快捷入口: 录入学生/登记成绩/记录考勤/管理课程` 只能算 1 个动作区块；不能用重复 KPI 卡、重复快捷入口或大空白卡凑数量。
 13. **工作台禁低密大卡片模板**：工作台 / 业务首页不能用“标题 + 4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”撑首屏。默认改成紧凑状态摘要条、任务/动态列表、最近记录、右侧上下文面板和高频动作；没有真实数据时也展示薄空态行 + 登记入口，不铺大块空白卡片。
-14. **应用主题先统领页面主色**：平台导航可见时，页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`；`design.md` 的色相只转成辅助色、浅背景、图表第二序列和装饰气质。页面级独立主色只用于隐藏平台导航、独立品牌/活动页或用户明确要求完全不同风格；独立主色必须通过 `style#yida-global-theme` 或 scoped CSS vars 注入。
-15. **design.md 是全局设计契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、表单入口、列表、详情、看板和工作台都必须遵守它；PRD 不再复制或二次抽象 `design.md`，只引用 `design.md` 的章节和规则。
-16. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件形态、空态规则和响应式规则写入 `design.md`；PRD 只写业务目标、资源关系、区块目的、数据来源、主操作、应用主题色/风格摘要和 `designRefs`，摘要必须与 `design.md` 一致。
-17. **实现交接必须结构化但保持薄**：每个 display 页面在 PRD 中输出 `pageSpecHandoff`，只写 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile=prd/<项目名>/design.md`、`designRefs`、数据来源和主操作；实现阶段必须读取 `prd.md` 与 `design.md` 后才能写页面。
-18. **设计事实源唯一**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。页面 `scene` 只作为分类标签，不对应参考文件、模板文件或实现阶段读取入口。
-19. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
-20. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作和状态到图标组件的映射。
-21. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
+14. **默认圆润高密且有呼吸感**：业务工具页默认使用圆润形状、紧凑信息密度和清晰呼吸节奏。`design.md` 必须写清 `roundedRule`、`densityRule` 和 `breathingRule`：卡片 padding 必须大于 20px（默认 22-28px），卡片与卡片的 gap 必须小于 20px（默认 12-18px），卡片圆角范围 0-32px（业务卡片默认 20-24px），控件 10-14px，状态摘要 64-88px，动作条 40-56px，列表行 44-56px，空态 88-120px 内；页面边距、卡片 gap 和卡片 padding 要形成可扫读的分组节奏。呼吸感来自对齐、分组、层级和节奏，不来自额外 margin、超宽空 KPI 框或空白卡撑页面。
+15. **背景与卡片必须有层次对比**：默认业务页背景保持浅色调、清爽但不能与卡片相近或相同。`design.md` 必须写清 `surfaceContrast`：白色/浅色背景配有边框卡片；浅灰背景（如 `#F3F4F6`）配白色无边框卡片；浅彩色背景（如浅蓝、浅暖灰）配白色无边框卡片；渐变背景配玻璃感卡片。禁止浅底白卡无边框、同色背景同色卡片或只有阴影没有色差/边框的层次。
+16. **应用主题先统领页面主色**：平台导航可见时，页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`；`design.md` 的色相只转成辅助色、浅背景、图表第二序列和装饰气质。页面级独立主色只用于隐藏平台导航、独立品牌/活动页或用户明确要求完全不同风格；独立主色必须通过 `style#yida-global-theme` 或 scoped CSS vars 注入。
+17. **design.md 是全局设计契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、表单入口、列表、详情、看板和工作台都必须遵守它；PRD 不再复制或二次抽象 `design.md`，只引用 `design.md` 的章节和规则。
+18. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件形态、空态规则和响应式规则写入 `design.md`；PRD 只写业务目标、资源关系、区块目的、数据来源、主操作、应用主题色/风格摘要和 `designRefs`，摘要必须与 `design.md` 一致。
+19. **实现交接必须结构化但保持薄**：每个 display 页面在 PRD 中输出 `pageSpecHandoff`，只写 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile=prd/<项目名>/design.md`、`designRefs`、数据来源和主操作；实现阶段必须读取 `prd.md` 与 `design.md` 后才能写页面。
+20. **设计事实源唯一**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。页面 `scene` 只作为分类标签，不对应参考文件、模板文件或实现阶段读取入口。
+21. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
+22. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作和状态到图标组件的映射。
+23. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
 
 ---
 
@@ -88,7 +90,7 @@ description: >
 | [design.md 生成规则](references/style-design-selection.md) | 按模板生成应用级 `design.md`，配色和视觉 DNA 由当前业务推导 | Step 5 |
 | [视觉脚手架配方库](references/visual-scaffold-recipes.md) | 将高质量页面结构转成 `visualScaffold` 槽位，约束页面实现落地 | Step 5 |
 | [页面质量门禁](references/page-quality-gates.md) | 区块数量、源码槽位、低密大卡片、主题一致性和 `pageSpecHandoff` 检查 | Step 4-6 输出前 |
-| [design.md 模板与示例索引](references/style-designs/registry.md) | `_design-md-template.md` 与唯一示例的消费规则 | Step 5 |
+| [design.md 模板索引](references/style-designs/registry.md) | `_design-md-template.md` 的消费规则 | Step 5 |
 | [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、候选主题、token profile | 需要主题 key 或 token |
 | [Canvas 设计系统](../yida-canvas-custom-page/references/canvas-design-system.md) | Code Canvas token、antd token、图表配色 | 实现阶段 |

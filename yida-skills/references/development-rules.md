@@ -38,7 +38,7 @@
 | 信息类型 | 存储位置 | 内容示例 |
 |---------|---------|---------|
 | 业务语义信息 | `prd/<项目名>/prd.md` | 字段名称、字段类型、字段说明 |
-| 视觉契约信息 | `prd/<项目名>/design.md` | 主题 token、布局密度、组件规则、状态规则 |
+| 视觉契约信息 | `prd/<项目名>/design.md` | 主题 token、布局密度、圆角规则、组件规则、状态规则 |
 | Schema ID | `.cache/<项目名>-schema.json` | `appType`、`formUuid`、`fieldId` |
 
 > prd 文档**不记录** `formUuid`/`fieldId` 等 ID，这些只写入 `.cache/`。

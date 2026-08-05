@@ -2,12 +2,10 @@
 
 ## 核心原则
 
-表单详情页样式统一进入 Schema 渲染树。注入内容固定由两层组成：
+表单提交页和详情页样式统一进入表单 Schema JS。保存表单 Schema 前必须更新 `actions.module.source`，并让根节点 `componentDidMount` 指向 `openyidaThemeDidMount`。
 
-- `style#yida-global-theme`：全局主题 token，和表单页 JS 注入使用同一个主题合约。
-- `style#yida-form-detail-style`：详情页结构样式，覆盖卡片、字段预览、评论区和底部操作栏。
-
-详情页通过 `Html` 组件和 `root.css` 同步持久化上述样式，保证详情页 iframe 内消费同一套主题 token。
+- `style#yida-global-theme`：全局主题 token，提交页和详情页都必须注入。
+- `style#yida-form-detail-style`：详情页结构样式，只在运行时检测到 `formDetail` 页面时注入。
 
 ## API 顺序
 
@@ -17,133 +15,36 @@
 GET /alibaba/web/{appType}/_view/query/formdesign/getFormSchema.json?formUuid={formUuid}&schemaVersion=V5
 ```
 
-需要携带登录 Cookie 和 CSRF。若当前环境返回的 Schema 包在 `content` 字段内，先解析 `content`。
+若当前环境返回的 Schema 包在 `content` 字段内，先解析 `content`。
 
-### 2. 注入或更新 Html 组件
+### 2. 更新表单 JS
 
-使用固定 id，保证重复执行是幂等更新：
-
-只修改渲染树里的 `Html` 节点和 `root.css` 兜底样式，不主动修改 `componentsMap`。
-
-`Html.props.content` 必须包含两个 style：
-
-- `style#yida-global-theme`：全局主题 token，和表单页 JS 注入使用同一个 id。
-- `style#yida-form-detail-style`：详情页结构样式，包括卡片、字段预览、底部操作栏等。
+使用公共注入脚本，保证重复执行幂等：
 
 ```js
-const FORM_DETAIL_HTML_ID = 'yida-form-detail-css-html';
-const FORM_DETAIL_FIELD_ID = 'html_yida_detail_css';
-const globalThemeCss = `/* openyida:yida-global-theme:form-detail */
-:root {
-  --color-brand1-6: rgba(57, 84, 228, 1);
-  --color-brand-3: rgba(57, 84, 228, 1);
-  --color-brand1-9: rgba(40, 59, 160, 1);
-}`;
+const { ensureYidaGlobalThemeAction } = require('./form-theme-action');
 
-function readNodeChildren(node) {
-  if (!node) {
-    return [];
-  }
-  if (Array.isArray(node.children)) {
-    return node.children;
-  }
-  if (Array.isArray(node.items)) {
-    return node.items;
-  }
-  return [];
-}
-
-function ensureNodeChildren(node) {
-  if (Array.isArray(node.children)) {
-    return node.children;
-  }
-  if (Array.isArray(node.items)) {
-    return node.items;
-  }
-  node.children = [];
-  return node.children;
-}
-
-function findNode(node, componentName) {
-  if (!node) {
-    return null;
-  }
-  if (node.componentName === componentName) {
-    return node;
-  }
-
-  const children = readNodeChildren(node);
-  for (let i = 0; i < children.length; i++) {
-    const found = findNode(children[i], componentName);
-    if (found) {
-      return found;
-    }
-  }
-  return null;
-}
-
-function upsertFormDetailCss(schema, css) {
-  const page = schema.pages && schema.pages[0];
-  const rootNode = page && page.componentsTree && page.componentsTree[0];
-  if (!rootNode) {
-    throw new Error('Schema 中未找到 RootContent');
-  }
-
-  rootNode.css = `${globalThemeCss}\n${css}`;
-
-  const formContainer = findNode(rootNode, 'FormContainer');
-  if (!formContainer) {
-    throw new Error('Schema 中未找到 FormContainer');
-  }
-
-  const children = ensureNodeChildren(formContainer);
-  const content = `<style id="yida-global-theme">${globalThemeCss}</style>\n<style id="yida-form-detail-style">${css}</style>`;
-  const existing = children.find((item) => item && item.id === FORM_DETAIL_HTML_ID);
-
-  if (existing) {
-    existing.componentName = 'Html';
-    existing.props = existing.props || {};
-    existing.props.content = content;
-    existing.props.__style__ = {
-      height: '0px',
-      overflow: 'hidden',
-      padding: '0',
-      margin: '0',
-    };
-    existing.props.fieldId = FORM_DETAIL_FIELD_ID;
-    existing.hidden = false;
-    existing.title = '勿删:详情页CSS';
-    existing.isLocked = true;
-    existing.condition = true;
-    existing.conditionGroup = '';
-    return 'updated';
-  }
-
-  children.unshift({
-    componentName: 'Html',
-    id: FORM_DETAIL_HTML_ID,
-    props: {
-      content,
-      __style__: {
-        height: '0px',
-        overflow: 'hidden',
-        padding: '0',
-        margin: '0',
-      },
-      fieldId: FORM_DETAIL_FIELD_ID,
-    },
-    hidden: false,
-    title: '勿删:详情页CSS',
-    isLocked: true,
-    condition: true,
-    conditionGroup: '',
-  });
-
-  return 'inserted';
-}
+ensureYidaGlobalThemeAction(schema, {
+  formDetailCss: '/* yida-form-detail */\\n.vc-page-yida-page.vc-page.yida-formDetail { ... }',
+});
 ```
 
-## 3. 保存 Schema
+Schema 必须同时满足：
+
+- `actions.module.source` 包含 `/* openyida:theme:start */`。
+- `componentsTree[0].lifeCycles.componentDidMount.name` 等于 `openyidaThemeDidMount`。
+- `actions.list` 包含 `id: "openyidaThemeDidMount"` 且 `relatedEventId: "lifecycle:didMount"`。
+- action 源码包含 `style.id = "yida-global-theme"` 或等价的 `style#yida-global-theme` 写入逻辑。
+- action 源码包含 `openyidaThemeIsFormDetail`，并只在 formDetail 页面写入 `style#yida-form-detail-style`。
+
+运行时规则：
+
+- `openyidaThemeDidMount` 先调用表单原有 `didMount`。
+- 始终向当前文档和同源可访问父级文档写入 `style#yida-global-theme`。
+- 仅当文档 URL 或 DOM 命中 `formDetail` 时写入 `style#yida-form-detail-style`。
+- 非详情页不写入详情页结构 CSS；如果存在旧的 `style#yida-form-detail-style`，移除。
+
+### 3. 保存 Schema
 
 ```http
 POST /dingtalk/web/{appType}/_view/query/formdesign/saveFormSchema.json
@@ -167,7 +68,7 @@ Body:
 - `schemaVersion` 必须是字符串 `V5`。
 - `importSchema` 建议传字符串 `"true"`，与 OpenYida 表单保存链路保持一致。
 
-## 4. 刷新表单配置
+### 4. 刷新表单配置
 
 保存后调用 `updateFormConfig`，否则前端可能继续读缓存。
 
@@ -192,23 +93,24 @@ Body:
 ## 校验
 
 1. 重新获取 Schema，确认存在：
-   - `id: "yida-form-detail-css-html"`
-   - `componentName: "Html"`
-   - `props.content` 包含 `id="yida-global-theme"`
-   - `props.content` 包含 `id="yida-form-detail-style"`
-   - `hidden: false`
-   - `props.content` 包含 `yida-form-detail`
-2. 如果已有一条数据记录，可以打开：
-   ```text
-   {base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}
+   - `actions.module.source` 包含 `openyida:theme`
+   - `componentDidMount.name` 等于 `openyidaThemeDidMount`
+   - `actions.module.source` 包含 `yida-global-theme`
+   - `actions.module.source` 包含 `yida-form-detail-style`
+   - `actions.module.source` 包含 `openyidaThemeIsFormDetail`
+2. 执行：
+   ```bash
+   openyida form-detail-style check <appType> <formUuid> --json
    ```
-3. 如果用户后续在设计器中手动删除 Html 组件，重新执行注入流程即可恢复。
+   结果必须包含 `globalThemeActionFound: true` 和 `formDetailStyleActionFound: true`。
+3. 如果已有一条数据记录，可以打开：
+   ```text
+   {base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false
+   ```
 
-## 注入方式对比
+## 注入方式
 
-| 方式 | 是否推荐 | 说明 |
+| 方式 | 是否使用 | 说明 |
 | --- | --- | --- |
-| `Html` 组件注入 | 推荐 | 设计器可识别，保存时不易丢失，支持幂等更新 |
-| `root.css` 字段 | 作为兜底 | formDetail 可加载，但设计器保存后可能被覆盖 |
-| `RichTextField` 注入 | 不推荐 | 组件注册不完整时会出现“组件未找到” |
-| `didMount` JS 注入 | 不可用 | formDetail 不执行表单页面 JS |
+| 表单 JS 注入 | 必须 | `openyidaThemeDidMount` 统一写入全局主题和详情页条件样式 |
+| `RichTextField` 注入 | 不使用 | 组件注册不完整时会出现“组件未找到” |

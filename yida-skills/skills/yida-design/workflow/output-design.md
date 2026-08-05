@@ -1,6 +1,6 @@
 # 输出：design.md
 
-> Step 6 自检通过后，写入 `prd/<项目名>/design.md`。`design.md` 是应用级 UI 视觉设计系统，结构参考 `references/style-designs/_design-md-template.md`：先写可复用视觉 DNA、token、布局、组件、状态和自检，再在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。配色、视觉 DNA、布局配方和组件规则必须根据当前业务生成，不复制示例文件的业务、颜色、字段或页面顺序。
+> Step 6 自检通过后，写入 `prd/<项目名>/design.md`。`design.md` 是应用级 UI 视觉设计系统，结构参考 `references/style-designs/_design-md-template.md`：先写可复用视觉 DNA、token、布局、组件、状态和自检，再在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。配色、视觉 DNA、布局配方和组件规则必须根据当前业务生成，不复制历史样例的业务、颜色、字段或页面顺序。
 
 ## design.md 输出格式
 
@@ -13,8 +13,8 @@ design_id: <design-id>
 design_status: ready
 baseDesignSource: generated-from-business-context
 scenes: [工作台, 列表, 详情, 看板]
-density: <compact / medium / comfortable>
-layout: <preferred archetype or custom layout>
+density: <high / medium / comfortable；业务工具页默认 high>
+layout: <preferred archetype or custom layout；工作台默认紧凑双栏/三栏，不用低密大卡墙>
 tone: <视觉气质关键词>
 tags: [<业务领域>, <角色>, <数据形态>]
 avoid: [<不适合场景>]
@@ -58,11 +58,18 @@ colors:
   border-subtle: "#..."
   brand: "#..."
 backgroundLayer:
-  baseCanvas: <低饱和浅底、带装饰的近白画布或深色舞台；推荐避免无层次的纯空白画布>
+  baseCanvas: <默认低饱和浅底或带装饰的近白画布；深色舞台仅用户明确要求暗色/大屏时使用；推荐避免无层次的纯空白画布>
   primitives: [softTintCanvas, topIrregularWash, radialGlowWash, flowLight, organicNoise]
   topIrregularWash: <可选；不规则顶部色块、波浪或斜切背景，内容仍按规则栅格排布>
   motionLayer: <none / subtle-flow-light；必须有 prefers-reduced-motion 静态降级>
   contrastGuard: <前景文字和控件对比度要求>
+surfaceContrast:
+  rule: <页面背景与卡片背景必须有明显层次，不可相近或相同>
+  pairing: <white-bg-bordered-card / gray-bg-white-card / tinted-bg-white-card / gradient-bg-glass-card>
+  pageBackground: <浅色背景色或渐变>
+  cardBackground: <白色、浅色或玻璃 rgba>
+  cardBorder: <白色/浅色背景时必须写边框；浅灰/浅彩背景时可 none；玻璃卡片写半透明边框>
+  forbidden: <浅底白卡无边框、同色背景同色卡片、只靠弱阴影区分层级>
 iconSystem:
   defaultLibrary: lucide-react
   allowedLibraries: [lucide-react, "@ant-design/icons"]
@@ -84,17 +91,34 @@ typography:
     lineHeight: <数字>
     letterSpacing: 0
 spacing:
-  page-x: <数字>
-  grid-gap: <数字>
-  card-x: <数字>
-  card-y: <数字>
+  page-x: <默认 20-28>
+  page-y: <默认 20-28>
+  grid-gap: <默认 12-18；卡片和卡片的 gap 必须小于 20>
+  section-gap: <默认 14-18；用于跨区块呼吸和分组，不用于撑空白>
+  card-x: <默认 22-28；卡片 padding 必须大于 20>
+  card-y: <默认 22-28；卡片 padding 必须大于 20；列表/摘要类不是卡片时可更紧>
+  row-y: <默认 10-12>
+breathingRule:
+  rhythm: <首屏主区、列表区、右侧上下文和操作条之间的分组节奏>
+  sectionGap: <默认 14-18；卡片之间的 gap 必须小于 20>
+  innerPadding: <默认 22-28；卡片 padding 必须大于 20>
+  compression: <内容不足时压缩高度、转薄行或补业务上下文/下一步动作>
 rounded:
-  md: <数字>
-  card: <数字>
+  sm: <默认 10-12>
+  md: <默认 14-16>
+  card: <范围 0-32；业务卡片默认 20-24>
+  panel: <范围 0-32；主容器/抽屉/重点面板默认 22-32>
+  pill: 999
 components:
   card:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.card}"
+    padding: "{spacing.card-y} {spacing.card-x}"
+  empty-state:
+    density: compact
+    maxHeight: <默认 88-120>
+  metric-strip:
+    height: <默认 64-88>
 inferred_modules:
   quick_actions:
     required_for: [工作台, 仪表盘, 管理后台, 运营首页]
@@ -115,6 +139,8 @@ inferred_modules:
 ## 3. 视觉氛围
 
 说明运营工具感/表达型、克制/戏剧化、密度、留白、专业度等取向。
+
+默认业务工具页采用“圆润但高密”的现代 B 端气质：业务面板和重点容器默认 20px 以上大圆角，页面信息密度默认 high，留白用于分组和阅读，不用于撑页面面积。只有官网、品牌页、展示页或用户明确要求舒展时，才把 density 调到 medium / comfortable。
 
 ## 4. 视觉 DNA / 设计母体
 
@@ -139,6 +165,8 @@ inferred_modules:
 
 说明页面壳、最大宽度、网格比例、间距、内容顺序和中性槽位关系。
 
+工作台、门户首页、管理后台和运营首页必须写清紧凑状态摘要、任务/记录列表、右侧上下文、高频动作条和薄空态行动。首屏不能出现超宽但内容稀疏的 KPI 横框、孤立大空态卡或右侧大面积留白；空白区域必须用最近记录、动态、风险、负责人、下一步动作、配置提示或薄空态行动承接。
+
 ## 8. 层级与深度
 
 说明深度来自平面表面、边框、阴影、色调层、毛玻璃、覆盖层或空间效果，并说明哪些地方不该使用阴影。
@@ -157,13 +185,30 @@ inferred_modules:
 
 背景可以不规则，内容必须规则。所有主要内容仍使用明确网格、分栏、对齐和稳定间距，不能因为背景形状导致文字、按钮、图表或表格漂移。B 端页面的背景色保持低饱和、高明度；深色大屏可使用低亮度流动线条或光效纹理衬托数据，但正文对比度必须达标。若选择极简近白画布，必须用清晰内容结构、细线装饰、局部渐变或素材焦点证明页面不是未设计的空白底。
 
+### Surface Contrast Contract
+
+页面背景与卡片背景必须形成明显层次对比，不可相近或相同。默认背景色保持浅色调，确保整体视觉清爽，同时与卡片之间有清晰层次；必须在 `surfaceContrast` 中选择以下搭配之一：
+
+| pairing | 背景 | 卡片 |
+| --- | --- | --- |
+| `white-bg-bordered-card` | 白色/浅色背景 | 卡片添加 `1px` 边框，边框色与背景形成可见分隔 |
+| `gray-bg-white-card` | 浅灰色背景，例如 `#F3F4F6` | 白色无边框卡片，用背景色差形成层次 |
+| `tinted-bg-white-card` | 浅彩色背景，例如浅蓝、浅暖灰 | 白色无边框卡片，必要时补极弱阴影 |
+| `gradient-bg-glass-card` | 渐变色背景 | 玻璃感卡片，使用半透明表面、半透明边框、`backdrop-filter` 和柔和阴影 |
+
+禁止输出浅底白卡无边框、同色背景同色卡片、卡片和页面背景只差 1-2 个灰阶，或只靠弱阴影承担层次。若背景和卡片都接近白色，卡片必须有可见边框；若背景为浅灰或浅彩，卡片优先白色无边框；若背景为渐变，卡片必须按玻璃材质处理。
+
 ## 9. 形状
 
 定义圆角尺度，以及每个尺度分别用于哪里。
 
+默认形状语言是圆润但不低密，并且布局要有呼吸感：卡片圆角范围 0-32px，业务卡片/面板默认 20-24px，主面板/抽屉/重点区域默认 22-32px，按钮和输入框 10-14px，标签/状态胶囊 999px。卡片 padding 必须大于 20px，卡片和卡片的 gap 必须小于 20px；圆角服务形状性格，不用空白卡撑版面。
+
 ## 10. 组件样式
 
 覆盖顶部栏、按钮、图标按钮、卡片/面板、输入框/选择器、表格/列表、图表、标签/徽标、快捷入口、空状态、弹窗/浮层。相关组件要包含 default、hover、active、focus、disabled、loading、selected、error 等状态。图标规则写入 `iconSystem`：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import；快捷入口、按钮、状态和导航必须给出可实现的 `actionIconMap` / `statusIconMap`。
+
+组件默认密度和呼吸规则必须写到可实现数值：状态摘要 64-88px 高，动作条 40-56px 高，列表行 44-56px，高频按钮 36-40px，卡片 padding 默认 22-28px 且必须大于 20px，卡片和卡片的 gap 默认 12-18px 且必须小于 20px。空状态默认嵌在列表/面板内部，使用薄提示行、补录/刷新/新建动作和简短说明；不得用 160px 以上大白卡只显示“暂无数据”。
 
 ## 11. 快捷入口区域
 
@@ -175,8 +220,12 @@ inferred_modules:
 
 提供 2-4 个使用中性槽位的布局配方，例如 `primary_metrics`、`quick_actions`、`trend_panel`、`detail_table`、`status_note`。每个使用到自定义页面的场景都必须写 `visualScaffold`：
 
-- visualScaffold：<rootShell / prioritySurface / statusPrimitive / actionPrimitive / contentPrimitive / contextPrimitive / statePrimitive / responsiveRule>
+- visualScaffold：<rootShell / prioritySurface / statusPrimitive / actionPrimitive / contentPrimitive / contextPrimitive / statePrimitive / responsiveRule / breathingRule>
 - surfaceMap：<每个区块的容器形态、背景、边框、阴影、毛玻璃或平面规则>
+- surfaceContrast：<页面背景与卡片背景的层次搭配；从 white-bg-bordered-card / gray-bg-white-card / tinted-bg-white-card / gradient-bg-glass-card 中选择>
+- densityRule：<页面边距、卡片 gap、状态摘要高度、列表行高、卡片 padding、空态高度和压缩空白规则>
+- breathingRule：<首屏分组节奏、跨区块间距、组内内距、贴边修正、内容不足时的压缩/补充策略>
+- roundedRule：<业务面板、主面板、控件、标签、抽屉和弹层的圆角数值>
 - componentRecipe：<每个关键组件的结构、密度、状态和 token 使用>
 
 ## 13. 状态与交互
@@ -215,6 +264,7 @@ inferred_modules:
 - `CUSTOM_THEME_TOKENS` 必须来自本 design.md 的 `tokens`，不能临场另配。
 - 根节点写 `<div data-yida-theme-root className="...">`。
 - `backgroundLayer` 必须落到根节点背景、`::before` 顶部不规则色块或大面积光洗、`::after` 流光/纹理层；内容层使用相对定位和更高 `z-index`，保证背景不盖住操作区。
+- `surfaceContrast` 必须落到页面根背景和卡片/面板样式：白色/浅色背景配有边框卡片，浅灰或浅彩背景配白色无边框卡片，渐变背景配玻璃感卡片。
 - `flowLight` 动效必须写 `@media (prefers-reduced-motion: reduce)` 停止动画。
 - 页面图标使用 `lucide-react` 或 `@ant-design/icons` 的标准 import，默认从 `lucide-react` named import 具体组件；源码按 `iconSystem.actionIconMap` / `statusIconMap` 渲染图标。
 
@@ -256,9 +306,13 @@ inferred_modules:
 - [ ] 可推断的 token 已给出具体值。
 - [ ] 组件包含状态规则，而不只是静态外观。
 - [ ] `iconSystem` 已声明默认图标库、可用图标库、尺寸、描边风格，并为快捷入口、按钮、状态和导航提供具体 `actionIconMap` / `statusIconMap`。
+- [ ] 已明确卡片圆角范围：0-32px，并说明业务卡片、主面板、控件和状态胶囊各自取值。
+- [ ] 已明确紧凑密度默认值：状态摘要、动作条、列表行、空态高度、卡片 padding >20px、卡片 gap <20px 都有数值范围。
+- [ ] 工作台/首页首屏没有超宽空 KPI 框、大空态白卡、无内容右栏或靠 margin/padding 撑出的空白。
 - [ ] 响应式和可访问性规则完整。
 - [ ] `themeProfile`、`yidaThemeRuntime` 和 `tokens` 一致。
 - [ ] `backgroundLayer` 已说明基础画布、装饰方式和是否使用背景 primitive；若选择近白画布，已说明如何通过渐变、细线、素材或内容密度形成背景感。
+- [ ] `surfaceContrast` 已说明页面背景与卡片背景的明确层次搭配，不存在相近或相同背景。
 - [ ] 若使用 `topIrregularWash`、`flowLight` 或 `organicNoise`，已写清对比度、内容栅格和 reduced motion 静态降级。
 - [ ] 自定义色盘没有传给 `create-app/update-app --theme`。
 - [ ] 需要运行时主题时，已声明复制 `theme-runtime-helpers.md`，并覆盖当前窗口与同源父级窗口。

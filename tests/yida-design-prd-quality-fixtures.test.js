@@ -36,7 +36,11 @@ describe('yida-design PRD quality fixtures', () => {
         'statePrimitive',
         'backgroundLayer',
         'surfaceMaterial',
+        'surfaceContrast',
         'colorRoles',
+        'densityRule',
+        'breathingRule',
+        'roundedRule',
         'themePresetKey',
         'shouldPassCreateAppTheme',
         'globalThemeInjection',
@@ -45,17 +49,24 @@ describe('yida-design PRD quality fixtures', () => {
     }
   });
 
-  test('style registry keeps only the design template and one example', () => {
+  test('style registry keeps only the design template', () => {
     const registry = read('yida-skills/skills/yida-design/references/style-designs/registry.md');
     const template = read('yida-skills/skills/yida-design/references/style-designs/_design-md-template.md');
-    const example = read('yida-skills/skills/yida-design/references/style-designs/generated-business-design.example.md');
+    const styleDesignEntries = fs.readdirSync(path.join(ROOT, 'yida-skills/skills/yida-design/references/style-designs')).sort();
 
     expect(registry).toContain('_design-md-template.md');
-    expect(registry).toContain('generated-business-design.example.md');
+    expect(registry).toContain('本目录用于记录 `design.md` 结构模板');
     expect(registry).toContain('配色由模型根据行业、品牌、应用主题、业务情绪和用户偏好生成');
+    expect(styleDesignEntries).toEqual(['_design-md-template.md', 'registry.md']);
     expect(template).toContain('## 21. 交付自检清单');
-    expect(example).toContain('禁止复制本示例的业务名、颜色和字段');
-    expect(example).toContain('颜色由当前业务推导，没有复制示例色盘');
+    expect(template).toContain('卡片圆角范围 0-32px');
+    expect(template).toContain('卡片 padding 必须大于 20');
+    expect(template).toContain('卡片之间的 gap 必须小于 20');
+    expect(template).toContain('状态摘要、动作条、列表行、空态高度');
+    expect(template).toContain('已明确呼吸感规则');
+    expect(template).toContain('surfaceContrast');
+    expect(template).toContain('页面背景与卡片背景必须形成明显层次对比');
+    expect(template).toContain('gray-bg-white-card');
   });
 
   test('design skill uses prd.md and design.md instead of scene docs', () => {

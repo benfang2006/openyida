@@ -4,11 +4,11 @@ Code Canvas 消费 `yida-design` 输出的 `prd.md` 与 `design.md`，或单页 
 
 ## 页面场景到实现入口
 
-用户描述页面目标后，先读取 `yida-design` 的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节和对应 design spec。PRD 用来确认页面场景、区块、数据来源、主操作和移动端要求；design.md 用来确认主题色、页面风格、视觉 DNA、布局配方、材质、组件和状态规则。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
+用户描述页面目标后，先读取 `yida-design` 的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节和对应 design spec。PRD 用来确认页面场景、区块、数据来源、主操作和移动端要求；design.md 用来确认主题色、页面风格、视觉 DNA、布局配方、材质、圆角、密度、呼吸感、组件和状态规则。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
 
 结构化实现工具提供可编译运行时结构、数据桥、主题变量和基础 primitives。真实业务页结合 `prd.md` 落地业务化区块顺序、数据和文案，结合 `design.md` 落地信息层级、局部构图和样式节奏。
 
-PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec.json`；其中 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile`、`designRefs`、`dataBinding` 和 `primaryAction` 是页面实现的业务输入。随后必须读取 `designFile` 指向的 `design.md`，用 `designRefs` 找到 `visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件和状态规则。
+PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec.json`；其中 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile`、`designRefs`、`dataBinding` 和 `primaryAction` 是页面实现的业务输入。随后必须读取 `designFile` 指向的 `design.md`，用 `designRefs` 找到 `visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件和状态规则。
 
 ## Source Of Truth
 
@@ -20,7 +20,9 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 - spec 与 PRD/design.md 冲突时，以 PRD/design.md 为准，重新生成 spec；不要修改 PRD/design.md 来迎合旧 spec。
 - 手写页面且结构清楚时可以跳过 `page-spec.json`，但源码实现备注必须能说明已读取 `prd.md` 和 `design.md`。
 
-实现阶段不再从 PRD 里反推视觉，也不直接读取 `references/style-designs/`。该目录只在 yida-design 阶段提供 `design.md` 结构模板和唯一详略示例；Code Canvas 只遵守当前项目的 `design.md`。工作台/业务首页通常需要紧凑状态摘要、高频动作、待办/动态/最近记录和右侧上下文；实现阶段用这些结构替代“4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”。列表/管理页通常需要顶部视觉区、搜索筛选区、左侧列表或表格、右侧详情预览、错误/空态下一步动作；实现阶段用这些结构替代单个渐变标题、单个指标卡和大块空白提示。工作台、首页、门户、看板、展示页和业务入口页至少落地 10 个有业务目的的区块以上，区块可以紧凑组合，不能用重复 KPI 卡、重复快捷入口或大空白卡凑数；KPI 子项、快捷入口子项和列表行不计入区块数量。
+实现阶段不再从 PRD 里反推视觉，也不直接读取 `references/style-designs/`。该目录只在 yida-design 阶段提供 `design.md` 结构模板；Code Canvas 只遵守当前项目的 `design.md`。工作台/业务首页通常需要圆润紧凑状态摘要、高频动作、待办/动态/最近记录和右侧上下文；实现阶段用这些结构替代“4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”。列表/管理页通常需要顶部视觉区、搜索筛选区、左侧列表或表格、右侧详情预览、错误/空态下一步动作；实现阶段用这些结构替代单个渐变标题、单个指标卡和大块空白提示。工作台、首页、门户、看板、展示页和业务入口页至少落地 10 个有业务目的的区块以上，区块可以紧凑组合，不能用重复 KPI 卡、重复快捷入口或大空白卡凑数；KPI 子项、快捷入口子项和列表行不计入区块数量。
+
+如果当前 `design.md` 缺少 `roundedRule`、`densityRule` 或 `breathingRule`，先回写设计文件再实现。默认业务页应写清卡片 padding >20px、卡片 gap <20px、卡片圆角 0-32px；状态摘要、任务列表、动作条和空态保持紧凑，不得用额外 margin、超宽空状态框或空白高度制造“高级感”。
 
 页面实现路径二选一：结构化实现路径先从 `prd.md + design.md` 派生业务化 `page-spec.json` 并生成可编译骨架，之后读取 CLI 摘要或 `.openyida-page.json`。若发现业务或视觉事实源缺失，先回写 `prd.md` / `design.md` 并重生成 spec；只有实现偏差才对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx`。
 
@@ -38,16 +40,18 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 | 问题类型 | 必须修改哪里 | 不允许的做法 |
 | --- | --- | --- |
 | 页面目标、业务对象、指标口径、主操作、表单入口、数据来源、`contentBlocks`、空/载/错业务语义不足或错误 | 回写 `prd.md`，再重新派生 `page-spec.json` | 只在 `page-spec.json` 或源码里新增业务区块、指标和动作 |
-| 主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`colorRoles`、`depthRule`、组件规则、状态规则、响应式规则不足或错误 | 回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现 | 只在源码里临时写 CSS、主色、玻璃感、卡片材质或状态样式 |
+| 主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件规则、状态规则、响应式规则不足或错误 | 回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现 | 只在源码里临时写 CSS、主色、玻璃感、卡片材质、圆角、密度、呼吸感或状态样式 |
 | `page-spec.json` 缺少 `sourceOfTruth`、`designFile/designRefs`、`dataBinding` 字段，或与 `prd.md/design.md` 不一致 | 丢弃并从最新 `prd.md + design.md` 重新生成 `page-spec.json` | 修改 PRD/design.md 来迎合旧 spec，或把 design.md 的完整视觉规则复制进 spec |
 | 已创建或解析业务表单，但页面源码没有 `dataBinding.mode=form`、没有 `useYidaData` / `DataBridge`，或直连端点不是 `/v1/form/searchFormDatas.json` | 补齐 `page-spec.json` 的真实 `dataBinding`，读取 `data-bridge-guide.md` 后重新生成或小范围修复源码 | 使用 `/query/form/searchFormDatas.json`、缺 `appType/searchFieldJson/_csrf_token` 的 fetch，或用前端 seedRows 冒充真实表单数据 |
 | PRD、design.md 和 spec 都完整，但生成源码存在 className、布局比例、字段映射、响应式、loading/empty/error 渲染、编译错误等实现偏差 | 小范围 Edit/patch 源码 | 借源码 patch 新增 PRD 未定义的页面区块、业务动作或 design.md 未定义的视觉风格 |
 
 源码 patch 过程中一旦发现需要新增业务区块、改页面目标、改主题关系或补视觉规则，停止 patch，先回写 `prd.md` 或 `design.md`，再重新派生 spec 或重读两份事实源实现。
 
-`visualScaffold` 必须来自 `design.md`，并映射到源码 primitive：`rootShell`、`prioritySurface`、`statusPrimitive`、`actionPrimitive`、`contentPrimitive`、`contextPrimitive`、`statePrimitive` 和 `responsiveRule`。如果只有区块名称，没有这些源码级槽位，先补 design.md，不要直接开始写 CSS。
+`visualScaffold` 必须来自 `design.md`，并映射到源码 primitive：`rootShell`、`prioritySurface`、`statusPrimitive`、`actionPrimitive`、`contentPrimitive`、`contextPrimitive`、`statePrimitive`、`responsiveRule`、`roundedRule`、`densityRule` 和 `breathingRule`。如果只有区块名称，没有这些源码级槽位，先补 design.md，不要直接开始写 CSS。
 
 页面要求玻璃感、质感、背景感、光影、流光、不规则顶部或丰富色彩时，必须消费 `backgroundLayer`、`surfaceMaterial`、`colorRoles` 和 `depthRule`：页面根节点优先使用 `softTintCanvas`、带弱渐变的近白画布、细线装饰或素材焦点，再按 `design.md` 选择 `topIrregularWash`、`radialGlowWash`、`flowLight` 或 `organicNoise`。`topIrregularWash` 用顶部波浪、斜切、有机色块、轻装饰曲线或图形标记形成首屏背景；`radialGlowWash` 使用大面积柔和光洗，不使用离散装饰圆球或 bokeh；`flowLight` 必须低速低透明，并写 `prefers-reduced-motion` 静态降级。玻璃面板使用半透明 `rgba` 表面、`backdrop-filter`、细边框和柔和阴影；色彩角色至少区分应用主色、辅助色、语义色和图表色。纯白背景 + 普通纯白不透明卡片不满足玻璃感页面；但近白画布如果有渐变、装饰、素材焦点或足够内容密度，可以作为背景感方案。
+
+实现页面背景和卡片时必须消费 `surfaceContrast`：页面背景与卡片背景不可相近或相同。白色/浅色背景配有边框卡片；浅灰背景（如 `#F3F4F6`）配白色无边框卡片；浅彩色背景配白色无边框卡片；渐变背景配玻璃感卡片。源码不得输出浅底白卡无边框、同色背景同色卡片，或只靠弱阴影区分层级。
 
 实现背景层时先写根节点和伪元素，再写内容网格：`.oy-page-root` 承载基础底色、`::before` 承载不规则顶部色块或光洗、`::after` 承载低速流光或弱纹理，`.oy-page-content` 使用 `position: relative; z-index: 1;`。背景可以不规则，内容必须规则；标题、筛选、表格、图表、按钮和列表都保持稳定栅格、对齐和对比度。
 
@@ -72,7 +76,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 
 默认实现保留平台应用导航，同应用内页面入口写入 `appBlueprint.navigation` 或平台导航分组。页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，并保持平台导航可见；PRD 明确隐藏平台导航、无导航全屏体验或 `isRenderNav=false` 时，在 spec 里写 `appBlueprint.renderNav: false`；发布后再用 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` 隐藏平台导航，保持页面单导航。
 
-快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；默认工作台或门户内容区聚焦当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。表单新建/提交入口必须写清 `targetType: "submission"` 与 `openMode: "responsive-drawer"`；表单查看入口必须写清 `targetType: "detail"`、目标 `formUuid` 和真实 `formInstId` 来源。两类入口都默认 `hideNav: true` / `isRenderNav=false`：PC 端生成 `FormOpenContainer` 右侧抽屉 iframe，移动端整页或新页打开隐藏导航原生表单页。
+快捷入口目标是同应用内页面时，先把目标放入 `appBlueprint.navigation` / 平台导航分组，由应用导航内切换；默认工作台或门户内容区聚焦当前页动作、表单新建/查看、外部链接、跨应用资源，或用户显式隐藏平台导航后的页面内导航壳。表单新建/提交入口必须写清 `targetType: "submission"` 与 `openMode: "responsive-drawer"`；表单查看入口必须写清 `targetType: "detail"`、目标 `formUuid` 和真实 `formInstId` 来源。两类入口都默认 `hideNav: true` / `isRenderNav=false`：PC 端生成 `FormOpenContainer` 右侧抽屉 iframe，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；移动端整页或新页打开隐藏导航原生表单页。PC 抽屉 iframe 不会自动继承父页面 CSS 变量，`FormOpenContainer` 必须接收 design.md 派生的 `themeTokens`，并在 iframe `onLoad` 后调用 `installYidaGlobalThemeIntoFrame(themeTokens, iframeElement)`，保证提交页和详情页同源子文档也有 `style#yida-global-theme`。
 
 ## 官网与品牌页素材流程
 
@@ -108,7 +112,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 
 主题色决策来自 `yida-design` 的 `design.md`，业务场景和页面边界来自 `prd.md` 或派生的 `page-spec.json`。页面重构 / 局部美化先以当前应用主题为基准；缺少主题证据时，按业务气质选择平台预置主题或自定义 token，不固定回到 `podBlue` / #1677ff。`themeProfile: { "name": "yida-app-theme" }` 表示跟随宜搭运行态主题：线上由 `style#yida-global-theme` 的 `--color-brand1-*` 和 `--color-group` 决定页面主色、图表色组和局部强调色。
 
-`page-spec.json` 只保存与 design.md 一致的主题摘要。只有平台预置 key 才能传给应用 `theme/colour`；自定义主题名必须在 design.md 中配套输出 tokens，并在 Canvas 源码中复制 `theme-runtime-helpers.md` 的 Code Canvas helper，注入 `style#yida-global-theme` 或 scoped CSS vars。
+`page-spec.json` 只保存与 design.md 一致的主题摘要。只有平台预置 key 才能传给应用 `theme/colour`；自定义主题名必须在 design.md 中配套输出 tokens，并在 Canvas 源码中复制 `theme-runtime-helpers.md` 的 Code Canvas helper，注入 `style#yida-global-theme` 或 scoped CSS vars。页面包含 `FormOpenContainer` 时，同一份 tokens 还要传给容器，由容器在提交页/详情页 iframe `onLoad` 后同步到同源子文档。
 
 `themeScope` 决定主题影响范围：
 
@@ -208,7 +212,7 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | `official-homepage` | Real-scene hero、Product/service visual、Process/space story、Visit/service section、CTA |
 | `data-screen` | Command map、Metric grid、Rank panel、Screen insight header |
 
-`workbench-home` 的 Workbench metric 必须是紧凑状态摘要，不是 180px 高的大白卡；Quick entry 必须有分组和主次，不能平铺成图标卡阵列；Task feed / Insight strip / 最近记录至少出现其一，空数据也用薄空态行 + 主操作入口，不渲染大块空白卡片。
+`workbench-home` 的 Workbench metric 必须是 64-88px 圆润紧凑状态摘要，不是 180px 高的大白卡，也不是横跨整页但内容稀疏的空矩形；Quick entry 必须有分组和主次，不能平铺成图标卡阵列；Task feed / Insight strip / 最近记录至少出现其一，空数据也用薄空态行 + 主操作入口，不渲染大块空白卡片。
 
 展示型 Canvas 页面验收时检查 `contentBlocks` 或源码结构：工作台、首页、门户、看板、展示页和业务入口页至少有 10 个有业务目的的区块以上；每个区块承担不同任务，例如判断状态、发起动作、筛选、处理待办、查看动态、看洞察、看异常、进入详情、处理空态或补充上下文。若 PRD 只写“`KPI 卡片: 学生总数, 课程总数, 本月出勤率, 平均分`、`快捷入口: 录入学生/登记成绩/记录考勤/管理课程`、`最近成绩列表`、`最近考勤记录`”，实现前必须退回补齐 `contentBlocks`，因为这只构成 4 个聚合区块。
 
@@ -217,8 +221,9 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 1. 先把 `contentBlocks` 映射到 `layoutRecipe` 的槽位。
 2. 按 `surfaceMap` 决定无框区、细线面板、浅底条、列表行、表格、右侧栏或抽屉，不能把所有区块都做成卡片。
 3. 按 `sectionRhythm` 排序和控制间距，保证首屏有主次和至少两层信息。
-4. 按 `componentRecipe` 统一按钮、入口、标签、图标、列表、图表和空态。
-5. 按源码 primitive 写组件：外层壳、首屏最大视觉锚点、状态摘要、动作条、主要内容、右侧上下文、状态处理和响应式规则都要落成真实 JSX/CSS。
-6. 写完源码后逐条核对 `acceptanceChecks`，不通过就继续 patch。
+4. 按 `roundedRule`、`densityRule` 和 `breathingRule` 写圆角、padding、gap、跨区块间距、列表行高、状态摘要高度、空态高度和贴边修正。
+5. 按 `componentRecipe` 统一按钮、入口、标签、图标、列表、图表和空态。
+6. 按源码 primitive 写组件：外层壳、首屏最大视觉锚点、状态摘要、动作条、主要内容、右侧上下文、状态处理和响应式规则都要落成真实 JSX/CSS。
+7. 写完源码后逐条核对 `acceptanceChecks`，不通过就继续 patch。
 
 所有 Canvas 页面都带控件样式护栏：`ConfigProvider.getPopupContainer` 让 Select / DatePicker 弹层留在页面作用域，`OPENYIDA_CANVAS_CONTROL_CSS` 统一输入框、下拉、日期、运行态字段组件的 hover / focus / dropdown 样式。出现黑色粗边、浏览器原生 outline、下拉浮层脱离页面风格时，优先检查这两项是否保留。

@@ -38,8 +38,8 @@
 | 数据管理页（iframe 嵌入） | `{base_url}/{appType}/workbench/{formUuid}?iframe=true` |
 | 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
 | 自定义页面（隐藏导航） | 上行 + `?isRenderNav=false` |
-| 表单详情页 | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}` |
-| 表单详情页（编辑态） | 上行 + `&mode=edit` |
+| 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false` |
+| 表单详情页（编辑态） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit&isRenderNav=false` |
 
 > 任意地址可追加 `corpid={corpId}` 自动切到对应组织；无 query 时用 `?corpid=...`，已有 query 时用 `&corpid=...`。
 

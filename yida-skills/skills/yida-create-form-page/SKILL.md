@@ -74,7 +74,7 @@ description: 表单页面创建与更新，默认加载 yida-form-detail 作为�
 - 全局 `--layout double`：只有用户明确要求“整个表单双列”时才使用；一般更推荐在字段 JSON 内用 `ColumnContainer` 做局部多列。
 - 语义分组：按业务含义分段，不按字段数量平均分。常见分组包括“基本信息”“业务信息”“时间计划”“补充材料”“审批信息”。
 - Divider 样式：默认 `bold-with-thin`；显式样式按 `bold-with-thin` → `double-color-trapezoid` → `left-dot-title` → `solid` / `dashed` / `thick` / `dotted` 优先级选择；门户/强分区场景可统一显式使用 `multi-parallelograms-end`。
-- formDetail CSS 注入是表单保存后的默认动作，不是字段 JSON 本身的字段表达；新建表单在 Schema 中默认带上 `yida-form-detail-css-html`，已有表单在 update/patch/rule/bind-datasource 保存前默认补齐，执行失败时必须说明阻塞原因。
+- formDetail CSS 注入是表单保存后的默认动作，不是字段 JSON 本身的字段表达；新建表单在 Schema JS 中默认带上 `openyida:theme` 和 `openyidaThemeDidMount`，已有表单在 update/patch/rule/bind-datasource 保存前默认补齐，执行失败时必须说明阻塞原因。
 
 推荐结构：
 
@@ -98,11 +98,11 @@ Divider > Field
 
 ## 表单全局主题规则
 
-表单和流程表单只按运行态主题变量消费颜色。本技能只生成表单字段 JSON；OpenYida 在表单创建和保存时默认把 `style#yida-global-theme` 注入代码写入表单 JS，并尽可能同步到当前页面和同源 `window.top`。
+表单和流程表单只按运行态主题变量消费颜色。本技能只生成表单字段 JSON；OpenYida 在表单创建和保存时默认把 `style#yida-global-theme` 注入代码写入表单 JS。提交页必须在自身运行文档内注入该样式；详情页由同一个 `openyidaThemeDidMount` 判断 `formDetail` 后注入 `style#yida-form-detail-style`。自定义页面用抽屉 iframe 打开提交页或详情页时，还必须由 `FormOpenContainer` 在 iframe `onLoad` 后把父页面当前主题 tokens 同步到同源子文档。
 
 - 普通业务分组：`Divider` 标题跟随应用主题，下面直接接字段或 `ColumnContainer`
 - 默认 `Divider` 不写颜色属性，或保持 `colorType: "theme"`
-- 表单 JS 必须默认注入 `style#yida-global-theme`，让表单内部、同源父窗口和 `window.top` 都尽量获得同一套主题 token；跨域窗口只跳过，不报错
+- 表单 JS 必须默认注入 `style#yida-global-theme`，让提交页自身、表单内部、同源父窗口和 `window.top` 都尽量获得同一套主题 token；详情页 CSS 也写在同一段表单 JS 中，但只在 formDetail 页面条件注入；跨域窗口只跳过，不报错
 - 新表单页默认消费`podBlue`、`podGreen`、`podOrange` 等应用主题对应 token；`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。本技能只消费注入后的变量，不把 legacy 名称当作表单 `--theme` 或应用 `--theme` 参数
 - 局部多列容器：保持背景克制，避免给每个列容器单独上色
 - 流程表单：更偏单列和清晰分段，颜色只用于章节识别，不要做大面积品牌色块

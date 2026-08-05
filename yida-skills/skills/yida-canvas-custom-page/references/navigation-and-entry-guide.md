@@ -63,10 +63,10 @@
 
 自定义页面内凡是点击按钮去新增、提交或查看表单详情，默认都封装成同一个 `FormOpenContainer`。不要在按钮里临时 `window.open('/submission/...')` 或 `window.open('/formDetail/...')`；外部 URL 才允许新标签。PC 端容器表现为右侧抽屉 + iframe，移动端直接进入原生表单页，关闭抽屉后触发当前页刷新。
 
-Code Canvas 推荐使用 antd `Drawer`：
+Code Canvas 推荐使用 antd `Drawer`。复制本示例前，先把 [theme-runtime-helpers.md](theme-runtime-helpers.md) 中的 `installYidaGlobalThemeIntoFrame` 一并放到页面源码；父页面 CSS 变量不会自动继承到提交页/详情页 iframe。
 
 ```jsx
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Button, Drawer } from 'antd';
 
 function isMobileViewport() {
@@ -89,19 +89,27 @@ function buildYidaFormUrl(request, currentAppType) {
   if (request.type === 'detail') {
     return appendQuery(`/${appType}/formDetail/${request.formUuid}`, {
       formInstId: request.formInstId,
+      'navConfig.layout': 1180,
       isRenderNav: false,
     });
   }
   return request.url || '';
 }
 
-function FormOpenContainer({ request, currentAppType, onClose, onAfterClose }) {
+const FORM_OPEN_DRAWER_WIDTH = '50vw';
+
+function FormOpenContainer({ request, currentAppType, themeTokens, onClose, onAfterClose }) {
+  const iframeRef = useRef(null);
   const iframeSrc = useMemo(() => request ? buildYidaFormUrl(request, currentAppType) : '', [request, currentAppType]);
+  const syncThemeToIframe = useCallback(() => {
+    installYidaGlobalThemeIntoFrame(themeTokens, iframeRef.current);
+  }, [themeTokens]);
+
   return (
     <Drawer
       title={request && request.title ? request.title : '表单'}
       open={!!request}
-      width={request && request.type === 'detail' ? 720 : 640}
+      width={FORM_OPEN_DRAWER_WIDTH}
       destroyOnClose
       onClose={() => {
         onClose();
@@ -111,8 +119,10 @@ function FormOpenContainer({ request, currentAppType, onClose, onAfterClose }) {
     >
       {iframeSrc ? (
         <iframe
+          ref={iframeRef}
           title={request && request.title ? request.title : '表单'}
           src={iframeSrc}
+          onLoad={syncThemeToIframe}
           style={{ width: '100%', height: '100%', minHeight: 'calc(100vh - 56px)', border: 0, display: 'block' }}
         />
       ) : null}
@@ -120,7 +130,7 @@ function FormOpenContainer({ request, currentAppType, onClose, onAfterClose }) {
   );
 }
 
-function useYidaFormOpen(currentAppType, refreshData) {
+function useYidaFormOpen(currentAppType, refreshData, themeTokens) {
   const [formRequest, setFormRequest] = useState(null);
   function openForm(request) {
     const href = buildYidaFormUrl(request, currentAppType);
@@ -134,6 +144,7 @@ function useYidaFormOpen(currentAppType, refreshData) {
     <FormOpenContainer
       request={formRequest}
       currentAppType={currentAppType}
+      themeTokens={themeTokens}
       onClose={() => setFormRequest(null)}
       onAfterClose={refreshData}
     />
@@ -142,7 +153,7 @@ function useYidaFormOpen(currentAppType, refreshData) {
 }
 
 function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload }) {
-  const { openForm, formOpenContainer } = useYidaFormOpen(appType, reload);
+  const { openForm, formOpenContainer } = useYidaFormOpen(appType, reload, CUSTOM_THEME_TOKENS);
   return (
     <>
       <Button type="primary" onClick={() => openForm({ type: 'submission', title: '新增客户', formUuid: customerFormUuid })}>
@@ -164,7 +175,7 @@ function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload })
 
 ## Canvas fallback 点击骨架
 
-Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`：
+Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`；详情页 URL 必须包含真实 `formInstId`，并默认追加 `navConfig.layout=1180` 和 `isRenderNav=false`：
 
 ```js
 function buildYidaPath(entry, currentAppType, options = {}) {
@@ -201,7 +212,7 @@ function openEntry(entry, currentAppType, runtime) {
 
 如果运行态明确向 Canvas 暴露了壳层 router / history API，可把同应用 `page/app` 的同页跳转替换成壳层 `push/replace`；没有明确 API 时，不猜内部对象，使用上面的工作台 URL。
 
-PC 抽屉内的 iframe 高度随内容区拉满，提交页宽度按页面密度控制在 520-720px，详情页可放宽到 720-880px；提交成功或查看结束后的刷新可以先用抽屉关闭事件触发列表 reload，若平台 postMessage 事件已验证，再接入精确的提交完成回调。移动端不强塞抽屉，避免键盘和表单字段被压缩。
+PC 抽屉内的 iframe 高度随内容区拉满，提交页和详情页抽屉默认使用同一半屏宽度 `50vw`，占当前视口宽度的 50%；只有用户明确要求更窄/更宽，或页面需要主从分栏并给出具体验收时，才调整该宽度。提交成功或查看结束后的刷新可以先用抽屉关闭事件触发列表 reload，若平台 postMessage 事件已验证，再接入精确的提交完成回调。移动端不强塞抽屉，避免键盘和表单字段被压缩。
 
 ## PortalQuickEntry / QuickAccessCard 边界
 
