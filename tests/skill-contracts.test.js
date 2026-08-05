@@ -1033,9 +1033,11 @@ describe('OpenYida skill contracts', () => {
     expect(canvas).toContain('references/theme-runtime-helpers.md');
     expect(canvas).toContain('真实业务页、页面重构和局部美化以当前应用主题色为基准');
     expect(canvas).toContain('必须写 `import ... from \'包名\'`');
-    expect(canvas).toContain('不要手写 `window.antd`、`window.icons` 或 `window.React` 解构');
-    expect(dependencies).toContain('不要在源码里写 `const { ConfigProvider } = window.antd`');
-    expect(dependencies).toContain('手写 window 包依赖不会进入 `importedModules`');
+    expect(canvas).toContain('严禁写未声明裸变量依赖或手写 window 依赖');
+    expect(canvas).toContain('`const { Drawer } = antd`');
+    expect(canvas).toContain('`const { Search } = lucideReact`');
+    expect(dependencies).toContain('不要在源码里写 `const { Drawer } = antd`');
+    expect(dependencies).toContain('运行时会出现 `antd is not defined`、`lucideReact is not defined`');
     expect(authoringExamples).toContain('所有包依赖都用标准 `import`');
     expect(authoringExamples).toContain('不要直接从 `window.*` 解构');
     expect(authoringExamples).toContain('JSX 文案只能写成纯文本 `所有级别` 或带引号字符串 `{\'所有级别\'}`');

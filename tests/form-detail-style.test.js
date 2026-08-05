@@ -74,6 +74,8 @@ describe('form-detail-style parseArgs', () => {
       formUuid: 'FORM_Y',
       cssFile: '',
       preset: 'clean-card',
+      themeTokensJson: '',
+      themeTokensFile: '',
       json: false,
     });
   });
@@ -82,6 +84,18 @@ describe('form-detail-style parseArgs', () => {
     expect(formDetailStyle.parseArgs(['apply', 'APP_X', 'FORM_Y', '--css', 'detail.css', '--json'])).toMatchObject({
       cssFile: 'detail.css',
       json: true,
+    });
+  });
+
+  test('parses explicit theme tokens json', () => {
+    expect(formDetailStyle.parseArgs([
+      'apply',
+      'APP_X',
+      'FORM_Y',
+      '--theme-tokens-json',
+      '{"--color-brand1-6":"#0F8FA8"}',
+    ])).toMatchObject({
+      themeTokensJson: '{"--color-brand1-6":"#0F8FA8"}',
     });
   });
 });
@@ -150,6 +164,37 @@ describe('form-detail-style schema helpers', () => {
     expect(schema.actions.module.source).toContain('openyidaThemeIsFormDetail');
     expect(schema.actions.module.compiled).toContain('openyidaThemeDidMount');
     expect(status.globalThemeActionFound).toBe(true);
+  });
+
+  test('ensureYidaGlobalThemeAction writes explicit theme tokens for form components', () => {
+    const schema = createSchema();
+    const applied = formDetailStyle._private.ensureYidaGlobalThemeAction(schema, {
+      themeTokens: {
+        '--color-brand1-6': '#0F8FA8',
+        '--color-brand1-2': 'rgba(15, 143, 168, 0.08)',
+        colorBrand: '#bad',
+        '--bad-value': 'red; color: blue',
+      },
+    });
+    const source = schema.actions.module.source;
+
+    expect(applied).toBe(true);
+    expect(source).toContain('var OPENYIDA_THEME_TOKENS = {"--color-brand1-6":"#0F8FA8","--color-brand1-2":"rgba(15, 143, 168, 0.08)"};');
+    expect(source).toContain('openyidaThemeReadExplicitTokens');
+    expect(source).toContain('openyidaThemeHasVariables(explicitThemeConfig)');
+    expect(source).not.toContain('colorBrand');
+    expect(source).not.toContain('--bad-value');
+  });
+
+  test('upsertFormDetailCss keeps existing explicit theme tokens', () => {
+    const schema = createSchema();
+    formDetailStyle._private.ensureYidaGlobalThemeAction(schema, {
+      themeTokens: { '--color-brand1-6': '#0F8FA8' },
+    });
+    formDetailStyle.upsertFormDetailCss(schema, '/* yida-form-detail */ .a { color: blue; }');
+
+    expect(schema.actions.module.source).toContain('var OPENYIDA_THEME_TOKENS = {"--color-brand1-6":"#0F8FA8"};');
+    expect(schema.actions.module.source).toContain('.a { color: blue; }');
   });
 });
 

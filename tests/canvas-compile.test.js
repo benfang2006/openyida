@@ -407,6 +407,46 @@ describe('compileCanvasLocal', () => {
     expect(result.runtimeCode).toContain('window.antd');
   });
 
+  test('rejects bare antd globals before publish', () => {
+    const badSource = `
+      const { Drawer, Button } = antd;
+      export default function App() {
+        return <Drawer open><Button>新增</Button></Drawer>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_BARE_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        line: 2,
+        globalName: 'antd',
+        packageName: 'antd',
+      }),
+    }));
+  });
+
+  test('rejects bare lucide-react globals before publish', () => {
+    const badSource = `
+      const { Search, Plus } = lucideReact;
+      export default function App() {
+        return <div><Search size={16} /><Plus size={16} /></div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_BARE_DEPENDENCY_GLOBAL',
+      details: expect.objectContaining({
+        line: 2,
+        globalName: 'lucideReact',
+        packageName: 'lucide-react',
+      }),
+    }));
+  });
+
   test('rejects desktop form submission/detail new-tab opens before publish', () => {
     const badSource = `
       import React from 'react';
