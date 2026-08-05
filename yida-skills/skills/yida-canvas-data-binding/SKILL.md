@@ -1,13 +1,13 @@
 ---
 name: yida-canvas-data-binding
-description: Code Canvas / YidaCodeCanvas 页面真实数据接入技能。用于在 Canvas 页面中用 dataBinding + 同源 fetch 接入宜搭表单、连接器代理或同源接口数据，处理 CSRF、credentials、返回体包裹解析、totalCount 保护、DataBridge 状态和静默刷新。触发词：dataBinding、DataBridge、Canvas 数据桥、Code Canvas 真实数据、页面显示 0 条但数据管理有数据、表单数据接入 Canvas、轮询刷新列表或 KPI。
+description: Code Canvas / YidaCodeCanvas 页面真实数据接入技能。用于在 Canvas 页面中用 dataBinding + 外层页面 yida JS-API 桥接接入宜搭表单、连接器代理或同源接口数据，处理返回体包裹解析、totalCount 保护、DataBridge 状态和静默刷新。触发词：dataBinding、DataBridge、Canvas 数据桥、Code Canvas 真实数据、页面显示 0 条但数据管理有数据、表单数据接入 Canvas、轮询刷新列表或 KPI。
 ---
 
 # Code Canvas 数据绑定
 
 ## 核心定位
 
-本技能只处理 Code Canvas 页面里的真实数据接入：把页面所需数据先声明成 `dataBinding` 契约，再由页面生成器或业务组件生成统一的 `DataBridge`，在 `YidaComp` 内通过同源 `fetch` 读取数据并驱动 UI。
+本技能只处理 Code Canvas 页面里的真实数据接入：把页面所需数据先声明成 `dataBinding` 契约，再由页面生成器或业务组件生成统一的 `DataBridge`。读取宜搭表单数据时，默认消费外层普通自定义页面在 `didMount` 中注册到 `window.__OPENYIDA_YIDA_API__` 的 yida JS-API 桥；连接器代理或自定义同源接口仍按自身 endpoint 读取。
 
 Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自定义页实例对象。因此数据接入要显式写清来源、字段映射、刷新策略和异常处理，不能靠隐式页面实例补齐。
 
@@ -15,12 +15,11 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 
 - `YidaCodeCanvas` 物料只透传 `code / runtimeCode / importedModules / pageType`。
 - 组件内没有 `this` 上下文，也没有 `dataSourceMap`。
-- `this.utils.yida.*`、`didMount()`、`_customState` 等普通页面契约不可用。
-- Canvas 没有官方 `useDataBinding` hook，不得从任何包 `import { useDataBinding }`；真实表单数据绑定用页面内本地 `useYidaData(binding)`、`DataBridge` 和同源 `fetch` 实现。
+- `this.utils.yida.*`、`didMount()`、`_customState` 等普通页面契约在 `YidaComp` 内不可直接使用；发布 Code Canvas 页面时，外层普通页面的 `didMount` 必须自动把 `this.utils.yida.*` 封装到 `window.__OPENYIDA_YIDA_API__`，Canvas 只能消费该 window 桥。
+- Canvas 没有官方 `useDataBinding` hook，不得从任何包 `import { useDataBinding }`；真实表单数据绑定用页面内本地 `useYidaData(binding)`、`DataBridge` 和 yida JS-API 桥实现。
 - Cookie 由浏览器同源请求自动携带，前端代码不能硬编码 Cookie、appSecret、accessKey 或外部密钥。
-- 调宜搭同源端点时，请求必须带 `credentials: 'include'`。
-- CSRF 优先从 `window.g_config`、`window.pageConfig`、`window.__YIDA__` 运行态配置读取；预览域名里缺少这些字段时，可兜底读取 meta 或同源 cookie（如 `tianshu_csrf_token`）。内部端点常同时需要 `_csrf_token` query 参数和 `global_csrf_token` 请求头。
-- `mode=form` 读取宜搭表单数据时，固定使用 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。请求方式是 `GET + URLSearchParams`，query 至少包含 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`；`/query/form/searchFormDatas.json` 不是可用表单数据端点。
+- `mode=form` 读取宜搭表单数据时，默认调用 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`，它底层来自官方 `this.utils.yida.searchFormDatas(params)`。参数至少包含 `formUuid`、`currentPage`、`pageSize` 和 `searchFieldJson`，字段 ID 必须来自真实 schema。
+- 只有 yida JS-API 桥不存在时，才允许降级同源直连 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。直连请求必须带 `credentials: 'include'`，并从 `window.g_config`、`window.pageConfig`、`window.__YIDA__`、meta 或同源 cookie 读取 CSRF，同时写入 `_csrf_token` query 和 `global_csrf_token` 请求头。`/query/form/searchFormDatas.json` 不是可用表单数据端点。
 
 ## dataBinding 契约
 
@@ -44,7 +43,7 @@ Code Canvas 运行时是标准 React 组件环境，组件没有普通宜搭自�
 | mode | 用途 | 必填 | 运行方式 |
 | --- | --- | --- | --- |
 | `seed` | 演示兜底 / 本地预览 | 无 | 只用本地演示数据 |
-| `form` | 读宜搭表单数据 | `appType`、`formUuid`、`fields` | 同源 `GET /dingtalk/web/<appType>/v1/form/searchFormDatas.json`，query 带 `formUuid/appType/currentPage/pageSize/searchFieldJson/_csrf_token` |
+| `form` | 读宜搭表单数据 | `appType`、`formUuid`、`fields` | 默认 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`；桥不存在时才降级同源直连 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json` |
 | `connector` | 读平台连接器代理 | `endpoint` | 同源代理端点，鉴权留在平台侧 |
 | `url` | 读同源业务接口 | `endpoint` | 同源 `fetch` |
 | `report` | 读报表或聚合结果 | 报表 schema 参数 | 使用平台聚合结果，不在前端拉全量猜聚合 |
@@ -125,40 +124,42 @@ function unwrapTotal(payload, rows) {
 }
 ```
 
-## 表单数据读取要点
+## yida JS-API 桥
 
-表单查询请求必须同源、带 Cookie、带 CSRF，并根据字段映射把宜搭字段 ID 归一成页面业务字段。
+Code Canvas 发布时必须在外层页面 `actions.module.source` 中注入桥接脚本，并把根节点 `componentDidMount` 指向 `didMount`。桥接脚本只做一件事：把普通页面运行态可用的 `this.utils.yida.*` 封装到 `window.__OPENYIDA_YIDA_API__` 和 `window.openyidaYidaApi`，供 `YidaCodeCanvas` iframe 内部通过 `window.parent` / `parentWindow` 查找。
 
-实现前先确认 `dataBinding.mode === 'form'`、`appType/formUuid` 和 `fields` 都来自真实表单 Schema。下面的 `fetchFormRows` 是直连宜搭表单数据的标准实现，手写页面和生成器都以它为准；连接器代理可以使用自己的 endpoint，但不能把连接器代理示例改写成 `/query/form/searchFormDatas.json`。
+Canvas 页面内固定使用下面的读取顺序：
 
 ```javascript
+function getYidaApiBridge() {
+  var candidates = [];
+  try { candidates.push(window.__OPENYIDA_YIDA_API__); } catch (err) {}
+  try { candidates.push(window.parent && window.parent.__OPENYIDA_YIDA_API__); } catch (err) {}
+  try {
+    if (typeof parentWindow !== 'undefined') {
+      candidates.push(parentWindow.__OPENYIDA_YIDA_API__);
+    }
+  } catch (err) {}
+  return candidates.find(function (item) {
+    return item && typeof item.searchFormDatas === 'function';
+  }) || null;
+}
+
 async function fetchFormRows(binding, signal) {
-  var csrfToken = getCsrfToken();
-  var qs = new URLSearchParams();
-  qs.set('formUuid', binding.formUuid);
-  qs.set('appType', binding.appType);
-  qs.set('pageSize', String(binding.pageSize || 20));
-  qs.set('currentPage', String(binding.currentPage || 1));
-  qs.set('searchFieldJson', JSON.stringify(binding.query || {}));
-  if (csrfToken) qs.set('_csrf_token', csrfToken);
-  var url = '/dingtalk/web/' + binding.appType + '/v1/form/searchFormDatas.json?' + qs;
-
-  var response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'content-type': 'application/json',
-      'global_csrf_token': csrfToken,
-      'x-csrf-token': csrfToken
-    },
-    signal: signal
-  });
-
-  if (!response.ok) {
-    throw new Error('表单数据读取失败：HTTP ' + response.status);
+  var bridge = getYidaApiBridge();
+  var payload;
+  if (bridge) {
+    payload = await bridge.searchFormDatas({
+      appType: binding.appType,
+      formUuid: binding.formUuid,
+      currentPage: binding.currentPage || 1,
+      pageSize: binding.pageSize || 20,
+      searchFieldJson: JSON.stringify(binding.query || {}),
+      dynamicOrder: binding.dynamicOrder || ''
+    });
+  } else {
+    payload = await fetchFormRowsBySameOriginFallback(binding, signal);
   }
-
-  var payload = await response.json();
   var rows = unwrapRows(payload);
   var totalCount = unwrapTotal(payload, rows);
   if (totalCount > 0 && rows.length === 0) {
@@ -167,6 +168,10 @@ async function fetchFormRows(binding, signal) {
   return { rows: rows, totalCount: totalCount, raw: payload };
 }
 ```
+
+## 表单数据读取要点
+
+实现前先确认 `dataBinding.mode === 'form'`、`appType/formUuid` 和 `fields` 都来自真实表单 Schema。表单查询必须优先走 yida JS-API 桥，桥缺失时才降级同源直连；连接器代理可以使用自己的 endpoint，但不能把连接器代理写成 `/query/form/searchFormDatas.json`。
 
 ## 生成与验收
 
@@ -189,8 +194,8 @@ openyida get-schema <appType> <formUuid> > .cache/openyida/dashboard-schema.json
 
 | 现象 | 处理 |
 | --- | --- |
-| 页面显示 0 条，但数据管理里有数据 | 检查 CSRF、`credentials: 'include'`、返回体包裹层和字段映射；触发 `totalCount` 保护 |
+| 页面显示 0 条，但数据管理里有数据 | 先检查外层页面是否注入 `window.__OPENYIDA_YIDA_API__`，再检查返回体包裹层和字段映射；触发 `totalCount` 保护 |
 | 首屏后每 5 秒闪白 | 轮询改成 silent refresh，保留旧数据直到新数据返回 |
-| 登录态存在但接口 403 | 检查同源路径、CSRF 参数和 `global_csrf_token` 头 |
+| 登录态存在但接口 403 | 优先改回 yida JS-API 桥；只有降级直连时才检查同源路径、CSRF 参数和 `global_csrf_token` 头 |
 | 接口失败后仍显示漂亮 demo 数据 | 改成错误态 + seed 标识，不能伪装真实成功 |
 | 字段值全为空 | 回读 schema 校验字段 ID，确认字段映射没有使用 label |

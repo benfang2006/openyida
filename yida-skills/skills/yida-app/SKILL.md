@@ -171,6 +171,7 @@ UI 设计规则必须来自 `yida-design` 的 design.md；页面区块、文案�
 
 - **生成器入口**：页面结构已在 PRD 写清后，用页面生成器读取 `<page-spec.json>` 生成可编译骨架。生成后只读取 `.openyida-page.json` / CLI 摘要判断 `domainFidelity` 和 dataBinding 状态；业务或视觉事实源缺失时先回写 `prd.md` / `design.md` 并重生成 spec，只有实现偏差才基于生成文件做小范围 Edit/patch。
 - **手写实现**：如果 PRD 已经明确页面结构和数据桥，且 design.md 已经写清视觉规则，直接 Write 最终 `.canvas.jsx`，再做本地快检和 publish。
+- **JSX 文案安全**：中文业务文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；不能写 `{所有级别}`、`{处理中}` 这类裸中文表达式，否则 JSX 会按变量求值并在运行时报 `所有级别 is not defined`。
 - **emoji 硬门禁**：表单字段 JSON、`page-spec.json`、`.canvas.jsx` / `.oyd.jsx` 源码、发布 Schema 和产物文件路径都不能包含 emoji。OpenYida 报 emoji 错误时修改字段文案、spec、源码或路径；不要用 `--skip-lint`、重复 create/publish 或全量 rewrite 试图绕过。若 emoji 原本是操作、状态、导航或空态图标，Code Canvas 按 `design.md.iconSystem` 改成 `lucide-react` 或 `@ant-design/icons` 标准 import；普通 JSX 不支持 import，只能使用已验证运行时脚本/global 加载这两类图标库，加载条件不满足时切到 Code Canvas。不得退成 CSS 图形、字母占位或临时 SVG。
 
 选择生成器入口时必须：

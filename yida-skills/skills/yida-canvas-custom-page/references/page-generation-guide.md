@@ -33,7 +33,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 
 真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、`sourceOfTruth`、`designFile`、`designRefs` 和 `themeSummary`；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，并默认读取 `yida-app` 通过 `yida-data-management` 写入的 1-3 条 seed records；官网/品牌页写入 `assets` 或素材缺口。
 
-`dataBinding.mode=form` 的页面实现必须读取 [data-bridge-guide.md](data-bridge-guide.md) 的表单数据契约。源码使用本地 `useYidaData(binding)` / `DataBridge`，直连端点固定为 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`，并使用 `GET + URLSearchParams` 写入 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`。生成器或手写页面如果没有这些字段，只能标记为未接真实表单数据。
+`dataBinding.mode=form` 的页面实现必须读取 [data-bridge-guide.md](data-bridge-guide.md) 的表单数据契约。源码使用本地 `useYidaData(binding)` / `DataBridge`，默认调用发布层注入的 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`；只有桥不可用时才降级同源直连 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。生成器或手写页面如果没有 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，只能标记为未接真实表单数据。
 
 ## 修复路径
 
@@ -42,7 +42,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 | 页面目标、业务对象、指标口径、主操作、表单入口、数据来源、`contentBlocks`、空/载/错业务语义不足或错误 | 回写 `prd.md`，再重新派生 `page-spec.json` | 只在 `page-spec.json` 或源码里新增业务区块、指标和动作 |
 | 主题关系、token、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件规则、状态规则、响应式规则不足或错误 | 回写 `design.md`，再重新派生 `page-spec.json` 或重读 design.md 实现 | 只在源码里临时写 CSS、主色、玻璃感、卡片材质、圆角、密度、呼吸感或状态样式 |
 | `page-spec.json` 缺少 `sourceOfTruth`、`designFile/designRefs`、`dataBinding` 字段，或与 `prd.md/design.md` 不一致 | 丢弃并从最新 `prd.md + design.md` 重新生成 `page-spec.json` | 修改 PRD/design.md 来迎合旧 spec，或把 design.md 的完整视觉规则复制进 spec |
-| 已创建或解析业务表单，但页面源码没有 `dataBinding.mode=form`、没有 `useYidaData` / `DataBridge`，或直连端点不是 `/v1/form/searchFormDatas.json` | 补齐 `page-spec.json` 的真实 `dataBinding`，读取 `data-bridge-guide.md` 后重新生成或小范围修复源码 | 使用 `/query/form/searchFormDatas.json`、缺 `appType/searchFieldJson/_csrf_token` 的 fetch，或用前端 seedRows 冒充真实表单数据 |
+| 已创建或解析业务表单，但页面源码没有 `dataBinding.mode=form`、没有 `useYidaData` / `DataBridge`，或没有优先消费 `window.__OPENYIDA_YIDA_API__` | 补齐 `page-spec.json` 的真实 `dataBinding`，读取 `data-bridge-guide.md` 后重新生成或小范围修复源码 | 默认手写 `/query/form/searchFormDatas.json` 或 `/v1/form/searchFormDatas.json` fetch，缺字段映射，或用前端 seedRows 冒充真实表单数据 |
 | PRD、design.md 和 spec 都完整，但生成源码存在 className、布局比例、字段映射、响应式、loading/empty/error 渲染、编译错误等实现偏差 | 小范围 Edit/patch 源码 | 借源码 patch 新增 PRD 未定义的页面区块、业务动作或 design.md 未定义的视觉风格 |
 
 源码 patch 过程中一旦发现需要新增业务区块、改页面目标、改主题关系或补视觉规则，停止 patch，先回写 `prd.md` 或 `design.md`，再重新派生 spec 或重读两份事实源实现。
@@ -66,7 +66,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 | 官网首页、品牌官网、律所官网、茶叶官网、落地页、门户官网 | `official-homepage` | `landing` | 首屏叙事、可信视觉面板、服务矩阵、信任背书 |
 | 数据大屏、实时监控、预警系统、指挥舱、态势屏 | `data-screen` | `screen` | 中心态势图、左右信息塔、趋势、排行、预警 |
 | 数据看板、经营看板、管理驾驶舱 | `dashboard-overview`，复杂经营大屏切 `data-screen` | `dashboard` | KPI、图表、明细、排行、洞察 |
-| 工作台、运营台、任务中心、业务首页 | `workbench-home` | `workbench` | 入口、待办、状态、流程闭环 |
+| 工作台、运营台、任务中心、业务首页 | `data-management` 或按 `design.md` 自定义结构 | `workbench` | 入口、待办、状态、流程闭环，必须由 `contentBlocks` 驱动 |
 | 列表、管理页、订单管理、客户列表、工单池 | `business-list` | `list` | 搜索筛选、表格、状态标签、详情抽屉 |
 | 详情页、客户档案、订单详情、项目详情 | `detail-profile` | `detail` | 单对象摘要、章节、侧栏元信息、时间线 |
 | 主从分栏、工单处理台、左列表右详情 | `split-pane-detail` | `list` | 左侧队列、右侧详情、时间线、动作区 |
@@ -204,7 +204,6 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | 页面结构 | 内置 UI primitives |
 | --- | --- |
 | `dashboard-overview` | KPI、Chart panel、Rank list、Insight callout、Freshness badge |
-| `workbench-home` | Workbench metric、Quick entry、Task feed、Insight strip |
 | `business-list` | Filter bar、Table state badge、Bulk action bar、Detail preview |
 | `detail-profile` | Object hero、Meta stack、Timeline primitive、Insight callout |
 | `split-pane-detail` | Split queue、Filter bar、Detail pane、Timeline card、Insight card |
@@ -212,7 +211,7 @@ PRD 给出品牌色、色值、独立品牌/活动页诉求，或明确要求做
 | `official-homepage` | Real-scene hero、Product/service visual、Process/space story、Visit/service section、CTA |
 | `data-screen` | Command map、Metric grid、Rank panel、Screen insight header |
 
-`workbench-home` 的 Workbench metric 必须是 64-88px 圆润紧凑状态摘要，不是 180px 高的大白卡，也不是横跨整页但内容稀疏的空矩形；Quick entry 必须有分组和主次，不能平铺成图标卡阵列；Task feed / Insight strip / 最近记录至少出现其一，空数据也用薄空态行 + 主操作入口，不渲染大块空白卡片。
+工作台的状态摘要必须是 64-88px 圆润紧凑状态条，不是 180px 高的大白卡，也不是横跨整页但内容稀疏的空矩形；快捷入口必须有分组和主次，不能平铺成图标卡阵列；待办、动态、最近记录、洞察、提醒和右侧上下文至少组合成 10 个业务目的区块。空数据也用薄空态行 + 主操作入口，不渲染大块空白卡片。
 
 展示型 Canvas 页面验收时检查 `contentBlocks` 或源码结构：工作台、首页、门户、看板、展示页和业务入口页至少有 10 个有业务目的的区块以上；每个区块承担不同任务，例如判断状态、发起动作、筛选、处理待办、查看动态、看洞察、看异常、进入详情、处理空态或补充上下文。若 PRD 只写“`KPI 卡片: 学生总数, 课程总数, 本月出勤率, 平均分`、`快捷入口: 录入学生/登记成绩/记录考勤/管理课程`、`最近成绩列表`、`最近考勤记录`”，实现前必须退回补齐 `contentBlocks`，因为这只构成 4 个聚合区块。
 

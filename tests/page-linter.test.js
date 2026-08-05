@@ -1,14 +1,23 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const { lintYidaSource } = require('../lib/app/page-linter');
 
 describe('page linter', () => {
-  test('accepts curated product homepage template', () => {
-    const sourcePath = path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'product-homepage.jsx');
-    const source = fs.readFileSync(sourcePath, 'utf-8');
-    const result = lintYidaSource(source, sourcePath);
+  test('accepts a hand-authored Yida custom page', () => {
+    const source = `
+export function renderJsx() {
+  return (
+    <div className="oyd-page">
+      <button onClick={() => { this.handleSubmit(); }}>保存</button>
+    </div>
+  );
+}
+
+export function handleSubmit() {
+  this.setState({ saved: true });
+}
+`;
+    const result = lintYidaSource(source, '/tmp/hand-authored-page.oyd.jsx');
 
     expect(result.errors).toHaveLength(0);
   });
@@ -63,6 +72,64 @@ export function renderJsx() {
       expect.objectContaining({
         rule: 'emoji-forbidden',
         line: 1,
+      }),
+    ]));
+  });
+
+  test('blocks bare Chinese identifiers in JSX text expressions', () => {
+    const source = `
+export function renderJsx() {
+  return <select><option value="">{所有级别}</option></select>;
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/filter.jsx');
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rule: 'jsx-text-identifier',
+        line: 3,
+      }),
+    ]));
+    expect(result.errors.find(issue => issue.rule === 'jsx-text-identifier').message)
+      .toContain("{'所有级别'}");
+  });
+
+  test('allows plain JSX text and quoted Chinese string expressions', () => {
+    const plainText = `
+export function renderJsx() {
+  return <div>所有级别</div>;
+}
+`;
+    const quotedText = `
+export function renderJsx() {
+  return <div>{'所有级别'}</div>;
+}
+`;
+
+    expect(lintYidaSource(plainText, '/tmp/plain.jsx').errors.map(issue => issue.rule))
+      .not.toContain('jsx-text-identifier');
+    expect(lintYidaSource(quotedText, '/tmp/quoted.jsx').errors.map(issue => issue.rule))
+      .not.toContain('jsx-text-identifier');
+  });
+
+  test('blocks rich display pages with too few content blocks', () => {
+    const source = `
+/**
+ * @openyida-scene workbench
+ * @openyida-content-blocks 状态摘要,快捷入口,最近订单,空态提示
+ */
+export function renderJsx() {
+  return <div>工作台</div>;
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/workbench.jsx');
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rule: 'content-blocks-too-few',
+        line: 4,
       }),
     ]));
   });
@@ -220,7 +287,7 @@ export function renderJsx() {
     expect(warningRules).toContain('iframe-self-navigation');
   });
 
-  test('warns when form submission or detail pages open in a new tab from custom pages', () => {
+  test('blocks form submission or detail pages opening outside FormOpenContainer on desktop', () => {
     const source = `
 export function openCreate() {
   var submitUrl = '/APP_XXX/submission/FORM_XXX?isRenderNav=false';
@@ -236,37 +303,10 @@ export function openMobileCreate() {
 `;
 
     const result = lintYidaSource(source, '/tmp/form-open.jsx');
-    const formOpenWarnings = result.warnings.filter(issue => issue.rule === 'form-open-container');
+    const formOpenErrors = result.errors.filter(issue => issue.rule === 'form-open-container');
 
-    expect(formOpenWarnings).toHaveLength(1);
-    expect(formOpenWarnings[0].line).toBe(4);
-  });
-
-  test('custom page template uses verified Tailwind preflight and native control reset', () => {
-    const sourcePath = path.join(__dirname, '..', 'lib', 'samples', 'yida-custom-page', 'custom-page-template.js');
-    const source = fs.readFileSync(sourcePath, 'utf-8');
-
-    expect(source).toContain('https://g.alicdn.com/code/lib/tailwindcss-browser/0.0.0-insiders.fed6c6a/index.global.min.js');
-    expect(source).toContain('@import "tailwindcss/preflight";');
-    expect(source).toContain('openyida-native-control-reset');
-    expect(source).toContain("var style = document.getElementById('openyida-native-control-reset');");
-    expect(source).not.toContain("if (document.getElementById('openyida-native-control-reset'))");
-    expect(source).toContain('--oyd-control-focus-ring');
-    expect(source).toContain('--oyd-control-selected-bg');
-    expect(source).toContain('--oyd-control-info-bg');
-    expect(source).toContain('oyd-page');
-    expect(source).toContain('oyd-input');
-    expect(source).toContain('oyd-select-option');
-    expect(source).toContain('oyd-select-arrow');
-    expect(source).toContain('oyd-select-check');
-    expect(source).toContain('oyd-select-check{width:14px!important;height:14px!important');
-    expect(source).toContain('oyd-select-option-active{background:var(--oyd-control-selected-bg');
-    expect(source).toContain('appearance:none;-webkit-appearance:none;font-family:inherit');
-    expect(source).not.toContain('oyd-select-option-active{background:var(--color-brand1-1');
-    expect(source).not.toContain("background: 'var(--color-brand1-1, #EFF6FF)'");
-    expect(source).not.toContain('focus:border-blue-400');
-    expect(source).not.toContain('focus:ring-blue-100');
-    expect(source).not.toContain('<select');
+    expect(formOpenErrors).toHaveLength(1);
+    expect(formOpenErrors[0].line).toBe(4);
   });
 
   test('native select warning explains the custom dropdown affordance contract', () => {
@@ -494,6 +534,7 @@ export function YidaComp() {
     expect(badRules).toContain('searchformdata-http-csrf');
     expect(badRules).toContain('searchformdata-http-credentials');
     expect(badRules).toContain('searchformdata-http-unwrap');
+    expect(badRules).toContain('canvas-yida-api-bridge-missing');
     expect(badResult.errors.map(issue => issue.rule)).toContain('searchformdata-http-post');
   });
 
@@ -516,9 +557,32 @@ export function YidaComp() {
     expect(result.errors.map(issue => issue.rule)).toContain('searchformdata-http-path');
   });
 
-  test('accepts correct GET + query + content unwrap searchFormDatas.json usage', () => {
-    const goodSource = `
+  test('flags Canvas form data read without yida JS API bridge', () => {
+    const source = `
 export function YidaComp() {
+  return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json?formUuid=FORM-X&appType=APP_X&currentPage=1&pageSize=20&searchFieldJson=%7B%7D&_csrf_token=token', {
+    method: 'GET',
+    credentials: 'include',
+    headers: { global_csrf_token: 'token' }
+  }).then(function (res) { return res.json(); }).then(function (json) {
+    return (json.content && json.content.data) || json.data || [];
+  });
+}
+`;
+    const result = lintYidaSource(source, '/tmp/no-bridge.canvas.jsx');
+    expect(result.errors.map(issue => issue.rule)).toContain('canvas-yida-api-bridge-missing');
+  });
+
+  test('accepts yida JS API bridge plus correct same-origin fallback usage', () => {
+    const goodSource = `
+function getYidaApiBridge() {
+  return window.__OPENYIDA_YIDA_API__;
+}
+export function YidaComp() {
+  var bridge = getYidaApiBridge();
+  if (bridge) {
+    return bridge.searchFormDatas({ formUuid: 'FORM-X', currentPage: 1, pageSize: 50, searchFieldJson: '{}' });
+  }
   var csrfToken = getCsrfToken();
   var qs = new URLSearchParams({ formUuid: 'FORM-X', appType: 'APP_X', currentPage: '1', pageSize: '50', searchFieldJson: '{}', _csrf_token: csrfToken }).toString();
   return fetch('/dingtalk/web/APP_X/v1/form/searchFormDatas.json?' + qs, {
@@ -538,6 +602,7 @@ export function YidaComp() {
     expect(goodRules).not.toContain('searchformdata-http-csrf');
     expect(goodRules).not.toContain('searchformdata-http-credentials');
     expect(goodRules).not.toContain('searchformdata-http-unwrap');
+    expect(goodRules).not.toContain('canvas-yida-api-bridge-missing');
   });
 
   test('does not flag comments mentioning POST / pageNumber near the endpoint', () => {

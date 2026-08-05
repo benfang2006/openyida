@@ -243,7 +243,7 @@
       "name": "yida-canvas-data-binding",
       "path": "skills/yida-canvas-data-binding/SKILL.md",
       "display_name": "Code Canvas 数据绑定",
-      "description": "Code Canvas 页面接真实数据，覆盖 dataBinding、DataBridge、同源 fetch、CSRF、返回体解析、totalCount 保护和静默轮询刷新。",
+      "description": "Code Canvas 页面接真实数据，覆盖 dataBinding、DataBridge、外层 yida JS-API 桥、返回体解析、totalCount 保护和静默轮询刷新。",
       "category": "yida-skills/page",
       "tags": [
         "Code Canvas",
@@ -260,7 +260,7 @@
       "name": "yida-canvas-table-form",
       "path": "skills/yida-canvas-table-form/SKILL.md",
       "display_name": "Code Canvas 表格批量录入",
-      "description": "Code Canvas + antd 默认批量录入技能，支持草稿、行级校验、分批并发和行级错误保留；写入必须通过已验证的同源 fetch、连接器或显式数据桥。",
+      "description": "Code Canvas + antd 默认批量录入技能，支持草稿、行级校验、分批并发和行级错误保留；写入默认消费发布层注入的 window.__OPENYIDA_YIDA_API__，也可走已验证连接器或同源业务桥。",
       "category": "yida-skills/form",
       "tags": [
         "Code Canvas",

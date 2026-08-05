@@ -81,15 +81,15 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 2. **发布链路正确**：Canvas 源码使用 `.canvas.jsx` / `.canvas.tsx`，或发布时显式加 `--canvas`。
 3. **源码修改发布闭环**：本轮 Write/Edit/Create 了 `project/pages/src/*.canvas.jsx` 或 `project/pages/src/*.canvas.tsx` 后，final 前需要成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`。有 publish 成功证据时表述为“页面已发布”；只有本地校验证据时表述为“Canvas 源码已修改，尚未发布”。
 4. **依赖可加载**：普通 import 只使用 Code Canvas 可用资源清单内的前端资源；React、antd、Ant Design Icons、Recharts、ahooks 等包依赖必须写 `import ... from '包名'`，不要手写 `window.antd`、`window.icons` 或 `window.React` 解构。宜搭运行态组件才通过 `window.Deep`、`window.DeepYida`、`window.YidaNativeComponents` 探测。
-5. **使用 Canvas 函数组件契约**：Canvas 代码写 `YidaComp` React 函数组件；数据、生命周期和渲染都通过 hooks、props、fetch/连接器完成。需要 `renderJsx()`、`didMount()`、`this.forceUpdate()`、`this.utils.yida.*`、`this.dataSourceMap` 时切到 `yida-custom-page`。
+5. **使用 Canvas 函数组件契约**：Canvas 代码写 `YidaComp` React 函数组件；数据、生命周期和渲染都通过 hooks、props、外层 yida JS-API 桥或连接器完成。组件内部不能直接写 `this.utils.yida.*`；需要 `renderJsx()`、`didMount()`、`this.forceUpdate()`、`this.dataSourceMap` 或字段双向绑定时切到 `yida-custom-page`。
 6. **副作用清理**：`useEffect` 注册事件、定时器、图表实例时必须返回 cleanup。
 7. **交互控件必须受控且真正驱动数据**：筛选 `Select`、搜索 `Input`/`Input.Search`、周期切换、`Tabs`/`Segmented`、批量/重置 `Button` 等控件都用 `useState` 建立受控状态，绑定 `onChange`/`onClick`，并让 `Table`/列表/卡片的数据源通过 `useMemo` 按状态派生后渲染。切换筛选后若当前选中项失效，回退选中态（如 `selected < filteredRows.length ? selected : 0`）。
 8. **视觉壳层必须消费 design.md**：工作台、门户、看板、首页、展示页和真实交付页写 Canvas 源码前，先从 `design.md` 抽取 `backgroundLayer`、`visualScaffold.rootShell`、`surfaceMap`、`componentRecipe`、`roundedRule`、`densityRule`、`breathingRule`、`themeProfile` 和 `yidaThemeRuntime`。若 `design.md` 声明 `backgroundLayer`，源码完成标准是：页面根节点带 `data-yida-theme-root="true"`；根节点或注入 CSS 承载背景层；背景 primitive 落到根节点、`::before`、`::after` 或等价背景层；内容层使用相对定位和更高 `z-index`；antd 页面包 `ConfigProvider`，并使用 `readBrandColor`、`getPopupContainer` 和控件 reset CSS 让主题、焦点和浮层生效。若 `design.md` 声明圆润高密和呼吸感规则，源码必须同步到 antd `borderRadius`、CSS `border-radius`、页面 padding/gap、区块间距、列表行高、状态摘要高度、空态高度和内容安全内距，并保证卡片 padding >20px、卡片 gap <20px、卡片圆角 0-32px。
-9. **表单数据读取必须使用 dataBinding 契约**：完整应用、工作台、列表、看板、详情等真实交付页只要本轮已经创建或解析业务表单，先写入 `dataBinding.mode="form"`、真实 `appType/formUuid` 和字段 ID，再用本地 `useYidaData(binding)` / `DataBridge` 读取。直连宜搭表单数据时只使用 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`，并用 `GET + URLSearchParams` 放入 `formUuid`、`appType`、`currentPage`、`pageSize`、`searchFieldJson` 和 `_csrf_token`，请求设置 `credentials: 'include'` 与 `global_csrf_token` 头。页面不能使用 `/query/form/searchFormDatas.json`，也不能只写前端 seedRows 后声称已接真实数据。
+9. **表单数据读取必须使用 dataBinding 契约和 yida JS-API 桥**：完整应用、工作台、列表、看板、详情等真实交付页只要本轮已经创建或解析业务表单，先写入 `dataBinding.mode="form"`、真实 `appType/formUuid` 和字段 ID，再用本地 `useYidaData(binding)` / `DataBridge` 读取。发布层必须在外层页面 `didMount` 注册 `window.__OPENYIDA_YIDA_API__`，Canvas 内部默认调用 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`；只有桥不可用时才降级同源直连 `/dingtalk/web/<appType>/v1/form/searchFormDatas.json`。页面不能使用 `/query/form/searchFormDatas.json`，也不能只写前端 seedRows 后声称已接真实数据。
 
 ### 重要规则（IMPORTANT）
 
-1. **数据桥显式化**：通过 fetch、连接器或开放 API 读写数据；Cookie、CSRF、密钥和签名留在平台、连接器或后端服务侧。
+1. **数据桥显式化**：表单数据默认通过外层 yida JS-API 桥读写，连接器和同源业务接口通过显式 endpoint 读写；Cookie、CSRF、密钥和签名留在平台、连接器或后端服务侧。
 2. **组件增强可降级**：门户、成员、部门、上传组件都做 feature detect 和 fallback；组件缺失时页面仍展示 Canvas 自绘基线。
 3. **值先归一化**：成员、部门、文件的原始返回值保留到 `raw` 用于检查，业务 payload 使用统一结构。
 4. **UI 改造保持功能契约**：页面美感提升、页面重构和局部美化只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；已有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原链路保留。
@@ -104,9 +104,10 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 13. **页面实现二选一**：结构化实现路径先从 `prd.md + design.md` 派生 `page-spec.json`，写入 `sourceOfTruth.prdFile/designFile/designRefs/conflictPolicy`，生成可编译骨架后读取 CLI 摘要或 `.openyida-page.json` 判断业务化程度和 dataBinding。业务或视觉事实源缺失时先回写 `prd.md` / `design.md` 并重生成 spec；只有 className、布局比例、字段映射、响应式、状态渲染或编译错误等实现偏差才对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
 14. **实现骨架消费业务 spec**：品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明来自当前业务 spec。若 CLI 报业务内容不足，补齐/改写 spec 或 patch 源码后重新生成/编译。
 15. **Canvas 产物使用纯文本业务文案**：`.canvas.jsx` 源码、`page-spec.json` 中会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。页面生成、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。若 emoji 原本承担图标含义，必须按 `design.md.iconSystem` 改成 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认 `lucide-react`；不得用 CSS 绘制图形、单字母、首字母、标点符号、Unicode 符号或临时 SVG 冒充图标。
-16. **同应用页面入口归入导航**：快捷入口目标如果是同应用内页面，优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换；自定义页内容区的 `quickEntries` 只放当前页动作、表单新建/查看、外部链接、跨应用资源，或显式隐藏平台导航后的页面内导航壳入口。
-17. **表单打开入口统一容器**：自定义页内「新建 / 提交表单 / 查看详情」保留原生表单能力，并统一封装为 `FormOpenContainer`。PC 端主操作使用右侧抽屉 + iframe 承载隐藏导航的提交页或详情页，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；iframe `onLoad` 后必须用 `installYidaGlobalThemeIntoFrame(themeTokens, iframeElement)` 把当前页面主题同步到同源子文档；关闭后回到当前列表/工作台并刷新数据。移动端可直接进入提交页/详情页或新页打开，依赖表单自身 JS 注入的 `style#yida-global-theme`。不要在按钮里临时 `window.open('/submission/...')` 或 `window.open('/formDetail/...')`。
-18. **图标资源固定为可加载库**：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import。只有页面已经采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，才使用 `@ant-design/icons`。快捷入口、按钮、状态、导航和空态图标在写源码前先建立 `actionIconMap` / `statusIconMap`，按业务语义映射到具体组件，例如 `Plus`、`Upload`、`Download`、`Eye`、`Building2`、`AlertCircle`、`Check`。图标外层可以用 CSS 控制尺寸、颜色、圆角、背景和 hover，但图标本体必须来自上述两类组件，不能用 CSS 形状、字母或 emoji 替代。
+16. **JSX 文案只能是文本或字符串**：JSX 文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；筛选项、按钮、状态、空态和表格列名等中文业务文案都按此规则书写。花括号里只能放真实 JS 变量/表达式，不能把中文文案写成 `{所有级别}`、`{处理中}`；Unicode escape 被工具解码后也必须保留字符串引号。
+17. **同应用页面入口归入导航**：快捷入口目标如果是同应用内页面，优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换；自定义页内容区的 `quickEntries` 只放当前页动作、表单新建/查看、外部链接、跨应用资源，或显式隐藏平台导航后的页面内导航壳入口。
+18. **表单打开入口统一容器**：自定义页内「新建 / 提交表单 / 查看详情」保留原生表单能力，并统一封装为 `FormOpenContainer`。按钮事件只能调用 `openForm({ type: "submission" | "detail", ... })`。PC 端主操作使用右侧抽屉 + iframe 承载隐藏导航的提交页或详情页，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；iframe `onLoad` 后必须用 `installYidaGlobalThemeIntoFrame(themeTokens, iframeElement)` 把当前页面主题同步到同源子文档；关闭后回到当前列表/工作台并刷新数据。移动端可直接进入提交页/详情页或新页打开，依赖表单自身 JS 注入的 `style#yida-global-theme`。
+19. **图标资源固定为可加载库**：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import。只有页面已经采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，才使用 `@ant-design/icons`。快捷入口、按钮、状态、导航和空态图标在写源码前先建立 `actionIconMap` / `statusIconMap`，按业务语义映射到具体组件，例如 `Plus`、`Upload`、`Download`、`Eye`、`Building2`、`AlertCircle`、`Check`。图标外层可以用 CSS 控制尺寸、颜色、圆角、背景和 hover，但图标本体必须来自上述两类组件，不能用 CSS 形状、字母或 emoji 替代。
 
 ## 数据真实性边界
 

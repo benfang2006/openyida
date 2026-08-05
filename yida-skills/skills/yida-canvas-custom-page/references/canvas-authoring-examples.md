@@ -157,6 +157,7 @@ export default YidaComp;
 
 - 入口：源码有 `export default YidaComp`（或返回组件函数），主组件已完成默认导出。
 - 依赖：所有包依赖都用标准 `import`，并能出现在编译结果 `importedModules` 里；React、antd、Ant Design Icons、Recharts、ahooks 等不要直接从 `window.*` 解构。
+- 文案：JSX 文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；花括号里只放真实变量/表达式，不写 `{所有级别}` 这类裸中文表达式。
 - 副作用：每个 `useEffect` 的定时器 / 监听 / 图表实例都有 cleanup。
 - 数据：读写走同源 `fetch` + `credentials: 'include'`，无硬编码 Cookie / CSRF / appSecret。
 - 主色：antd 走 `ConfigProvider.colorPrimary`、Tailwind 走 `var(--color-brand1-*)`、图表走 `readBrandColor`，无散落的 `#1677ff` / `bg-blue-500`（见 [canvas-style-implementation-guide.md](canvas-style-implementation-guide.md)）。

@@ -201,7 +201,6 @@ describe('CLI offline smoke', () => {
     expect(output).toContain('dingtalk-link');
     expect(output).toContain('a2a <serve|agent-card> [options]');
     expect(output).toContain('sample [--list]');
-    expect(output).toContain('generate-sample <sample>');
     expect(output).toContain('build-page <sourceFile>');
     expect(output).toContain('check-page <src>');
     expect(output).toContain('compile <src>');
@@ -221,7 +220,7 @@ describe('CLI offline smoke', () => {
     const cases = [
       { args: ['create-form', '--help'], text: 'create-form create' },
       { args: ['create-page', '--help'], text: 'create-page' },
-      { args: ['sample', '--help'], text: 'Sample Templates' },
+      { args: ['sample', '--help'], text: 'Code Templates' },
       { args: ['publish', '--help'], text: 'openyida publish' },
     ];
 
@@ -581,17 +580,7 @@ describe('CLI offline smoke', () => {
         expect.stringContaining('openyida create-form create APP_XXX'),
       ]),
     });
-    expect(commandById['generate-sample'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
-    expect(commandById['generate-page'].hidden).toBe(true);
-    expect(commandById['generate-page'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
+    expect(commandById['generate-page']).toBeUndefined();
     expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
       kind: 'remote_read',
       mutates_yida: false,
@@ -1330,17 +1319,7 @@ describe('CLI offline smoke', () => {
       mutates_yida: false,
       mutates_local: false,
     });
-    expect(commandById['generate-sample'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
-    expect(commandById['generate-page'].hidden).toBe(true);
-    expect(commandById['generate-page'].side_effect).toMatchObject({
-      kind: 'local_write',
-      mutates_yida: false,
-      mutates_local: true,
-    });
+    expect(commandById['generate-page']).toBeUndefined();
     expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
       kind: 'remote_read',
       mutates_yida: false,
@@ -1419,9 +1398,14 @@ describe('CLI offline smoke', () => {
 
   test('sample --list renders available templates without network access', () => {
     const output = runOk(['sample', '--list']);
-    expect(output).toContain('yida-custom-page');
-    expect(output).toContain('product-homepage');
-    expect(output).toContain('todo-mvc');
+    expect(output).toContain('Code Templates');
+    expect(output).toContain('yida-chart');
+    expect(output).toContain('yida-canvas-table-form');
+    expect(output).toContain('table-form-batch-submit');
+    expect(output).not.toContain('yida-custom-page');
+    expect(output).not.toContain('yida-canvas-custom-page');
+    expect(output).not.toContain('product-homepage');
+    expect(output).not.toContain('todo-mvc');
   });
 
   test('connector --help renders subcommands without network access', () => {

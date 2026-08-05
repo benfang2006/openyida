@@ -17,6 +17,7 @@
 | **样式** | 默认使用 Tailwind utility `className` 组织视觉层；关键尺寸、容器兜底和 Tailwind 加载失败兜底可继续使用 `style` 对象。禁止 `import` CSS、CSS Modules 或构建期样式能力 |
 | **`this` 上下文** | 所有导出函数中的 `this` 指向宜搭页面的 React 类实例 |
 | **按钮交互** | 可见 `<button>` 必须有 `onClick`/`onMouseDown`/`onKeyDown` 或明确 `disabled`；静态标签、状态徽标、截图标记用 `span`/`div` |
+| **JSX 文案** | 中文业务文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；花括号里只放真实变量/表达式，不写 `{所有级别}` 这类裸中文表达式 |
 | **禁止使用 `this.setState` 管理业务状态** | `this.setState` 已被覆盖，仅用于 `forceUpdate`（通过更新 `timestamp`） |
 | **JavaScript 版本** | 使用 ES2015 (ES6) 语法，不能高于 ES2015 版本。**注意**：即使是 ES6 语法，部分特性也会导致静默失败，详见下方「JS 引擎兼容性限制」 |
 | **必须定义页面入口** | 原生写法必须定义 `renderJsx`；`.oyd.jsx` authoring 写法必须定义 `export default function Page()` |

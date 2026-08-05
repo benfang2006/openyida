@@ -1013,7 +1013,7 @@ function recordConfiguredStageResults(registry, registryPath, config, context, w
       artifacts: ['form-update', 'schema'],
     },
     page: {
-      commands: ['check-page', 'build-page', 'compile', 'generate-page', 'create-page', 'update-form-config-page', 'publish'],
+      commands: ['check-page', 'build-page', 'compile', 'create-page', 'update-form-config-page', 'publish'],
       summary: `Smoke dashboard page published: ${context.pageId || 'n/a'}`,
       resources: ['page'],
     },
@@ -1215,7 +1215,6 @@ function run(options = {}) {
       runStep('check-page', ['check-page', config.pageSource, '--json']);
       runStep('build-page', ['build-page', config.pageSource, '--output', path.join(workDir, 'built-page.jsx'), '--json']);
       runStep('compile', ['compile', config.pageSource], { allowNoJson: true });
-      runStep('generate-page', ['generate-page', 'todo-mvc', '--output', path.join(workDir, 'generated-todo.oyd.jsx'), '--compile'], { allowNoJson: true });
 
       const page = runStep('create-page', [
         'create-page',

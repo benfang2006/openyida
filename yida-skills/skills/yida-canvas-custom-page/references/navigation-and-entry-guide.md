@@ -61,7 +61,7 @@
 
 ## 标准 FormOpenContainer
 
-自定义页面内凡是点击按钮去新增、提交或查看表单详情，默认都封装成同一个 `FormOpenContainer`。不要在按钮里临时 `window.open('/submission/...')` 或 `window.open('/formDetail/...')`；外部 URL 才允许新标签。PC 端容器表现为右侧抽屉 + iframe，移动端直接进入原生表单页，关闭抽屉后触发当前页刷新。
+自定义页面内凡是点击按钮去新增、提交或查看表单详情，统一封装成同一个 `FormOpenContainer`。按钮事件只调用 `openForm(request)`；外部 URL 才使用新标签。PC 端容器表现为右侧抽屉 + iframe，移动端直接进入原生表单页，关闭抽屉后触发当前页刷新。
 
 Code Canvas 推荐使用 antd `Drawer`。复制本示例前，先把 [theme-runtime-helpers.md](theme-runtime-helpers.md) 中的 `installYidaGlobalThemeIntoFrame` 一并放到页面源码；父页面 CSS 变量不会自动继承到提交页/详情页 iframe。
 
@@ -173,12 +173,12 @@ function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload })
 
 如果项目没有使用 antd Drawer，可以用自绘 fixed 右侧面板，但组件名、状态结构和 URL 构造仍沿用 `FormOpenContainer / useYidaFormOpen / buildYidaFormUrl`。
 
-## Canvas fallback 点击骨架
+## Canvas 点击骨架
 
-Canvas 自绘快捷入口时，把路由构造收敛到一个小函数。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`；详情页 URL 必须包含真实 `formInstId`，并默认追加 `navConfig.layout=1180` 和 `isRenderNav=false`：
+Canvas 自绘快捷入口时，表单提交和详情入口沿用 `useYidaFormOpen` 返回的 `openForm`。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`；详情页 URL 必须包含真实 `formInstId`，并默认追加 `navConfig.layout=1180` 和 `isRenderNav=false`：
 
 ```js
-function buildYidaPath(entry, currentAppType, options = {}) {
+function buildYidaPath(entry, currentAppType) {
   const appType = entry.appType || currentAppType;
   if (entry.targetType === 'app') return `/${appType}/workbench`;
   if (entry.targetType === 'page') return `/${appType}/workbench/${entry.navUuid || entry.formUuid}`;
@@ -192,9 +192,14 @@ function buildYidaPath(entry, currentAppType, options = {}) {
 }
 
 function openEntry(entry, currentAppType, runtime) {
-  const isMobile = runtime && runtime.isMobile;
-  if ((entry.targetType === 'submission' || entry.targetType === 'detail') && !isMobile && entry.openMode !== 'new-tab') {
-    runtime.openDrawer({ title: entry.title || '提交表单', iframeSrc: buildYidaPath(entry, currentAppType) });
+  if (entry.targetType === 'submission' || entry.targetType === 'detail') {
+    runtime.openForm({
+      type: entry.targetType,
+      title: entry.title || '表单',
+      appType: entry.appType || currentAppType,
+      formUuid: entry.formUuid,
+      formInstId: entry.formInstId,
+    });
     return;
   }
 

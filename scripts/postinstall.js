@@ -268,7 +268,7 @@ openyida copy
 
 完整应用创建/解析多个表单后，页面阶段需要字段映射时，对每个目标表单默认只执行一次 \`openyida get-schema <appType> <formUuid> --field-map-json\`，读取完整 JSON 并写入/复用 \`.cache/<项目名>-schema.json\`；不要用 \`head\` / \`tail\` / \`grep\` 截断 schema stdout 后重复拉取。
 
-Canvas 页面实现二选一：走生成器入口时先写业务化 \`page-spec.json\` 再 \`openyida generate-sample ... --spec ... --compile\`，之后只做必要小范围 Edit/patch；如果已经明确最终页面结构，跳过 \`generate-sample\`，直接 Write 最终 \`.canvas.jsx\`。不要 generate-sample 后马上 Read 大段源码并全量 Write 覆盖同一路径。
+Canvas 页面实现统一直接写最终 \`.canvas.jsx\`：先读 PRD 的页面场景、业务区块、数据来源和主操作，再读 design.md 的主题、布局、材质、组件和状态规则，然后用 \`openyida check-page\` / \`openyida compile\` / \`openyida publish\` 验证发布。
 
 完整应用需求分析和产品设计由 \`yida-design\` 承担，并输出两份文件：\`prd/<项目名>/prd.md\` 写业务目标、数据结构、页面与功能、资源顺序、导航顺序和验收标准；\`prd/<项目名>/design.md\` 写主题色、themeProfile、tokens、视觉系统、组件和状态规则。页面实现先读 PRD 的页面场景、页面区块、数据来源、主操作和表单入口，再读 design.md 的主题、布局、材质、组件和状态规则，然后交给 \`yida-canvas-custom-page\` 或 \`yida-custom-page\` 落地。
 

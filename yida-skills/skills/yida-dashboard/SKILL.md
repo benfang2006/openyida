@@ -96,7 +96,7 @@ Canvas 页面入口：
 
 - KPI / 趋势 / 占比必须来自服务端聚合、报表结果或明确的聚合接口。
 - 明细查询必须分页；不得拉全量后 `reduce` 冒充生产聚合。
-- Canvas 页面使用 `dataBinding` + `DataBridge` + 同源 `fetch`，请求带 credentials、CSRF、错误态与 cleanup。
+- Canvas 页面使用 `dataBinding` + `DataBridge` + 外层 yida JS-API 桥；只有桥不可用时才降级同源 `fetch`，并保留错误态与 cleanup。
 - 不得在 Canvas 使用 `this.dataSourceMap`；连接器代理转 `yida-canvas-data-binding`。
 - demo/seed 只能用于离线预览，并明确标记；真实交付无数据时展示真实空态。
 

@@ -78,7 +78,7 @@
 - 主操作：<新增 / 提交 / 查看 / 审批 / 编辑 / 跳转>
 - PC / 移动端差异：<PC 抽屉 / 移动端整页 / 卡片堆叠 / 隐藏低频列>
 - pageSpecHandoff：
-  - pageStructure：<workbench-home / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
+  - pageStructure：<workbench / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
   - scene：<workbench / dashboard / list / detail / landing / screen>
   - contentBlocks：<10+ 区块；KPI/快捷入口/列表/图表子项不分别计数>
   - themeSummary：<应用主题色 / 风格关键词 / themeScope 摘要；必须与 design.md 一致，不写 token 和视觉规则>
