@@ -212,7 +212,7 @@ describe('generate-page command', () => {
     expect(fs.existsSync(path.join(tmpDir, 'pages', 'dist', 'home-✅.canvas.js'))).toBe(false);
   });
 
-  test('accepts --theme-profile as a visual profile alias', () => {
+  test('accepts --theme-profile as the design and theme input', () => {
     execFileSync(process.execPath, [BIN, 'generate-page', 'product-homepage', '--theme-profile', 'custom-theme', '--compile'], {
       cwd: tmpDir,
       env: cliEnv(),
@@ -351,7 +351,7 @@ describe('generate-page command', () => {
 
     expect(source).toContain('export default YidaComp');
     expect(source).toContain('@openyida-template product-homepage');
-    expect(source).toContain('@openyida-visual-profile yida-app-theme');
+    expect(source).toContain('@openyida-design-profile yida-app-theme');
     expect(source).toContain('@openyida-design-profile podBlue');
     expect(source).toContain('@openyida-design-scope page');
     expect(source).toContain('oy-hero-grid');
@@ -835,7 +835,7 @@ describe('generate-page command', () => {
     expect(source).not.toContain('#172033');
   });
 
-  test('writes P1 page spec fields into generated manifest', () => {
+  test('writes P1 page-spec fields into generated manifest', () => {
     const specPath = path.join(tmpDir, 'dealer-dashboard.json');
     fs.writeFileSync(specPath, JSON.stringify({
       output: 'pages/src/dealer-dashboard.canvas.jsx',
@@ -1228,7 +1228,7 @@ describe('generate-page command', () => {
     expect(source).toContain("brandName: 'OpenKuma'");
     expect(source).toContain('@openyida-template product-homepage');
     expect(source).toContain('@openyida-scene dashboard');
-    expect(source).toContain('@openyida-visual-profile ops-dashboard');
+    expect(source).toContain('@openyida-design-profile ops-dashboard');
     expect(source).toContain('@openyida-design-profile ops-shell');
     expect(source).toContain('@openyida-design-scope app');
     expect(source).toContain('@openyida-blocks hero,feature-grid,metric-strip,roadmap,cta');
@@ -1344,7 +1344,7 @@ describe('generate-page command', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain('@openyida-template todo-mvc');
     expect(source).toContain('@openyida-scene list');
-    expect(source).toContain('@openyida-visual-profile yida-app-theme');
+    expect(source).toContain('@openyida-design-profile yida-app-theme');
     expect(source).toContain('@openyida-design-profile podBlue');
     expect(source).toContain('@openyida-design-scope page');
     expect(source).toContain('NATIVE_CONTROL_RESET_CSS');

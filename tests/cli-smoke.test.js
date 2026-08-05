@@ -444,7 +444,7 @@ describe('CLI offline smoke', () => {
         'yida-data-management',
       ]),
       product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
-      ui_guidance_policy: expect.stringContaining('extracts page-spec.json from the PRD'),
+      ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
       recommended_read_commands: expect.arrayContaining([
@@ -452,6 +452,7 @@ describe('CLI offline smoke', () => {
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
+    expect(parsed.summary.core_workflows.full_app_build.ui_guidance_policy).toContain('prd.md + design.md');
     expect(parsed.summary.core_workflows.full_app_build.default_nav_order_policy).toContain('portal/home/workbench entry > business handling > data management > business analytics > system configuration');
     expect(parsed.summary.core_workflows.full_app_build.do_not_default_skill_ids).not.toContain('yida-design');
     expect(commands).toContain('env');
@@ -1168,7 +1169,7 @@ describe('CLI offline smoke', () => {
         'yida-data-management',
       ]),
       product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
-      ui_guidance_policy: expect.stringContaining('extracts page-spec.json from the PRD'),
+      ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
       recommended_read_commands: expect.arrayContaining([
@@ -1176,6 +1177,7 @@ describe('CLI offline smoke', () => {
       ]),
       default_data_contract: expect.stringContaining('this.dataSourceMap'),
     });
+    expect(parsed.commands.core_workflows.full_app_build.ui_guidance_policy).toContain('prd.md + design.md');
     expect(parsed.commands.core_workflows.full_app_build.default_nav_order_policy).toContain('portal/home/workbench entry > business handling > data management > business analytics > system configuration');
     expect(parsed.commands.core_workflows.full_app_build.do_not_default_skill_ids).not.toContain('yida-design');
     expect(parsed.recommended.default_full_app_workflow).toMatchObject({

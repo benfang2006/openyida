@@ -1400,7 +1400,7 @@ describe('form presentation components', () => {
     expect(formContainer.children[2].props.type).toBe('bold-with-thin');
   });
 
-  test('Divider forms inject yida global theme style on current and top documents', () => {
+  test('Divider forms inject yida global theme style through same-origin iframe parents', () => {
     const schema = createForm._private.buildFormSchema(
       '分割线主题测试',
       [{ type: 'Divider', title: '默认分割线' }],
@@ -1425,7 +1425,8 @@ describe('form presentation components', () => {
     ]));
     expect(schema.actions.module.source).toContain('openyida:divider-theme:start');
     expect(schema.actions.module.source).toContain('yida-global-theme');
-    expect(schema.actions.module.source).toContain('window.top.document');
+    expect(schema.actions.module.source).toContain('cursor.parent');
+    expect(schema.actions.module.source).toContain('docs.indexOf(cursor.document)');
     expect(schema.actions.module.source).toContain('--color-brand1-9');
     expect(schema.actions.module.source).toContain("deepBlue: '#3954E4'");
     expect(schema.actions.module.compiled).toContain('openyidaDividerThemeDidMount');
