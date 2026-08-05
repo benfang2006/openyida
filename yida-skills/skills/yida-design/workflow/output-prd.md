@@ -106,7 +106,7 @@
 | --- | --- |
 | 表单提交后 | <刷新列表 / 回到当前工作台 / 触发流程 / 更新状态> |
 | 新增/提交入口 | <PC 侧边抽屉 iframe 承载 `submission/{formUuid}?isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；必要时用 `update-form-config` 持久化表单设置 `isRenderNav=false`> |
-| 详情查看 | <PC 侧边抽屉 iframe 承载 `formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；formInstId 来自真实数据记录> |
+| 详情查看 | <PC 侧边抽屉 iframe 承载 `formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；formInstId 来自真实数据记录并优先取 row.formInstId，缺失时禁用详情入口> |
 | 数据变更 | <自动计算、状态流转、通知或提醒> |
 | 权限规则 | <角色能看、能改、能审批的边界> |
 | 空状态 | <无数据时的说明、主操作入口和下一步> |

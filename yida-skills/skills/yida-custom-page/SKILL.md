@@ -53,7 +53,7 @@ description: 宜搭普通自定义页面 JSX / Jsx 组件开发规范（React 16
 6. **forceUpdate 后延迟操作 DOM**：`forceUpdate()` 后 DOM 不会立即更新，ECharts/Canvas/第三方组件初始化必须放入 `setTimeout` 或 `requestAnimationFrame`
 7. **多端适配**：使用 `this.utils.isMobile()` 判断设备类型，适配 PC 和移动端
 8. **输入法组合输入处理**：使用 `_isComposing` 标记配合 `compositionstart`/`compositionend` 事件，避免输入过程中触发提交
-9. **表单打开入口统一容器**：数据列表用 `workbench/{formUuid}?iframe=true`，禁止用 `formDetail` 冒充列表；新增/提交/查看详情入口统一封装为 `FormOpenContainer`。PC 端默认用半屏 `50vw` 抽屉 iframe 承载隐藏导航的 `submission/{formUuid}?isRenderNav=false` 或 `formDetail/{formUuid}?formInstId=...&isRenderNav=false`，提交页和详情页使用同一宽度规则，并在 iframe 加载后把当前主题 tokens 注入同源子文档；移动端才整页或新页打开原生表单页；不要在按钮里直接 `window.open`
+9. **表单打开入口统一容器**：数据列表用 `workbench/{formUuid}?iframe=true`，禁止用 `formDetail` 冒充列表；新增/提交/查看详情入口统一封装为 `FormOpenContainer`。PC 端默认用半屏 `50vw` 抽屉 iframe 承载隐藏导航的 `submission/{formUuid}?isRenderNav=false` 或 `formDetail/{formUuid}?formInstId=...&navConfig.layout=1180&isRenderNav=false`，提交页和详情页使用同一宽度规则；详情实例 ID 必须优先取 `row.formInstId`，缺失时禁用或提示，不打开空 `formInstId`；并在 iframe 加载后把当前主题 tokens 注入同源子文档；移动端才整页或新页打开原生表单页；不要在按钮里直接 `window.open`
 10. **Tabs 显隐控制**：下拉值变更后自动回退到第一个可见 Tab，内容区用 `display: none` 保留 DOM
 11. **加载态必须可恢复**：列表/看板页默认保留空态或演示数据；接口失败、超时或返回异常时必须把 `loading` 置回 `false`，不要只渲染“正在加载...”挡住整页
 12. **禁止可见原生下拉**：筛选、预约、审批等用户可见下拉交互不要使用 `<select>`；普通自定义页也不要把表单设计器里的 `SelectField` 当 React 筛选组件直接渲染。默认使用 Tailwind className 组合 `button + menu + option` 的自定义下拉组件，并带 `.oyd-select-arrow` 下箭头、`.oyd-select-check` 选中标记和页面级 focus reset；light 模式下选中项整块背景必须用 `--oyd-control-selected-bg` 这类低透明度浅色 token，不要直接用 `--color-brand1-1`

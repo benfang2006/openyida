@@ -309,6 +309,23 @@ export function openMobileCreate() {
     expect(formOpenErrors[0].line).toBe(4);
   });
 
+  test('blocks form detail links without a reliable formInstId', () => {
+    const source = `
+export function openDetail(row) {
+  var detailUrl = '/APP_XXX/formDetail/FORM_XXX?formInstId=' + encodeURIComponent(row.formInstanceId || row.instanceId || row.id) + '&isRenderNav=false';
+  if (this.utils.isMobile()) {
+    this.utils.openPage(detailUrl);
+  }
+}
+`;
+
+    const result = lintYidaSource(source, '/tmp/form-detail-link.jsx');
+    const detailErrors = result.errors.filter(issue => issue.rule === 'form-detail-link');
+
+    expect(detailErrors).toHaveLength(1);
+    expect(detailErrors[0].line).toBe(1);
+  });
+
   test('native select warning explains the custom dropdown affordance contract', () => {
     const zh = require('../lib/core/locales/zh').publish.lint_native_select_ui;
     const en = require('../lib/core/locales/en').publish.lint_native_select_ui;

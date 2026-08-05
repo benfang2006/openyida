@@ -87,6 +87,9 @@ function buildYidaFormUrl(request, currentAppType) {
     return appendQuery(`/${appType}/submission/${request.formUuid}`, { isRenderNav: false });
   }
   if (request.type === 'detail') {
+    if (!request.formInstId) {
+      return '';
+    }
     return appendQuery(`/${appType}/formDetail/${request.formUuid}`, {
       formInstId: request.formInstId,
       'navConfig.layout': 1180,
@@ -133,7 +136,13 @@ function FormOpenContainer({ request, currentAppType, themeTokens, onClose, onAf
 function useYidaFormOpen(currentAppType, refreshData, themeTokens) {
   const [formRequest, setFormRequest] = useState(null);
   function openForm(request) {
+    if (request && request.type === 'detail' && !request.formInstId) {
+      return;
+    }
     const href = buildYidaFormUrl(request, currentAppType);
+    if (!href) {
+      return;
+    }
     if (isMobileViewport()) {
       window.location.href = href;
       return;
@@ -154,14 +163,15 @@ function useYidaFormOpen(currentAppType, refreshData, themeTokens) {
 
 function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload }) {
   const { openForm, formOpenContainer } = useYidaFormOpen(appType, reload, CUSTOM_THEME_TOKENS);
+  const selectedFormInstId = selectedCustomer && (selectedCustomer.formInstId || selectedCustomer.formInstanceId || selectedCustomer.instanceId || selectedCustomer.id);
   return (
     <>
       <Button type="primary" onClick={() => openForm({ type: 'submission', title: '新增客户', formUuid: customerFormUuid })}>
         新增客户
       </Button>
       <Button
-        onClick={() => openForm({ type: 'detail', title: '客户详情', formUuid: customerFormUuid, formInstId: selectedCustomer && selectedCustomer.formInstId })}
-        disabled={!selectedCustomer}
+        onClick={() => openForm({ type: 'detail', title: '客户详情', formUuid: customerFormUuid, formInstId: selectedFormInstId })}
+        disabled={!selectedFormInstId}
       >
         查看详情
       </Button>
@@ -178,6 +188,10 @@ function ExampleToolbar({ appType, customerFormUuid, selectedCustomer, reload })
 Canvas 自绘快捷入口时，表单提交和详情入口沿用 `useYidaFormOpen` 返回的 `openForm`。应用内页面用同页跳转，外部链接才新开；提交页在 PC 端进入抽屉，移动端才整页或新页打开，提交页 URL 默认追加 `isRenderNav=false`；详情页 URL 必须包含真实 `formInstId`，并默认追加 `navConfig.layout=1180` 和 `isRenderNav=false`：
 
 ```js
+function getYidaFormInstId(row) {
+  return row && (row.formInstId || row.formInstanceId || row.instanceId || row.id);
+}
+
 function buildYidaPath(entry, currentAppType) {
   const appType = entry.appType || currentAppType;
   if (entry.targetType === 'app') return `/${appType}/workbench`;
@@ -186,7 +200,8 @@ function buildYidaPath(entry, currentAppType) {
     return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;
   }
   if (entry.targetType === 'detail') {
-    return `/${appType}/formDetail/${entry.formUuid}?formInstId=${entry.formInstId || ''}&isRenderNav=false`;
+    if (!entry.formInstId) return '';
+    return `/${appType}/formDetail/${entry.formUuid}?formInstId=${encodeURIComponent(entry.formInstId)}&navConfig.layout=1180&isRenderNav=false`;
   }
   return entry.url || '';
 }
@@ -198,7 +213,7 @@ function openEntry(entry, currentAppType, runtime) {
       title: entry.title || '表单',
       appType: entry.appType || currentAppType,
       formUuid: entry.formUuid,
-      formInstId: entry.formInstId,
+      formInstId: getYidaFormInstId(entry.row) || entry.formInstId,
     });
     return;
   }
@@ -214,6 +229,8 @@ function openEntry(entry, currentAppType, runtime) {
 ```
 
 验收时检查抽屉 `iframeSrc` 或移动端打开地址包含 `isRenderNav=false`；详情页还必须包含真实 `formInstId`。如果目标表单已另有 query 参数，必须用统一 URL 构造函数合并为 `&isRenderNav=false`，不要丢掉 `corpid`、来源页或业务参数。
+
+详情页实例 ID 以 `searchFormDatas` 返回行的 `row.formInstId` 为准，兼容兜底顺序只能写成 `row.formInstId || row.formInstanceId || row.instanceId || row.id`。缺少实例 ID 时禁用详情按钮或提示“未找到数据实例”，禁止打开 `formInstId=` 为空的详情页。
 
 如果运行态明确向 Canvas 暴露了壳层 router / history API，可把同应用 `page/app` 的同页跳转替换成壳层 `push/replace`；没有明确 API 时，不猜内部对象，使用上面的工作台 URL。
 

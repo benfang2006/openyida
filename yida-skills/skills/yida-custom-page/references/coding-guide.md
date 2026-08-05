@@ -577,7 +577,7 @@ this.utils.toast({ title: '调试信息', type: 'info' });
 | 场景 | URL 格式 |
 |------|----------|
 | 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
-| 表单详情页（默认隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false` |
+| 表单详情页（默认隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false` |
 | 数据管理页（列表） | `{base_url}/{appType}/workbench/{formUuid}?iframe=true` |
 | 数据管理页（指定视图） | `{base_url}/{appType}/workbench/{formUuid}?viewUuid={viewUuid}&iframe=true` |
 
@@ -595,13 +595,20 @@ const listUrl = `${baseUrl}/${appType}/workbench/${formUuid}?iframe=true`;
 // ✅ PC：FormOpenContainer 抽屉内嵌表单页；移动端：打开原生表单页
 export function buildYidaFormUrl(type, appType, formUuid, formInstId) {
   if (type === 'detail') {
-    return '/' + appType + '/formDetail/' + formUuid + '?formInstId=' + encodeURIComponent(formInstId || '') + '&isRenderNav=false';
+    if (!formInstId) {
+      return '';
+    }
+    return '/' + appType + '/formDetail/' + formUuid + '?formInstId=' + encodeURIComponent(formInstId) + '&navConfig.layout=1180&isRenderNav=false';
   }
   return '/' + appType + '/submission/' + formUuid + '?isRenderNav=false';
 }
 
 export function openYidaForm(type, title, appType, formUuid, formInstId) {
   var url = this.buildYidaFormUrl(type, appType, formUuid, formInstId);
+  if (!url) {
+    this.utils.toast({ title: '未找到数据实例', type: 'warning' });
+    return;
+  }
   if (this.utils.isMobile()) {
     this.utils.openPage(url);
     return;

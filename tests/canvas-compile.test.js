@@ -490,6 +490,93 @@ describe('compileCanvasLocal', () => {
     expect(() => compileCanvasLocal(source)).not.toThrow();
   });
 
+  test('rejects detail open requests without formInstId', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX' });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'missing-formInstId',
+      }),
+    }));
+  });
+
+  test('rejects detail links that fallback formInstId to an empty string', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX', formInstId: row.formInstId || '' });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'empty-formInstId-fallback',
+      }),
+    }));
+  });
+
+  test('rejects legacy instance id fallback chains that skip row.formInstId', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        function openDetail(row) {
+          openForm({
+            type: 'detail',
+            title: '订单详情',
+            formUuid: 'FORM_XXX',
+            formInstId: row.formInstanceId || row.instanceId || row.id,
+          });
+        }
+        return <button onClick={() => openDetail({})}>详情</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(badSource, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_FORM_DETAIL_LINK_INVALID',
+      details: expect.objectContaining({
+        issueType: 'missing-primary-formInstId',
+      }),
+    }));
+  });
+
+  test('allows detail opens that resolve row.formInstId first and block missing ids', () => {
+    const source = `
+      import React, { useState } from 'react';
+      export default function App() {
+        const [formRequest, setFormRequest] = useState(null);
+        function openDetail(row) {
+          const formInstId = row && (row.formInstId || row.formInstanceId || row.instanceId || row.id);
+          if (!formInstId) {
+            return;
+          }
+          setFormRequest({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX', formInstId });
+        }
+        return <button onClick={() => openDetail({ formInstId: 'FINST_1' })}>{formRequest ? '打开中' : '详情'}</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
+  });
+
   test('maps lucide-react named icons to LucideReact and DynamicIcon to its runtime global', () => {
     const src = `
       import React from 'react';

@@ -54,7 +54,7 @@ description: >
 5. **美感提升保持功能契约**：页面美化、视觉升级和页面重构默认只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态保持原样。
 6. **默认页面保留平台应用导航**：页面内 tab、自绘侧边栏或独立门户壳写 `appBlueprint.hasPageNavigation: true`，同时保持平台导航可见。
 7. **同应用页面入口归导航**：同应用页面优先放入平台导航或导航分组；自定义页内容区放当前页动作、原生表单新建/查看、外部链接和跨应用资源。
-8. **表单入口响应式**：新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`；详情页 URL 默认使用 `formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false`，且 `formInstId` 必须来自真实数据记录；PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；移动端整页或新页打开。
+8. **表单入口响应式**：新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`；详情页 URL 默认使用 `formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false`，且 `formInstId` 必须来自真实数据记录并优先取 `row.formInstId`；PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；移动端整页或新页打开。
 9. **主题作用域写清楚**：应用级换肤写 `themeScope=app`；单页美化写 `themeScope=page`；页面重构/单页美化默认以当前应用主题色为基准，用户明确要求很不一样的独立风格时再做页面级独立色盘；`--theme` / `colour` 只使用平台预置主题 key，自定义品牌色绝不能传给 create-app/update-app。
 10. **默认主题先做业务判断**：工作台、门户、列表、详情、普通看板和数据大屏默认都是浅底 / light 模式，但主色不固定为 `podBlue` 或 #1677ff；先根据行业、品牌、业务情绪和视觉目标做创意色彩判断，选择最贴合当前业务的色彩关系，禁止套用“科技=蓝、宠物=橙、法律=蓝”这类刻板配色。若命中平台预置主题 key，再传给 `create-app/update-app --theme`；若是任意自定义色盘，创建应用时不显式传 `theme/colour`，PRD 只写主题色和风格摘要，`style#yida-global-theme` / `customThemeStyle.tokens` 注入方案写入 design.md。只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸。
     默认浅底业务屏，只有用户明确说暗色/深色/夜间/高对比时才用深色沉浸。

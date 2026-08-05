@@ -945,7 +945,7 @@ describe('OpenYida skill contracts', () => {
     expect(pageUiux).toContain('PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单');
     expect(pageUiux).toContain('抽屉默认半屏 `50vw`');
     expect(pageUiux).toContain('新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`');
-    expect(pageUiux).toContain('formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false');
+    expect(pageUiux).toContain('formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false');
     expect(canvas).toContain('表单打开入口统一容器');
     expect(canvas).toContain('FormOpenContainer');
     expect(canvas).toContain('按钮事件只能调用 `openForm({ type: "submission" | "detail", ... })`');
@@ -961,6 +961,8 @@ describe('OpenYida skill contracts', () => {
     expect(navGuide).toContain('return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;');
     expect(navGuide).toContain('formDetail/${entry.formUuid}?formInstId=');
     expect(navGuide).toContain("'navConfig.layout': 1180");
+    expect(navGuide).toContain('row.formInstId || row.formInstanceId || row.instanceId || row.id');
+    expect(navGuide).toContain('禁止打开 `formInstId=` 为空的详情页');
     expect(navGuide).toContain('&isRenderNav=false');
     expect(navGuide).toContain('FormOpenContainer');
     expect(navGuide).toContain('按钮事件只调用 `openForm(request)`');
@@ -975,7 +977,7 @@ describe('OpenYida skill contracts', () => {
     expect(themeHelpers).toContain('同源子 iframe 文档');
     expect(customPage).toContain('表单打开入口统一容器');
     expect(customPage).toContain('半屏 `50vw` 抽屉 iframe');
-    expect(customPage).toContain('formDetail/{formUuid}?formInstId=...&isRenderNav=false');
+    expect(customPage).toContain('formDetail/{formUuid}?formInstId=...&navConfig.layout=1180&isRenderNav=false');
     expect(codingGuide).toContain('抽屉内 iframe 指向隐藏导航提交页或详情页 URL');
     expect(codingGuide).toContain("drawerWidth: '50vw'");
     expect(codingGuide).toContain("state.formOpenRequest.drawerWidth || '50vw'");
@@ -985,8 +987,8 @@ describe('OpenYida skill contracts', () => {
     expect(codingGuide).toContain("'/submission/' + formUuid + '?isRenderNav=false'");
     expect(codingGuide).toContain("'/formDetail/' + formUuid");
     expect(codingGuide).toContain('&isRenderNav=false');
-    expect(app).toContain('{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false');
-    expect(fieldUrlReference).toContain('{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&isRenderNav=false');
+    expect(app).toContain('{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false');
+    expect(fieldUrlReference).toContain('{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false');
   });
 
   test('custom-page-dependent skills keep Canvas-first and native fallback boundaries explicit', () => {
