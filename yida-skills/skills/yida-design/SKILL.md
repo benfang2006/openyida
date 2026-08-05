@@ -69,7 +69,7 @@ description: >
 19. **实现交接必须结构化但保持薄**：每个 display 页面在 PRD 中输出 `pageSpecHandoff`，只写 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile=prd/<项目名>/design.md`、`designRefs`、数据来源和主操作；实现阶段必须读取 `prd.md` 与 `design.md` 后才能写页面。
 20. **设计事实源唯一**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。页面 `scene` 只作为分类标签，不对应参考文件、模板文件或实现阶段读取入口。
 21. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
-22. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作和状态到图标组件的映射。
+22. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作、状态、导航和空态到图标组件的映射。emoji 不能改成 CSS 形状、字母占位、Unicode 符号或临时 SVG；如果需要图标，必须映射到上述两类库的具体组件。
 23. **实现链路明确交接**：默认页面实现链路是 Code Canvas；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
 
 ---

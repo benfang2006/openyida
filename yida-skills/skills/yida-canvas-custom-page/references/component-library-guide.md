@@ -21,7 +21,7 @@ Code Canvas 页面从 [dependencies-and-cdn.md](dependencies-and-cdn.md) 的可�
 2. **看板默认 `antd + recharts + ahooks + lucide-react 图标`**：KPI、筛选、图表和明细表都能覆盖；只有 Recharts 做不了的图才引入 `d3`。
 3. **展示页可少量使用 `@radix-ui/themes`**：适合展示页、门户页、较轻的工具页；同一页面选一个主视觉语言，另一套组件只做局部补充。
 4. **动效服务状态反馈**：`framer-motion` 用在抽屉、折叠、局部切换，服务用户理解状态变化。
-5. **图标只使用可加载图标库**：默认按下方 `lucide-react` 用法 named import；页面已采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，使用 `@ant-design/icons`。
+5. **图标只使用可加载图标库**：默认按下方 `lucide-react` 用法 named import；页面已采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，使用 `@ant-design/icons`。emoji 被编译门禁拦截时，按业务语义替换为这两类图标组件，不得改成 CSS 绘制图形、字母占位、Unicode 符号或临时 SVG。
 
 ## lucide-react 用法
 
@@ -72,6 +72,16 @@ import { SearchOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 ```
 
 同一页面选择一套主图标语言。默认主图标语言是 `lucide-react`；选择 `@ant-design/icons` 时，快捷入口、按钮、状态和导航仍然使用具体组件映射。
+
+## emoji 报错时的图标修复
+
+OpenYida 禁止页面源码和 page-spec 中出现 emoji。遇到 `contains emoji` 时，先判断该符号是否承担图标语义：
+
+- 新增、搜索、刷新、查看、上传、下载、组织、用户、日历、告警、成功等图标语义：改成 `lucide-react` named import，或在 Ant Design 图标语言页面中改成 `@ant-design/icons` named import。
+- 状态标记：用图标组件 + 语义色 Tag / 文本文案，不用 emoji。
+- 纯装饰符号：直接删除，不补 CSS 图形。
+
+禁止为了通过编译把 emoji 改成 CSS 画出的圆点、三角、方块、首字母、单字符按钮或临时 inline SVG。CSS 只负责图标容器的尺寸、颜色、背景和交互态，图标本体必须是 `lucide-react` 或 `@ant-design/icons` 组件。
 
 ## 实现页面时的组合示例
 

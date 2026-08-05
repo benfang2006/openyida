@@ -136,7 +136,7 @@ const NAV_ITEMS = [
 2. 选中态必须一眼可辨，不能只靠极淡颜色。
 3. 导航项必须真正可点击，未知 key 有 fallback。
 4. hash/event/matchMedia 等监听必须 cleanup。
-5. 图标使用功能性内联 SVG，禁 emoji 和装饰性图标堆叠。
+5. 图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件映射，默认 `lucide-react`；禁 emoji、CSS 绘制图形、字母占位和装饰性图标堆叠。
 6. 顶部条保持克制，不做营销 Hero。
 7. Canvas 示例与状态机制优先；普通页只能标记为 legacy fallback。
 

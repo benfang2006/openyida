@@ -88,6 +88,10 @@ iconSystem:
     <业务动作名>: <lucide-react 或 @ant-design/icons 的具体组件名>
   statusIconMap:
     <业务状态名>: <lucide-react 或 @ant-design/icons 的具体组件名>
+  navigationIconMap:
+    <导航项名>: <lucide-react 或 @ant-design/icons 的具体组件名>
+  emptyStateIconMap:
+    <空态类型>: <lucide-react 或 @ant-design/icons 的具体组件名>
 typography:
   page-title:
     fontFamily: "<字体栈>"
@@ -222,7 +226,7 @@ inferred_modules:
 
 ## 10. 组件样式
 
-覆盖顶部栏、按钮、图标按钮、卡片/面板、输入框/选择器、表格/列表、图表、标签/徽标、快捷入口、空状态、弹窗/浮层。相关组件要包含 default、hover、active、focus、disabled、loading、selected、error 等状态。图标规则写入 `iconSystem`：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import；快捷入口、按钮、状态和导航必须给出可实现的 `actionIconMap` / `statusIconMap`。
+覆盖顶部栏、按钮、图标按钮、卡片/面板、输入框/选择器、表格/列表、图表、标签/徽标、快捷入口、空状态、弹窗/浮层。相关组件要包含 default、hover、active、focus、disabled、loading、selected、error 等状态。图标规则写入 `iconSystem`：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import；快捷入口、按钮、状态、导航和空态必须给出可实现的 `actionIconMap` / `statusIconMap` / `navigationIconMap` / `emptyStateIconMap`。emoji 不能改成 CSS 形状、字母占位、Unicode 符号或临时 SVG。
 
 组件默认密度和呼吸规则必须写到可实现数值：状态摘要 64-88px 高，动作条 40-56px 高，列表行 44-56px，高频按钮 36-40px，卡片 padding 默认 22-28px 且必须大于 20px，卡片和卡片的 gap 默认 12-18px 且必须小于 20px。空状态默认嵌在列表/面板内部，使用薄提示行、补录/刷新/新建动作和简短说明；不得用 160px 以上大白卡只显示“暂无数据”。
 
@@ -282,13 +286,15 @@ inferred_modules:
 - `backgroundLayer` 必须落到根节点背景、`::before` 顶部不规则色块或大面积光洗、`::after` 流光/纹理层；内容层使用相对定位和更高 `z-index`，保证背景不盖住操作区。
 - `surfaceContrast` 必须落到页面根背景和卡片/面板样式：白色/浅色背景配有边框卡片，浅灰或浅彩背景配白色无边框卡片，渐变背景配玻璃感卡片。
 - `flowLight` 动效必须写 `@media (prefers-reduced-motion: reduce)` 停止动画。
-- 页面图标使用 `lucide-react` 或 `@ant-design/icons` 的标准 import，默认从 `lucide-react` named import 具体组件；源码按 `iconSystem.actionIconMap` / `statusIconMap` 渲染图标。
+- 页面图标使用 `lucide-react` 或 `@ant-design/icons` 的标准 import，默认从 `lucide-react` named import 具体组件；源码按 `iconSystem.actionIconMap` / `statusIconMap` / `navigationIconMap` / `emptyStateIconMap` 渲染图标。CSS 只能控制图标容器样式，不能绘制或替代图标本体。
 
 ### 普通 JSX 实现要求
 
 - 复制 `theme-runtime-helpers.md` 的 Ordinary JSX Helper。
 - 在 `didMount` 或等价初始化中调用 `installYidaGlobalTheme(CUSTOM_THEME_TOKENS, window)`。
-- 使用 ES5 写法，避免普通 JSX 编译链不支持的语法。
+- 普通 JSX 指非 Code Canvas 的自定义页面，发布后落到平台 `Jsx` 组件，不支持 `import/require`。
+- 普通 JSX 的图标来源仍只允许 `lucide-react` 或 `@ant-design/icons`，默认 `lucide-react`；但加载方式不是 import，而是已验证运行时脚本/global。emoji 报错时按 `iconSystem` 映射到这两类图标来源，不退成 CSS 图形、字母占位、Unicode 符号、iconfont 或临时 SVG。
+- 使用 ES5 写法，避免普通 JSX 编译链不支持的语法；若当前普通 JSX 链路无法稳定加载图标库，必须回到实现链路选择，优先切到 Code Canvas，而不是绕过图标规范。
 
 ## 17. 必须包含
 
@@ -321,7 +327,7 @@ inferred_modules:
 - [ ] 若页面类型是工作台、仪表盘、管理后台或运营首页，文档已包含快捷入口区域。
 - [ ] 可推断的 token 已给出具体值。
 - [ ] 组件包含状态规则，而不只是静态外观。
-- [ ] `iconSystem` 已声明默认图标库、可用图标库、尺寸、描边风格，并为快捷入口、按钮、状态和导航提供具体 `actionIconMap` / `statusIconMap`。
+- [ ] `iconSystem` 已声明默认图标库、可用图标库、尺寸、描边风格，并为快捷入口、按钮、状态、导航和空态提供具体 `actionIconMap` / `statusIconMap` / `navigationIconMap` / `emptyStateIconMap`。
 - [ ] 已明确卡片圆角范围：0-32px，并说明业务卡片、主面板、控件和状态胶囊各自取值。
 - [ ] 已明确紧凑密度默认值：状态摘要、动作条、列表行、空态高度、卡片 padding >20px、卡片 gap <20px 都有数值范围。
 - [ ] 工作台/首页首屏没有超宽空 KPI 框、大空态白卡、无内容右栏或靠 margin/padding 撑出的空白。

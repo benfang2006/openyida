@@ -28,28 +28,12 @@
 
 ## Icon 素材
 
-> 优先使用 `this.utils.loadStyleSheet(url)` 加载 CSS 图标库，详见 [yida-api.md](../../../references/yida-api.md) 的「loadStyleSheet」章节。
+自定义页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认 `lucide-react`。Code Canvas 使用标准 import；普通 JSX 是非 Code Canvas 的自定义页面，源码不支持 import，只能通过已验证运行时脚本/global 方式加载这两类图标库。emoji 报错时把语义映射到这两类图标来源；加载条件不满足时切到 Code Canvas 或去掉非必要图标，不使用 iconfont、Remix Icon、Font Awesome、CSS 图形、字母占位、Unicode 符号或临时 SVG。
 
 | 图标库 | 授权方式 | 推荐场景 |
 | --- | --- | --- |
-| [iconfont（阿里）](https://www.iconfont.cn) | 免费 | **首选**，国内访问最稳定，支持自定义图标集 |
-| [Remix Icon](https://remixicon.com) | Apache 2.0 | 开源免费，风格现代，无需注册 |
-| [Font Awesome](https://fontawesome.com) | MIT（免费版） | 覆盖面广，通用 UI 图标 |
-| [Material Icons](https://fonts.google.com/icons) | Apache 2.0 | 数量大，适合中后台工具类产品 |
-| [Bootstrap Icons](https://icons.getbootstrap.com) | MIT | 轻量，SVG 为主 |
-| [Heroicons](https://heroicons.com) | MIT | 线性/实心两套，现代极简风 |
-
-**SVG 内联**（少量图标，无外部依赖）：
-
-```javascript
-function renderIcon(iconPath, size, color) {
-  return (
-    <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2">
-      <path d={iconPath} />
-    </svg>
-  );
-}
-```
+| `lucide-react` | ISC | 默认图标库，适合按钮、操作、状态、导航、空态 |
+| `@ant-design/icons` | MIT | 页面已经采用 Ant Design Outlined 图标语言，或 antd 组件语境需要时使用 |
 
 ## 素材使用通用建议
 
@@ -64,12 +48,12 @@ function renderIcon(iconPath, size, color) {
 - Wikimedia Commons / Freesound / FMA 等站点授权类型多样，务必按条目核对 License
 
 ### 一致性
-- 同一项目中统一使用一个图标库，避免混用多个图标库导致风格不一致
-- 准备「语义→图标名」映射表（如 `search → ri-search-line`、`settings → ri-settings-3-line`），避免随机挑选
+- 同一项目中统一使用一套主图标语言，默认 `lucide-react`；只有 antd 图标语境明确时使用 `@ant-design/icons`
+- 准备「语义→图标组件名」映射表（如 `search → Search`、`settings → Settings`、`new → Plus`），避免随机挑选
 
 ### 性能
 - 图片使用合适尺寸（避免加载 4K 大图）；音频使用压缩后的 MP3 格式
-- 图标优先使用 CDN 字体方案（iconfont / Remix Icon），少量图标可用 SVG 内联
+- 图标本体来自 `lucide-react` 或 `@ant-design/icons`；Code Canvas 用 import，普通 JSX 用已验证运行时脚本/global；CSS 只控制尺寸、颜色、背景、圆角和 hover
 
 ---
 

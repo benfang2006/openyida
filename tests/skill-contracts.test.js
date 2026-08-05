@@ -994,6 +994,7 @@ describe('OpenYida skill contracts', () => {
     const customPage = readSkill('yida-skills/skills/yida-custom-page/SKILL.md');
     const codingGuide = readSkill('yida-skills/skills/yida-custom-page/references/coding-guide.md');
     const nativeDesignSystem = readSkill('yida-skills/skills/yida-custom-page/references/design-system.md');
+    const assetsGuide = readSkill('yida-skills/skills/yida-custom-page/references/assets-guide.md');
     const dataSources = readSkill('yida-skills/skills/yida-data-source-connectors/SKILL.md');
 
     expect(dashboard).toContain('默认实现层是 **Code Canvas**');
@@ -1063,6 +1064,23 @@ describe('OpenYida skill contracts', () => {
     expect(pageGeneration).not.toContain('自然语言推断');
     expect(customPage).toContain('页面重构默认以当前应用主题色为基准');
     expect(customPage).toContain('保持现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态');
+    expect(customPage).toContain('普通 JSX 是非 Code Canvas 的自定义页面');
+    expect(customPage).toContain('源码禁止 `import/require`');
+    expect(customPage).toContain('图标来源只允许 `lucide-react` 或 `@ant-design/icons`');
+    expect(customPage).toContain('普通 JSX 只能通过已验证运行时脚本/global 方式加载这两类图标库，不能写 import');
+    expect(customPage).toContain('必须切到 Code Canvas 或去掉非必要图标');
+    expect(customPage).toContain('不得把 emoji 改成 CSS 图形、字母占位、Unicode 符号、iconfont、装饰性临时 SVG 或其他图标库');
+    expect(assetsGuide).toContain('自定义页面图标只使用 `lucide-react` 或 `@ant-design/icons`');
+    expect(assetsGuide).toContain('Code Canvas 使用标准 import');
+    expect(assetsGuide).toContain('普通 JSX 是非 Code Canvas 的自定义页面，源码不支持 import');
+    expect(assetsGuide).toContain('只能通过已验证运行时脚本/global 方式加载这两类图标库');
+    expect(assetsGuide).toContain('加载条件不满足时切到 Code Canvas 或去掉非必要图标');
+    expect(assetsGuide).toContain('| `lucide-react` | ISC |');
+    expect(assetsGuide).toContain('| `@ant-design/icons` | MIT |');
+    expect(assetsGuide).not.toContain('| [iconfont（阿里）]');
+    expect(assetsGuide).not.toContain('| [Remix Icon]');
+    expect(assetsGuide).not.toContain('| [Font Awesome]');
+    expect(assetsGuide).not.toContain('SVG 内联');
     expect(canvas).toContain('UI 改造保持功能契约');
     expect(pageUiux).toContain('美感提升保持功能契约');
     expect(codingGuide).toContain('页面美感提升/页面重构只调整颜色、布局、密度、间距、视觉层级、素材和图标表达');
