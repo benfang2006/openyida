@@ -29,7 +29,7 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 - `domain-ready`：主要业务语义已覆盖，可以作为真实业务页面继续校验和发布。
 - `draft-needs-domain-spec`：用户已有业务要求，但 `page-spec.json` 仍缺业务对象、指标、交互或视觉方向；先按下方修复路径补 `prd.md` / `design.md`，再重新派生 spec，不能直接用源码 patch 代替事实源。
 
-真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、`sourceOfTruth`、`designFile`、`designRefs` 和 `themeSummary`；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射；官网/品牌页写入 `assets` 或素材缺口。
+真实业务页的 `page-spec.json` 至少写清业务名称与定位、业务模块/对象、指标口径、用户动作或下钻方式、`sourceOfTruth`、`designFile`、`designRefs` 和 `themeSummary`；页面美感提升/页面重构写入 `functionContract`，保留现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态；看板/列表/详情如果本轮已经创建或解析业务表单，写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，并默认读取 `yida-app` 通过 `yida-data-management` 写入的 1-3 条 seed records；官网/品牌页写入 `assets` 或素材缺口。
 
 ## 修复路径
 
@@ -50,9 +50,9 @@ PRD 写有 `pageSpecHandoff` 时，可以把 `pageSpecHandoff` 转成 `page-spec
 
 数据真实性边界：
 
-- 明确做离线预览时可以展示 seed 数据，但页面必须标注演示数据状态。
-- 完整应用或真实交付页使用真实业务记录；需要演示数据时，先把 demo/mock records 写入真实宜搭表单，再由 Canvas 读取。
-- 真实数据暂未接入时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
+- 明确做离线预览时可以展示前端 seed 数据，但页面必须标注演示数据状态。
+- 完整应用或真实交付页使用真实业务记录；默认先把 1-3 条 demo records 写入真实宜搭表单，再由 Canvas 读取。
+- 真实数据暂未接入或 seed records 写入失败时，页面应展示空态、表单入口、刷新/登记按钮和 dataBinding 接入提示。
 
 | 已确认的页面场景 | 页面结构 | scene | 实现重点 |
 | --- | --- | --- | --- |

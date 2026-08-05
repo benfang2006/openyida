@@ -97,7 +97,7 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 8. **light 页面使用清爽业务色**：业务列表、协同表、数据管理页、工作台和门户默认使用 light 模式；主操作、选中态、筛选焦点和批量操作使用品牌色，边框用浅色品牌混合。用户明确要求暗色大屏/夜间模式/高对比风格时使用深色主视觉。
 9. **门户运行态组件要补必需 props 和局部降级**：`QuickAccessCard` / `RecentlyUsedCard` 传 `theme="row-white"` 等必需 props；所有门户/字段/上传增强组件外层加局部 ErrorBoundary，单个组件不兼容时只降级该块，整页保持可用。
 10. **自定义主题写入页面作用域**：`--theme` 只接受平台预置 key；不要把任意色值或自定义主题名传给 create-app。PRD 指定非预置主题（例如活力橙、深玫红、自定义暗黑金）时，在 Canvas 源码中注入 `style#yida-global-theme` 或等价 scoped CSS vars，并在根节点设置 `data-theme-scope="page"`。注入代码复制 `references/theme-runtime-helpers.md`，不能只写当前页面 `document.head`。
-11. **真实交付使用真实数据源**：完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。需要演示数据时，先通过表单数据写入链路创建 demo/mock records，再由 Canvas 读取这些真实表单记录；真实数据暂未接入时展示空态、表单入口、刷新/登记按钮。
+11. **真实交付使用真实数据源**：完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。完整应用默认在页面实现前通过 `yida-data-management` 写入 1-3 条业务化 demo records；Canvas 页面读取这些真实表单记录，不使用前端 seedRows 冒充。真实数据暂未接入或 seed records 写入失败时展示空态、表单入口、刷新/登记按钮。
 12. **PRD + design.md 进入实现输入**：完整应用和真实交付页在写页面前，先消费 `yida-design` 的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`。PRD 提供产品定位、页面场景、页面区块、数据来源、`functionContract`、素材/图标策略、原生表单入口、页面实现交付顺序、业务化自检、应用主题色和风格摘要；design.md 提供完整 UI 设计，包括 `themeProfile`、tokens、视觉 DNA、`visualScaffold`、材质、组件和状态规则。两者是唯一设计事实源；`page-spec.json` 只能作为派生 handoff，不得覆盖或改写 PRD/design.md，也不得复制完整 UI 设计规则。
 13. **页面实现二选一**：结构化实现路径先从 `prd.md + design.md` 派生 `page-spec.json`，写入 `sourceOfTruth.prdFile/designFile/designRefs/conflictPolicy`，生成可编译骨架后读取 CLI 摘要或 `.openyida-page.json` 判断业务化程度和 dataBinding。业务或视觉事实源缺失时先回写 `prd.md` / `design.md` 并重生成 spec；只有 className、布局比例、字段映射、响应式、状态渲染或编译错误等实现偏差才对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
 14. **实现骨架消费业务 spec**：品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明来自当前业务 spec。若 CLI 报业务内容不足，补齐/改写 spec 或 patch 源码后重新生成/编译。
@@ -108,7 +108,7 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 ## 数据真实性边界
 
 - 完整应用或真实交付页先解析真实 `appType/formUuid/fieldId`，并在 `page-spec.json` 写入 `dataBinding.mode=form`。
-- 需要演示数据时，先用数据写入链路把记录写入表单并抽查，再让页面读取；前端静态数据只能用于明确标注的演示态。
+- 完整应用默认先用 `yida-data-management` 把 1-3 条业务化 seed records 写入核心普通表单并抽查，再让页面读取；前端静态数据只能用于明确标注的离线演示态。
 - 生成后如果 `.openyida-page.json` 的 `dataBinding.enabled !== true`，且页面仍展示列表/看板/详情业务记录，交付状态标为草稿；完整应用 final 只有在真实数据绑定已启用并验证后表述为“已接真实数据”。
 - 未接数据的交付页保留真实空态、登记入口、刷新按钮和数据接入提示。
 

@@ -41,7 +41,7 @@ Code Canvas 页面先把数据契约写成结构化 `dataBinding`，再在页面
 
 - `mode=form` 使用真实 `appType/formUuid` 和字段 ID，字段来源为 `get-schema`、表单创建结果或已确认的业务 Schema。
 - `mode=connector/url` 使用同源代理端点，第三方密钥留在连接器或后端服务侧。
-- `mode=seed` 用于离线预览或明确标注的演示页；完整应用/真实交付页需要演示记录时，先把 demo/mock records 写入真实表单，再用 `mode=form` 读取。
+- `mode=seed` 只用于离线预览或明确标注的演示页；完整应用/真实交付页默认先由 `yida-app` 调用 `yida-data-management` 把 1-3 条 demo records 写入真实表单，再用 `mode=form` 读取。
 - 页面生成或手写的 `DataBridge` 状态要保留，用于呈现“接口没通 / 结构没识别 / 权限不足”等运行时状态。
 
 ## 可复用读数据 Hook

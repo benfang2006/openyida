@@ -31,6 +31,7 @@ description: 表单页面创建与更新，默认加载 yida-form-detail 作为�
 
 - 表单页开发默认先加载 `yida-form-detail` 作为视觉引导，再由本技能落地字段 JSON；视觉引导必须和 `Divider` 分割线语义分组合并执行。
 - create 成功后，将 formUuid 记录到 `.cache/<项目名>-schema.json`
+- 完整应用生成场景中，create 成功并记录 formUuid 后，把核心普通表单交给 `yida-data-management` 默认写入 1-3 条业务化示例记录；不要在本技能里直接操作数据记录。
 - update / add-option / bind-datasource / validation / rule 等字段级操作不要求先执行外部 `get-schema`；直接提交 compact JSON 或字段 label/fieldId，CLI 会内部读取 schema、定位字段，并在成功 JSON 中输出 compact `resolved`/`updatedProps` evidence。字段解析失败/歧义时按 `diagnostics[].candidates` 补 `tableLabel`、修正 label 或再执行一次 compact `get-schema`。
 - 字段定义或变更定义需要落盘时，必须使用 agent 的结构化文件写入工具创建到 `<projectRoot>/.cache/openyida/<项目名或任务名>/`，例如 `<projectRoot>/.cache/openyida/pm/pm-fields-team.json`
 - 普通表单分组必须优先使用 `Divider`，多列排版必须通过字段 JSON 中的 `ColumnContainer` 局部表达
@@ -123,6 +124,13 @@ openyida create-form create <appType> <formTitle> <fieldsJsonOrFile> [--layout d
 ```json
 {"success":true,"formUuid":"FORM-XXX","formTitle":"用户信息表","appType":"APP_xxx","fieldCount":4,"url":"{base_url}/APP_xxx/workbench/FORM-XXX"}
 ```
+
+完整应用模式下的下一步：
+
+1. 将 `formUuid`、字段摘要和字段 JSON 路径写入 `.cache/<项目名>-schema.json`。
+2. 对需要作为页面列表、看板或详情数据源的核心普通表单，加载 `yida-data-management`。
+3. 用 `openyida get-schema <appType> <formUuid> --field-map-json` 获取真实 `fieldId`，再逐条写入 1-3 条业务化 seed records。
+4. 写入失败时不要在表单技能里重建表单；保留表单，报告数据写入失败原因，页面阶段展示空态和登记入口。
 
 ### create 失败恢复决策树
 
