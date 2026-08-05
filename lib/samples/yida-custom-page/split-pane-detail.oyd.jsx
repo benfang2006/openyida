@@ -3,7 +3,7 @@
  * @openyida-template {{OPENYIDA_TEMPLATE}}
  * @openyida-ir-version {{OPENYIDA_IR_VERSION}}
  * @openyida-scene {{OPENYIDA_SCENE}}
- * @openyida-visual-profile {{OPENYIDA_VISUAL_PROFILE}}
+ * @openyida-design-profile {{OPENYIDA_VISUAL_PROFILE}}
  * @openyida-design-profile {{OPENYIDA_THEME_PROFILE}}
  * @openyida-design-scope {{OPENYIDA_THEME_SCOPE}}
  * @openyida-blocks {{OPENYIDA_BLOCKS}}
