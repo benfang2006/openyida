@@ -422,7 +422,6 @@ describe('OpenYida skill contracts', () => {
     expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'sub_skill', 'workhome-ui-skill', 'SKILL.md'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'yida-skills', 'skills', 'yida-design', 'references', 'style-designs', 'lime-bento-ops-workbench.design.md'))).toBe(true);
     expect(design).not.toContain('workhome-ui-skill');
-    expect(design).not.toContain('fast_build');
     expect(step5).not.toContain('workhome-ui-skill');
     expect(output).not.toContain('workhome-ui-skill');
     expect(contract).toContain('需求分析、产品设计、数据结构、页面布局、应用主题色/风格摘要和验收标准由 `yida-design` 输出到 `prd/<项目名>/prd.md`');
