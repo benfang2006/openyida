@@ -7,18 +7,24 @@
 先为完整应用生成一套主设计契约，再为不同页面场景写局部变体。自定义展示页、工作台、列表管理页、处理台、看板和首页门户都遵守同一个 `prd/<项目名>/design.md`。
 
 1. 读取 [design.md 生成规则](../references/style-design-selection.md)。
-2. 读取 [design.md 模板索引](../references/style-designs/registry.md)，再读取 `_design-md-template.md`。
-3. 根据应用目标、业务领域、角色、信息密度、数据形态、应用主题和用户偏好生成新的视觉 DNA、配色、布局原则、组件规则和状态规则。
-4. 读取 [视觉脚手架配方库](../references/visual-scaffold-recipes.md)，把应用内各类页面映射到统一 `visualScaffold` 规则。
-5. 读取 [页面质量门禁](../references/page-quality-gates.md)，把质量门禁补进 `acceptanceChecks`。
-6. 写清 `roundedRule`、`densityRule` 与 `breathingRule` 的具体数值；默认业务页是圆润高密且有呼吸感，不得只写“圆润 / 舒适 / 留白合理 / 有呼吸感”。
-7. 完整应用内默认保持同一套主设计系统；页面场景差异很大时，在同一份 `design.md` 里写页面场景变体，不为每个页面另起独立设计文件。
+2. 读取 [style-design 内置模板注册表](../references/style-designs/registry.md)，再读取 `_design-md-template.md`。
+3. 从 Step 1-4 产物推演 `inferredUserTask`、`inferredInformationTopology`、`interactionFocus` 和 `requiredVisualDNA`。用户通常不会主动描述视觉结构，agent 必须从业务对象、数据形态、页面区块和操作路径中推演。
+4. 按 `业务任务匹配 30% + 信息拓扑匹配 25% + 视觉 DNA 命中 30% + 实现稳定性 10% - 风险扣分 5%` 选择唯一一个 `style-designs/*.md` 作为 `baseDesignSource`；纯表单、长文、品牌营销、移动端单任务、未要求暗色时要过滤明显不合适的模板。
+5. 读取被选中的 style-design 模板，抽取 `visual_dna`、`theme_adaptation`、`layout_stability`、`quality_anchors`、`components` 和 `modules`。
+6. 根据 Step 2 的主题色来源和主题色输入执行换肤：替换模板 `theme_adaptation.replace_tokens`，派生 `derive_tokens`，保留 `preserve_tokens` 和 `visual_dna.invariant`。主题色只换 hue，不换 DNA，不改结构。
+7. 需要判断详略时读取唯一示例 `generated-business-design.example.md`；只学习结构和粒度，不复制示例业务、色盘、字段、页面顺序或组件组合。
+8. 读取 [视觉脚手架配方库](../references/visual-scaffold-recipes.md)，把应用内各类页面映射到统一 `visualScaffold` 规则。
+9. 读取 [页面质量门禁](../references/page-quality-gates.md)，把质量门禁补进 `acceptanceChecks`。
+10. 写清 `roundedRule`、`densityRule` 与 `breathingRule` 的具体数值；默认业务页是圆润高密且有呼吸感，不得只写“圆润 / 舒适 / 留白合理 / 有呼吸感”。
+11. 完整应用内默认保持同一套主设计系统；页面场景差异很大时，在同一份 `design.md` 里写页面场景变体，不为每个页面另起独立设计文件。
 
 输出字段：
 
 ```markdown
 - designFile：prd/<项目名>/design.md
-- baseDesignSource：generated-from-business-context
+- baseDesignSource：references/style-designs/<selected-template>.md；所有模板都不适用时才写 generated-from-business-context
+- styleDesignSelection：<推演任务 / 信息拓扑 / requiredVisualDNA / 选中模板 / 拒绝模板 / 置信度>
+- themeAdaptationResult：<输入主题色 / 换肤策略 / replaced tokens / preservedVisualDNA / preservedMechanisms>
 - styleReason：<为什么适合当前应用和页面组合>
 - Visual DNA：<所有页面都必须保留的 2-5 个视觉 DNA>
 - sceneRecipes：<workbench/list/detail/dashboard/landing/screen 各自如何遵守同一 design.md>
@@ -31,7 +37,7 @@
 
 - 2-3 个气质关键词：稳重可信、轻盈现代、克制高端、温暖亲和、前沿科技等。
 - 3-5 条业务专属设计原则：结合业务对象和用户任务写具体规则。
-- 差异化 5 维：色彩、构图、密度、组件语言、动线。
+- 差异化 5 维：色彩、构图、密度、组件语言、动线；这些规则必须来自业务推演和所选模板视觉 DNA 的融合。
 - 基础版式：全应用视觉锚点、区块节奏、密度、操作位置和响应式规则。
 - `visualScaffold`：给所有页面实现使用的硬骨架，写清 `layoutRecipe`、`surfaceMap`、`sectionRhythm`、`densityRule`、`breathingRule`、`componentRecipe`、`emptyStateRecipe`、`responsiveSlots` 和 `acceptanceChecks`。这些字段属于 `design.md`，PRD 只引用。
 - 默认业务工具页采用圆润高密且有呼吸感的规则：卡片 padding 默认 22-28px 且必须大于 20px，卡片与卡片的 gap 默认 12-18px 且必须小于 20px，卡片圆角范围 0-32px，控件 10-14px；状态摘要 64-88px，动作条 40-56px，列表行 44-56px，空态 88-120px 内。官网、品牌页或用户明确要求舒展时才放宽。
@@ -88,12 +94,16 @@
 13. 页面是否已考虑 `backgroundLayer`：优先选择淡色背景、顶部不规则色块、柔和光洗、低速流光、微噪点、细线装饰、插图或局部渐变之一；近白画布可以保留，但不能呈现为未设计的空白底。
 14. 不规则背景是否只服务氛围和视觉焦点，内容区是否仍保持规则栅格、稳定对齐、可读对比度和 reduced motion 静态降级。
 15. 页面背景与卡片背景是否形成明显层次对比，并按白色/浅色背景配边框、浅灰/浅彩背景配白色无边框、渐变背景配玻璃卡片的方案落地。
-15. 圆角、padding、gap 是否同时满足现代感和信息密度：卡片 padding >20px，卡片 gap <20px，卡片圆角 0-32px，状态摘要、任务列表、右侧上下文和空态没有被撑成大空白容器。
+16. 圆角、padding、gap 是否同时满足现代感和信息密度：卡片 padding >20px，卡片 gap <20px，卡片圆角 0-32px，状态摘要、任务列表、右侧上下文和空态没有被撑成大空白容器。
+17. `styleDesignSelection` 是否能从业务任务、信息拓扑和 requiredVisualDNA 解释模板选择，而不是按行业、颜色或主观喜好套模板。
+18. `themeAdaptationResult` 是否遵守所选模板 `theme_adaptation`：换 hue，不换 DNA；换 token，不换结构；保留 `preserve_tokens` 和 `visual_dna.invariant`。
 
 ## 产出
 
 ```markdown
 - designFile：<prd/<项目名>/design.md>
+- styleDesignSelection：<推演任务 / 信息拓扑 / requiredVisualDNA / selectedStyleDesign / rejectedStyleDesigns>
+- themeAdaptationResult：<inputThemeColor / strategy / replaced / preservedVisualDNA / preservedMechanisms>
 - designSystem：<themeProfile / Visual DNA / 基础版式 / visualScaffold / sceneRecipes>
 - componentSpec：<按钮/表格/卡片/标签/抽屉/图标>
 - iconSystem：<defaultLibrary / allowedLibraries / sizes / actionIconMap / statusIconMap>
