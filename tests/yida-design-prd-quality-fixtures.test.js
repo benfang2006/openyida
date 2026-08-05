@@ -49,15 +49,22 @@ describe('yida-design PRD quality fixtures', () => {
     }
   });
 
-  test('style registry keeps only the design template', () => {
+  test('style registry documents built-in visual DNA templates', () => {
     const registry = read('yida-skills/skills/yida-design/references/style-designs/registry.md');
     const template = read('yida-skills/skills/yida-design/references/style-designs/_design-md-template.md');
     const styleDesignEntries = fs.readdirSync(path.join(ROOT, 'yida-skills/skills/yida-design/references/style-designs')).sort();
 
     expect(registry).toContain('_design-md-template.md');
-    expect(registry).toContain('本目录用于记录 `design.md` 结构模板');
+    expect(registry).toContain('内置视觉 DNA 模板');
     expect(registry).toContain('配色由模型根据行业、品牌、应用主题、业务情绪和用户偏好生成');
-    expect(styleDesignEntries).toEqual(['_design-md-template.md', 'registry.md']);
+    expect(styleDesignEntries).toEqual(expect.arrayContaining([
+      '_design-md-template.md',
+      'registry.md',
+      'soft-analytic-workbench.md',
+      'dark-stage-analytic-dashboard.md',
+      'filterable-card-catalog.md',
+    ]));
+    expect(styleDesignEntries.length).toBeGreaterThan(2);
     expect(template).toContain('## 21. 交付自检清单');
     expect(template).toContain('卡片圆角范围 0-32px');
     expect(template).toContain('卡片 padding 必须大于 20');
