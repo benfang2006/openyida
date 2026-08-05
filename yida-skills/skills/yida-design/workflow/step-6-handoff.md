@@ -30,8 +30,8 @@
 
 | 模块 | 必填内容 |
 | --- | --- |
-| frontmatter | version、design_id、scenes、density、layout、tone、themeProfile、yidaThemeRuntime、tokens、visual_dna |
-| 总览 / 适用场景 / 视觉氛围 | 可复用设计意图、适合与不适合场景、密度、气质和页面组织方式 |
+| frontmatter | version、design_id、baseDesignSource、styleDesignSelection、themeProfile、themeAdaptationResult、yidaThemeRuntime、tokens、visual_dna、scenes、density、layout、tone |
+| 总览 / 模板选择依据 / 主题色与换肤结果 / 适用场景 / 视觉氛围 | 可复用设计意图、选中模板和拒绝模板、主题色来源、换肤策略、适合与不适合场景、密度、气质和页面组织方式 |
 | 视觉 DNA / 设计母体 | 所有页面都必须保留的 2-5 个视觉 DNA，每个包含证据、规则、实现钩子、失败表现和置信度 |
 | 色彩角色 / 字体 / 布局 / 深度 / 形状 | token、字体栈、字号、网格、间距、层级、圆角和材质规则 |
 | 组件样式 / 快捷入口区域 | 按组件写 default、hover、active、focus、disabled、loading、selected、error；工作台等必须写快捷入口区域 |
