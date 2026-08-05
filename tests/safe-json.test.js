@@ -28,7 +28,13 @@ describe('safe-json preprocessing (#3)', () => {
 
   test('auto-recovers when only smart quotes broke the JSON', () => {
     const input = '{“name”:“OpenKuma”}';
-    expect(safeParseJson(input)).toEqual({ name: 'OpenKuma' });
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(safeParseJson(input)).toEqual({ name: 'OpenKuma' });
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('智能引号'));
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
 
