@@ -641,6 +641,7 @@ Latest contributors: [DDlixin1](https://github.com/DDlixin1), [fcloud](https://g
 <p>
   <a href="https://github.com/yize"><img src="https://github.com/yize.png?size=48" width="48" height="48" alt="九神" title="九神" /></a>
   <a href="https://github.com/alex-mm"><img src="https://github.com/alex-mm.png?size=48" width="48" height="48" alt="天晟" title="天晟" /></a>
+  <a href="https://github.com/fryaninc"><img src="https://github.com/fryaninc.png?size=48" width="48" height="48" alt="New Core architecture, Core development, user issue support, skill maintenance and Help & Show Case Center 构建者" title="New Core architecture, Core development, user issue support, skill maintenance and Help & Show Case Center 构建者" /></a>
   <a href="https://github.com/DDlixin1"><img src="https://github.com/DDlixin1.png?size=48" width="48" height="48" alt="DDlixin1" title="DDlixin1" /></a>
   <a href="https://github.com/fcloud"><img src="https://github.com/fcloud.png?size=48" width="48" height="48" alt="Aiden Wu (fcloud)" title="Aiden Wu (fcloud)" /></a>
   <a href="https://github.com/nicky1108"><img src="https://github.com/nicky1108.png?size=48" width="48" height="48" alt="nicky1108" title="nicky1108" /></a>
@@ -658,6 +659,8 @@ Latest contributors: [DDlixin1](https://github.com/DDlixin1), [fcloud](https://g
   <a href="https://github.com/key-668"><img src="https://github.com/key-668.png?size=48" width="48" height="48" alt="再不喝汽水" title="再不喝汽水" /></a>
   <a href="https://github.com/dongbeixiaohuo"><img src="https://github.com/dongbeixiaohuo.png?size=48" width="48" height="48" alt="dongbeixiaohuo" title="dongbeixiaohuo" /></a>
   <a href="https://github.com/nandanadileep"><img src="https://github.com/nandanadileep.png?size=48" width="48" height="48" alt="nandanadileep" title="nandanadileep" /></a>
+  <a href="https://github.com/hj837990198"><img src="https://github.com/hj837990198.png?size=48" width="48" height="48" alt="skill 测试" title="skill 测试" /></a>
+  <a href="https://github.com/chengminchao-create"><img src="https://github.com/chengminchao-create.png?size=48" width="48" height="48" alt="skill共建" title="skill共建" /></a>
 </p>
 
 <!-- openyida-contributors:end -->
