@@ -643,6 +643,7 @@ Latest contributors: [DDlixin1](https://github.com/DDlixin1), [fcloud](https://g
   <a href="https://github.com/alex-mm"><img src="https://github.com/alex-mm.png?size=48" width="48" height="48" alt="天晟" title="天晟" /></a>
   <a href="https://github.com/fryaninc"><img src="https://github.com/fryaninc.png?size=48" width="48" height="48" alt="New Core architecture, Core development, user issue support, skill maintenance and Help & Show Case Center 构建者" title="New Core architecture, Core development, user issue support, skill maintenance and Help & Show Case Center 构建者" /></a>
   <a href="https://github.com/DDlixin1"><img src="https://github.com/DDlixin1.png?size=48" width="48" height="48" alt="DDlixin1" title="DDlixin1" /></a>
+  <a href="https://github.com/xhy-ali"><img src="https://github.com/xhy-ali.png?size=48" width="48" height="48" alt="登录态开发者" title="登录态开发者" /></a>
   <a href="https://github.com/fcloud"><img src="https://github.com/fcloud.png?size=48" width="48" height="48" alt="Aiden Wu (fcloud)" title="Aiden Wu (fcloud)" /></a>
   <a href="https://github.com/nicky1108"><img src="https://github.com/nicky1108.png?size=48" width="48" height="48" alt="nicky1108" title="nicky1108" /></a>
   <a href="https://github.com/angelinheys"><img src="https://github.com/angelinheys.png?size=48" width="48" height="48" alt="angelinheys" title="angelinheys" /></a>
