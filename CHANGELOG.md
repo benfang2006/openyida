@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.12] - 2026-08-12
+
+### Changed
+- 更新 README 与 CLI 帮助中的 OpenYida 帮助网站入口，统一指向新的 `demo.aliwork.com` helpCenter 路由，并补齐完整功能列表、CLI Reference、案例展示和更新日志等快捷链接。
+- 在自定义页面文档中补充“AI 自定义页面支持的宜搭原生组件”支持清单入口，便于查看 Code Canvas 可用的成员、部门、上传等原生组件能力。
+- 优化 `yida-design` 视觉模板选择与 registry 说明，强化模板适用场景、选择边界和弱模型路由提示。
+
+### Fixed
+- 修复 `nav-group auto-order` 未纳入命令 manifest 权限契约的问题，避免导航自动排序被误判为未知动作并触发额外权限确认。
+
+### Tests
+- 新增 CLI smoke 回归断言，覆盖 `nav-group auto-order` 的 manifest 权限分类，确保自动排序为预授权动作且删除动作仍需确认。
+
 ## [2026.8.11] - 2026-08-11
 
 ### Added
