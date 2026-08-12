@@ -164,6 +164,8 @@ openyida publish pages/src/dashboard.canvas.jsx APP_XXX FORM_XXX
 
 需要成员、部门、附件上传、图片上传时，先确认当前页面链路：
 
+支持清单：[AI 自定义页面支持的宜搭原生组件](https://demo.aliwork.com/o/openyida/sample/canvas-native-components)。
+
 | 页面链路 | 做法 |
 |----------|------|
 | Code Canvas | 使用 `yida-canvas-custom-page`，按 `native-components-bridge.md` 做运行态组件探测、fallback 和值归一化 |

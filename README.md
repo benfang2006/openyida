@@ -194,6 +194,8 @@ Custom page source is authored directly from PRD and design guidance. Code Canva
 
 For member, department, attachment, and image upload components, choose the page chain first. Code Canvas pages should follow `yida-canvas-custom-page/references/native-components-bridge.md` for feature detection, fallback, and value normalization. 普通自定义页面 JSX/Jsx pages should use `.oyd.jsx`, read `yida-custom-page/references/component-jsx-guide.md`, and read `attachment-upload-guide.md` when upload fields are involved.
 
+For the current AI custom page native-component support matrix, see [Yida native components supported by AI custom pages](https://demo.aliwork.com/o/openyida/sample/canvas-native-components).
+
 ### Workflow, Data, and Permissions
 
 ```bash
