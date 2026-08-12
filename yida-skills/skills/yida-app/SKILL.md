@@ -45,14 +45,14 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 ## 设计职责边界
 
-完整应用只走统一编排。需求分析、产品定位、资源蓝图、视觉契约和验收标准由 `yida-design` 负责；具体产物边界见 `yida-design`。
+完整应用只走统一编排。需求分析、产品定位、页面/表单/流程蓝图、主题色、各页面布局、交互状态和验收标准统一交给 `yida-design`；把 `yida-design` 输出的 PRD 写入 `prd/<项目名>/prd.md`，把所有页面共同遵守的 UI 视觉规则写入 `prd/<项目名>/design.md`；后续阶段消费 PRD 中的资源创建顺序、页面实现交付顺序、导航顺序和验收标准。具体产物边界见 `yida-design`。
 
 `yida-app` 只负责执行编排：
 
 - 解析并复用已有 app/page/form/process；
 - 加载 `yida-design` 并消费它输出的 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；
 - 按 PRD 的资源创建顺序创建缺失且允许创建的应用、表单、流程和主页面；其中表单/流程先于自定义页面；
-- 需要生成器或稳定交接时，从 `yida-design` 产物派生 `page-spec.json`；
+- 只有走页面生成器或需要稳定交接时才派生 `page-spec.json`；
 - 调用页面技能实现并发布；
 - 发布后按 PRD 的导航顺序执行轻量导航排序；
 - 只输出 2-3 句业务交付总结和一个主入口链接，业务总结在前、链接在后。
@@ -107,7 +107,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 UI/体验不是 `yida-app` 内部模式，由 `yida-design` 在 Step 2 一次性完成。`yida-app` 只读取 `yida-design` 产物，并把主题、页面、导航和状态要求交给后续创建、页面实现和发布技能。
 
-主题 key 是否传给 `create-app/update-app --theme`，只消费 `yida-design` 产物中的明确结论；没有命中平台预置主题 key 时不传主题。
+主题 key 是否传给 `create-app/update-app --theme`，只消费 `yida-design` 产物中的明确结论；只有 PRD 摘要和 design.md 都写明 `shouldPassCreateAppTheme=true` 且 `themePresetKey` 命中平台 key 时才传主题，没有命中平台预置主题 key 时不传主题。
 
 ## 页面链路原则
 
@@ -128,7 +128,7 @@ UI/体验不是 `yida-app` 内部模式，由 `yida-design` 在 Step 2 一次性
 
 ## 页面规格优先
 
-完整应用页面先消费 `yida-design` 产物，再决定用生成器入口还是直接手写页面。产物职责见 `yida-design`；`page-spec.json` 只是派生的实现 handoff / 生成器输入，不是第三份设计文件。实现阶段不读取内置页面源码来决定页面内容、布局或视觉风格。
+完整应用页面先消费 `yida-design` 产物，再决定用生成器入口还是直接手写页面。`prd.md` 和 `design.md` 是唯一设计事实源；`page-spec.json` 只是派生的实现 handoff / 生成器输入，不是第三份设计文件。实现阶段不读取内置页面源码来决定页面内容、布局或视觉风格。
 
 使用生成器入口时，必须把当前页面从 `prd.md + design.md` 派生成业务化 `page-spec.json`，至少覆盖：
 
@@ -144,7 +144,7 @@ UI/体验不是 `yida-app` 内部模式，由 `yida-design` 在 Step 2 一次性
 
 页面实现必须消费 `yida-design` 的当前产物，不从模板或内置示例反推业务和视觉。
 
-生成后检查命令输出和 `.openyida-page.json` 里的 `domainFidelity.status`：只有 `domain-ready` 才能作为真实业务页面交付。修复路径按事实源分流：
+生成后检查命令输出和 `.openyida-page.json` 里的 `domainFidelity.status`：只有 `domain-ready` 才能作为真实业务页面交付。修复路径按事实源分流；业务或视觉事实源缺失时先回写 `prd.md` / `design.md` 并重生成 spec，只有实现偏差才小范围改源码。
 
 | 问题类型 | 必须修改哪里 | 不允许的做法 |
 | --- | --- | --- |
@@ -170,7 +170,7 @@ UI/体验不是 `yida-app` 内部模式，由 `yida-design` 在 Step 2 一次性
 4. 按 `yida-design` 产物扩展交互、真实数据和视觉；
 5. 验证所有参数名称与 CLI 一致。
 
-表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON。表单详情页 CSS 优化不走 `openyida publish`；拿到真实 `formUuid` 后默认由 `yida-form-detail` / `openyida form-detail-style apply` 写入表单 Schema JS，在 `openyidaThemeDidMount` 中统一注入全局主题并按 formDetail 条件注入详情页样式，重复执行必须幂等。
+表单页开发默认加载 `use_skill("yida-form-detail", "表单视觉引导与详情页样式默认注入")`，将填写路径、字段密度和 Divider 分割线语义分组合并进 `yida-create-form-page` 的字段 JSON，确保字段结构有 Divider 分组。表单详情页 CSS 优化不走 `openyida publish`；拿到真实 `formUuid` 后默认由 `yida-form-detail` / `openyida form-detail-style apply` 写入表单 Schema JS，在 `openyidaThemeDidMount` 中统一注入全局主题并按 formDetail 条件注入详情页样式，重复执行必须幂等；doneWhen 需要看到 formDetail CSS 已注入或有明确阻塞原因。
 
 ## 完整应用统一编排阶段
 

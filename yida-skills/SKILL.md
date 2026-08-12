@@ -55,7 +55,9 @@ description: >
 
 ## 默认执行路径
 
-完整应用搭建加载 `yida-app`，按`yida-app`去执行对应步骤。
+完整应用搭建加载 `yida-app`，按`yida-app`去执行对应步骤；默认使用 `create-app / create-form / create-page / publish` 这条 CLI 能力链，但必须由 `yida-app` 编排，不直接手动拼接子命令。
+
+默认阶段心智模型：`resolve_resource_context → yida-design → create/reuse app → resolve forms/processes → seed records → reserve main page → 发布 + 轻量导航排序 → final`。发布后的轻量导航自动排序、seed records 和表单详情页 formDetail CSS 注入是默认收尾；PRD 写明导航顺序时执行 `openyida nav-group order <appType> <页面/表单...>`，未写明时使用 `--auto-nav-order` / `nav-group auto-order` 兜底。新建表单拿到真实 `formUuid` 后默认注入 formDetail CSS；字段级命令内置解析，普通字段更新优先交给 `create-form update/add-option/bind-datasource/validation/rule`。
 
 ---
 
