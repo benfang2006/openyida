@@ -55,9 +55,9 @@ description: >
 
 ## 默认执行路径
 
-OpenYida builder 默认使用 `create-app / create-form / create-page / publish` 等常规命令链路。页面实现先消费 `prd.md` 和 `design.md`；只有走生成器或需要稳定交接时才派生 `page-spec.json`，再选择页面生成器或手写源码。CLI 内部负责读取必要的 schema、定位字段、输出 compact diff/evidence、readback 和 bindings，模型不要为了简单字段更新先拉取大 schema，也不要把新建命令当作默认动作。
+完整应用加载 `yida-app`。
 
-`.cache/<项目名>-schema.json` 只是本地 ID 映射，不等于远端真相。路径不明确时先只读确认或询问用户；不要通过新建同类资源规避不确定性。
+详细流程见 `yida-app`。根入口不再写资源顺序、最终输出格式、schema 获取或 Canvas 实现规则。
 
 ---
 
@@ -105,7 +105,7 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / publish`
 - 已解析到目标自定义页面 URL / `formUuid` / bound page 时，默认写源码并发布到该页面，不执行 `yida-create-page`；只有缺少目标 display page 且本次意图允许新增页面时才创建。
 - 已解析到目标表单 `formUuid` 时，字段结构诉求默认走 `yida-create-form-page` 的 update/patch/rule/bind-datasource 模式，不创建同名或同类表单。
 - 已解析到目标流程表单 / `processCode` 时，默认走 `yida-process-rule` 配置/更新流程，不从零执行 `yida-create-process`。
-- 完整应用统一编排也遵守本规则：先由 `yida-design` 输出 `prd.md` 与 `design.md`，再按 PRD 创建或复用应用；表单/流程先于自定义页面，页面实现消费 PRD 的业务结构、design.md 的视觉契约和真实资源 ID。
+- 完整应用加载 `yida-app`；详细流程见 `yida-app`。根入口只负责判定资源上下文。
 
 验收心智模型：
 
@@ -136,23 +136,8 @@ OpenYida builder 默认使用 `create-app / create-form / create-page / publish`
 ## 完整开发流程（完整搭建 / 补齐）
 
 > 📌 仅当第二步判定为「完整搭建 / 补齐」时进入；单一/增量任务请跳「技能路由」。
-> 加载子技能 `yida-app`，由它负责完整应用 workflow、阶段子技能加载、关键 ID 流转、PRD 与 schema cache 约束。
-> 用户说“按默认方案 / 不要追问 / 直接创建 / 尽快搭建”时，`yida-app` 使用统一编排：先解析本轮资源上下文，再由 `yida-design` 完成需求分析和产品设计，输出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，随后按 PRD 创建或复用应用/表单/流程/页面，按 design.md 实现页面视觉，发布主页面后立刻做一次轻量导航排序；最终先输出 2-3 句业务交付总结，再给一个主入口链接，不默认输出表格或资源 ID 摘要。
-> `yida-app` 使用常规 OpenYida 命令编排。
-
-**默认链路**：完整应用必须只做 `resolve context → yida-design prd.md + design.md → create/reuse app → resolve forms/processes → seed records → reserve main page → 编写/更新主页面源码 → 发布 + 轻量导航排序 → 返回 2-3 句业务交付总结 + 一个主入口链接`。资源创建顺序按 PRD 执行：应用先落位，表单/流程先于自定义页面；页面实现读取真实表单 URL、字段语义、数据来源和 design.md 视觉契约。只有走生成器时才派生 `page-spec.json`。发布主页面成功后，PRD 写明导航顺序时执行 `openyida nav-group order <appType> <页面/表单...>`；PRD 只写宽泛分组或缺少导航顺序时，执行 `openyida nav-group auto-order <appType>` 或 `openyida publish ... --auto-nav-order` 兜底，兜底顺序为门户/首页/工作台入口、业务办理、数据管理、经营分析、系统配置。完整应用默认写入 1-3 条核心普通表单示例记录；用户明确要求公开访问、截图验收、报表/大屏、数据桥深度接入或精细导航分组时，再追加对应技能。
-
-**默认加载边界**：只加载 `yida-app` 和当前阶段必需的子技能。`yida-design` 负责需求分析、产品定位、页面/表单/流程蓝图、主题色、各页面布局、资源创建顺序、页面实现交付顺序、导航顺序和验收标准，并输出 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；`yida-create-app`、`yida-create-page`、`yida-create-form-page` 只有在目标资源缺失且本次意图允许创建时才加载；已有资源时进入对应 update / publish 分支。主页面实现读取 PRD 的业务输入，并直接读取 design.md 的主题、布局、材质、圆角、密度、组件和状态规则；走生成器时再派生 `page-spec.json`，并标记 `sourceOfTruth.prdFile/designFile`。页面默认走 Code Canvas；当用户明确要求普通自定义页面 JSX/Jsx 组件链路，或页面强依赖普通自定义页实例桥（`this.$(fieldId)` / `this.utils.yida.*` / `this.dataSourceMap` / 表单提交或字段双向绑定深度耦合）时，选择 `yida-custom-page`。数据源深接、数据管理和原生报表只在用户明确要求或 PRD 验收标准命中时追加。
-
-**Canvas 数据边界**：完整应用/真实交付页如果展示列表、看板或详情记录，必须优先把本轮真实 `appType/formUuid/fieldId` 写入 `page-spec.json` 的 `dataBinding.mode=form`；完整应用默认先写入 1-3 条核心普通表单记录再读取。未接真实表单且未写入 demo records 时，页面展示空态/入口，不用前端 seedRows 冒充业务数据。
-
-**字段级命令内置解析**：简单字段属性更新（例如“把备注字段改为必填”）直接调用 `openyida create-form update <appType> <formUuid> '[{"action":"update","label":"备注","changes":{"required":true}}]'`；CLI 会内部读取当前 schema，按 label/fieldId/tableLabel 定位字段，并在 JSON 中输出 resolved/updated evidence。`add-option`、`bind-datasource`、`validation`、`rule` 等字段级命令也可直接按 label 或已知 fieldId 操作，成功返回 compact `resolved`，失败返回 compact `diagnostics[].candidates`。只有字段解析仍歧义、需要底层 patch path，或页面代码/数据查询/流程/公式等确实需要多个 `fieldId` 时，才对目标表单执行一次 `openyida get-schema <appType> <formUuid> --field-map-json` 并合并到 `.cache/<项目名>-schema.json`。不要用 `head`/`tail`/`grep` 截断 get-schema stdout 作为字段证据，也不要因此对同一表单重复拉取多轮 schema。
-
-**Canvas 实现路径二选一**：走页面生成器时，先写业务化 `page-spec.json` 再生成可编译骨架，后续只读 manifest/摘要并小范围 Edit；不要立即 Read 大段源码再全量 Write 覆盖同一路径。若已经明确最终页面结构，直接 Write 最终 `.canvas.jsx`。
-
-**doneWhen**：`yida-app` 发布主页面成功、轻量导航自动排序已执行或给出明确 warning，并先输出 2-3 句业务交付总结、再给可访问主入口链接。到这里默认完成；不要发布后继续 TaskCreate、重复读技能或继续规划。
-
-**optionalAfterDone**：精细导航整理、公开访问、截图验证、数据源/连接器深度接入、报表/大屏，只在用户明确要求或 PRD 验收标准命中时执行；发布后的轻量导航自动排序、seed records 和表单详情页 formDetail CSS 注入是默认收尾，不算可选后置。表单页开发默认加载 `yida-form-detail` 做表单视觉引导，并把 Divider 分割线语义分组合并进字段 JSON；拿到真实 `formUuid` 后默认注入 formDetail CSS。
+> 完整应用加载 `yida-app`。
+> 详细流程见 `yida-app`。这里不再写资源顺序、最终输出格式、schema 获取或 Canvas 实现规则。
 
 ---
 
