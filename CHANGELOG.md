@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.12-1] - 2026-08-12
+
+### Changed
+- 调整 `yida-design` 与 `yida-canvas-custom-page` 的页面丰富度说明，将区块数量改为“推荐 8-10 个区块以上”的建议口径，并保留窄场景可精简的说明。
+- 收敛完整应用与技能入口文档，减少重复路由提示，强化按 PRD 与设计契约推进页面实现的边界。
+- 更新 README 贡献者展示内容。
+
+### Fixed
+- 移除 Code Canvas 编译和页面 linter 中的内容区块数量硬校验，避免少于指定区块数时阻塞 `check-page`、`compile` 或 `publish`。
+
 ## [2026.8.12] - 2026-08-12
 
 ### Changed
