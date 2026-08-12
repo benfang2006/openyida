@@ -55,9 +55,7 @@ description: >
 
 ## 默认执行路径
 
-完整应用加载 `yida-app`。
-
-详细流程见 `yida-app`。根入口不再写资源顺序、最终输出格式、schema 获取或 Canvas 实现规则。
+完整应用搭建加载 `yida-app`，按`yida-app`去执行对应步骤。
 
 ---
 
@@ -105,7 +103,7 @@ description: >
 - 已解析到目标自定义页面 URL / `formUuid` / bound page 时，默认写源码并发布到该页面，不执行 `yida-create-page`；只有缺少目标 display page 且本次意图允许新增页面时才创建。
 - 已解析到目标表单 `formUuid` 时，字段结构诉求默认走 `yida-create-form-page` 的 update/patch/rule/bind-datasource 模式，不创建同名或同类表单。
 - 已解析到目标流程表单 / `processCode` 时，默认走 `yida-process-rule` 配置/更新流程，不从零执行 `yida-create-process`。
-- 完整应用加载 `yida-app`；详细流程见 `yida-app`。根入口只负责判定资源上下文。
+- 完整应用搭建使用 `yida-app` 技能， 按`yida-app` 技能执行。
 
 验收心智模型：
 
@@ -136,8 +134,7 @@ description: >
 ## 完整开发流程（完整搭建 / 补齐）
 
 > 📌 仅当第二步判定为「完整搭建 / 补齐」时进入；单一/增量任务请跳「技能路由」。
-> 完整应用加载 `yida-app`。
-> 详细流程见 `yida-app`。这里不再写资源顺序、最终输出格式、schema 获取或 Canvas 实现规则。
+完整应用 workflow 由`yida-app`负责、按阶段加载子技能完成应用的首轮开发&页面的开发。
 
 ---
 
