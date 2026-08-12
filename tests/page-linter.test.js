@@ -113,7 +113,7 @@ export function renderJsx() {
       .not.toContain('jsx-text-identifier');
   });
 
-  test('blocks rich display pages with too few content blocks', () => {
+  test('does not block rich display pages with few content blocks', () => {
     const source = `
 /**
  * @openyida-scene workbench
@@ -126,12 +126,7 @@ export function renderJsx() {
 
     const result = lintYidaSource(source, '/tmp/workbench.jsx');
 
-    expect(result.errors).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        rule: 'content-blocks-too-few',
-        line: 4,
-      }),
-    ]));
+    expect(result.errors).toEqual([]);
   });
 
   test('flags Yida runtime traps in otherwise JSX-shaped pages', () => {

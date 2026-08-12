@@ -1,7 +1,5 @@
 <div align="center">
 
-![OpenYida](https://img.alicdn.com/imgextra/i3/O1CN01SKWbWu1aPzGXh293W_!!6000000003323-2-tps-1672-941.png)
-
 # OpenYida
 
 **面向 AI 编程工具的宜搭低代码 CLI。**
