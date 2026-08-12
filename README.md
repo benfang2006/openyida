@@ -8,7 +8,7 @@
 
 OpenYida connects AI coding agents with Yida's low-code platform, so developers can create apps, forms, workflows, custom pages, reports, integrations, and deployment configuration from a normal chat-driven development workflow.
 
-[Quick Start](#quick-start) · [Help Center](https://xmtrf1.aliwork.com/o/openyida/help?lang=en) · [Capabilities](#capabilities) · [Full Capability List](./docs/capabilities.md) · [CLI Reference](#cli-reference) · [Examples](#examples) · [Contributing](./CONTRIBUTING.md) · [Changelog](./CHANGELOG.md)
+[Quick Start](#quick-start) · [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter) · [Capabilities](#capabilities) · [Full Capability List](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=capabilities) · [CLI Reference](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=features/skills) · [Examples](https://demo.aliwork.com/o/openyida/helpCenter?openyidaRoute=showcase) · [Contributing](./CONTRIBUTING.md) · [Changelog](https://demo.aliwork.com/o/openyida/helpCenter?openyidaRoute=changelog)
 
 [![npm version](https://img.shields.io/npm/v/openyida?color=brightgreen&label=npm)](https://www.npmjs.com/package/openyida)
 [![npm downloads](https://img.shields.io/npm/dm/openyida?color=blue)](https://www.npmjs.com/package/openyida)
@@ -16,7 +16,7 @@ OpenYida connects AI coding agents with Yida's low-code platform, so developers 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**Help Center:** [简体中文](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh) · [繁體中文(中國台灣)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-Hant) · [繁體中文(中國香港)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-HK) · [English](https://xmtrf1.aliwork.com/o/openyida/help?lang=en) · [日本語](https://xmtrf1.aliwork.com/o/openyida/help?lang=ja) · [한국어](https://xmtrf1.aliwork.com/o/openyida/help?lang=ko) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida/help?lang=vi) · [ไทย](https://xmtrf1.aliwork.com/o/openyida/help?lang=th) · [Bahasa Indonesia](https://xmtrf1.aliwork.com/o/openyida/help?lang=id) · [Bahasa Melayu](https://xmtrf1.aliwork.com/o/openyida/help?lang=ms) · [Français](https://xmtrf1.aliwork.com/o/openyida/help?lang=fr) · [Português](https://xmtrf1.aliwork.com/o/openyida/help?lang=pt) · [Türkçe](https://xmtrf1.aliwork.com/o/openyida/help?lang=tr) · [Español](https://xmtrf1.aliwork.com/o/openyida/help?lang=es) · [Русский](https://xmtrf1.aliwork.com/o/openyida/help?lang=ru)
+**帮助网站&文档:** [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 
@@ -163,7 +163,7 @@ openyida/
 
 ## Capabilities
 
-For a user-facing list of supported features and matching CLI commands, see [OpenYida 功能完整列表](./docs/capabilities.md).
+For a user-facing list of supported features and matching CLI commands, see [OpenYida 功能完整列表](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=capabilities).
 
 ### Application and Form Management
 
@@ -193,6 +193,8 @@ openyida publish pages/src/home.canvas.jsx APP_XXX FORM_XXX
 Custom page source is authored directly from PRD and design guidance. Code Canvas is the default output (`.canvas.jsx`); use `.oyd.jsx` only when the page must use the 普通自定义页面 JSX/Jsx 组件链路.
 
 For member, department, attachment, and image upload components, choose the page chain first. Code Canvas pages should follow `yida-canvas-custom-page/references/native-components-bridge.md` for feature detection, fallback, and value normalization. 普通自定义页面 JSX/Jsx pages should use `.oyd.jsx`, read `yida-custom-page/references/component-jsx-guide.md`, and read `attachment-upload-guide.md` when upload fields are involved.
+
+For the current AI custom page native-component support matrix, see [Yida native components supported by AI custom pages](https://demo.aliwork.com/o/openyida/sample/canvas-native-components).
 
 ### Workflow, Data, and Permissions
 

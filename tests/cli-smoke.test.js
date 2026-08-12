@@ -730,6 +730,19 @@ describe('CLI offline smoke', () => {
       ask_actions: ['remove'],
       unknown_action_mode: 'ask',
     });
+    expect(commandById['nav-group'].side_effect).toMatchObject({
+      kind: 'mixed',
+      mutating_actions: expect.arrayContaining(['order', 'auto-order']),
+    });
+    expect(commandById['nav-group'].permission).toMatchObject({
+      mode: 'allow',
+      effect: 'unknown',
+      action_dependent: true,
+      read_actions: ['list'],
+      preauthorized_actions: expect.arrayContaining(['order', 'auto-order']),
+      ask_actions: ['delete'],
+      unknown_action_mode: 'ask',
+    });
     expect(commandById.env.permission).toMatchObject({
       mode: 'allow',
       effect: 'unknown',
@@ -816,6 +829,14 @@ describe('CLI offline smoke', () => {
     });
     expect(classifyManifestInvocation(parsed.commands, ['app-permission', 'remove'])).toMatchObject({
       entry: { id: 'app-permission' },
+      decision: 'ask',
+    });
+    expect(classifyManifestInvocation(parsed.commands, ['nav-group', 'auto-order', 'APP_1'])).toMatchObject({
+      entry: { id: 'nav-group' },
+      decision: 'allow',
+    });
+    expect(classifyManifestInvocation(parsed.commands, ['nav-group', 'delete', 'APP_1', 'NAV_1'])).toMatchObject({
+      entry: { id: 'nav-group' },
       decision: 'ask',
     });
   });
