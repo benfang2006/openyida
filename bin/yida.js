@@ -143,7 +143,7 @@ function printHelp() {
   console.log(`    ${DIM}${RESET} openyida create-form create APP_XXX "${t('help.quickstart_form_name')}" .cache/openyida/forms/fields.json`);
   console.log(`    ${DIM}${RESET} openyida dws contact user search --keyword "张三"`);
   console.log('');
-  console.log(`  ${DIM}${t('help.docs')} https://xmtrf1.aliwork.com/o/openyida/help  ·  https://github.com/openyida/openyida${RESET}`);
+  console.log(`  ${DIM}${t('help.docs')} https://demo.aliwork.com/o/openyida/helpCenter  ·  https://github.com/openyida/openyida${RESET}`);
   console.log('');
 }
 

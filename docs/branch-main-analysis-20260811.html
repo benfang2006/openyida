@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>当前分支对比 main 改动分析报告</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #5b667a;
+      --line: #d9e0ea;
+      --soft: #f1f4f8;
+      --blue: #155ebd;
+      --green: #137a4d;
+      --amber: #9b6500;
+      --red: #bd2d20;
+      --purple: #7157b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.68 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    main {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 28px auto 56px;
+    }
+    header, section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    h1, h2, h3 { margin: 0; line-height: 1.25; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; margin-bottom: 12px; }
+    h3 { font-size: 16px; margin: 18px 0 8px; }
+    p { margin: 8px 0; }
+    code {
+      background: #edf1f6;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow-wrap: anywhere;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--soft); font-weight: 700; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 4px 0; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .meta-card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fbfcfe;
+    }
+    .label { color: var(--muted); font-size: 12px; }
+    .value { font-weight: 700; margin-top: 2px; }
+    .lead { color: #31405a; font-size: 15px; max-width: 980px; }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .ok { color: var(--green); background: #e7f5ee; }
+    .info { color: var(--blue); background: #e7f0ff; }
+    .warn { color: var(--amber); background: #fff3dc; }
+    .risk { color: var(--red); background: #fdecea; }
+    .move { color: var(--purple); background: #f0ecff; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+    .metric strong { display: block; font-size: 22px; line-height: 1.2; }
+    .note { color: var(--muted); }
+    .small { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>当前分支对比 main 改动分析报告</h1>
+    <p class="lead">本报告基于 <code>git diff main...HEAD</code>、关键技能文件内容、命令 manifest、Qwen/Qoder 轮测报告和本地验证结果，重点分析“改了什么、去掉了什么、哪些变化可能让弱模型表现变差”。</p>
+    <div class="meta">
+      <div class="meta-card"><div class="label">当前分支</div><div class="value">codex/openyida-compress-routing-85161120</div></div>
+      <div class="meta-card"><div class="label">HEAD</div><div class="value">d2bf48e</div></div>
+      <div class="meta-card"><div class="label">main</div><div class="value">c1774c0</div></div>
+      <div class="meta-card"><div class="label">merge-base</div><div class="value">a90d61a</div></div>
+      <div class="meta-card"><div class="label">生成时间</div><div class="value">2026-08-11 23:08:03 CST</div></div>
+      <div class="meta-card"><div class="label">工作区状态</div><div class="value">生成报告前干净；本 HTML 为新增文件</div></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>一眼结论</h2>
+    <p>这个分支不是普通的小修，而是一次“技能入口压缩 + PRD/设计职责拆分 + Canvas/表单/导航机器化约束”的大改。总体方向对强模型是正向的：入口更短、职责更清楚、CLI 和测试承担更多硬约束；但对弱模型存在一个核心风险：很多原来写在入口里的长流程被移动到 <code>workflow/</code> 和 <code>references/</code>，弱模型如果少读一步，就会丢 PRD、设计、真实数据、导航或发布闭环。</p>
+    <div class="grid">
+      <div class="metric"><strong>225</strong><span>文件变化</span></div>
+      <div class="metric"><strong>+11,791 / -7,694</strong><span>插入 / 删除</span></div>
+      <div class="metric"><strong>140</strong><span><code>yida-skills</code> 文件变化</span></div>
+      <div class="metric"><strong>42</strong><span><code>lib</code> 文件变化</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>改动分布</h2>
+    <table>
+      <thead><tr><th>区域</th><th>文件数</th><th>新增</th><th>删除</th><th>解读</th></tr></thead>
+      <tbody>
+        <tr><td><code>yida-skills</code></td><td>140</td><td>3,608</td><td>6,164</td><td>主要是入口瘦身、长规则下沉到引用文件、新增 <code>yida-prd</code> 与 <code>yida-requirement-analysis</code>。</td></tr>
+        <tr><td><code>lib</code></td><td>42</td><td>4,082</td><td>893</td><td>新增 Canvas 守卫、绑定校验、运行时桥、表单脚手架、导航排序和 manifest 契约。</td></tr>
+        <tr><td><code>tests</code></td><td>23</td><td>2,905</td><td>479</td><td>补了技能契约、Canvas 交互、绑定、运行时、导航、表单和发布前置测试。</td></tr>
+        <tr><td><code>docs</code></td><td>7</td><td>953</td><td>3</td><td>新增 6 轮 Qwen/Qoder 真实测试报告，作为弱模型表现证据。</td></tr>
+        <tr><td><code>scripts</code></td><td>10</td><td>211</td><td>122</td><td>更新路由评测、技能覆盖矩阵和验证逻辑。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>主要新增了什么</h2>
+    <table>
+      <thead><tr><th>主题</th><th>关键文件</th><th>变化</th><th>影响</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>完整应用编排拆成三段</td>
+          <td><code>yida-requirement-analysis</code>、<code>yida-prd</code>、<code>yida-design</code>、<code>yida-app</code></td>
+          <td>先生成共享需求简报，再并行生成 <code>prd.md</code> 与 <code>design.md</code>；<code>yida-design</code> 不再写 PRD。</td>
+          <td>职责更清晰，减少一个技能既写业务又写视觉的混乱；但弱模型必须正确加载 3 个技能并做 join。</td>
+        </tr>
+        <tr>
+          <td>入口压缩与按需引用</td>
+          <td><code>yida-skills/SKILL.md</code>、各子技能 <code>SKILL.md</code></td>
+          <td>根入口从 288 行降到 133 行；<code>yida-app</code> 从 329 行降到 99 行；多个技能把复杂细则拆到 <code>workflow/</code> 和 <code>references/</code>。</td>
+          <td>减少上下文噪音，让模型先路由；同时更依赖“按阶段读取引用文件”的执行纪律。</td>
+        </tr>
+        <tr>
+          <td>Canvas 页面硬门禁</td>
+          <td><code>lib/app/canvas-source-guard.js</code>、<code>tests/canvas-source-guard.test.js</code></td>
+          <td>检查按钮、搜索、筛选、Tab、分页、菜单、链接、可点击卡片等是否有真实事件；缺 import、空事件、伪可点击会被拦。</td>
+          <td>显著降低弱模型生成“看起来能点但实际没逻辑”的页面。</td>
+        </tr>
+        <tr>
+          <td>真实数据绑定校验</td>
+          <td><code>lib/app/canvas-binding-guard.js</code>、<code>tests/canvas-binding-guard.test.js</code></td>
+          <td>校验 <code>APP_TYPE</code>、<code>FORM_UUIDS</code>、<code>FIELDS</code> 是否静态、真实、与当前 schema 匹配，placeholder 字段会报错。</td>
+          <td>强制弱模型使用真实 <code>appType/formUuid/fieldId</code>，避免用前端假数据冒充。</td>
+        </tr>
+        <tr>
+          <td>Canvas 运行时桥与官方方法名</td>
+          <td><code>lib/app/runtime/canvas-runtime.js</code>、<code>canvas-yida-api-methods.js</code></td>
+          <td>统一提供 <code>window.__OPENYIDA_RUNTIME__.yida</code> / <code>__OPENYIDA_YIDA_API__</code>，内置 13 个宜搭 API 和主题注入。</td>
+          <td>减少弱模型手写 <code>this.utils.yida</code>、普通 JSX API 或错误桥接的概率。</td>
+        </tr>
+        <tr>
+          <td>原生表单脚手架</td>
+          <td><code>lib/app/scaffolds/form/form-schema-builder.js</code>、<code>form-runtime.js</code>、<code>form.form.json</code></td>
+          <td>用独立 <code>.form.json</code> 脚手架生成原生表单，校验 Divider、字段定义、表单运行时、主题和详情样式。</td>
+          <td>把原生表单和自定义页面分开，减少弱模型把表单写成 JSX 的错误。</td>
+        </tr>
+        <tr>
+          <td>导航排序变成完成条件</td>
+          <td><code>lib/core/command-manifest.js</code>、<code>lib/app/nav-group.js</code></td>
+          <td>新增 <code>nav-group auto-order</code>、plan 文件、readback 验证；完整应用要求 <code>verification.matched=true</code>。</td>
+          <td>从“发了页面就算完”收紧到“导航可用且顺序正确”。</td>
+        </tr>
+        <tr>
+          <td>弱模型真实轮测材料</td>
+          <td><code>docs/qwen-round-reports/*.html</code></td>
+          <td>新增 6 轮 Qwen/Qoder 报告，覆盖 Canvas、数据连接、seed、导航、健康检查、运行时崩溃等问题。</td>
+          <td>给后续优化提供真实失败样本，而不是只看静态文档。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>主要去掉了什么</h2>
+    <table>
+      <thead><tr><th>类型</th><th>内容</th><th>影响</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge risk">删除文件</span></td>
+          <td><code>yida-design/workflow/step-1-positioning.md</code>、<code>yida-design/workflow/step-3-information-architecture.md</code></td>
+          <td>这两部分业务定位和信息架构职责从 <code>yida-design</code> 移走，转给 <code>yida-requirement-analysis</code> 和 <code>yida-prd</code>。旧路径不再可读。</td>
+        </tr>
+        <tr>
+          <td><span class="badge move">职责迁移</span></td>
+          <td><code>yida-design/references/app/*</code> 与 <code>output-prd.md</code> 移到 <code>yida-prd</code></td>
+          <td>PRD 不再是设计技能的副产物；路由或老习惯仍把“页面清单、导航规划”交给 <code>yida-design</code> 时会降级。</td>
+        </tr>
+        <tr>
+          <td><span class="badge move">内联规则下沉</span></td>
+          <td><code>yida-app</code>、<code>yida-create-form-page</code>、<code>yida-process-rule</code>、<code>yida-formula</code>、<code>yida-integration</code> 等大幅瘦身</td>
+          <td>复杂命令参数、流程 DSL、公式细节、集成节点示例不再默认塞进入口；弱模型不读取 reference 时会缺细节。</td>
+        </tr>
+        <tr>
+          <td><span class="badge move">输出风格收敛</span></td>
+          <td>完整应用默认不再输出资源 ID 表、长 URL 列表、静态资源链接</td>
+          <td>用户体验更清爽；但排障场景需要模型知道什么时候额外补 ID 证据。</td>
+        </tr>
+        <tr>
+          <td><span class="badge move">页面容器先建策略收紧</span></td>
+          <td>完整应用要求先完成 Canvas 源码和编译，再 <code>create-page --source</code> 并发布</td>
+          <td>减少空页面；弱模型如果还按旧链路批量创建空容器，会更容易被判未完成。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>弱模型表现风险</h2>
+    <table>
+      <thead><tr><th>风险</th><th>等级</th><th>为什么会变差</th><th>已有缓解</th><th>建议</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>入口变薄导致少读引用文件</td>
+          <td><span class="badge risk">高</span></td>
+          <td>当前 <code>yida-app</code> 明确要求执行前读取 <code>workflow/resolve-context.md</code>、<code>workflow/build-stages.md</code>、<code>workflow/final-output.md</code>。弱模型常见问题是读完入口就直接动手。</td>
+          <td><code>check:skills</code>、技能契约测试、入口里重复写了“执行到每个阶段前先读取”。</td>
+          <td>给弱模型评测增加“未读 workflow 即动手”的负例；也可以考虑 CLI/manifest 输出当前阶段必读 reference 清单。</td>
+        </tr>
+        <tr>
+          <td>PRD 和设计拆分后路由混淆</td>
+          <td><span class="badge risk">高</span></td>
+          <td>main 里 <code>yida-design</code> 同时输出 PRD 和 design；现在页面清单、导航、资源蓝图归 <code>yida-prd</code>，视觉归 <code>yida-design</code>。弱模型或旧缓存容易沿用老路径。</td>
+          <td>路由场景已把“页面清单和导航分组”期望改为 <code>yida-prd</code>，并新增 <code>yida-requirement-analysis</code> 场景。</td>
+          <td>补一组低能力模型 routing eval：规划页面清单、只要视觉、完整应用、已有会议稿转 PRD 四类必须区分。</td>
+        </tr>
+        <tr>
+          <td>并行产物 join 容易漏</td>
+          <td><span class="badge warn">中高</span></td>
+          <td><code>yida-requirement-analysis</code> 要写共享简报，然后 <code>yida-prd</code> 与 <code>yida-design</code> 同时读取。弱模型可能跳过 brief、只写其中一个文件，或两份文件不继承同一个 <code>explicitScope</code>。</td>
+          <td><code>yida-app</code> 的核心边界写了两份文件完成后校验一致性；manifest 也输出 <code>full_app_artifact_route</code>。</td>
+          <td>增加一个机器校验：检查 <code>prd.md</code>、<code>design.md</code>、<code>requirement-brief.json</code> 的项目名、页面 key、explicitScope 是否一致。</td>
+        </tr>
+        <tr>
+          <td>薄 <code>page-spec.json</code> 让弱模型生成泛化页面</td>
+          <td><span class="badge risk">高</span></td>
+          <td>分支要求 <code>page-spec.json</code> 只记录 <code>prdRefs/designRefs</code>、真实资源和源码路径，不复制内容。弱模型如果只读 spec，不回读 PRD/design 原文，会做出模板味页面。</td>
+          <td><code>yida-canvas-custom-page</code> 写明“按引用读取原文后实现”；page generation guide 和 guard 检查 content blocks。</td>
+          <td>在页面生成器/检查器里检测 <code>page-spec</code> 是否带 refs，源码是否声明并实现对应 <code>@openyida-content-blocks</code>。</td>
+        </tr>
+        <tr>
+          <td>严格 Canvas 守卫让弱模型更容易卡住</td>
+          <td><span class="badge warn">中</span></td>
+          <td>新增事件、import、数据绑定、运行时 API、content block、自动加载数据等硬规则。弱模型生成质量会提高，但失败后可能重复同一个命令或只改注释。</td>
+          <td>错误码更具体；Qwen 轮测已经暴露并修复 <code>setError is not defined</code>、seed 缺失等问题。</td>
+          <td>把守卫错误按 repairType 输出到技能文案：source/import/data/runtime/navigation，让弱模型知道下一步改哪里。</td>
+        </tr>
+        <tr>
+          <td>复杂子技能示例外移后，边缘能力下降</td>
+          <td><span class="badge warn">中</span></td>
+          <td><code>yida-formula</code> 从 425 行到 59 行，<code>yida-process-rule</code> 从 455 行到 76 行，<code>yida-integration</code> 从 381 行到 69 行。复杂公式、流程 DSL、集成节点依赖 reference。</td>
+          <td>每个技能保留“何时读取”表，新增 process DSL、integration CLI options 等 reference。</td>
+          <td>对公式、流程、集成各补 2-3 个弱模型 golden case，要求模型必须引用对应 reference 后再产出。</td>
+        </tr>
+        <tr>
+          <td>导航完成条件变严</td>
+          <td><span class="badge warn">中</span></td>
+          <td>manifest 现在要求完整应用写 <code>navigation-plan.json</code> 并 <code>verification.matched=true</code>，warning 或 auto-order 不是完成。弱模型可能发布完页面就结束。</td>
+          <td><code>command-manifest</code> 和 <code>yida-app</code> 都把导航计划列为完成条件。</td>
+          <td>在最终输出前增加固定检查项：publish 成功、nav readback matched、seed 证据或跳过原因。</td>
+        </tr>
+        <tr>
+          <td>浏览器能力不足时容易假报 PASS</td>
+          <td><span class="badge warn">中</span></td>
+          <td>Qwen 报告显示浏览器因 DingTalk 登录跳转无法完整验证时，必须标 UNKNOWN；弱模型容易把源码/API 证据写成浏览器通过。</td>
+          <td>Round 05/06 报告已经把 UNKNOWN 与 PASS 区分清楚。</td>
+          <td>把“浏览器不可验必须 UNKNOWN”加入发布/验收 skill 的完成条件和 eval rubric。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>对弱模型也有正向影响的点</h2>
+    <ul>
+      <li>入口压缩能减少一次性上下文负担，弱模型不再被几百行全流程说明淹没。</li>
+      <li>运行时桥、表单脚手架、Canvas scaffold 把高频样板代码固化，弱模型只要扩展业务内容，不必从零写桥接。</li>
+      <li>Canvas 守卫、绑定守卫、页面编译路由和导航 readback 把“模型自觉”转成“机器检查”，能拦住弱模型常见假完成。</li>
+      <li>6 轮 Qwen/Qoder 报告提供真实失败样本，后续优化有了可复现方向。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>验证结果</h2>
+    <table>
+      <thead><tr><th>命令</th><th>结果</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>npm run check:skills</code></td>
+          <td><span class="badge ok">通过</span></td>
+          <td>输出 <code>Skill validation OK: checked 173 markdown files</code>。</td>
+        </tr>
+        <tr>
+          <td><code>npx jest tests/skill-contracts.test.js tests/skill-routing-hygiene.test.js tests/skill-description-quality.test.js tests/canvas-source-guard.test.js tests/canvas-binding-guard.test.js tests/canvas-runtime.test.js --runInBand</code></td>
+          <td><span class="badge ok">通过</span></td>
+          <td>6 个测试套件、66 条测试通过。npm 有用户配置 <code>email</code>/<code>python</code> warning，不影响结果。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">未运行完整 <code>npm run check:ci</code>；本报告聚焦分支分析，已运行与技能路由和弱模型风险最相关的验证。</p>
+  </section>
+
+  <section>
+    <h2>建议优先级</h2>
+    <table>
+      <thead><tr><th>优先级</th><th>建议</th><th>目的</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge risk">P0</span></td><td>补低能力模型路由/执行 golden：完整应用、只做 PRD、只做视觉、复杂流程、复杂公式、集成自动化。</td><td>验证“入口压缩后是否真的会读 reference”。</td></tr>
+        <tr><td><span class="badge risk">P0</span></td><td>增加 PRD/design/brief 一致性机器检查，尤其是 <code>explicitScope</code>、页面 key、导航顺序和本轮交付范围。</td><td>防止并行产物各写各的。</td></tr>
+        <tr><td><span class="badge warn">P1</span></td><td>让 Canvas/发布/导航错误输出更明确的修复分类，如 <code>source</code>、<code>binding</code>、<code>runtime</code>、<code>navigation</code>。</td><td>弱模型失败后更容易定位下一步。</td></tr>
+        <tr><td><span class="badge warn">P1</span></td><td>把 Qwen 轮测里的 UNKNOWN/PASS 规则沉淀到 skill 完成条件与 eval rubric。</td><td>避免弱模型把不可验证写成通过。</td></tr>
+        <tr><td><span class="badge info">P2</span></td><td>保留入口瘦身方向，但在每个瘦身技能顶部加“最小必读文件清单”和“没读这些文件不能执行”的机器可检字段。</td><td>在不回到长文档的前提下，降低少读引用的概率。</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

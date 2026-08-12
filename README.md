@@ -8,7 +8,7 @@
 
 OpenYida connects AI coding agents with Yida's low-code platform, so developers can create apps, forms, workflows, custom pages, reports, integrations, and deployment configuration from a normal chat-driven development workflow.
 
-[Quick Start](#quick-start) · [Help Center](https://xmtrf1.aliwork.com/o/openyida/help?lang=en) · [Capabilities](#capabilities) · [Full Capability List](./docs/capabilities.md) · [CLI Reference](#cli-reference) · [Examples](#examples) · [Contributing](./CONTRIBUTING.md) · [Changelog](./CHANGELOG.md)
+[Quick Start](#quick-start) · [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter) · [Capabilities](#capabilities) · [Full Capability List](./docs/capabilities.md) · [CLI Reference](#cli-reference) · [Examples](#examples) · [Contributing](./CONTRIBUTING.md) · [Changelog](./CHANGELOG.md)
 
 [![npm version](https://img.shields.io/npm/v/openyida?color=brightgreen&label=npm)](https://www.npmjs.com/package/openyida)
 [![npm downloads](https://img.shields.io/npm/dm/openyida?color=blue)](https://www.npmjs.com/package/openyida)
@@ -16,7 +16,7 @@ OpenYida connects AI coding agents with Yida's low-code platform, so developers 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**Help Center:** [简体中文](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh) · [繁體中文(中國台灣)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-Hant) · [繁體中文(中國香港)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-HK) · [English](https://xmtrf1.aliwork.com/o/openyida/help?lang=en) · [日本語](https://xmtrf1.aliwork.com/o/openyida/help?lang=ja) · [한국어](https://xmtrf1.aliwork.com/o/openyida/help?lang=ko) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida/help?lang=vi) · [ไทย](https://xmtrf1.aliwork.com/o/openyida/help?lang=th) · [Bahasa Indonesia](https://xmtrf1.aliwork.com/o/openyida/help?lang=id) · [Bahasa Melayu](https://xmtrf1.aliwork.com/o/openyida/help?lang=ms) · [Français](https://xmtrf1.aliwork.com/o/openyida/help?lang=fr) · [Português](https://xmtrf1.aliwork.com/o/openyida/help?lang=pt) · [Türkçe](https://xmtrf1.aliwork.com/o/openyida/help?lang=tr) · [Español](https://xmtrf1.aliwork.com/o/openyida/help?lang=es) · [Русский](https://xmtrf1.aliwork.com/o/openyida/help?lang=ru)
+**帮助网站&文档:** [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 

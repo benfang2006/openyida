@@ -8,14 +8,14 @@
 
 OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
 
-[快速开始](#快速开始) · [帮助中心](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh) · [核心能力](#核心能力) · [完整功能列表](./docs/capabilities.md) · [自定义页面开发](#自定义页面开发) · [常用命令](#常用命令) · [开发与校验](#开发与校验)
+[快速开始](#快速开始) · [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter) · [核心能力](#核心能力) · [完整功能列表](./docs/capabilities.md) · [自定义页面开发](#自定义页面开发) · [常用命令](#常用命令) · [开发与校验](#开发与校验)
 
 [![npm version](https://img.shields.io/npm/v/openyida?color=brightgreen&label=npm)](https://www.npmjs.com/package/openyida)
 [![npm downloads](https://img.shields.io/npm/dm/openyida?color=blue)](https://www.npmjs.com/package/openyida)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**帮助中心:** [简体中文](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh) · [繁體中文(中國台灣)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-Hant) · [繁體中文(中國香港)](https://xmtrf1.aliwork.com/o/openyida/help?lang=zh-HK) · [English](https://xmtrf1.aliwork.com/o/openyida/help?lang=en) · [日本語](https://xmtrf1.aliwork.com/o/openyida/help?lang=ja) · [한국어](https://xmtrf1.aliwork.com/o/openyida/help?lang=ko) · [Tiếng Việt](https://xmtrf1.aliwork.com/o/openyida/help?lang=vi) · [ไทย](https://xmtrf1.aliwork.com/o/openyida/help?lang=th) · [Bahasa Indonesia](https://xmtrf1.aliwork.com/o/openyida/help?lang=id) · [Bahasa Melayu](https://xmtrf1.aliwork.com/o/openyida/help?lang=ms) · [Français](https://xmtrf1.aliwork.com/o/openyida/help?lang=fr) · [Português](https://xmtrf1.aliwork.com/o/openyida/help?lang=pt) · [Türkçe](https://xmtrf1.aliwork.com/o/openyida/help?lang=tr) · [Español](https://xmtrf1.aliwork.com/o/openyida/help?lang=es) · [Русский](https://xmtrf1.aliwork.com/o/openyida/help?lang=ru)
+**帮助网站&文档:** [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter)
 
 [English README](./README.md) · [简体中文 README](./README_zhCN.md)
 </div>
