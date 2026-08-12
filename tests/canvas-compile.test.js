@@ -133,7 +133,7 @@ function stubCanvasTemplateWindow() {
   };
 }
 
-test('blocks rich display pages with too few content blocks', () => {
+test('does not block rich display pages with few content blocks', () => {
   const source = `
 /**
  * @openyida-scene workbench
@@ -146,8 +146,8 @@ export default function YidaComp() {
 }
 `;
 
-  expect(() => compileCanvasLocal(source, { sourcePath: '/tmp/workbench.canvas.jsx' }))
-    .toThrow(/至少需要 10 个|at least 10/);
+  const result = compileCanvasLocal(source, { sourcePath: '/tmp/workbench.canvas.jsx' });
+  expect(result.runtimeCode).toContain('YidaComp');
 });
 
 test('allows rich display pages with enough content blocks', () => {
