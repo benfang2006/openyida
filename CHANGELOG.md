@@ -10,6 +10,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.14] - 2026-08-14
+
+### Changed
+- 重构 OpenYida 主入口技能说明，保留搭应用开发总入口、资源上下文、意图识别、技能路由表和必须遵守规则，去掉冗余子技能长列表与重复说明。
+- 将 `yida-app` 拆成 9 个 workflow 阶段文件，完整应用搭建、已有应用无页面、已有资源补齐等场景统一由 `yida-app` 编排。
+- 收拢存储约定、临时文件规范、命令输入文件规则和 FAQ 处理思路，减少主入口、共享 reference 与子技能之间的重复描述。
+- 优化 `yida-publish-page` 与 `yida-flash-note-to-prd` 描述，明确发布目标确认、真实发布证据、闪记/会议内容转 PRD 和交给 `yida-app` 的边界。
+
+### Fixed
+- 删除过时的 `development-rules.md` 与 `app-build-contract.md` 参考文档，将仍有效的规则迁移到主入口、`yida-app` workflow 或常见问题文件。
+- 移除主入口中针对 Wukong 的定制化描述，保留 Codex / yida-agent 使用 OpenYida auth snapshot 的通用约束。
+
+### Tests
+- 更新技能契约、路由卫生和技能包构建测试，覆盖主入口路由、`yida-app` workflow、冗余 reference 清理和发布证据约束。
+
 ## [2026.8.12-1] - 2026-08-12
 
 ### Changed
