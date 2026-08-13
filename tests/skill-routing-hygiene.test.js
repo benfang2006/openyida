@@ -33,14 +33,33 @@ describe('skill resource boundary copy', () => {
     expect(skill).not.toMatch(/State\s*,\s*generated bindings/i);
   });
 
-  test('root route keeps default command flow without internal architecture terms', () => {
+  test('root route delegates full-app workflow without internal architecture terms', () => {
     const root = fs.readFileSync(path.join(__dirname, '..', 'yida-skills', 'SKILL.md'), 'utf8');
+    const app = fs.readFileSync(path.join(__dirname, '..', 'yida-skills', 'skills', 'yida-app', 'SKILL.md'), 'utf8');
 
-    expect(root).toMatch(/默认使用 `create-app \/ create-form \/ create-page \/ publish`/);
-    expect(root).toMatch(/resolve_resource_context/);
-    expect(root).toMatch(/resolve forms\/processes → seed records → reserve main page/);
-    expect(root).toMatch(/字段级命令内置解析/);
+    expect(root).toMatch(/意图识别只决定入口，不展开执行细节/);
+    expect(root).toMatch(/完整搭建 \/ 补齐加载 `yida-app` 后按其 workflow 执行/);
+    expect(root).toMatch(/执行 Step 2 时必须读取 \[资源上下文与补齐判定\]/);
+    expect(root).toMatch(/Step 2 必读/);
+    expect(root).not.toMatch(/默认使用 `create-app \/ create-form \/ create-page \/ publish`/);
+    expect(root).not.toMatch(/resolve_resource_context/);
+    expect(root).not.toMatch(/resolve forms\/processes → seed records → reserve main page/);
+    expect(root).not.toMatch(/字段级命令内置解析/);
+    expect(app).toMatch(/按以下 9 个执行步骤顺序推进/);
     expect(root).not.toMatch(RETIRED_ARCHITECTURE_PATTERN);
+  });
+
+  test('development rules keep mandatory wording', () => {
+    const rules = fs.readFileSync(path.join(
+      __dirname,
+      '..',
+      'yida-skills',
+      'references',
+      'development-rules.md'
+    ), 'utf8');
+
+    expect(rules).toMatch(/## 重要规则/);
+    expect(rules).not.toMatch(/## 补充规则/);
   });
 
   test.each([

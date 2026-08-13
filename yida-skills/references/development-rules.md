@@ -1,37 +1,38 @@
 # 核心规则详解
 
-> 逐条展开主 SKILL.md「核心规则」的操作细节，编号与主文件一一对应（FATAL 1–4 / IMPORTANT 1–11）。需要更多篇幅的规则指向文末专节。
+## 执行边界
 
-## 致命规则（FATAL）
+**技能加载唯一入口**：执行任何子技能前，支持 `use_skill` 的宿主必须调用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径。`skills-index.json` 是给能读取索引的工具快速找到技能用的；不能读取它的工具直接忽略。完全没有 `use_skill` / `search_skills` 的本地工具，才允许按根技能路由表和技能包相对路径定位当前阶段要执行的技能文档；完整应用仍由 `yida-app` workflow 分阶段推进。
 
-**F1 技能加载唯一入口**：执行任何子技能前，支持 `use_skill` 的宿主必须调用 `use_skill("<技能名>", "<本阶段目的>")` 加载对应技能；不要用 `Read` / `read_file` / `cat` 读取 `SKILL.md` 路径。`skills-index.json` 是给能读取索引的工具快速找到技能用的；不能读取它的工具直接忽略。完全没有 `use_skill` / `search_skills` 的本地工具，才允许按根技能路由表和技能包相对路径逐个读取当前阶段唯一必要的技能文档；禁止并发批量读取多个 `SKILL.md`，禁止预读未来阶段技能。
-
-**F2 corpId 一致性检查**：创建页面前对比 prd 文档与 token 登录态中的 corpId——
+**corpId 一致性检查**：创建页面前对比 prd 文档与 token 登录态中的 corpId——
 - 一致 → 继续；
 - 不一致 → 询问用户：重新登录到正确组织，还是在当前组织新建应用。
 
-**F3 发布前本地校验**：
+**发布前本地校验**：
 - 普通自定义页面 `.oyd.jsx` / `.jsx` 发布前先跑 `openyida check-page <源文件>` + `openyida compile <源文件>`；Code Canvas `.canvas.jsx` 不跑这两个普通自定义页面检查，改由 `openyida publish` 的 Canvas 编译阶段或 `compileCanvasLocal` 快检校验；
 - 发布时留意"同名双副本内容不一致"警告，必要时加 `--health-check` 做首屏 HTTP 健康检查；
 - 任何 JSON 配置写盘后先做 JSON 解析校验，再调用平台命令。
 
-**F4 命令输入文件禁止 shell 写入**：当 OpenYida 命令需要 JSON/YAML/CSV/config/script 文件参数时，必须先使用当前 agent 运行时提供的结构化文件写入工具（如 create_file / Write / file edit tool）创建文件，再把文件路径传给命令。禁止用 shell heredoc、`cat`/`echo`/`printf`/`tee` 加输出重定向，或把 `openyida` 命令 stdout 重定向成业务配置、Schema、导入数据或一次性脚本。
+**生成产物严禁 emoji**：OpenYida 生成产物中严禁出现 emoji，范围包括页面源码、Canvas 源码、表单 Schema、发布 Schema、产物文件名和路径。若图标语义需要保留，Code Canvas 使用 `lucide-react`、`@ant-design/icons` 或平台已验证组件；普通 JSX 先确认运行时加载方式，不用 emoji、临时 SVG、字母占位或 CSS 图形替代真实图标。
 
-## 重要规则（IMPORTANT）
+**命令输入文件禁止 shell 写入**：当 OpenYida 命令需要 JSON/YAML/CSV/config/script 文件参数时，必须先使用当前 agent 运行时提供的结构化文件写入工具（如 create_file / Write / file edit tool）创建文件，再把文件路径传给命令。严禁用 shell heredoc、`cat`/`echo`/`printf`/`tee` 加输出重定向，或把 `openyida` 命令 stdout 重定向成业务配置、Schema、导入数据或一次性脚本。
+
+## 重要规则
 
 | # | 规则 | 操作细节 |
 |---|------|---------|
-| 1 | 按阶段加载必要技能 | 按意图选定 1 个主技能；完整应用按阶段加载当下唯一需要的子技能，仅在已加载技能明确要求时才读对应 `references/`。 |
-| 2 | 优先复用缓存 | `appType`/`formUuid`/`fieldId`/`reportId` 先从 `.cache/<项目名>-schema.json` 读，缺失或不确定再 `openyida get-schema`。 |
-| 3 | 页面规格优先 | 自定义页面先由 `yida-design` 产出 `prd.md` 与 `design.md`，两者是唯一设计事实源；`page-spec.json` 只在生成器/交接需要时从两者派生。复杂实现先生成或编写可编译骨架，页面目标、区块、数据和交互以 PRD 为准，布局、主题、材质和状态视觉以 design.md 为准。 |
-| 4 | 配置优先于页面代码 | 字段结构、公式、联动、报表聚合、审批、集成和连接器动作交给对应技能；自定义页面代码负责展示数据、响应点击、打开表单/详情页，并串联表单、流程、报表和导航入口。 |
-| 5 | 数据性能优先 | 统计聚合用 `yida-report` 服务端聚合；不在自定义页面前端分页拉全量后自行聚合。 |
-| 6 | 避免无效重试 | 失败先按错误信息查登录态/组织/参数/字段 ID；无修改不连续重试超 1 次。 |
-| 7 | 配置分两处存 | 详见 [配置信息分两处存储](#配置信息分两处存储) 与 [PRD 质量门槛](#prd-质量门槛)。 |
-| 8 | 临时文件入 project `.cache/` | 详见 [临时文件规范](#临时文件规范)。 |
-| 9 | 报表美化先问方案 | 详见 [报表优化 / 美化提示规则](#报表优化--美化提示规则)。 |
-| 10 | 按 schema 证据选技能 | 先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能。默认页是自定义展示页、或确需列表/看板/工具页交互时，默认落到 `yida-canvas-custom-page`；只有强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定深度耦合时，才落到 `yida-custom-page`。 |
-| 11 | 官方示例范式优先 | 蒸馏宜搭示例中心时，先按 [官方示例 Schema 范式](official-example-schema-patterns.md) 理解脱敏 schema 的承载方式，不凭截图/卡片标题/页面视觉判断。 |
+| 1 | 按阶段加载必要技能 | 单点任务按意图选定 1 个主技能；完整应用由 `yida-app` workflow 分阶段推进，每一步加载当前步骤对应的子技能；仅在已加载技能明确要求时才读对应 `references/`。 |
+| 2 | 资源 ID 必须精确 | `appType`、`formUuid`、`fieldId`、`reportId` 等 ID 必须来自 CLI/API/cache 证据并一字不差传入命令和源码；不得凭名称、截图、相似前缀或记忆补写、改写、截断。 |
+| 3 | 优先复用缓存 | `appType`/`formUuid`/`fieldId`/`reportId` 先从 `.cache/<项目名>-schema.json` 读，缺失或不确定再 `openyida get-schema`。 |
+| 4 | 页面规格优先 | 自定义页面先由 `yida-design` 产出 `prd.md` 与 `design.md`，两者是唯一设计事实源；`page-spec.json` 只在生成器/交接需要时从两者派生。复杂实现先生成或编写可编译骨架，页面目标、区块、数据和交互以 PRD 为准，布局、主题、材质和状态视觉以 design.md 为准。 |
+| 5 | 配置优先于页面代码 | 字段结构、公式、联动、报表聚合、审批、集成和连接器动作交给对应技能；自定义页面代码负责展示数据、响应点击、打开表单/详情页，并串联表单、流程、报表和导航入口。 |
+| 6 | 数据性能优先 | 统计聚合用 `yida-report` 服务端聚合；不在自定义页面前端分页拉全量后自行聚合。 |
+| 7 | 避免无效重试 | 失败先按错误信息查登录态/组织/参数/字段 ID；无修改不连续重试超 1 次。 |
+| 8 | 配置分两处存 | 详见 [配置信息分两处存储](#配置信息分两处存储) 与 [PRD 质量门槛](#prd-质量门槛)。 |
+| 9 | 临时文件入 project `.cache/` | 详见 [临时文件规范](#临时文件规范)。 |
+| 10 | 报表美化先问方案 | 详见 [报表优化 / 美化提示规则](#报表优化--美化提示规则)。 |
+| 11 | 按 schema 证据选技能 | 先看 `formType`、组件树、`dataSource.online`；`receipt/process/report` 分别落到表单/流程/报表技能。默认页是自定义展示页、或确需列表/看板/工具页交互时，默认落到 `yida-canvas-custom-page`；只有强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定深度耦合时，才落到 `yida-custom-page`。 |
+| 12 | 官方示例范式优先 | 蒸馏宜搭示例中心时，先按 [官方示例 Schema 范式](official-example-schema-patterns.md) 理解脱敏 schema 的承载方式，不凭截图/卡片标题/页面视觉判断。 |
 
 ## 配置信息分两处存储
 
