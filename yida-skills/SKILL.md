@@ -56,9 +56,7 @@ description: >
 
 如果当前 AI 工具提供 `use_skill` / `search_skills`，必须用 `use_skill("<技能名>", "<本阶段目的>")` 加载技能，不用 `Read` / `read_file` / `cat` 直接读取 `SKILL.md` 路径。如果当前工具没有 `use_skill` / `search_skills`，按 `skills/<技能名>/SKILL.md` 定位当前阶段要执行的子技能文档。
 
-单点任务按意图选 1 个主技能；完整应用由 `yida-app` workflow 分阶段推进，每一步加载当前步骤对应的子技能。`skills-index.json` 只给能读取索引的工具辅助匹配，不作为运行前置。
-
-核心执行：宜搭资源操作统一通过 `openyida` CLI 执行；写入输入 JSON/YAML/CSV/config/script 时使用当前 agent 的结构化文件写入能力；页面源码改动后必须有成功 publish 证据；最终输出先给业务交付总结和主入口链接。
+单点任务按意图选 1 个主技能；完整应用由 `yida-app` workflow 分阶段推进，每一步加载当前步骤对应的子技能。`skills-index.json` 只给能读取索引的工具辅助匹配，不作为运行前置。执行边界见下方核心规则。
 
 ## 技能路由表
 
@@ -141,15 +139,7 @@ description: >
 14. **配置优先于页面代码**：字段、公式、联动、报表、审批和集成交给对应技能；自定义页面负责展示数据、放置业务入口，并串联表单、流程、报表和导航入口。
 15. **数据性能优先**：统计聚合用 `yida-report` 服务端聚合，不在前端拉全量后自行聚合。
 16. **避免无效重试**：失败先查登录态、组织、参数和字段 ID；无修改不连续重试超 1 次。
-17. **存储路径固定**：业务语义写 `prd/<项目名>/prd.md`，视觉契约写 `prd/<项目名>/design.md`，Schema ID 写 `.cache/<项目名>-schema.json`，临时文件写 `<projectRoot>/.cache/openyida/<项目名或任务名>/`。
-18. **报表和可视化先分流**：标准统计与原生报表用 `yida-report`；定制图表页面默认用 `yida-rechart`；只有明确 ECharts、维护旧 ECharts 页面或复杂 option 超出 Recharts 能力时用 `yida-chart`。
-19. **UI 设计技能优先**：涉及应用蓝图、页面视觉、应用主题色、品牌色、全局换肤或 `--color-brand1-*` 时先读 `yida-design`；主题必须根据行业、品牌、业务情绪和视觉目标判断，不套用刻板配色。
-20. **默认完成即停止**：完整应用默认以资源发布成功、轻量导航排序完成、示例数据就绪并输出主入口 URL 与业务交付总结为 doneWhen；截图、精细导航整理和额外深读属于 optionalAfterDone，除非用户明确要求。
-21. **输出业务化**：最终回复先写 2-3 句业务交付总结，再给主入口链接；默认不输出资源 ID 表格、长列表、管理态链接、CDN 构建产物或中间文件 URL。
-22. **任务复盘沉淀**：用户多次纠正、平台接口假成功、页面骨架共性质量问题、线上回读验收方法、一次性脚本可产品化等情况，完成前判断是否需要沉淀到 CLI、测试或 skill。
-
-### 存储约定
-
+17. **存储路径固定**：PRD、视觉契约、Schema ID 和临时文件按存储约定写入：
 | 类型 | 路径 |
 | --- | --- |
 | 业务语义 | `prd/<项目名>/prd.md` |
@@ -162,6 +152,12 @@ description: >
 - 从 workspace 根执行命令时路径加 `project/` 前缀；在 OpenYida project 工作目录内执行时使用 `.cache/...`。
 - 不把 OpenYida 业务中间文件写到仓库根目录或系统临时目录。
 
+18. **报表和可视化先分流**：标准统计与原生报表用 `yida-report`；定制图表页面默认用 `yida-rechart`；只有明确 ECharts、维护旧 ECharts 页面或复杂 option 超出 Recharts 能力时用 `yida-chart`。
+19. **UI 设计技能优先**：涉及应用蓝图、页面视觉、应用主题色、品牌色、全局换肤或 `--color-brand1-*` 时先读 `yida-design`；主题必须根据行业、品牌、业务情绪和视觉目标判断，不套用刻板配色。
+20. **默认完成即停止**：完整应用默认以资源发布成功、轻量导航排序完成、示例数据就绪并输出主入口 URL 与业务交付总结为 doneWhen；截图、精细导航整理和额外深读属于 optionalAfterDone，除非用户明确要求。
+21. **输出业务化**：最终回复先写 2-3 句业务交付总结，再给主入口链接；默认不输出资源 ID 表格、长列表、管理态链接、CDN 构建产物或中间文件 URL。
+22. **任务复盘沉淀**：用户多次纠正、平台接口假成功、页面骨架共性质量问题、线上回读验收方法、一次性脚本可产品化等情况，完成前判断是否需要沉淀到 CLI、测试或 skill。
+
 常见问题见 [常见问题解决方案](references/execution-rules.md)。
 
 ## 参考文件
@@ -172,7 +168,6 @@ description: >
 | [路由补充说明](references/routing-supplement.md) | 索引精排方法、无独立子技能 CLI | Step 3 排障或索引匹配不准时 |
 | [常见问题解决方案](references/execution-rules.md) | 常见问题处理路径 | 遇到发布、字段、表单更新或 corpId 问题时 |
 | [环境准备与登录检测](references/setup-and-env.md) | 环境依赖、env 解读、多环境 token 登录、project 初始化 | 环境异常或登录问题时 |
-| [核心规则详解](references/development-rules.md) | 成功率清单、PRD 门槛、临时文件、报表美化、corpId | 编写 PRD / 规范执行前 |
 | [宜搭 API](references/yida-api.md) | 宜搭 API 完整参数 | 调用 API 前 |
 | [公式函数库](references/formula-functions.md) | 公式函数速查 | 编写公式前 |
 | [官方示例 Schema 范式](references/official-example-schema-patterns.md) | 脱敏 schema 承载范式 | 蒸馏官方示例时 |

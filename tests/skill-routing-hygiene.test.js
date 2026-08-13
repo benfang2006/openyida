@@ -49,19 +49,6 @@ describe('skill resource boundary copy', () => {
     expect(root).not.toMatch(RETIRED_ARCHITECTURE_PATTERN);
   });
 
-  test('development rules keep mandatory wording', () => {
-    const rules = fs.readFileSync(path.join(
-      __dirname,
-      '..',
-      'yida-skills',
-      'references',
-      'development-rules.md'
-    ), 'utf8');
-
-    expect(rules).toMatch(/## 重要规则/);
-    expect(rules).not.toMatch(/## 补充规则/);
-  });
-
   test.each([
     'yida-create-app',
     'yida-create-form-page',

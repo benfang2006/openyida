@@ -52,18 +52,6 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 - PRD 中的资源蓝图、页面与功能设计、交互状态、页面实现交付顺序、各页面布局和主题风格摘要，必须进入 `page-spec.json` 或页面实现备注。design.md 中的主题 token、完整 UI 设计、圆角、密度、组件和状态规则由页面实现阶段重新读取，不复制进 `page-spec.json`。`page-spec.json` 必须标记 `sourceOfTruth`；与 PRD/design.md 冲突时重生成 spec。生成源码后发现业务事实缺失时回写 `prd.md`，发现视觉事实缺失时回写 `design.md`；只有实现偏差才小范围 patch 源码。
 - 截图验收、公开访问、数据源深接和精细导航分组只在用户明确要求或 PRD 验收标准命中时追加。完整应用默认在表单创建后注入 formDetail CSS，并写入 1-3 条核心普通表单 seed records，不再作为可选后置。
 
-## 常用 URL
-
-| 页面类型 | URL 格式 |
-|---------|---------|
-| 应用首页 | `{base_url}/{appType}/workbench` |
-| 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
-| 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
-| 自定义页面隐藏导航 | `{base_url}/{appType}/custom/{formUuid}?isRenderNav=false` |
-| 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false` |
-
-建议在链接末尾拼接 `corpid={corpId}`，便于切换到正确组织。
-
 ## 典型执行顺序
 
 ### 访客系统
@@ -75,7 +63,7 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 5. 创建访客工作台页面。
 6. 生成主页面，展示今日预约、待确认、最近访问记录、登记入口和空态。
 7. 发布页面并按 PRD 导航顺序做轻量排序。
-8. 先输出 2-3 句业务交付总结，再给一个主入口链接，例如“已完成访客登记表和访问记录表，并发布访客工作台入口。当前应用已支持访客登记、访问状态跟踪和最近访问查看，示例记录与导航排序也已就绪。主入口：{base_url}/{appType}/workbench”。
+8. 按 Step 9 输出业务总结和主入口链接。
 
 ### CRM 系统
 
@@ -96,25 +84,6 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 5. 创建 Canvas 大屏页面或 ECharts 页面。
 6. 发布页面，按 PRD 导航顺序做轻量排序，并输出 URL。
 
-## 最终输出口径
-
-完整应用 final 先写 2-3 句业务语言总结交付内容，再给一个主入口链接。不要默认列资源 ID 表格、资源清单或长列表。
-
-推荐写法：
-
-已完成订单、客户和商品等核心业务表单，并发布首页、订单管理和库存看板等入口页面。当前应用已支持订单录入、库存预警、销售统计、表单提交入口和详情查看，示例记录、轻量导航排序与表单详情样式也已就绪。
-
-主入口：`{base_url}/{appType}/workbench`
-
-不推荐写法：
-
-- 默认输出 `资源类型 | 名称/用途 | ID | 状态` 表格。
-- 默认输出资源清单、长列表或多段技术明细。
-- 默认暴露 appType、formUuid、pageId、reportId。
-- 把 `/admin` 管理页、Schema 页、CDN 构建产物或中间文件链接当成交付结果。
-
-只有用户明确要求排障、复盘资源 ID、迁移或复制配置时，才补充技术 ID。
-
 ## 默认 seed records 规则
 
 完整应用默认写入；用户明确不要造数、目标是配置字典/权限表、敏感个人数据表、纯附件表或字段缺少可安全构造值时跳过并说明原因。
@@ -130,12 +99,14 @@ PRD 记录应用级运行上下文 `appType/corpId/baseUrl`；`formUuid`、`fiel
 
 删除应用不可逆。执行前必须展示应用名称、应用 ID、影响范围，并等待用户回复“确认删除”或同等明确确认；模糊回复不能执行。
 
-## 故障处理
+## 故障处理入口
 
-| 场景 | 处理 |
-|------|------|
-| 发布提示登录失效 | 重新登录后再发布，不无修改重试 |
-| corpId 不一致 | 询问重新登录或当前组织继续 |
-| 不知道字段 ID | 使用 `yida-get-schema` 或 `.cache/<项目名>-schema.json` |
-| Babel/页面校验失败 | 依据报错修 JSX，再重新校验 |
-| 创建应用/表单失败 | 检查登录态、组织、参数、输入文件 |
+本文件只保留完整应用编排示例，不展开逐条排障规则。执行中遇到异常时，先读 [常见问题解决思路](common-issues.md)，再回到对应 workflow 步骤修正。
+
+| 问题类型 | 处理入口 |
+| --- | --- |
+| 资源目标、app/page/form 选择错误 | [Step 1：解析资源上下文](../workflow/step-1-resource-context.md) |
+| PRD、design.md 或页面事实源缺失 | [Step 2：产品设计](../workflow/step-2-design.md) |
+| 应用、表单、流程或字段 ID 错误 | [Step 3](../workflow/step-3-create-or-reuse-app.md) / [Step 4](../workflow/step-4-forms-processes.md) |
+| seed records、页面数据或 dataSourceMap 问题 | [Step 5](../workflow/step-5-seed-records.md) / [Step 7](../workflow/step-7-page-code.md) |
+| 发布、导航排序或 final 输出问题 | [Step 8](../workflow/step-8-publish-navigation.md) / [Step 9](../workflow/step-9-output-finish.md) |
