@@ -5,7 +5,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 
 # yida-app
 
-完整应用编排技能。它负责把一次“创建/搭建/补齐应用”的需求拆成资源解析、产品设计、资源落地、页面发布和结果输出。按步骤执行该步骤所需 `use_skill(...)`。
+完整应用编排技能。它负责把一次“创建/搭建/补齐应用”的需求拆成资源解析、产品设计、资源落地、页面发布和结果输出。全局 CLI、ID、存储、发布和输出规则以主入口 `SKILL.md` 为准；按步骤执行该步骤所需 `use_skill(...)`。
 
 ## 触发条件
 
@@ -68,5 +68,4 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 | [Step 7：编写或更新页面](workflow/step-7-page-code.md) | Code Canvas / JSX 选择、page-spec、dataBinding、本地校验 | 必读 |
 | [Step 8：发布页面并排序导航](workflow/step-8-publish-navigation.md) | publish、导航排序、发布完成证据 | 必读 |
 | [Step 9：输出与收尾](workflow/step-9-output-finish.md) | final 口径、URL 规则、可选后置、错误处理 | 必读 |
-| [执行编排参考](references/app-build-contract.md) | 字段文件示例、典型场景、删除确认 | 排障或需要示例时 |
 | [常见问题解决思路](references/common-issues.md) | 资源冲突、字段 ID、seed records、页面数据、发布失败、输出口径等高频问题 | 遇到异常或执行结果不符合预期时 |

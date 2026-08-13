@@ -14,9 +14,10 @@
 1. 执行 `use_skill("yida-data-management", "为核心业务表单写入 1-3 条示例记录")`。
 2. 先执行 `openyida get-schema <appType> <formUuid> --field-map-json` 获取真实字段 ID。
 3. 生成当前业务语义的字段值，不写“测试1 / demo / mock”。
-4. `DateField` / `CascadeDateField` 使用 13 位毫秒时间戳。
-5. 每条记录单独执行 `openyida data create form <appType> <formUuid> --data-file ...` 或 `--data-json ...`。
-6. 最后执行 `openyida data query form` 抽查至少 1 条，确认 `formData` 非空。
+4. 每个核心普通表单 1-3 条即可；列表/工作台通常 2 条，看板/排行/状态分布通常 3 条。
+5. `DateField` / `CascadeDateField` 使用 13 位毫秒时间戳。
+6. 每条记录单独执行 `openyida data create form <appType> <formUuid> --data-file ...` 或 `--data-json ...`。
+7. 最后执行 `openyida data query form` 抽查至少 1 条，确认 `formData` 非空。
 
 以下情况可以跳过，并在 final 说明原因：
 

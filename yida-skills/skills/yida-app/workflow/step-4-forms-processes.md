@@ -21,6 +21,38 @@
 8. PRD 包含审批、流程、申请、审核、工单等流程对象时，执行 `use_skill("yida-create-process", "创建带审批流程表单")`。
 9. 已有流程表单或 `processCode` 时，执行 `use_skill("yida-process-rule", "更新已有流程规则")`。
 
+## 字段配置文件示例
+
+字段配置文件写到 `.cache/openyida/<项目名>/xxx-fields.json`；从 workspace 根执行时传 `project/.cache/openyida/<项目名>/xxx-fields.json`。
+
+```json
+[
+  { "type": "TextField", "label": "访客姓名", "required": true },
+  { "type": "PhoneField", "label": "联系电话" },
+  { "type": "DateField", "label": "到访时间" },
+  { "type": "SelectField", "label": "访问状态", "options": ["预约中", "已到访", "已离开"] }
+]
+```
+
+创建后把返回 ID 汇总到 `.cache/<项目名>-schema.json`：
+
+```json
+{
+  "appType": "APP_XXXXXX",
+  "pages": {
+    "访客登记表": {
+      "formUuid": "FORM-XXXXXX",
+      "fields": {
+        "访客姓名": "textField_xxxxxxxx"
+      }
+    },
+    "访客工作台": {
+      "formUuid": "FORM-YYYYYY"
+    }
+  }
+}
+```
+
 ## 产出
 
 - 普通表单真实 `formUuid`；
