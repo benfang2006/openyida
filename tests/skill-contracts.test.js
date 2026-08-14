@@ -85,6 +85,17 @@ describe('OpenYida skill contracts', () => {
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
+  test('login skill assigns browser ownership and waits for the original command', () => {
+    const skill = readSkill('yida-skills/skills/yida-login/SKILL.md');
+
+    expect(skill).toContain('The CLI opens the system browser by default');
+    expect(skill).toContain('MUST NOT extract the authorization URL and open it again');
+    expect(skill).toContain('openyida login --no-browser');
+    expect(skill).toContain('Do not use fixed sleeps');
+    expect(skill).toContain('`ok=true` and `can_auto_use=true`');
+    expect(skill).toContain('closes the browser without authorizing');
+  });
+
   test('QwenWork install guidance aligns with QoderWork user-level skills layout', () => {
     const docs = [
       'README.md',

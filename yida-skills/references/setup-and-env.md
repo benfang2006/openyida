@@ -29,7 +29,7 @@ openyida login --check-only --json
 | `workdir_exists=false` or `active.projectRootExists=false` | run `openyida copy`; do not create resources before workspace exists |
 | `auth_mode=token`, `status=ok` or `can_auto_use=true` | continue |
 | snapshot reports `auth_source=env` / `failure_reason=env_token_missing` | Treat as runtime-environment injected token mode; if token is missing, STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`; do not run OAuth |
-| `auth_mode=token`, not logged in, and snapshot does not report env injection | run `openyida login`; verify with `openyida login --check-only --json` |
+| `auth_mode=token`, not logged in, and snapshot does not report env injection | run `openyida login` once; wait for that command and use its final JSON result |
 | `auth_mode=token`, access token expired | run `openyida auth refresh`; if still failed and snapshot does not report env injection, run `openyida login` |
 
 ## Token Mode Commands
@@ -43,6 +43,15 @@ openyida auth status
 openyida auth refresh
 openyida auth logout
 ```
+
+## Agent OAuth Login Orchestration
+
+- `openyida login` opens the system browser by default. Wait for the original command; do not extract the URL and open it again.
+- User authorization may take up to the OAuth timeout (about 5 minutes by default). Do not use a fixed `sleep` or repeatedly launch `login --check-only` while the original command is running.
+- Success requires the original command to exit successfully with final JSON containing `ok=true` and `can_auto_use=true`.
+- Closing the browser without authorization does not notify the CLI. Continue waiting for the original command until the user stops it or it times out; do not automatically start a second login.
+- Use `openyida login --no-browser` (or compatibility env `OPENYIDA_NO_BROWSER=1`) only when the caller intentionally owns browser opening. In that mode, open the emitted URL once.
+- `--quiet` controls text output only and does not disable browser auto-open.
 
 If user gives target entry URL or environment:
 

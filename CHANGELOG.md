@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [Unreleased]
+
+### Added
+- `openyida login` 与 `openyida auth login` 新增 `--no-browser` 参数，供明确需要由调用方接管授权链接的 Agent 或无头环境使用；默认行为保持由 CLI 自动打开系统浏览器。
+
+### Changed
+- 在 Agent capabilities 中公开交互登录的浏览器归属、抑制参数和完成信号，指导 Agent 等待原登录命令退出及最终 JSON，避免重复打开授权页。
+- 更新 `yida-login` 技能与环境参考文档，禁止默认流程中后台提取 URL、再次执行 `open`、固定 `sleep` 或重复轮询 `login --check-only`。
+- 登录等待阶段补充 OAuth 超时和取消提示，降低用户延迟登录或关闭浏览器时的无反馈感。
+
+### Tests
+- 新增浏览器归属、`--no-browser`、Agent capabilities 与登录技能编排契约测试。
+
 ## [2026.8.12] - 2026-08-12
 
 ### Changed

@@ -247,7 +247,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida login [target-url] [--env <name>\|--intl\|--overseas\|--global\|--yidaapps\|--alibaba] [--client-id <clientId>] [--endpoint <url>]` | 登录（OAuth token 模式） |
+| `openyida login [target-url] [--env <name>\|--intl\|--overseas\|--global\|--yidaapps\|--alibaba] [--client-id <clientId>] [--endpoint <url>] [--no-browser]` | 登录（OAuth token 模式） |
 | `openyida logout` | 退出登录 / 清空 token |
 | `openyida auth <status\|login\|refresh\|logout>` | token 登录态管理 |
 | `openyida org <list\|switch> [--json] [--corp-id <corpId>]` | 组织管理（列表 / 重新登录切换） |

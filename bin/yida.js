@@ -520,6 +520,14 @@ function printLoginHelp() {
   printCommandUsage(t('cli.login_usage'), t('cli.login_example'));
 }
 
+function buildTokenLoginOptions(loginArgs) {
+  return {
+    clientId: getArgValue(loginArgs, '--client-id'),
+    quiet: process.env.YIDA_QUIET === '1' || loginArgs.includes('--quiet'),
+    noBrowser: loginArgs.includes('--no-browser'),
+  };
+}
+
 function printAuthHelp() {
   printCommandUsage(t('cli.auth_usage'), t('cli.auth_example'));
 }
@@ -623,10 +631,7 @@ async function main() {
           printLoginResult(getAuthStatus());
         } else {
           const { tokenLogin } = require('../lib/auth/token-auth');
-          const result = await tokenLogin({
-            clientId: getArgValue(loginArgs, '--client-id'),
-            quiet: loginArgs.includes('--quiet'),
-          });
+          const result = await tokenLogin(buildTokenLoginOptions(loginArgs));
           printLoginResult(result);
         }
       }
@@ -655,10 +660,7 @@ async function main() {
           assertNoUnsupportedLegacyLoginFlags(rawArgs.slice(1), authArgs);
           const result = isEnvAuthMode()
             ? getAuthStatus()
-            : await tokenLogin({
-              clientId: getArgValue(authArgs, '--client-id'),
-              quiet: authArgs.includes('--quiet'),
-            });
+            : await tokenLogin(buildTokenLoginOptions(authArgs));
           printLoginResult(result);
         }
       } else if (subCommand === 'refresh') {

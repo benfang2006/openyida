@@ -34,7 +34,7 @@ openyida login --check-only --json
 |---|---|
 | `auth_mode=token`, `status=ok` or `can_auto_use=true` | Continue business command |
 | `auth_source=env` / `failure_reason=env_token_missing` | Treat as runtime-environment injected token mode; if token is missing, STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`; do not OAuth |
-| `auth_mode=token`, not logged in, and snapshot does not report env injection | Run `openyida login`, then verify with `openyida login --check-only --json` |
+| `auth_mode=token`, not logged in, and snapshot does not report env injection | Run `openyida login`, wait for that command to finish, and use its final JSON result |
 
 ## Token Mode Commands
 
@@ -47,6 +47,28 @@ openyida auth status
 openyida auth refresh
 openyida auth logout
 ```
+
+## Agent OAuth Login Orchestration
+
+Default flow:
+
+1. Run `openyida login` once and keep waiting for that same command.
+2. The CLI opens the system browser by default. The agent MUST NOT extract the authorization URL and open it again.
+3. User authorization may take time. A quiet login process is expected to wait for up to about 5 minutes.
+4. Treat login as successful only after the original command exits successfully and its final JSON reports `ok=true` and `can_auto_use=true`.
+5. If the user closes the browser without authorizing, the CLI cannot reliably detect that window close. Keep waiting for the original command until the user stops it or it times out; do not start another login automatically.
+
+If the caller must control the browser, explicitly disable CLI auto-open:
+
+```bash
+openyida login --no-browser
+# Compatibility form:
+OPENYIDA_NO_BROWSER=1 openyida login
+```
+
+Only in this mode may the agent open the emitted authorization URL, and it must open it once. `--quiet` controls text output only; it does not control browser ownership.
+
+`openyida login --check-only --json` is for recovery or defensive verification. Do not use fixed sleeps or repeated `check-only` commands as the default completion mechanism.
 
 If user gives a Yida entry URL, pass it through:
 
@@ -90,6 +112,9 @@ If the runtime environment did not inject token env, the auth snapshot reports `
 - In runtime-environment injected token mode: 不要再执行 `openyida login` 触发 OAuth.
 - In runtime-environment injected token mode: 缺 token 时回到运行环境修复注入，不要查找本地 `.cache/cookies*.json`.
 - Do not pass Cookie, `_csrf_token`, or Bearer token manually in business commands.
+- Do not background `openyida login`, extract its URL, and run `open` again in the default mode.
+- Do not use a fixed `sleep` before checking login status.
+- Do not treat browser close or OAuth callback receipt alone as final login success.
 
 ## Done
 
