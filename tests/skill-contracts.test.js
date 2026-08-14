@@ -495,10 +495,10 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('表单/流程在自定义页面之前');
     expect(output).toContain('## 11. 验收标准');
     expect(design).toContain('[design.md 生成规则](references/style-design-selection.md)');
-    expect(design).toContain('[style-design 内置模板注册表](references/style-designs/registry.md)');
+    expect(design).toContain('[style-design 风格注册表](references/style-designs/registry.md)');
     expect(step5).toContain('读取 [design.md 生成规则](../references/style-design-selection.md)');
     expect(step5).toContain('- designFile：<prd/<项目名>/design.md>');
-    expect(step5).toContain('- baseDesignSource：references/style-designs/<selected-template>.md');
+    expect(step5).toContain('- baseDesignSource：references/style-designs/<selected-style>.md');
     expect(styleSelection).toContain('## 输出字段');
     expect(styleSelection).toContain('当前项目 `design.md` 提供所有页面必须遵守的视觉 DNA、布局、组件样式、主题 token 和状态规则');
     expect(styleSelection).toContain('| visualScaffold | design.md |');
@@ -886,7 +886,7 @@ describe('OpenYida skill contracts', () => {
     const canvasStyleGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-style-implementation-guide.md');
     const qualityGates = readSkill('yida-skills/skills/yida-design/references/page-quality-gates.md');
 
-    expect(pageUiux).toContain('工作台禁低密大卡片模板');
+    expect(pageUiux).toContain('工作台禁低密大卡片套路');
     expect(pageUiux).toContain('标题 + 4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡');
     expect(pageUiux).toContain('页面丰富度建议');
     expect(pageUiux).toContain('推荐规划 8-10 个有业务目的的区块以上');

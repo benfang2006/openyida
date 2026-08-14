@@ -23,7 +23,7 @@
 3. 若设计色不是平台预置主题 key，写 `shouldPassCreateAppTheme=false`，创建应用时不要显式传 `theme/colour`。
 4. 自定义色的 token 和注入方式写入 `design.md`，通过 `style#yida-global-theme` 或 `customThemeStyle.tokens` 注入，至少包含 `--color-brand1-6`、`--color-brand1-9`、`--color-brand1-2`、`--color-brand-1` ~ `--color-brand-4` 和 `--color-group`。
 5. `podBlue`、`podGreen`、`podOrange` 只是常用浅底候选，不是固定默认。不要因为没有特别说明就自动回到 #1677ff，也不要套用“科技=蓝、宠物=橙、法律=蓝”这类行业刻板配色。
-6. 主题色只作为 Step 5 所选 style-design 模板的换肤输入；除用户明确要求深色/夜间/高对比或强品牌独立页外，不用主题色反向决定模板。
+6. 主题色只作为 Step 5 所选设计风格的换肤输入；除用户明确要求深色/夜间/高对比或强品牌独立页外，不用主题色反向决定风格。
 
 ## 品牌 token 语义
 

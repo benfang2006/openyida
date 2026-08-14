@@ -40,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - 更新 README 与 CLI 帮助中的 OpenYida 帮助网站入口，统一指向新的 `demo.aliwork.com` helpCenter 路由，并补齐完整功能列表、CLI Reference、案例展示和更新日志等快捷链接。
 - 在自定义页面文档中补充“AI 自定义页面支持的宜搭原生组件”支持清单入口，便于查看 Code Canvas 可用的成员、部门、上传等原生组件能力。
-- 优化 `yida-design` 视觉模板选择与 registry 说明，强化模板适用场景、选择边界和弱模型路由提示。
+- 优化 `yida-design` 设计风格选择与 registry 说明，强化风格适用场景、选择边界和弱模型路由提示。
 
 ### Fixed
 - 修复 `nav-group auto-order` 未纳入命令 manifest 权限契约的问题，避免导航自动排序被误判为未知动作并触发额外权限确认。
