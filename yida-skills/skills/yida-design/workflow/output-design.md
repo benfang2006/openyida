@@ -56,6 +56,9 @@ themeAdaptationResult:
     - <画布 / 面板 / 布局 / 深色舞台 / 右侧栏等>
 yidaThemeRuntime:
   globalThemeInjection: <style#yida-global-theme / customThemeStyle.tokens / none>
+  formRuntimeInjection: style#yida-global-theme
+  formDetailStyleInjection: style#yida-form-detail-style
+  themeConsistency: app, custom pages, normal forms, process forms, submission pages, and formDetail pages share the same themeProfile tokens
   styleElementId: yida-global-theme
   helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md
   injectTargets: [currentDocument, sameOriginParentDocuments]
@@ -308,6 +311,9 @@ inferred_modules:
 | 自定义色盘   | `shouldPassCreateAppTheme=false`，创建应用时不传 `theme/colour`                                                                                                              |
 | 页面注入     | 自定义色盘、隐藏导航沉浸页、页面级独立主题使用 `style#yida-global-theme`                                                                                                     |
 | 应用级换肤   | 需要全应用换肤时写 `customThemeStyle.tokens`，页面运行态统一注入 `style#yida-global-theme`                                                                                   |
+| 表单运行态   | 普通表单、流程表单、提交页和 formDetail 详情页必须消费同一套应用主题 token；表单 JS 固定注入 `style#yida-global-theme`                                                        |
+| 详情页样式   | formDetail 页面必须由同一个 `openyidaThemeDidMount` 条件注入 `style#yida-form-detail-style`，不得只完成页面主题而漏掉详情页样式                                                |
+| 主题一致性   | 自定义页面、普通表单、流程表单、提交页、formDetail 详情页和应用主题色必须一致；抽屉 iframe 打开表单时同步父页面当前主题 tokens                                                 |
 | 注入目标     | 当前窗口 `document` 和所有同源可访问父级窗口 `document`；跨域父级静默跳过                                                                                                    |
 | Helper       | Code Canvas 和普通 JSX 都复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md`，使用其中的 `collectYidaThemeDocuments` 收集当前文档和同源父级文档，不要临场重写 |
 | 样式 ID      | 固定为 `yida-global-theme`，重复执行只更新同一个 style                                                                                                                       |

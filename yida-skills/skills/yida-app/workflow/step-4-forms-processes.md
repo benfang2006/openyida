@@ -16,7 +16,7 @@
 3. 已有目标表单时，使用 update/patch/rule/bind-datasource。
 4. 缺少支撑 MVP 的核心普通表单且允许创建时，创建普通表单。
 5. 字段配置文件写入 `.cache/openyida/<项目名>/`。
-6. 拿到或确认真实 `formUuid` 后，默认执行或补齐 formDetail CSS 注入；重复执行保持幂等。
+6. 拿到或确认真实 `formUuid` 后，必须执行表单主题和 formDetail CSS 注入校验：先 `openyida form-detail-style check`，缺失时 `apply`，再 `check`；最终需确认 `globalThemeActionFound: true` 与 `formDetailStyleActionFound: true`，重复执行保持幂等。
 7. 页面、数据、流程或公式确需多字段映射时，对每个目标表单最多一次性执行 `openyida get-schema <appType> <formUuid> --field-map-json`，合并写回 `.cache/<项目名>-schema.json`。
 8. PRD 包含审批、流程、申请、审核、工单等流程对象时，执行 `use_skill("yida-create-process", "创建带审批流程表单")`。
 9. 已有流程表单或 `processCode` 时，执行 `use_skill("yida-process-rule", "更新已有流程规则")`。
@@ -58,14 +58,16 @@
 - 普通表单真实 `formUuid`；
 - 流程表单真实 `formUuid` / `processCode`；
 - 必要 `fieldId`；
-- 表单详情页 CSS 注入结果或阻塞原因。
+- 表单全局主题和详情页 CSS 注入结果，或明确阻塞原因。
 
 ## Checklist
 
 - [ ] 字段结构有 Divider 分组；
 - [ ] 表单/流程资源在自定义页面之前创建或确认；
 - [ ] 必要 `fieldId` 已写入 `.cache/<项目名>-schema.json`；
-- [ ] formDetail CSS 已注入，或已有明确阻塞原因。
+- [ ] 表单全局主题已注入：`globalThemeActionFound: true`；
+- [ ] formDetail CSS 已注入：`formDetailStyleActionFound: true`；
+- [ ] 若无法注入，已给出明确阻塞原因。
 
 ## 下一步
 
