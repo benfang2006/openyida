@@ -1,8 +1,8 @@
 # 输出：design.md
 
-> Step 6 自检通过后，写入 `prd/<项目名>/design.md`。`design.md` 是应用级 UI 视觉设计系统，结构以本文件为准，并参考 `references/style-designs/_design-md-template.md` 的字段完整度：先记录 style-design 模板选择依据和主题换肤结果，再写可复用视觉 DNA、token、布局、组件、状态和自检，最后在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。
+> 本文件定义完整应用的 `prd/<项目名>/design.md` 输出格式。`design.md` 是应用级 UI 视觉设计系统，结构以本文件为准，并参考 `references/style-designs/_design-md-template.md` 的字段完整度：先记录设计风格选择依据和主题换肤结果，再写可复用视觉 DNA、token、布局、组件、状态和自检，最后在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。
 
-最终 `design.md` 的依据分四层：结构依据本文件和 `_design-md-template.md`；视觉 DNA、布局机制、组件机制和换肤规则依据选中的 `style-designs/*.md`；业务内容、页面区块、数据来源和操作路径依据当前 PRD；主题 token 依据 Step 2 的主题色来源和所选模板的 `theme_adaptation`。
+最终 `design.md` 的依据分四层：结构依据本文件和 `_design-md-template.md`；视觉 DNA、布局机制、组件机制和换肤规则依据选中的设计风格文件；业务内容、页面区块、数据来源和操作路径依据当前 PRD；主题 token 依据 Step 2 的主题色来源和所选风格的 `theme_adaptation`。
 
 ## design.md 输出格式
 
@@ -13,7 +13,7 @@ name: <应用或风格系统英文 slug>
 description: <内容中立的中文用途说明>
 design_id: <design-id>
 design_status: ready
-baseDesignSource: references/style-designs/<selected-template>.md
+baseDesignSource: references/style-designs/<selected-style>.md
 styleDesignSelection:
   inferredUserTask: <判断 / 处理 / 追踪 / 分析 / 展示 / 汇报>
   inferredInformationTopology: <摘要优先 + 趋势承接 + 明细落地>
@@ -21,11 +21,11 @@ styleDesignSelection:
   requiredVisualDNA:
     - <dna-id>
   selectedStyleDesign:
-    name: <template-name>
-    source: references/style-designs/<selected-template>.md
-    reason: <为什么该模板最适合当前业务>
+    name: <style-name>
+    source: references/style-designs/<selected-style>.md
+    reason: <为什么该风格最适合当前业务>
   rejectedStyleDesigns:
-    - <template-name>: <为什么不选>
+    - <style-name>: <为什么不选>
   selectionConfidence: <high / medium / low>
 scenes: [工作台, 列表, 详情, 看板]
 density: <high / medium / comfortable；业务工具页默认 high>
@@ -56,6 +56,9 @@ themeAdaptationResult:
     - <画布 / 面板 / 布局 / 深色舞台 / 右侧栏等>
 yidaThemeRuntime:
   globalThemeInjection: <style#yida-global-theme / customThemeStyle.tokens / none>
+  formRuntimeInjection: style#yida-global-theme
+  formDetailStyleInjection: style#yida-form-detail-style
+  themeConsistency: app, custom pages, normal forms, process forms, submission pages, and formDetail pages share the same themeProfile tokens
   styleElementId: yida-global-theme
   helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md
   injectTargets: [currentDocument, sameOriginParentDocuments]
@@ -169,13 +172,13 @@ inferred_modules:
 
 用 2-4 个短段落说明可复用设计意图。保持内容中立，只说明气质、信息密度、主要用途和页面组织方式。
 
-## 2. 模板选择依据
+## 2. 设计风格选择依据
 
-说明 `styleDesignSelection` 的推演过程：当前业务的用户任务、信息拓扑、交互重心、必需视觉 DNA、选中模板和拒绝模板。选择理由必须来自业务结构和视觉 DNA 命中，不得按行业、颜色或主观偏好直接套模板。
+说明 `styleDesignSelection` 的推演过程：当前业务的用户任务、信息拓扑、交互重心、必需视觉 DNA、选中风格和排除风格。选择理由必须来自业务结构和视觉 DNA 命中，不得按行业、颜色或主观偏好直接套风格。
 
 ## 3. 主题色与换肤结果
 
-说明 `themeProfile` 和 `themeAdaptationResult`：主题色来源、是否命中平台主题 key、是否允许传给 `create-app/update-app --theme`、如何替换模板 `replace_tokens`、派生 `derive_tokens`、保留 `preserve_tokens` 和 `visual_dna.invariant`。必须明确“换 hue，不换 DNA；换 token，不换结构”。
+说明 `themeProfile` 和 `themeAdaptationResult`：主题色来源、是否命中平台主题 key、是否允许传给 `create-app/update-app --theme`、如何替换所选风格的 `replace_tokens`、派生 `derive_tokens`、保留 `preserve_tokens` 和 `visual_dna.invariant`。必须明确“换 hue，不换 DNA；换 token，不换结构”。
 
 ## 4. 适用场景
 
@@ -189,7 +192,7 @@ inferred_modules:
 
 ## 6. 视觉 DNA / 设计母体
 
-从选中 style-design 模板和当前业务结构中提取 2-5 个内容替换后仍必须保留的设计记忆点。每个 DNA 必须包含名称、证据、规则、实现钩子、失败表现和置信度；证据必须同时说明业务触发条件和模板来源。
+从所选设计风格和当前业务结构中提取 2-5 个内容替换后仍必须保留的设计记忆点。每个 DNA 必须包含名称、证据、规则、实现钩子、失败表现和置信度；证据必须同时说明业务触发条件和风格来源。
 
 ## 7. 色彩角色
 
@@ -219,7 +222,7 @@ inferred_modules:
 
 ## 9. 布局原则
 
-说明页面壳、最大宽度、网格比例、间距、内容顺序和中性槽位关系。布局机制应来自选中模板的 `layout_stability`、`modules` 和当前 PRD 页面结构，不得凭空增加 PRD 未要求的图表、右侧栏、时间轴或深色舞台。
+说明页面壳、最大宽度、网格比例、间距、内容顺序和中性槽位关系。布局机制应来自所选风格的 `layout_stability`、`modules` 和当前 PRD 页面结构，不得凭空增加 PRD 未要求的图表、右侧栏、时间轴或深色舞台。
 
 工作台、门户首页、管理后台和运营首页必须写清紧凑状态摘要、任务/记录列表、右侧上下文、高频动作条和薄空态行动。首屏不能出现超宽但内容稀疏的 KPI 横框、孤立大空态卡或右侧大面积留白；空白区域必须用最近记录、动态、风险、负责人、下一步动作、配置提示或薄空态行动承接。
 
@@ -308,6 +311,9 @@ inferred_modules:
 | 自定义色盘   | `shouldPassCreateAppTheme=false`，创建应用时不传 `theme/colour`                                                                                                              |
 | 页面注入     | 自定义色盘、隐藏导航沉浸页、页面级独立主题使用 `style#yida-global-theme`                                                                                                     |
 | 应用级换肤   | 需要全应用换肤时写 `customThemeStyle.tokens`，页面运行态统一注入 `style#yida-global-theme`                                                                                   |
+| 表单运行态   | 普通表单、流程表单、提交页和 formDetail 详情页必须消费同一套应用主题 token；表单 JS 固定注入 `style#yida-global-theme`                                                        |
+| 详情页样式   | formDetail 页面必须由同一个 `openyidaThemeDidMount` 条件注入 `style#yida-form-detail-style`，不得只完成页面主题而漏掉详情页样式                                                |
+| 主题一致性   | 自定义页面、普通表单、流程表单、提交页、formDetail 详情页和应用主题色必须一致；抽屉 iframe 打开表单时同步父页面当前主题 tokens                                                 |
 | 注入目标     | 当前窗口 `document` 和所有同源可访问父级窗口 `document`；跨域父级静默跳过                                                                                                    |
 | Helper       | Code Canvas 和普通 JSX 都复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md`，使用其中的 `collectYidaThemeDocuments` 收集当前文档和同源父级文档，不要临场重写 |
 | 样式 ID      | 固定为 `yida-global-theme`，重复执行只更新同一个 style                                                                                                                       |
@@ -338,7 +344,7 @@ inferred_modules:
 
 ## 20. 禁止项
 
-列出硬性负向约束，覆盖会抹掉每个 DNA 的错误做法。必须包含：不得按行业或颜色直接套模板；不得为了还原模板凭空创造 PRD 未要求的模块；自定义主题名或任意色值不得传给 `create-app --theme`；不得只向当前页面 `document.head` 注入主题而漏掉同源父级 iframe。
+列出硬性负向约束，覆盖会抹掉每个 DNA 的错误做法。必须包含：不得按行业或颜色直接套风格；不得为了还原风格凭空创造 PRD 未要求的模块；自定义主题名或任意色值不得传给 `create-app --theme`；不得只向当前页面 `document.head` 注入主题而漏掉同源父级 iframe。
 
 ## 21. 错误 vs 正确
 
@@ -346,21 +352,21 @@ inferred_modules:
 
 | 错误                                 | 正确                                                                   |
 | ------------------------------------ | ---------------------------------------------------------------------- |
-| 看到绿色业务就选 `teal-rail`         | 先推演用户任务、信息拓扑和 requiredVisualDNA，再选模板；绿色只用于换肤 |
-| 为了套时间轴模板新增不存在的阶段模块 | PRD 没有阶段/里程碑时拒绝时间轴模板                                    |
+| 看到绿色业务就选 `teal-rail`         | 先推演用户任务、信息拓扑和 requiredVisualDNA，再选风格；绿色只用于换肤 |
+| 为了套时间轴风格新增不存在的阶段模块 | PRD 没有阶段/里程碑时排除时间轴风格                                    |
 | 自定义色盘仍传 `--theme myBrand`     | 不传应用 theme，在页面复制 helper 注入 `style#yida-global-theme`       |
 | 只在当前 iframe 写 style             | 同步当前文档和同源父级窗口文档                                         |
 | PRD 里复制完整视觉规则               | PRD 只写摘要，完整 UI 规则写 design.md                                 |
 
 ## 22. Agent 使用提示
 
-提供一段简洁提示词，明确告诉 AI 如何使用该 design.md。必须说明选中 style-design 只是设计母体，最终事实源是当前项目 `design.md`；视觉 DNA 在内容替换后也要保留；实现自定义色盘时必须读取 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 并复制对应 helper。
+提供一段简洁提示词，明确告诉 AI 如何使用该 design.md。必须说明选中 style-design 只是设计风格来源，最终事实源是当前项目 `design.md`；视觉 DNA 在内容替换后也要保留；实现自定义色盘时必须读取 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 并复制对应 helper。
 
 ## 23. 交付自检清单
 
-- [ ] `baseDesignSource` 已写选中的 `references/style-designs/<template>.md`，或在所有模板不适用时说明 `generated-from-business-context` 原因。
-- [ ] `styleDesignSelection` 已说明用户任务、信息拓扑、requiredVisualDNA、选中模板、拒绝模板和置信度。
-- [ ] 模板选择依据来自业务结构和视觉 DNA 命中，不是行业、颜色或主观偏好。
+- [ ] `baseDesignSource` 已写选中的 `references/style-designs/<style>.md`，或在所有内置风格不适用时说明 `generated-from-business-context` 原因。
+- [ ] `styleDesignSelection` 已说明用户任务、信息拓扑、requiredVisualDNA、选中风格、排除风格和置信度。
+- [ ] 设计风格选择依据来自业务结构和视觉 DNA 命中，不是行业、颜色或主观偏好。
 - [ ] `themeAdaptationResult` 已说明输入主题色、换肤策略、replaced token、preservedVisualDNA 和 preservedMechanisms。
 - [ ] 主题色遵守“换 hue，不换 DNA；换 token，不换结构”。
 - [ ] 源图或参考业务内容已抽象为中性槽位。

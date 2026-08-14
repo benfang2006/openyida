@@ -427,7 +427,7 @@ page_shell
 
 ## 12. 快捷入口区域
 
-截图未出现独立快捷入口，但该页面类型通常需要 `quick_actions`。本模板按整体视觉 DNA 推断快捷入口，置信度为 `inferred`。
+截图未出现独立快捷入口，但该页面类型通常需要 `quick_actions`。本风格按整体视觉 DNA 推断快捷入口，置信度为 `inferred`。
 
 - 位置：放在 `primary_metrics` 之后、`main_grid` 之前；或放在 `right_rail` 顶部作为辅助操作面板。不要抢占 `metric_card` 和主图表。
 - 容器：白色软边框面板，圆角 24-28px，内边距 20-24px，阴影同普通面板。

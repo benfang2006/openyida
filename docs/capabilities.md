@@ -1,6 +1,10 @@
 # OpenYida 功能完整列表
 
-这份清单面向宜搭使用者，说明 OpenYida 支持的功能，以及对应可以执行的 `openyida` 命令。参数细节可以继续查看 `openyida --help`、`openyida <command> --help` 或 `openyida commands --json`。
+这份清单面向宜搭使用者和 AI Agent，按本地 OpenYida `2026.8.12-1` 的 101 条命令和技能路由整理。参数细节可以继续查看 `openyida --help`、`openyida <command> --help` 或 `openyida commands --json`。
+
+<Note>
+日常使用建议先运行 `openyida agent-capabilities --summary-json`，它会轻量返回版本、登录态、组织、工作目录和命令清单摘要。只有排查命令契约、权限元数据或登录异常时，再使用完整的 `openyida agent-capabilities --json`。
+</Note>
 
 ## 基础操作
 
@@ -27,6 +31,8 @@
 | 查询我的应用 | `openyida app-list [--size N]` |
 | 创建应用 | `openyida create-app "<应用名称>"` |
 | 更新应用名称、布局、主题 | `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` |
+| 启用应用 / 上线应用 | `openyida app-online <appType> [--to-ding-app-center] [--show-app-center]` |
+| 停用应用 / 下线应用 | `openyida app-offline <appType> [--to-ding-app-center] [--show-app-center]` |
 | 导出应用迁移包 | `openyida export <appType> [output]` |
 | 导入应用迁移包 | `openyida import <file> [name]` |
 | 管理左侧导航分组 | `openyida nav-group <list\|create\|rename\|delete\|move\|order\|hide\|show> <appType> ...` |
@@ -43,6 +49,7 @@
 | 功能 | 执行操作 |
 |---|---|
 | 创建表单 | `openyida create-form create <appType> ...` |
+| 校验表单字段配置 | `openyida create-form validate-fields <fieldsJsonOrFile>` |
 | 更新表单字段 | `openyida create-form update <appType> ...` |
 | 用 patch 更新表单 | `openyida create-form patch <appType> <formUuid> <patchJsonOrFile>` |
 | 配置表单联动规则 | `openyida create-form rule <appType> <formUuid> <rulesJsonOrFile>` |
@@ -54,6 +61,7 @@
 | 获取表单 Schema | `openyida get-schema <appType> <formUuid>` |
 | 获取应用全部 Schema | `openyida get-schema <appType> --all` |
 | 导出 ER 关系图 | `openyida er <appType> [--format mermaid\|json] [--output file]` |
+| 注入、移除或检查表单详情页样式 | `openyida form-detail-style <apply\|remove\|check> <appType> <formUuid> ...` |
 | 管理聚合表 virtualView | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> <appType> ...` |
 
 ## 自定义页面与发布
@@ -62,6 +70,7 @@
 |---|---|
 | 创建自定义页面 | `openyida create-page <appType> "<页面名称>"` |
 | 创建看板页 | `openyida create-page <appType> "<页面名称>" --mode dashboard` |
+| 查看或输出自定义页面示例 | `openyida sample yida-canvas-custom-page <sample> --output project/pages/src/<name>.canvas.jsx` / `openyida sample yida-custom-page <sample> --output project/pages/src/<name>.oyd.jsx` |
 | 构建宜搭兼容页面源码 | `openyida build-page <sourceFile> [--output file\|--write]` |
 | 检查普通自定义页面 JSX 规范 | `openyida check-page <src> [--compat]` |
 | 本地编译普通自定义页面 JSX | `openyida compile <src>` |
@@ -72,8 +81,8 @@
 | 更新页面/表单配置 | `openyida update-form-config <appType> ...` |
 | 查询页面/表单配置 | `openyida get-form-config <appType> <formUuid> [--json]` |
 | 开发高级自定义页面、看板、图表或幻灯片 | 默认优先使用 Code Canvas 链路；明确要求普通自定义页面 JSX/Jsx，或强依赖普通自定义页实例桥时使用 `.oyd.jsx` + `check-page` / `compile` / `publish` |
-| Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | 使用 `yida-canvas-custom-page`，参考 `yida-canvas-custom-page/references/native-components-bridge.md` 做运行态组件探测、fallback 和值归一化 |
-| Code Canvas 门户 + 成员/部门/上传组件 | 使用 `yida-canvas-custom-page`，按业务页面结构接入运行态组件桥 |
+| Code Canvas 页面使用成员/部门/上传等宜搭运行态组件 | `openyida sample yida-canvas-custom-page native-components-smoke --output pages/src/native-components-smoke.canvas.jsx`；再参考 `yida-canvas-custom-page/references/native-components-bridge.md` |
+| Code Canvas 门户 + 成员/部门/上传组件示例 | `openyida sample yida-canvas-custom-page portal-native-components --output pages/src/portal-native-components.canvas.jsx` |
 | 普通自定义页面 JSX/Jsx 使用成员/部门组件 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/component-jsx-guide.md` |
 | 普通自定义页面 JSX/Jsx 使用附件/图片上传 | 使用 `.oyd.jsx`，参考 `yida-custom-page/references/attachment-upload-guide.md` |
 
@@ -81,11 +90,15 @@
 
 | 需求 | 推荐链路 |
 |---|---|
-| 现代 React、hooks、官网、工作台、看板、列表、详情、可视化、AI 首次生成页面 | Code Canvas：`.canvas.jsx` / `YidaCodeCanvas` |
+| 现代 React、Hooks、官网、工作台、看板、列表、详情、可视化、AI 首次生成页面 | Code Canvas：`.canvas.jsx` / `.canvas.tsx` / `YidaCodeCanvas` |
 | 需要成员、部门、附件上传、图片上传等宜搭运行态组件，且希望页面保持现代 React 体验 | Code Canvas + 原生组件桥；先跑 smoke 示例验证运行态组件，再做 fallback 和值归一化 |
 | 用户明确要求普通自定义页面 JSX/Jsx 组件链路 | 普通自定义页面：`.oyd.jsx` / `Jsx` |
 | 强依赖 `this.$(fieldId)`、`this.utils.yida.*`、`this.dataSourceMap`、表单提交或字段双向绑定 | 普通自定义页面：`.oyd.jsx` / `Jsx` |
 | 已有普通 `.oyd.jsx` 页面要迁移到 Code Canvas | 参考 `yida-canvas-upgrade` 技能 |
+
+<Tip>
+新版自定义页面默认走 Code Canvas。`check-page` 和 `compile` 主要用于普通自定义页面 JSX；`.canvas.jsx` / `.canvas.tsx` 由 `openyida publish` 的 Canvas 编译阶段校验。
+</Tip>
 
 ## 流程、审批与任务
 
@@ -123,7 +136,8 @@
 |---|---|
 | 创建宜搭原生报表 | `openyida create-report <appType> "<报表名称>" ...` |
 | 向已有报表追加图表 | `openyida append-chart <appType> <reportId> ...` |
-| 创建 ECharts 高级报表 | 使用自定义页面开发链路，并执行 `openyida publish ...` |
+| 创建 Recharts 高级看板 | 使用 Code Canvas + Recharts 示例，并执行 `openyida publish ...` |
+| 维护 ECharts 复杂图表页面 | 使用普通自定义页面或 ECharts 兼容链路，并执行 `openyida publish ...` |
 | 创建经营看板/管理驾驶舱/数据大屏 | 使用 `create-page`、数据源配置、报表命令和 `publish` 组合完成 |
 
 ## 连接器、集成与钉钉
@@ -164,6 +178,8 @@
 | 解析并回填页面素材 | `openyida asset resolve [options]` |
 | 生成 AI 图片素材 | `openyida asset generate [options]` |
 | 检查宜搭公式 | `openyida formula evaluate <formula\|file> [--schema file]` |
+| 读取钉钉文档并转为 Markdown | `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` |
+| 按 taskUuid 读取钉钉听记 | `openyida read-dingtalk-tingji <taskUuid> [--json]` |
 | 闪记/会议纪要转 PRD | `openyida flash-to-prd --file <path> --name "<project>"` |
 | 导出 AI 对话记录 | `openyida export-conversation [options]` |
 | 整理 VOC 反馈材料 | 按故障、需求或性能问题整理成可提交材料 |
