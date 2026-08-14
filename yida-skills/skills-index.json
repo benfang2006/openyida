@@ -326,7 +326,7 @@
       "name": "yida-canvas-upgrade",
       "path": "skills/yida-canvas-upgrade/SKILL.md",
       "display_name": "自定义页面迁移升级",
-      "description": "将 OpenYida 原普通自定义页面链路升级或迁移为使用 YidaCodeCanvas 组件实现的自定义页面。",
+      "description": "将存量平台 JSX 组件页面升级或迁移为使用 YidaCodeCanvas 组件实现的自定义页面。",
       "category": "yida-skills/page",
       "tags": [
         "YidaCodeCanvas",
@@ -1262,7 +1262,7 @@
     {
       "name": "yida-skills/analytics",
       "display_name": "报表与看板",
-      "description": "原生报表、自定义页面 Recharts 默认高级图表、ECharts 兼容链路、经营看板/驾驶舱/数据大屏。",
+      "description": "原生报表、自定义页面 Recharts 默认高级图表、ECharts 兼容场景、经营看板/驾驶舱/数据大屏。",
       "signals": [
         "报表",
         "统计",

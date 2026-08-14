@@ -91,7 +91,7 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 1. **数据桥显式化**：表单数据默认通过外层 yida JS-API 桥读写，连接器和同源业务接口通过显式 endpoint 读写；Cookie、CSRF、密钥和签名留在平台、连接器或后端服务侧。
 2. **组件增强可降级**：门户、成员、部门、上传组件都做 feature detect 和 fallback；组件缺失时页面仍展示自绘基线。
 3. **值先归一化**：成员、部门、文件的原始返回值保留到 `raw` 用于检查，业务 payload 使用统一结构。
-4. **UI 改造保持功能契约**：页面美感提升、页面重构和局部美化只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；已有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原链路保留。
+4. **UI 改造保持功能契约**：页面美感提升、页面重构和局部美化只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；已有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原有实现保留。
 5. **主题实现消费设计结果**：`themeProfile`、`themeScope`、`themeColorSource` 来自 `yida-design` 的 `design.md`，业务场景和页面边界来自 `prd.md` 或派生 `page-spec.json`；真实业务页、页面重构和局部美化以当前应用主题色为基准，并读取对应 `--color-brand1-*` 与 `--color-group`。独立品牌/活动页、隐藏导航沉浸页和用户明确要求完全不同风格的页面，使用页面级固定主题（`followRuntimeTheme: false` 或等价 CSS 变量）。需要自定义色盘时复制 `references/theme-runtime-helpers.md` 的 `YidaCodeCanvas` helper，向当前文档、同源可访问父级 iframe 文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档注入 `style#yida-global-theme`。
 6. **先验证再扩展业务**：原生组件、上传、组织搜索、弹层类能力先做 smoke 页面，确认 PC/移动端都可用后再进入复杂业务页面。
 7. **生成骨架占位符必须可直发**：可编译页面骨架同时支持生成器替换变量和原样发布。JSON 占位符用 `parseTemplateJson(raw, fallback)`，展示文案占位符用 `withFallback` / `applyPageFallbacks` 兜底，未替换时页面继续可运行，并显示业务化 fallback 文案。

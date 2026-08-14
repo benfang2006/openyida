@@ -38,7 +38,7 @@ description: 宜搭单页设计子流程。用于已有应用里的单个自定�
 - 当前应用主题清楚：`themeDecision=follow-app` 或 `page-enhance`，`themeProfile.name` 使用当前应用主题 key，`themeColorSource=application-theme`，页面按业务需要调整构图、密度、素材和局部强调色。
 - 当前页面已有页面级 token：保留可用 token，补齐 `themeScope=page`、`navTheme=light`、状态色、图表色和组件语义。
 - 页面重构/局部美化：默认以当前应用主题为基准；页面级变量只补密度、间距、状态色、图表色阶和局部强调，不整体改主色相。
-- 页面美感提升/改 UI：`functionContract` 保持稳定，现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原链路交付。
+- 页面美感提升/改 UI：`functionContract` 保持稳定，现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原有实现交付。
 - 用户明确要很不一样、独立品牌页、活动页或隐藏导航沉浸页：写 `themeDecision=page-independent`，并说明页面级独立色盘与应用主题的关系。
 - 用户明确要全应用换肤：将诉求回到 `yida-design` 的主题色和 token 分支，输出 `themeScope=app` 和 `customThemeStyle.tokens`。
 - 单页只做局部美化：保持平台导航和应用主题稳定，页面级 `style#yida-global-theme` 只覆盖当前页视觉变量。

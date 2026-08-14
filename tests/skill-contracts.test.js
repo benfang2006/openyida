@@ -1214,8 +1214,8 @@ describe('OpenYida skill contracts', () => {
     expect(nativeDesignSystem).not.toContain('应用全局主题');
     expect(nativeDesignSystem).not.toContain('App 品牌色');
 
-    expect(dataSources).toContain('本技能只服务 **普通自定义页面 native 链路**');
-    expect(dataSources).toContain('`YidaCodeCanvas` 组件没有普通页面 `this` 实例，也没有 `dataSourceMap`');
+    expect(dataSources).toContain('本技能只服务已存在的历史平台 JSX 组件页面中的设计器 Page dataSource.online 配置');
+    expect(dataSources).toContain('`YidaCodeCanvas` 组件没有平台 JSX 组件页面实例 `this`，也没有 `dataSourceMap`');
     expect(dataSources).toContain('use_skill("yida-canvas-data-binding"');
   });
 });

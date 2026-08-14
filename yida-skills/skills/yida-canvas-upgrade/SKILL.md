@@ -1,15 +1,15 @@
 ---
 name: yida-canvas-upgrade
-description: 将 OpenYida 平台 JSX 组件页面升级/迁移为使用 `YidaCodeCanvas` 组件实现的宜搭自定义页面。适用于用户要求“从 openyida 原来的自定义页面链路升级为新的自定义页面实现”“.oyd.jsx / .oyb.jsx / Jsx 页面转 YidaCodeCanvas”“renderJsx 页面迁移到 YidaCodeCanvas”“把 openyida publish 链路改为 runtimeCode + importedModules 链路”。不要用于从零编写自定义页面。
+description: 将基于 JSX 组件 的自定义页面升级/迁移为使用 `YidaCodeCanvas` 组件实现的宜搭自定义页面。适用于用户要求“.oyd.jsx / .oyb.jsx / Jsx 页面转 YidaCodeCanvas”“renderJsx 页面迁移到 YidaCodeCanvas”“把发布产物改为 runtimeCode + importedModules”。不要用于从零编写自定义页面。
 ---
 
 # 平台 JSX 组件页面迁移到 YidaCodeCanvas 组件实现
 
 ## 核心定位
 
-本技能是**存量页面迁移链路**：把已有的 OpenYida 平台 JSX 组件页面转换为使用 `YidaCodeCanvas` 组件实现的页面，产出等价的 React18 函数组件源码并承载到 `YidaCodeCanvas`。
+本技能用于迁移存量页面：把已有的 JSX 组件页面转换为使用 `YidaCodeCanvas` 组件实现的页面，产出等价的 React18 函数组件源码并承载到 `YidaCodeCanvas`。
 
-- 源链路：OpenYida 平台 JSX 组件页面，通常是 `project/pages/src/*.oyd.jsx`、`export function renderJsx()`、`_customState`、`this.utils.yida.*`，`openyida publish` 发布为 `Jsx` 组件；用户称 `.oyb.jsx` 时先按平台 JSX 组件页面需求识别，再确认实际源码后缀。
+- 迁移前页面：OpenYida 平台 JSX 组件页面，通常是 `project/pages/src/*.oyd.jsx`、`export function renderJsx()`、`_customState`、`this.utils.yida.*`，`openyida publish` 发布为 `Jsx` 组件；用户称 `.oyb.jsx` 时先按平台 JSX 组件页面需求识别，再确认实际源码后缀。
 - 目标实现：页面 Schema 中承载 `YidaCodeCanvas` 组件，组件属性包含 `code`、`runtimeCode`、`importedModules`，运行时执行 `YidaComp`。
 
 ## 迁移前必须确认
@@ -32,11 +32,11 @@ description: 将 OpenYida 平台 JSX 组件页面升级/迁移为使用 `YidaCod
 | 普通 React 状态 / `_customState` | 改为 `useState` / `useMemo` / `useEffect` |
 | `didMount` / `didUnmount` | 改为 `useEffect(() => { ...; return cleanup; }, [])` |
 | ECharts / d3 / recharts | 优先使用 `YidaCodeCanvas` 可用资源清单；不在清单内则先补依赖或降级 |
-| `this.utils.yida.*` 表单 API | 不能默认照搬；需要通过 props、数据源注入、或保留平台 JSX 组件页面链路 |
+| `this.utils.yida.*` 表单 API | 不能默认照搬；需要通过 props、数据源注入；无法等价迁移时保留历史页面并输出阻塞点 |
 | `this.dataSourceMap.*` | 需要确认 YidaCodeCanvas props 是否透传数据源；未验证前不要迁移为可运行承诺 |
 | `this.utils.toast/dialog/router` | 改为 antd Message/Modal 或由 props 注入的能力；需验证 |
 | 字段组件如 `EmployeeField` | 按 `YidaCodeCanvas` 组件依赖映射规则先做最小验证 |
-| `openyida publish` | 仍是最终发布方式：普通自定义页面源码发 `Jsx` 页面，`.canvas.jsx` 源码（或加 `--canvas`）发 `YidaCodeCanvas` 页面。迁移就是把源码改写成 `.canvas.jsx` 后重新 `publish` |
+| `openyida publish` | 仍是最终发布方式：`.oyd.jsx` / `.openyida.jsx` 等平台 JSX 源码发布为 `Jsx` 组件，`.canvas.jsx` 源码（或加 `--canvas`）发布为 `YidaCodeCanvas` 组件。迁移就是把源码改写成 `.canvas.jsx` 后重新 `publish` |
 
 ## 输出产物位置
 
@@ -91,7 +91,7 @@ description: 将 OpenYida 平台 JSX 组件页面升级/迁移为使用 `YidaCod
 | 阻塞 | 处理 |
 | --- | --- |
 | 源码无法等价改写（`this.utils.yida.*` / `dataSourceMap` 深度耦合） | `YidaCodeCanvas` 组件没有平台 JSX 组件实例桥，需重写为自建 HTTP 桥或 props；未验证前只交付草案和迁移报告，不发布覆盖 |
-| 依赖不在 `YidaCodeCanvas` 可用资源清单 | 补依赖映射、换已支持库，或保留原链路 |
+| 依赖不在 `YidaCodeCanvas` 可用资源清单 | 补依赖映射、换已支持库，或保留原实现 |
 | 原页面强依赖 `this.utils.yida.*` | 需要 props / 数据源注入方案；未验证前不要承诺可运行 |
 | 原页面使用宜搭原生字段组件 | 先做最小验证 |
-| Schema 回读不是 `YidaCodeCanvas` | 说明仍在普通 `Jsx` 链路，升级未完成 |
+| Schema 回读不是 `YidaCodeCanvas` | 说明 Schema 仍是 `Jsx` 组件，升级未完成 |

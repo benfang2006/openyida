@@ -36,10 +36,10 @@
   },
   {
     "id": "canvas-custom-page-hooks",
-    "prompt": "用 Code Canvas 写一个带 hooks 状态管理的交互式数据展示页",
+    "prompt": "用 YidaCodeCanvas 组件实现一个带 hooks 状态管理的交互式数据展示页",
     "expectedSkill": "yida-canvas-custom-page",
     "group": "页面与表单",
-    "note": "Code Canvas 现代交互页 → canvas-custom-page"
+    "note": "YidaCodeCanvas 组件现代交互页 → canvas-custom-page"
   },
   {
     "id": "native-custom-page-binding",
@@ -50,10 +50,10 @@
   },
   {
     "id": "canvas-upgrade-migration",
-    "prompt": "把现有的 .oyd.jsx 页面迁移升级到 Code Canvas 链路",
+    "prompt": "把现有的 .oyd.jsx 页面迁移升级为 YidaCodeCanvas 组件实现",
     "expectedSkill": "yida-canvas-upgrade",
     "group": "页面与表单",
-    "note": "已有 .oyd.jsx 迁到 Canvas → canvas-upgrade"
+    "note": "已有 .oyd.jsx 迁移为 YidaCodeCanvas 组件实现 → canvas-upgrade"
   },
   {
     "id": "nav-shell-sidebar",

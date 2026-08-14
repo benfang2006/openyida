@@ -137,7 +137,7 @@
   },
   {
     "id": "confusion-canvas-vs-native-vs-upgrade-3",
-    "prompt": "我有一个老的 .oyd.jsx 自定义页面想升级到 Code Canvas 新链路",
+    "prompt": "我有一个老的 .oyd.jsx 自定义页面想升级为 YidaCodeCanvas 组件实现",
     "expectedSkill": "yida-canvas-upgrade",
     "group": "易混淆-Canvas选型",
     "confusionPair": true,
