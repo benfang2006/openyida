@@ -7,13 +7,17 @@ description: 自定义页面 JSX 编译发布技能。
 
 > 资源边界：本技能只处理普通 OpenYida 页面发布；目标不明时先只读确认或询问用户。
 
-## Resource-First 发布目标
+## 执行边界
+
+本技能负责三件事：确认发布目标、执行编译发布、给出 final 证据。页面源码由 `yida-custom-page` 或 `yida-canvas-custom-page` 产出；缺少自定义页面容器时，先交给 `yida-create-page` 创建后再回来发布。
+
+## 发布目标确认
 
 发布前必须先解析目标页面 context；本技能优先服务已有页面：
 
-- 用户说“优化这个页面 URL / 修改这个页面 / 重新发布 / 覆盖现有页面”并提供页面 URL、`formUuid`、bound page 或 workspace 中可确认的 display page 时，直接把该页面作为发布目标，不创建 app/page。
-- bound page 是默认发布候选，不是强制目标；如果当前会话绑定页面 A，而用户本轮明确指定页面 B，必须先解析 B。B 有唯一 URL / display `formUuid` 时发布到 B；B 只有名称或描述且无法唯一匹配时先问用户；不要静默发布到 A。
-- 只有无法解析目标页面，且用户明确要新增一个页面容器时，才回到 `yida-create-page` 创建缺失 display page；已有 appType 不代表需要新建 app。
+- 用户说“优化这个页面 URL / 修改这个页面 / 重新发布 / 覆盖现有页面”并提供页面 URL、`formUuid`、bound page 或 workspace 中可确认的 display page 时，直接把该页面作为发布目标。
+- bound page 是默认发布候选，不是强制目标；如果当前会话绑定页面 A，而用户本轮明确指定页面 B，必须先解析 B。B 有唯一 URL / display `formUuid` 时发布到 B；B 只有名称或描述且无法唯一匹配时先问用户。
+- 只有无法解析目标页面，且用户明确要新增页面容器时，才回到 `yida-create-page`。
 - 发布目标必须是 `formType=display` 的自定义页面；普通表单、流程表单、数据底表的 `formUuid` 不能作为 `openyida publish` 第三个参数。
 - 多个页面候选按根技能来源优先级选择；同级冲突或无法判断页面类型时才问用户或执行只读 `list-forms` 确认。
 
@@ -23,7 +27,6 @@ description: 自定义页面 JSX 编译发布技能。
 - 不要把 AI 生成的普通 React 项目代码直接发布；源码应使用 OpenYida 页面源码格式：普通自定义页面 JSX/Jsx 组件链路用 `.oyd.jsx` / `.jsx` 并通过 `check-page` / `compile` 预检，Code Canvas 用 `.canvas.jsx` 并通过 `publish` 的 Canvas 编译阶段校验
 - 不要在宜搭原生 `export function renderJsx()` 页面里手写 Hooks；如确需 `useState/useEffect`，必须使用 `.oyd.jsx` 的 `export default function Page()` authoring 模式，让 OpenYida 兼容编译器降级
 - 不要编造 appType 和 formUuid，必须从已有记录或命令返回中获取
-- 用户已给页面 URL / `formUuid` / bound page 时，不要先创建新 app 或新 page；直接确认目标并发布到已有页面。
 
 ## 严格要求 (MUST DO)
 
@@ -78,7 +81,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 | `--auto-nav-order` | 否 | 发布成功后立刻执行轻量导航排序；PRD 已写明导航顺序时优先用 `openyida nav-group order <appType> <页面/表单...>`，PRD 缺少明确页面清单时才用本参数兜底；排序失败只警告，不回滚已发布页面 |
 | `--force` | 否 | 显式绕过发布目标类型保护；只有确认目标是自定义页面但导航接口暂时无法识别时才使用 |
 
-## 发布目标确认
+## 确认命令
 
 发布前先确认目标页面，避免把 JSX 覆盖到数据底表：
 

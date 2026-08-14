@@ -1,40 +1,41 @@
-# setup-and-env
+# 环境准备与登录检测
 
-## Run First
+## 先执行
 
 ```bash
 openyida agent-capabilities --summary-json
 ```
 
-Fallback:
+必要时降级：
 
 ```bash
 openyida env --json
 openyida login --check-only --json
 ```
 
-## Auth Mode
+## 认证模式
 
-- Do not infer auth mode from agent name, host product, workspace path, or a guessed environment variable.
-- First use `openyida agent-capabilities --summary-json`; fallback to `openyida login --check-only --json` only when the compact snapshot is unavailable or insufficient.
-- If the snapshot reports `login.auth_source=env` or `failure_reason=env_token_missing`, treat it as runtime-environment injected token mode. The only credential sources are runtime-environment injected token env such as `OPENYIDA_ACCESS_TOKEN` and `OPENYIDA_REFRESH_TOKEN`.
-- Otherwise, `login.auth_mode=token` uses the default OAuth token session flow.
-- NEVER infer auth from `.cache/cookies*.json`.
+- Codex、yida-agent 等宿主都使用同一套 OpenYida auth snapshot 规则。
+- 不要根据 agent 名称、宿主产品、workspace 路径或猜测的环境变量推断认证模式。
+- 先执行 `openyida agent-capabilities --summary-json`；只有简版快照不可用或信息不足时，才降级执行 `openyida login --check-only --json`。
+- snapshot 返回 `login.auth_source=env` 或 `failure_reason=env_token_missing` 时，进入运行环境注入 token 模式。凭证只来自运行环境注入的 `OPENYIDA_ACCESS_TOKEN`、`OPENYIDA_REFRESH_TOKEN` 等环境变量。
+- 其他 `login.auth_mode=token` 场景使用默认 OAuth token session。
+- 不要从 `.cache/cookies*.json` 推断登录态。
 
-## Decision Table
+## 判断表
 
-| Snapshot | Next action |
+| Snapshot | 下一步 |
 |---|---|
-| command not found | install/update `openyida`; do not create resources |
-| `workdir_exists=false` or `active.projectRootExists=false` | run `openyida copy`; do not create resources before workspace exists |
-| `auth_mode=token`, `status=ok` or `can_auto_use=true` | continue |
-| snapshot reports `auth_source=env` / `failure_reason=env_token_missing` | Treat as runtime-environment injected token mode; if token is missing, STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`; do not run OAuth |
-| `auth_mode=token`, not logged in, and snapshot does not report env injection | run `openyida login` once; wait for that command and use its final JSON result |
-| `auth_mode=token`, access token expired | run `openyida auth refresh`; if still failed and snapshot does not report env injection, run `openyida login` |
+| command not found | 安装或更新 `openyida`；不要创建资源 |
+| `workdir_exists=false` 或 `active.projectRootExists=false` | 先执行 `openyida copy`；工作目录存在前不要创建资源 |
+| `auth_mode=token` 且 `status=ok` 或 `can_auto_use=true` | 继续执行 |
+| snapshot 返回 `auth_source=env` / `failure_reason=env_token_missing` | 进入运行环境注入 token 模式；缺 token 时停止，让 Codex、yida-agent 等宿主注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`；不要执行 OAuth |
+| `auth_mode=token`，未登录，且 snapshot 未返回 env 注入 | 只执行一次 `openyida login`，等待该命令结束，并使用其最终 JSON 判断结果 |
+| `auth_mode=token`，access token 过期 | 执行 `openyida auth refresh`；仍失败且 snapshot 未返回 env 注入时，再执行 `openyida login` |
 
-## Token Mode Commands
+## Token 模式命令
 
-Use OAuth login only when the auth snapshot does not report env injection.
+只有 auth snapshot 未返回 env 注入模式时，才使用 OAuth 登录。
 
 ```bash
 openyida login
@@ -44,16 +45,16 @@ openyida auth refresh
 openyida auth logout
 ```
 
-## Agent OAuth Login Orchestration
+## Agent OAuth 登录编排
 
-- `openyida login` opens the system browser by default. Wait for the original command; do not extract the URL and open it again.
-- User authorization may take up to the OAuth timeout (about 5 minutes by default). Do not use a fixed `sleep` or repeatedly launch `login --check-only` while the original command is running.
-- Success requires the original command to exit successfully with final JSON containing `ok=true` and `can_auto_use=true`.
-- Closing the browser without authorization does not notify the CLI. Continue waiting for the original command until the user stops it or it times out; do not automatically start a second login.
-- Use `openyida login --no-browser` (or compatibility env `OPENYIDA_NO_BROWSER=1`) only when the caller intentionally owns browser opening. In that mode, open the emitted URL once.
-- `--quiet` controls text output only and does not disable browser auto-open.
+- `openyida login` 默认自动打开系统浏览器。等待原登录命令结束，不要提取授权 URL 后再次打开。
+- 用户授权可能持续到 OAuth 超时（默认约 5 分钟）。原命令仍运行时，不要固定 `sleep`，也不要重复执行 `login --check-only`。
+- 只有原命令成功退出，且最终 JSON 包含 `ok=true` 与 `can_auto_use=true`，才能判定登录成功。
+- 用户未授权就关闭浏览器时，CLI 无法可靠感知窗口关闭。继续等待原命令，直到用户停止或命令超时；不要自动发起第二次登录。
+- 只有调用方明确接管浏览器时才使用 `openyida login --no-browser`（兼容环境变量：`OPENYIDA_NO_BROWSER=1`），并且只打开一次输出的 URL。
+- `--quiet` 只控制文本输出，不会关闭自动打开浏览器。
 
-If user gives target entry URL or environment:
+用户给出目标入口 URL 或环境时，原样传入：
 
 ```bash
 openyida login https://yida-group.alibaba-inc.com/
@@ -61,11 +62,11 @@ openyida login --alibaba
 openyida login --intl
 ```
 
-Overseas / international / global / Japan / Global YiDA => add `--intl` or equivalent.
+海外 / international / global / Japan / Global YiDA 使用 `--intl` 或等价入口。
 
-## Runtime-Environment Injected Token Mode Commands
+## 运行环境注入 Token 模式命令
 
-Use only after the auth snapshot reports `auth_source=env` or `failure_reason=env_token_missing`.
+只有 auth snapshot 返回 `auth_source=env` 或 `failure_reason=env_token_missing` 后，才进入本模式。
 
 ```bash
 openyida agent-capabilities --summary-json
@@ -75,7 +76,7 @@ openyida auth status
 openyida auth refresh
 ```
 
-Allowed result:
+可继续执行的结果：
 
 ```json
 {
@@ -86,17 +87,11 @@ Allowed result:
 }
 ```
 
-If the runtime environment did not inject token env, the snapshot includes `failure_reason=env_token_missing`; stop the task and go back to the runtime environment. Never run `openyida login` after the snapshot reports runtime-environment injected token mode.
+如果运行环境没有注入 token，snapshot 会返回 `failure_reason=env_token_missing`；停止任务，让 Codex、yida-agent 等宿主补齐 token 注入。snapshot 已进入运行环境注入 token 模式后，不要再执行 `openyida login`。
 
-## NEVER
+## 禁止
 
-- Never run `openyida login` after the snapshot reports host-injected token mode.
-- Never read `.cache/cookies*.json` as yida-agent auth.
-- Never ask the user to export browser Cookie.
-- Never print Cookie, CSRF, `access_token`, or `refresh_token`.
-
-## Wukong / Codex
-
-- Same auth mode rules as above.
-- Do not special-case Wukong, Codex, yida-agent, or any host identity into an auth branch; follow the OpenYida auth snapshot.
-- Do not create app/page/form/publish until auth snapshot is usable.
+- snapshot 已进入运行环境注入 token 模式后，不要执行 `openyida login`。
+- 不要读取 `.cache/cookies*.json` 作为登录态。
+- 不要要求用户导出浏览器 Cookie。
+- 不要打印 Cookie、CSRF、`access_token` 或 `refresh_token`。

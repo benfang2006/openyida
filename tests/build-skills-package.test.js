@@ -62,13 +62,12 @@ describe('build-skills-package', () => {
       expect(fs.existsSync(path.join(outDir, loginIndexEntry.path))).toBe(true);
       expect(generatedIndex.skills.some((skill) => skill.path.startsWith('skills/'))).toBe(false);
       const generatedRootSkill = fs.readFileSync(path.join(outDir, 'SKILL.md'), 'utf8');
-      expect(generatedRootSkill).toContain('OPENYIDA_ACCESS_TOKEN');
-      expect(generatedRootSkill).toContain('禁止触发 OAuth');
+      expect(generatedRootSkill).toContain('环境准备与登录检测');
       expect(generatedRootSkill).not.toContain(LEGACY_COOKIE_ENV);
       expect(fs.readFileSync(
         path.join(outDir, 'references', 'subskills', 'yida-app', 'README.md'),
         'utf8'
-      )).toContain('完整应用统一编排');
+      )).toContain('完整应用编排技能');
       const generatedDesignSkill = fs.readFileSync(
         path.join(outDir, 'references', 'subskills', 'yida-design', 'README.md'),
         'utf8'
@@ -97,17 +96,22 @@ describe('build-skills-package', () => {
         path.join(outDir, 'references', 'setup-and-env.md'),
         'utf8'
       );
-      expect(generatedSetupGuide).toContain('runtime-environment injected token mode');
-      expect(generatedSetupGuide).toContain('STOP and ask the runtime environment to inject `OPENYIDA_ACCESS_TOKEN` or `OPENYIDA_REFRESH_TOKEN`');
-      expect(generatedSetupGuide).toContain('Never run `openyida login` after the snapshot reports runtime-environment injected token mode');
+      expect(generatedSetupGuide).toContain('Codex、yida-agent 等宿主都使用同一套 OpenYida auth snapshot 规则');
+      expect(generatedSetupGuide).toContain('让 Codex、yida-agent 等宿主注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`');
+      expect(generatedSetupGuide).toContain('snapshot 已进入运行环境注入 token 模式后，不要再执行 `openyida login`');
+      expect(generatedSetupGuide).not.toContain('Wukong');
+      expect(generatedSetupGuide).not.toContain('悟空');
       expect(generatedSetupGuide).not.toContain('auth_mode=cookie');
       const generatedLoginSkill = fs.readFileSync(
         path.join(outDir, 'references', 'subskills', 'yida-login', 'README.md'),
         'utf8'
       );
       expect(generatedLoginSkill).toContain('OPENYIDA_ACCESS_TOKEN');
+      expect(generatedLoginSkill).toContain('Codex、yida-agent 等宿主都使用同一套 OpenYida auth snapshot 规则');
       expect(generatedLoginSkill).toContain('不要再执行 `openyida login` 触发 OAuth');
       expect(generatedLoginSkill).toContain('不要查找本地 `.cache/cookies*.json`');
+      expect(generatedLoginSkill).not.toContain('Wukong');
+      expect(generatedLoginSkill).not.toContain('悟空');
       expect(generatedLoginSkill).not.toContain(LEGACY_COOKIE_ENV);
       expect(generatedLoginSkill).not.toContain('本地兼容缓存');
       expect(generatedLoginSkill).not.toContain('兼容缓存的 Cookie/CSRF');

@@ -1,13 +1,13 @@
 # 页面质量门禁
 
-本文件用于 Step 4、Step 5 和 Step 6 输出前自检。页面设计必须先通过这些门禁，再交给实现阶段。PRD 负责业务结构、应用主题色和风格摘要，`design.md` 负责完整 UI 设计规则；不要把 `design.md` 内容复制进 PRD。
+本文件为完整应用的页面结构、视觉设计和最终交付提供自检门禁。页面设计必须先通过这些门禁，再交给实现阶段。PRD 负责业务结构、应用主题色和风格摘要，`design.md` 负责完整 UI 设计规则；不要把 `design.md` 内容复制进 PRD。
 
-## 1. 区块数量门禁
+## 1. 区块丰富度建议
 
-- 工作台、首页、门户、看板、展示页和业务入口页至少有 10 个有业务目的的 `contentBlocks`。
+- 工作台、首页、门户、看板、展示页和业务入口页推荐有 8-10 个有业务目的的 `contentBlocks` 以上，但不作为准出硬门槛。
 - 计数按区块组算：KPI 组、快捷入口组、列表组、图表组各只算 1 个区块。
 - 每个区块必须写清目的、数据来源、主操作和状态。
-- 重复指标、重复入口、列表行、图表点、装饰块、空白容器不计数。
+- 重复指标、重复入口、列表行、图表点、装饰块、空白容器不计数；窄场景可以少于参考数量，并说明业务取舍。
 
 ## 2. 源码槽位门禁
 
@@ -110,7 +110,7 @@
 - pageSpecHandoff：
   - pageStructure：<workbench / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
   - scene：<workbench / dashboard / list / detail / landing / screen>
-  - contentBlocks：<10+ 区块；KPI/快捷入口/列表/图表子项不分别计数>
+  - contentBlocks：<推荐 8-10 个区块以上；KPI/快捷入口/列表/图表子项不分别计数>
   - themeSummary：<应用主题色 / 风格关键词 / themeScope 摘要；必须与 design.md 一致>
   - designFile：<prd/<项目名>/design.md>
   - designRefs：<themeProfile / sceneRecipes.<scene> / components.<name> / states.<name>>

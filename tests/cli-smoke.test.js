@@ -1673,6 +1673,10 @@ describe('CLI offline smoke', () => {
         status: 'ok',
         can_auto_use: true,
       });
+      expect(summary.precheck).toMatchObject({
+        skipped: true,
+        reason: 'runtime_auth_provisioned',
+      });
       expect(summary.builder_path.auth).toMatchObject({
         mode: 'token',
         source: 'env',
@@ -1680,6 +1684,7 @@ describe('CLI offline smoke', () => {
         host_injected_token_mode: true,
         host_token_env_detected: true,
         env_token_present: true,
+        runtime_auth_provisioned: true,
         interactive_login_allowed: false,
         browser_session_auth_allowed: false,
         missing_token_action: 'STOP_AND_REQUEST_HOST_TOKEN',
@@ -1752,6 +1757,7 @@ describe('CLI offline smoke', () => {
         status: 'not_logged_in',
         can_auto_use: false,
       });
+      expect(summary).not.toHaveProperty('precheck');
       expect(summary.builder_path.auth).toMatchObject({
         host_injected_token_mode: true,
         host_token_env_detected: true,
@@ -1759,6 +1765,7 @@ describe('CLI offline smoke', () => {
         interactive_login_allowed: false,
         missing_token_action: 'STOP_AND_REQUEST_HOST_TOKEN',
       });
+      expect(summary.builder_path.auth).not.toHaveProperty('runtime_auth_provisioned');
       expect(summary.builder_path.environment_check_simplification).toMatchObject({
         can_skip_default_exploration_when_summary_ok: true,
         skip_login_check_only_default: true,

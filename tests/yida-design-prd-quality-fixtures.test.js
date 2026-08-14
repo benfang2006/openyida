@@ -55,7 +55,7 @@ describe('yida-design PRD quality fixtures', () => {
     const styleDesignEntries = fs.readdirSync(path.join(ROOT, 'yida-skills/skills/yida-design/references/style-designs')).sort();
 
     expect(registry).toContain('_design-md-template.md');
-    expect(registry).toContain('内置视觉 DNA 模板');
+    expect(registry).toContain('内置设计风格');
     expect(registry).toContain('配色由模型根据行业、品牌、应用主题、业务情绪和用户偏好生成');
     expect(styleDesignEntries).toEqual(expect.arrayContaining([
       '_design-md-template.md',
@@ -86,7 +86,7 @@ describe('yida-design PRD quality fixtures', () => {
     expect(fs.existsSync(scenesDir)).toBe(false);
     expect(skill).toContain('设计事实源唯一');
     expect(skill).toContain('页面 `scene` 只作为分类标签');
-    expect(step3).toContain('页面 `scene` 只作为分类标签和实现提示，不作为页面模板');
+    expect(step3).toContain('页面 `scene` 只作为分类标签和实现提示，不作为固定页面样式');
     expect(step5).toContain('同一个 `prd/<项目名>/design.md`');
     expect(pageGeneration).toContain('强视觉品牌以 PRD 的素材清单和 `design.md.assetStrategy` 为准');
   });

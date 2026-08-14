@@ -4,7 +4,7 @@ template_type: visual_dna_preset
 name: soft-analytic-workbench
 design_id: soft-analytic-workbench
 design_status: draft
-description: 可被流程选择、可换主题色、内容中立的轻量分析工作台视觉 DNA 模板。
+description: 可被流程选择、可换主题色、内容中立的轻量分析工作台视觉 DNA 风格。
 scenes: [工作台, 仪表盘, 管理后台首页, 数据概览, 列表分析页]
 density: medium-high
 layout: asymmetric_analytic_grid
@@ -218,7 +218,7 @@ modules:
 
 # Soft Analytic Workbench DESIGN.md
 
-> front matter 是给流程和生成器读取的结构化配置；人工评审优先阅读下方正文。若两者冲突，模板选择、换色策略和 token 数值以前面的 YAML 为准，使用边界和业务取舍以正文为准。
+> front matter 是给流程和生成器读取的结构化配置；人工评审优先阅读下方正文。若两者冲突，风格选择、换色策略和 token 数值以前面的 YAML 为准，使用边界和业务取舍以正文为准。
 
 ## 1. 快速理解
 
@@ -236,9 +236,9 @@ PRD 决定内容、功能、信息架构、业务优先级、字段结构、模�
 
 当 PRD 没有图表数据时，可以使用同等品质的主内容面板承载摘要、流程、状态分布或核心列表，但仍要保留浅面板、稳定高度、精细分隔和小面积强调。
 
-## 3. 模板选择与换色逻辑
+## 3. 设计风格选择与换色逻辑
 
-上游流程应在页面需要高密度扫描、摘要与明细并存、趋势或对比信息明确时选择该模板。若需求主要是品牌展示、长文阅读、海报式视觉、低密度单任务表单，则不应选择。
+上游流程应在页面需要高密度扫描、摘要与明细并存、趋势或对比信息明确时选择该风格。若需求主要是品牌展示、长文阅读、海报式视觉、低密度单任务表单，则不应选择。
 
 默认强调色只是初始 token，不是视觉 DNA。主题色只替换 `brand`、`brand-soft`、`focus-ring`、图表序列和少量状态辅助色；背景、白色面板、中性文字、浅边框、大圆角、轻阴影和稳定网格必须保留。
 

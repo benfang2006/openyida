@@ -1,6 +1,6 @@
 # 输出：prd.md
 
-> Step 6 自检通过后，写入 `prd/<项目名>/prd.md`。`prd.md` 记录业务语义、产品设计、页面结构、资源创建顺序、页面实现交付顺序和导航顺序。PRD 不写 UI 视觉设计规范，只写应用主题色和风格摘要，并引用 `design.md` 章节。
+> 本文件定义完整应用的 `prd/<项目名>/prd.md` 输出格式。`prd.md` 记录业务语义、产品设计、页面结构、资源创建顺序、页面实现交付顺序和导航顺序。PRD 不写 UI 视觉设计规范，只写应用主题色和风格摘要，并引用 `design.md` 章节。
 
 ## PRD 输出格式
 
@@ -60,7 +60,7 @@
 - 页面定位：<主入口页面 / 核心业务页 / 详情页 / 报表页 / 配置页；说明为什么需要这个页面>
 - 页面目标：<这个页面帮助用户完成什么判断或操作>
 - 页面关系：<从哪里进入、下一步去列表 / 看板 / 表单提交 / 详情 / 报表中的哪一个>
-- 设计文件：<display-page 填 `prd/<项目名>/design.md`；普通表单 / 流程表单写“跟随应用主题与表单视觉引导”>
+- 设计文件：<display-page 填 `prd/<项目名>/design.md`；普通表单 / 流程表单写“跟随应用主题、表单视觉引导、表单全局主题注入和详情页样式注入”>
 - 设计引用：<引用 design.md 中的章节 ID，例如 themeProfile、sceneRecipes.workbench、components.table、states.empty>
 - 风格理由：<一句话说明该页面为什么采用 design.md 中的对应场景规则>
 - 主题关系：<跟随应用主题色 / 页面级独立色盘原因；只写摘要，具体 token 与 UI 规则见 design.md>
@@ -71,7 +71,7 @@
   - 详情页：<原生 formDetail / 自定义详情页 / 抽屉详情>
 - 需要设计的区块：
   - <区块名称>：<区块目的；数据来源；主操作；状态>
-  - 工作台、首页、门户、看板、展示页和业务入口页必须逐条列出至少 10 个 `contentBlocks`；KPI 组、快捷入口组、列表组各只算 1 个区块，不能用子项或列表行凑数。
+  - 工作台、首页、门户、看板、展示页和业务入口页推荐逐条列出 8-10 个 `contentBlocks` 以上，但这不是硬门槛。KPI 组、快捷入口组、列表组各只算 1 个区块，不能用子项或列表行凑数；窄场景可以更少，并说明取舍理由。
   - 自定义页面需要逐个写清首屏、筛选、列表/卡片、图表、表单入口、详情抽屉、空态等区块。
 - 布局骨架：<顶部概览 / 筛选区 / 表格 / 卡片列表 / 图表区 / 右侧详情等>
 - 核心组件：<KPI / 快捷入口 / 表格 / 图表 / 表单入口 / 状态标签等>
@@ -80,7 +80,7 @@
 - pageSpecHandoff：
   - pageStructure：<workbench / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
   - scene：<workbench / dashboard / list / detail / landing / screen>
-  - contentBlocks：<10+ 区块；KPI/快捷入口/列表/图表子项不分别计数>
+  - contentBlocks：<推荐列出 8-10 个业务区块以上；KPI/快捷入口/列表/图表子项不分别计数>
   - themeSummary：<应用主题色 / 风格关键词 / themeScope 摘要；必须与 design.md 一致，不写 token 和视觉规则>
   - designFile：<prd/<项目名>/design.md>
   - designRefs：<themeProfile / sceneRecipes.<scene> / components.<name> / states.<name>>
@@ -98,6 +98,7 @@
 | 明暗模式 | <light 默认；dark 只在明确暗色/夜间/高对比/黑金时使用；具体色阶见 design.md> |
 | 页面设计引用 | <逐页列出 designRefs，不复制 design.md 内容> |
 | 素材策略摘要 | <官网/品牌页是否需要真实图片或生成图片；具体视觉表达见 design.md> |
+| 表单主题一致性 | <普通表单、流程表单、提交页、formDetail 详情页和自定义页面消费同一套应用主题 token；表单保存后必须注入 `style#yida-global-theme`，详情页必须注入 `style#yida-form-detail-style`> |
 | 一致性要求 | <PRD 中主题色和风格摘要必须与 design.md 保持一致；冲突时以 design.md 为准并修正 PRD 摘要> |
 
 ## 6. 业务逻辑与交互状态
@@ -107,6 +108,8 @@
 | 表单提交后 | <刷新列表 / 回到当前工作台 / 触发流程 / 更新状态> |
 | 新增/提交入口 | <PC 侧边抽屉 iframe 承载 `submission/{formUuid}?isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；必要时用 `update-form-config` 持久化表单设置 `isRenderNav=false`> |
 | 详情查看 | <PC 侧边抽屉 iframe 承载 `formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false`，抽屉默认半屏 `50vw`；移动端整页或新页打开；formInstId 来自真实数据记录并优先取 row.formInstId，缺失时禁用详情入口> |
+| 表单主题注入 | <每个普通表单和流程表单拿到真实 formUuid 后必须完成 `style#yida-global-theme` 注入，提交页和详情页与应用、自定义页面主题色一致> |
+| 详情页样式注入 | <每个需要查看详情的表单必须完成 `style#yida-form-detail-style` 注入；缺失时不得把详情页样式视为完成> |
 | 数据变更 | <自动计算、状态流转、通知或提醒> |
 | 权限规则 | <角色能看、能改、能审批的边界> |
 | 空状态 | <无数据时的说明、主操作入口和下一步> |
@@ -117,7 +120,7 @@
 
 | 资源 | 类型 | 用途 | 关键字段 / 功能 | 创建策略 |
 | --- | --- | --- | --- | --- |
-| <主页面> | display-page / main | <入口和概览> | <10+ contentBlocks：标题上下文、筛选、摘要、主操作、待办、最近记录、动态、提醒、右侧上下文、空态行动等> | <复用 / 创建> |
+| <主页面> | display-page / main | <入口和概览> | <contentBlocks：推荐 8-10 个区块以上，如标题上下文、筛选、摘要、主操作、待办、最近记录、动态、提醒、右侧上下文、空态行动等；不作为硬门槛> | <复用 / 创建> |
 | <业务表单> | normal-form | <数据录入和管理> | <核心字段> | <复用 / 创建 / 更新> |
 | <审批表单> | process-form | <流程闭环> | <节点和条件> | <复用 / 创建 / 更新> |
 | <报表> | report | <汇总分析> | <指标口径> | <复用 / 创建 / 更新> |
@@ -130,10 +133,11 @@
 | --- | --- | --- | --- |
 | 1 | 应用 | 承载所有页面、表单、流程和导航 | `appType` |
 | 2 | 普通表单 / 流程表单 | 自定义页面需要表单 URL、字段语义和数据来源 | `formUuid`、字段映射 |
-| 3 | 初始示例数据 | 页面需要读取真实表单记录，完整应用默认写入 1-3 条核心业务记录 | 写入数量、抽查结果 |
-| 4 | 主自定义页面 / 业务自定义页面 | 页面消费表单入口、表单数据和主题色配置 | `displayPageFormUuid` |
-| 5 | 报表 / 数据看板数据源 | 看板或大屏需要汇总指标时创建 | `reportId` 或数据源信息 |
-| 6 | 发布与导航排序 | 页面发布成功后再调整导航展示 | 发布 URL、导航状态 |
+| 3 | 表单主题与详情页样式注入 | 提交页、详情页、自定义页面和应用主题色必须一致；详情页必须有 formDetail CSS | `globalThemeActionFound: true`、`formDetailStyleActionFound: true` |
+| 4 | 初始示例数据 | 页面需要读取真实表单记录，完整应用默认写入 1-3 条核心业务记录 | 写入数量、抽查结果 |
+| 5 | 主自定义页面 / 业务自定义页面 | 页面消费表单入口、表单数据和主题色配置 | `displayPageFormUuid` |
+| 6 | 报表 / 数据看板数据源 | 看板或大屏需要汇总指标时创建 | `reportId` 或数据源信息 |
+| 7 | 发布与导航排序 | 页面发布成功后再调整导航展示 | 发布 URL、导航状态 |
 
 ## 9. 页面实现交付顺序
 
@@ -164,6 +168,7 @@
 | --- | --- |
 | 主页面访问 | <页面发布成功，打开后首屏能完成核心判断> |
 | 数据录入 | <表单能提交，提交后页面能刷新或回到正确入口> |
+| 表单主题和详情页样式 | <普通表单和流程表单已注入 `style#yida-global-theme`，formDetail 详情页已注入 `style#yida-form-detail-style`，与应用和自定义页面主题色一致> |
 | 初始示例数据 | <完整应用默认已为核心普通表单写入 1-3 条业务化示例记录并 query 抽查；跳过时说明原因> |
 | 数据查看 | <列表 / 看板 / 详情能看到真实表单数据或清晰空态> |
 | 权限 / 流程 | <权限规则或流程节点生效> |
