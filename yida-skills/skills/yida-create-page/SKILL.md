@@ -10,7 +10,7 @@ description: 创建自定义展示页面（display 类型）并返回 formUuid�
 
 本技能只负责创建缺失的 display page，不负责优化、修改或重新发布已有页面。执行前必须已经解析 resource context：
 
-- 如果本轮用户给了页面 URL、`formUuid`、bound page，或 workspace cache/config 中已有目标 display page，禁止调用 `openyida create-page`；改由 `yida-canvas-custom-page` 或 `yida-custom-page` 编写页面源码，再由 `yida-publish-page` 发布。
+- 如果本轮用户给了页面 URL、`formUuid`、bound page，或 workspace cache/config 中已有目标 display page，禁止调用 `openyida create-page`；改由 `yida-canvas-custom-page` 编写页面源码，再由 `yida-publish-page` 发布。已确认是历史平台 JSX 组件页面维护时，不由本技能创建或派发，改走根路由的“JSX 自定义页面开发”入口。
 - 如果用户给的是普通表单 `formUuid` 且诉求是改字段结构，改用 `yida-create-form-page`；不要把表单 ID 当作自定义页面创建目标。
 - 只有目标 app 已明确、目标 display page 缺失，并且用户意图允许新增页面（例如“在 APP_xxx 里增加回访页面”）时，才加载并执行本技能。
 - 多个已有页面候选按根技能来源优先级选择；同级冲突或无法判断主页面时才问用户。
@@ -26,7 +26,7 @@ description: 创建自定义展示页面（display 类型）并返回 formUuid�
 - **创建前必须确认**：单点创建页面时，执行创建命令前必须向用户确认页面名称和目标应用。由 `yida-app` 完整应用统一编排且用户已说“默认方案 / 不要追问 / 直接创建”时，合理命名并直接创建，不再二次追问。
 - 创建成功后，将 formUuid 记录到 `.cache/<项目名>-schema.json`
 - 由 `yida-app` 完整应用统一编排的首页/工作台/智能助手/门户门面页，可以先于业务表单创建；先占位记录 `formUuid`，待表单 ID 明确后再写源码并发布。
-- 创建成功后，将真实 `formUuid` 交给 `yida-canvas-custom-page` 编写页面源码，再交给 `yida-publish-page` 发布；已检测到平台 JSX 组件页面维护时，源码开发交给 `yida-custom-page`。
+- 创建成功后，将真实 `formUuid` 交给 `yida-canvas-custom-page` 编写页面源码，再交给 `yida-publish-page` 发布；本技能不使用 `yida-custom-page` 处理新建页面。
 - **本技能不读写 memory**：formUuid 等信息输出到 stdout，通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景

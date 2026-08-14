@@ -316,17 +316,17 @@
 
   {
     "id": "custom-page-pos-1",
-    "prompt": "帮我用 native 方式开发一个自定义页面，用 JSX 写组件",
+    "prompt": "维护现有 .oyd.jsx 自定义页面，里面已经是平台 Jsx 组件源码",
     "expectedSkill": "yida-custom-page",
     "type": "positive",
-    "note": "native 自定义页面 JSX 开发"
+    "note": "历史平台 JSX 组件页面维护"
   },
   {
     "id": "custom-page-pos-2",
-    "prompt": "我要在原生自定义页面里手写 JSX 实现一个可拖拽排序的列表",
+    "prompt": "修一下已有 renderJsx 页面里的列表拖拽排序逻辑",
     "expectedSkill": "yida-custom-page",
     "type": "positive",
-    "note": "native 页面 JSX 开发"
+    "note": "已检测到 renderJsx 历史页面维护"
   },
   {
     "id": "custom-page-neg-1",

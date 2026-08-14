@@ -43,7 +43,7 @@
       "name": "yida-design",
       "path": "skills/yida-design/SKILL.md",
       "display_name": "宜搭应用设计",
-      "description": "当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准，design.md 写主题 token、布局、材质、圆角、密度、组件和状态规则。本技能不写页面源码；页面实现交给 yida-canvas-custom-page 或 yida-custom-page。",
+      "description": "当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准，design.md 写主题 token、布局、材质、圆角、密度、组件和状态规则。本技能不写页面源码；页面实现交给 yida-canvas-custom-page。",
       "category": "yida-skills/design",
       "tags": [
         "应用设计",
@@ -1019,8 +1019,6 @@
       "display_name": "发布自定义页面",
       "description": "将自定义页面源码编译为宜搭可运行 Schema 并发布；源码依赖 dataSourceMap 但发布无数据源时不能视为完成。",
       "command_ids": [
-        "check-page",
-        "compile",
         "publish"
       ],
       "done_when": "final 证据只认真实执行成功的 openyida publish <source> <appType> <displayPageFormUuid> 命令结果；本地文件编辑、diff、check-page 或 compile 不能证明远端页面已更新。",
@@ -1028,8 +1026,6 @@
       "tags": [
         "发布",
         "publish",
-        "compile",
-        "check-page",
         "页面发布"
       ],
       "aliases": [

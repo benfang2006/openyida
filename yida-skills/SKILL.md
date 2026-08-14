@@ -107,7 +107,7 @@ description: >
 | 明确 ECharts、维护旧 ECharts 页面、复杂 option 超出 Recharts 能力 | `yida-chart` |
 | 产品化经营看板/驾驶舱交付 | `yida-dashboard` |
 | 批量录入、表格填写、多行编辑 | 默认 `yida-canvas-table-form`；已检测到平台 JSX 组件页面、native 页面或存量源码使用 `this.utils.yida.saveFormData` 时用 `yida-table-form` |
-| 页面视觉方向、页面美化、去 AI 味 | `yida-design` 产出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec；实现阶段交给 `yida-canvas-custom-page`，已检测到平台 JSX 组件页面维护时交给 `yida-custom-page` |
+| 页面视觉方向、页面美化、去 AI 味 | `yida-design` 产出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec；实现阶段默认交给 `yida-canvas-custom-page` |
 | 应用级主题、品牌色、全局换肤 | `yida-design` |
 | 平台左侧导航树分组/排序 | `yida-nav-group` |
 | 页面隐藏原导航后自绘导航壳 | `yida-nav-shell` |

@@ -379,9 +379,11 @@ describe('OpenYida skill contracts', () => {
     expect(outputDesign).toContain('### Yida Global Theme Runtime Contract');
     expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
     expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
-    expect(output).toContain('再交给 `yida-canvas-custom-page` 或 `yida-custom-page` 实现');
-    expect(outputDesign).toContain('页面实现交给 `yida-canvas-custom-page`；已检测到平台 JSX 组件页面维护时交给 `yida-custom-page`');
-    expect(pageDesign).toContain('交给 `yida-canvas-custom-page` 或 `yida-custom-page` 实现');
+    expect(output).toContain('再交给 `yida-canvas-custom-page` 实现');
+    expect(output).toContain('由 `yida-custom-page` 自身闭环处理');
+    expect(outputDesign).toContain('页面实现交给 `yida-canvas-custom-page`；已检测到平台 JSX 组件页面维护时，不由设计阶段派发');
+    expect(outputDesign).toContain('由 `yida-custom-page` 自身闭环处理');
+    expect(pageDesign).toContain('交给 `yida-canvas-custom-page` 实现；历史平台 JSX 组件页面维护改走根路由');
     expect(outputDesign).toContain('collectYidaThemeDocuments');
     expect(outputDesign).toContain('--color-brand1-1: <明亮品牌浅色或浅 hover 色>');
     expect(outputDesign).toContain('--color-brand1-10: <深色或透明强调档>');
@@ -716,7 +718,7 @@ describe('OpenYida skill contracts', () => {
     expect(appStep9).toContain('只能交付“源码已修改，尚未发布”的说明');
 
     expect(canvas).toContain('final 前需要成功执行 `openyida publish <source> <appType> <displayPageFormUuid>`');
-    expect(canvas).toContain('交给 `yida-custom-page`');
+    expect(canvas).toContain('该历史源码只由 `yida-custom-page` 自身闭环维护');
     expect(canvas).toContain('交给 `yida-canvas-upgrade`');
     expect(canvas).toContain('有 publish 成功证据时表述为“页面已发布”');
     expect(canvas).toContain('只有本地校验证据时表述为“源码已修改，尚未发布”');
@@ -727,11 +729,12 @@ describe('OpenYida skill contracts', () => {
     expect(native).toContain('final 只能说明“源码已修改，尚未发布”');
 
     expect(publish).toContain('final 证据只认真实执行成功的 `openyida publish <source> <appType> <displayPageFormUuid>`');
-    expect(publish).toContain('页面源码先由 `yida-canvas-custom-page` 或 `yida-custom-page` 产出');
+    expect(publish).toContain('新建或默认自定义页面源码先由 `yida-canvas-custom-page` 产出');
+    expect(publish).toContain('历史平台 JSX 组件源码由 `yida-custom-page` 自身闭环维护后');
     expect(publish).toContain('`.canvas.jsx` / `.canvas.tsx` 先看 `yida-canvas-custom-page`');
-    expect(publish).toContain('yida-canvas-custom-page / yida-custom-page → [本技能] yida-publish-page');
+    expect(publish).toContain('resolve existing page or create missing page → yida-canvas-custom-page → [本技能] yida-publish-page');
     expect(publish).toContain('| `yida-canvas-custom-page` | 前置技能，编写 `.canvas.jsx` / `.canvas.tsx` 页面源码 |');
-    expect(publish).toContain('| `yida-custom-page` | 前置技能，维护 `.oyd.jsx` / `.jsx` / 平台 `Jsx` 组件页面源码 |');
+    expect(publish).toContain('| `yida-custom-page` | 历史平台 JSX 组件页面维护技能；该技能自身闭环维护 `.oyd.jsx` / `.jsx` / 平台 `Jsx` 组件源码后，可调用本技能发布 |');
     expect(publish).toContain('本地文件编辑、diff、`check-page`、`compile`、`compileCanvasLocal` 或口头声明都不能证明远端页面已更新');
     expect(publish).toContain('发布了其他文件或其他目标页面，不满足本轮源码修改的 doneWhen');
     expect(publish).not.toContain('## OpenYida 兼容编译');
@@ -767,7 +770,7 @@ describe('OpenYida skill contracts', () => {
     expect(report).toContain('作为 ECharts 页面数据源的绑定纪律');
     expect(report).toContain('再让 `yida-chart` 或 `yida-canvas-custom-page` 承载展示层高级视觉');
     expect(report).toContain('REPORT_xxx');
-    expect(readSkill('yida-skills/references/official-example-schema-patterns.md')).toContain('`yida-data-source-connectors` + `yida-custom-page`');
+    expect(readSkill('yida-skills/references/official-example-schema-patterns.md')).toContain('`yida-data-source-connectors` + `yida-canvas-data-binding`');
     expect(retrospective).toContain('ECharts 页面 / 原生报表绑定经验');
     expect(retrospective).toContain('工作台是操作首页');
   });
@@ -930,7 +933,8 @@ describe('OpenYida skill contracts', () => {
     expect(navPatterns).toContain('页面内导航不自动隐藏平台导航');
     expect(createPage).toContain('默认生成页面导航可见');
     expect(createPage).toContain('`--mode dashboard` | 否 | 看板/驾驶舱页面推荐使用；只表达页面模式，不会自动隐藏导航');
-    expect(createPage).toContain('改由 `yida-canvas-custom-page` 或 `yida-custom-page` 编写页面源码，再由 `yida-publish-page` 发布');
+    expect(createPage).toContain('改由 `yida-canvas-custom-page` 编写页面源码，再由 `yida-publish-page` 发布');
+    expect(createPage).toContain('本技能不使用 `yida-custom-page` 处理新建页面');
     expect(navStep).toContain('快捷入口目标是同应用内页面时');
     expect(pageGeneration).toContain('快捷入口目标是同应用内页面时');
     expect(navGuide).toContain('同应用内页面优先在平台应用导航内切换');

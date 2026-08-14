@@ -394,5 +394,5 @@ inferred_modules:
 
 - `yida-app` 读取 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md` 后创建或复用资源。
 - 页面实现阶段读取 `prd.md` 的业务内容，并直接读取 `design.md` 的视觉 DNA、token、布局、组件、状态和 `Yida Global Theme Runtime Contract`。
-- 页面实现交给 `yida-canvas-custom-page`；已检测到平台 JSX 组件页面维护时交给 `yida-custom-page`。
+- 页面实现交给 `yida-canvas-custom-page`。
 - 只有走页面生成器或需要稳定交接时才派生 `page-spec.json`，并标记 `sourceOfTruth.prdFile/designFile`。`page-spec.json` 不复制完整 design.md，只保存与 design.md 一致的主题摘要和引用。

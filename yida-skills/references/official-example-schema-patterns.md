@@ -211,7 +211,7 @@ GET https://template.aliwork.com/alibaba/web/{APP_TYPE}/query/formdesign/getSche
 | `formType: "receipt"`，组件多为 `TextField` / `NumberField` / `TableField` | `yida-create-form-page`，公式需求再用 `yida-formula` |
 | `formType: "process"` | `yida-create-process` / `yida-process-rule` |
 | `formType: "report"` 或组件为 `Youshu*` | `yida-report` |
-| 自定义展示页，组件为 `Div` / `Text` / `Button` / `TablePc` / `Dialog` | `yida-canvas-custom-page` 或 `yida-custom-page` |
-| 自定义页面里有 `dataSource.online` 的远程接口 | `yida-data-source-connectors` + `yida-custom-page` |
+| 自定义展示页，组件为 `Div` / `Text` / `Button` / `TablePc` / `Dialog` | 默认 `yida-canvas-custom-page` |
+| 自定义页面里有 `dataSource.online` 的远程接口 | 默认 `yida-data-source-connectors` + `yida-canvas-data-binding` |
 | `publicService/invokeService` 或 `serviceInfo.connectorInfo` | `yida-connector` / `yida-data-source-connectors` |
 | 默认页看不到逻辑流，但标签是 `integration` | `yida-integration` |

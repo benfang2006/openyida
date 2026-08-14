@@ -43,10 +43,10 @@
   },
   {
     "id": "native-custom-page-binding",
-    "prompt": "这个页面需要用 this.$(fieldId) 绑定表单字段，走 native 链路写",
+    "prompt": "维护现有 .oyd.jsx 页面，里面已经是 renderJsx 平台 Jsx 组件写法",
     "expectedSkill": "yida-custom-page",
     "group": "页面与表单",
-    "note": "强依赖原生实例数据桥 → custom-page (native)"
+    "note": "已检测到历史平台 JSX 组件页面维护 → yida-custom-page"
   },
   {
     "id": "canvas-upgrade-migration",

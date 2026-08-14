@@ -19,7 +19,7 @@ UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 
 - 只需要通过 HTTP / 连接器读写数据的页面。
 - 需要在 `YidaCodeCanvas` 组件内受控接入门户、成员、部门、上传等宜搭运行态组件的页面。
 
-若已确认目标是存量 `.oyd.jsx` / `.oyb.jsx` / `renderJsx` / 平台 `Jsx` 组件页面维护，不在本技能内改写，交给 `yida-custom-page`；若用户要求把存量页面迁移为 `YidaCodeCanvas` 组件实现，交给 `yida-canvas-upgrade`。
+若已确认目标是存量 `.oyd.jsx` / `.oyb.jsx` / `renderJsx` / 平台 `Jsx` 组件页面维护，不在本技能内改写；该历史源码只由 `yida-custom-page` 自身闭环维护。若用户要求把存量页面迁移为 `YidaCodeCanvas` 组件实现，交给 `yida-canvas-upgrade`。
 
 ## 运行时事实
 

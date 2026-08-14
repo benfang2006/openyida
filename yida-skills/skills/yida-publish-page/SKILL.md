@@ -9,7 +9,7 @@ description: 自定义页面编译发布技能。
 
 ## 执行边界
 
-本技能负责三件事：确认发布目标、执行 `openyida publish`（包含必要编译和 Schema 写入）、给出 final 证据。页面源码先由 `yida-canvas-custom-page` 或 `yida-custom-page` 产出；缺少自定义页面容器时，先交给 `yida-create-page` 创建后再回来发布。
+本技能负责三件事：确认发布目标、执行 `openyida publish`（包含必要编译和 Schema 写入）、给出 final 证据。新建或默认自定义页面源码先由 `yida-canvas-custom-page` 产出。缺少自定义页面容器时，先交给 `yida-create-page` 创建后再回来发布。
 
 ## 发布目标确认
 
@@ -23,7 +23,7 @@ description: 自定义页面编译发布技能。
 
 ## 严格禁止 (NEVER DO)
 
-- 不要在未加载对应页面开发技能的情况下临时编写页面源码；使用 `YidaCodeCanvas` 组件实现的页面先看 `yida-canvas-custom-page`，平台 `Jsx` 组件 / `oyb.jsx` / `renderJsx` 维护先看 `yida-custom-page`
+- 不要在未加载对应页面开发技能的情况下临时编写页面源码；使用 `YidaCodeCanvas` 组件实现的页面先看 `yida-canvas-custom-page`。
 - 不要把普通 React / Next / Vite 项目源码直接发布；可发布源码必须是 OpenYida 页面源码，并放在 `project/pages/src/*.{canvas.jsx,canvas.tsx,oyd.jsx,jsx,tsx}`
 - 不要混用预检命令：`.canvas.jsx` / `.canvas.tsx` 不走 `openyida check-page` / `openyida compile`；`.oyd.jsx` / `.jsx` / `.tsx` 不要当成 `YidaCodeCanvas` 页面发布，除非已明确确认源码就是 `YidaCodeCanvas` 组件源码并使用 `--canvas`
 - 不要在平台 `renderJsx` / `didMount` 形态里手写 React Hooks；需要 Hooks 的页面应交回对应页面开发技能改成可编译的源码形态
@@ -70,7 +70,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 路径口径：从仓库根执行时，源文件用 `project/pages/src/...`；如果 Bash cwd 已经是 `<workspace>/project`，源文件用 `pages/src/...`，不要传 `project/pages/src/...` 导致查找 `project/project/pages/src/...`。发布失败提示源文件不存在时，先按该规则切换路径，不要自动发布另一份文件。
 
 > `openyida publish` 会按源码扩展名选择发布模式：`.canvas.jsx` / `.canvas.tsx` 写入 `YidaCodeCanvas`，`.oyd.jsx` / `.jsx` / `.tsx` 写入平台 `Jsx` 组件。
-> 发布前本地检查归对应页面开发技能处理：`.canvas.jsx` / `.canvas.tsx` 先看 `yida-canvas-custom-page`，`.oyd.jsx` / `.jsx` / `.tsx` 先看 `yida-custom-page`。本技能只把真实成功的 `openyida publish` 作为远端完成证据。
+> 发布前本地检查归对应页面开发技能处理：`.canvas.jsx` / `.canvas.tsx` 先看 `yida-canvas-custom-page`；`.oyd.jsx` / `.jsx` / `.tsx` 只有在历史平台 JSX 组件维护闭环内才看 `yida-custom-page`。本技能只把真实成功的 `openyida publish` 作为远端完成证据。
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
@@ -181,14 +181,14 @@ body { background-color: #f2f3f5; }
 本技能在完整开发流程中的位置：
 
 ```
-resolve existing page or create missing page → yida-canvas-custom-page / yida-custom-page → [本技能] yida-publish-page
+resolve existing page or create missing page → yida-canvas-custom-page → [本技能] yida-publish-page
 ```
 
 | 相关技能 | 关系说明 |
 |---------|----------|
 | `yida-create-page` | 可选前置技能，仅在目标 display page 缺失且允许新增时创建页面容器，获取 formUuid |
 | `yida-canvas-custom-page` | 前置技能，编写 `.canvas.jsx` / `.canvas.tsx` 页面源码 |
-| `yida-custom-page` | 前置技能，维护 `.oyd.jsx` / `.jsx` / 平台 `Jsx` 组件页面源码 |
+| `yida-custom-page` | 历史平台 JSX 组件页面维护技能；该技能自身闭环维护 `.oyd.jsx` / `.jsx` / 平台 `Jsx` 组件源码后，可调用本技能发布 |
 | `yida-create-form-page` | 无关，用于创建表单页面，不需要本技能发布 |
 | `yida-page-config` | 后续技能，发布后可配置页面公开访问/分享 |
 | `yida-ppt-slider` | 特殊场景，PPT 幻灯片页面也使用本技能发布 |
