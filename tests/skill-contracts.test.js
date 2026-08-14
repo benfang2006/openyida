@@ -85,6 +85,17 @@ describe('OpenYida skill contracts', () => {
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
+  test('login skill assigns browser ownership and waits for the original command', () => {
+    const skill = readSkill('yida-skills/skills/yida-login/SKILL.md');
+
+    expect(skill).toContain('CLI 默认自动打开系统浏览器');
+    expect(skill).toContain('Agent 禁止提取授权 URL 后再次打开');
+    expect(skill).toContain('openyida login --no-browser');
+    expect(skill).toContain('不要把固定 `sleep`');
+    expect(skill).toContain('`ok=true` 与 `can_auto_use=true`');
+    expect(skill).toContain('用户未授权就关闭浏览器时');
+  });
+
   test('QwenWork install guidance aligns with QoderWork user-level skills layout', () => {
     const docs = [
       'README.md',

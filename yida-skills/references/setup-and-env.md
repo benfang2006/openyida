@@ -30,7 +30,7 @@ openyida login --check-only --json
 | `workdir_exists=false` 或 `active.projectRootExists=false` | 先执行 `openyida copy`；工作目录存在前不要创建资源 |
 | `auth_mode=token` 且 `status=ok` 或 `can_auto_use=true` | 继续执行 |
 | snapshot 返回 `auth_source=env` / `failure_reason=env_token_missing` | 进入运行环境注入 token 模式；缺 token 时停止，让 Codex、yida-agent 等宿主注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`；不要执行 OAuth |
-| `auth_mode=token`，未登录，且 snapshot 未返回 env 注入 | 执行 `openyida login`；再用 `openyida login --check-only --json` 验证 |
+| `auth_mode=token`，未登录，且 snapshot 未返回 env 注入 | 只执行一次 `openyida login`，等待该命令结束，并使用其最终 JSON 判断结果 |
 | `auth_mode=token`，access token 过期 | 执行 `openyida auth refresh`；仍失败且 snapshot 未返回 env 注入时，再执行 `openyida login` |
 
 ## Token 模式命令
@@ -44,6 +44,15 @@ openyida auth status
 openyida auth refresh
 openyida auth logout
 ```
+
+## Agent OAuth 登录编排
+
+- `openyida login` 默认自动打开系统浏览器。等待原登录命令结束，不要提取授权 URL 后再次打开。
+- 用户授权可能持续到 OAuth 超时（默认约 5 分钟）。原命令仍运行时，不要固定 `sleep`，也不要重复执行 `login --check-only`。
+- 只有原命令成功退出，且最终 JSON 包含 `ok=true` 与 `can_auto_use=true`，才能判定登录成功。
+- 用户未授权就关闭浏览器时，CLI 无法可靠感知窗口关闭。继续等待原命令，直到用户停止或命令超时；不要自动发起第二次登录。
+- 只有调用方明确接管浏览器时才使用 `openyida login --no-browser`（兼容环境变量：`OPENYIDA_NO_BROWSER=1`），并且只打开一次输出的 URL。
+- `--quiet` 只控制文本输出，不会关闭自动打开浏览器。
 
 用户给出目标入口 URL 或环境时，原样传入：
 

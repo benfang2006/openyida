@@ -15,7 +15,26 @@ const {
   parseWindowsProgId,
   parseWindowsCommandExec,
   parseLinuxExec,
+  launchLoginBrowser,
 } = require('../lib/auth/oauth-loopback');
+
+describe('launchLoginBrowser browser ownership', () => {
+  test('requests one browser launch by default', () => {
+    const openBrowser = jest.fn(() => true);
+    expect(launchLoginBrowser('https://login.example.test', { openBrowser })).toBe(true);
+    expect(openBrowser).toHaveBeenCalledTimes(1);
+    expect(openBrowser).toHaveBeenCalledWith('https://login.example.test');
+  });
+
+  test('noBrowser leaves the authorization URL to the caller', () => {
+    const openBrowser = jest.fn();
+    expect(launchLoginBrowser('https://login.example.test', {
+      noBrowser: true,
+      openBrowser,
+    })).toBe(false);
+    expect(openBrowser).not.toHaveBeenCalled();
+  });
+});
 
 describe('resolveBrowserLauncher', () => {
   // A realistic OAuth URL: redirect_uri is the FIRST query param, so anything

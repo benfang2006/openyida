@@ -12,7 +12,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026.8.14] - 2026-08-14
 
+### Added
+- `openyida login` 与 `openyida auth login` 新增 `--no-browser` 参数，供明确需要由调用方接管授权链接的 Agent 或无头环境使用；默认行为保持由 CLI 自动打开系统浏览器。
+
 ### Changed
+- 在 Agent capabilities 中公开交互登录的浏览器归属、抑制参数和完成信号，指导 Agent 等待原登录命令退出及最终 JSON，避免重复打开授权页。
+- 更新 `yida-login` 技能与环境参考文档，禁止默认流程中后台提取 URL、再次执行 `open`、固定 `sleep` 或重复轮询 `login --check-only`。
+- 登录等待阶段补充 OAuth 超时和取消提示，降低用户延迟登录或关闭浏览器时的无反馈感。
 - 重构 OpenYida 主入口技能说明，保留搭应用开发总入口、资源上下文、意图识别、技能路由表和必须遵守规则，去掉冗余子技能长列表与重复说明。
 - 将 `yida-app` 拆成 9 个 workflow 阶段文件，完整应用搭建、已有应用无页面、已有资源补齐等场景统一由 `yida-app` 编排。
 - 收拢存储约定、临时文件规范、命令输入文件规则和 FAQ 处理思路，减少主入口、共享 reference 与子技能之间的重复描述。
@@ -23,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 移除主入口中针对 Wukong 的定制化描述，保留 Codex / yida-agent 使用 OpenYida auth snapshot 的通用约束。
 
 ### Tests
+- 新增浏览器归属、`--no-browser`、Agent capabilities 与登录技能编排契约测试。
 - 更新技能契约、路由卫生和技能包构建测试，覆盖主入口路由、`yida-app` workflow、冗余 reference 清理和发布证据约束。
 
 ## [2026.8.12-1] - 2026-08-12
@@ -34,7 +41,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - 移除 Code Canvas 编译和页面 linter 中的内容区块数量硬校验，避免少于指定区块数时阻塞 `check-page`、`compile` 或 `publish`。
-
 ## [2026.8.12] - 2026-08-12
 
 ### Changed

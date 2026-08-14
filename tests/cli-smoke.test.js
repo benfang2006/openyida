@@ -186,7 +186,7 @@ describe('CLI offline smoke', () => {
     const output = runOk(['--help']);
     expect(output).toContain('OpenYida');
     expect(output).toContain('env [--json|setup|list|show|switch|add|remove] [options]');
-    expect(output).toContain('login [target-url] [--env <name>|--intl|--overseas|--global|--yidaapps|--alibaba] [--client-id <clientId>] [--endpoint <url>]');
+    expect(output).toContain('login [target-url] [--env <name>|--intl|--overseas|--global|--yidaapps|--alibaba] [--client-id <clientId>] [--endpoint <url>] [--no-browser]');
     expect(output).toContain('org <list|switch> [--json] [--corp-id <corpId>]');
     expect(output).toContain('corp-efficiency');
     expect(output).toContain('create-form');
@@ -1019,6 +1019,13 @@ describe('CLI offline smoke', () => {
       full_capabilities_command: 'openyida agent-capabilities --json',
       builder_path: {
         schema_version: 1,
+        interactive_login: {
+          browser_default: 'cli_auto_open',
+          agent_action: 'wait_for_login_command',
+          suppress_flag: '--no-browser',
+          suppress_env: 'OPENYIDA_NO_BROWSER',
+          completion_signal: 'process_exit_and_final_json',
+        },
         preflight: {
           recommended_command: 'openyida agent-capabilities --summary-json',
           run_once: true,

@@ -35,7 +35,7 @@ openyida login --check-only --json
 |---|---|
 | `auth_mode=token` 且 `status=ok` 或 `can_auto_use=true` | 继续执行业务命令 |
 | `auth_source=env` / `failure_reason=env_token_missing` | 进入运行环境注入 token 模式；缺 token 时停止，让 Codex、yida-agent 等宿主注入 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN`；不要执行 OAuth |
-| `auth_mode=token`，未登录，且 snapshot 未返回 env 注入 | 执行 `openyida login`，再用 `openyida login --check-only --json` 验证 |
+| `auth_mode=token`，未登录，且 snapshot 未返回 env 注入 | 只执行一次 `openyida login`，等待该命令结束，并使用其最终 JSON 判断结果 |
 
 ## Token 模式命令
 
@@ -48,6 +48,28 @@ openyida auth status
 openyida auth refresh
 openyida auth logout
 ```
+
+## Agent OAuth 登录编排
+
+默认流程：
+
+1. 只执行一次 `openyida login`，并持续等待同一个命令。
+2. CLI 默认自动打开系统浏览器；Agent 禁止提取授权 URL 后再次打开。
+3. 用户授权可能需要较长时间，登录进程默认可等待约 5 分钟。
+4. 只有原命令成功退出，且最终 JSON 返回 `ok=true` 与 `can_auto_use=true`，才能判定登录成功。
+5. 用户未授权就关闭浏览器时，CLI 无法可靠感知窗口关闭。继续等待原命令，直到用户停止或命令超时；不要自动发起第二次登录。
+
+如果调用方必须接管浏览器，显式关闭 CLI 自动打开：
+
+```bash
+openyida login --no-browser
+# 兼容写法：
+OPENYIDA_NO_BROWSER=1 openyida login
+```
+
+只有这种模式下，Agent 才能打开输出的授权 URL，并且只能打开一次。`--quiet` 只控制文本输出，不决定浏览器归属。
+
+`openyida login --check-only --json` 仅用于恢复或防御性验证。不要把固定 `sleep` 或重复执行 `check-only` 当作默认完成机制。
 
 用户给出宜搭入口 URL 时，原样传入：
 
@@ -91,6 +113,9 @@ openyida auth refresh
 - 运行环境注入 token 模式下，不要再执行 `openyida login` 触发 OAuth。
 - 运行环境注入 token 模式下，缺 token 时让 Codex、yida-agent 等宿主修复注入，不要查找本地 `.cache/cookies*.json`。
 - 不要在业务命令里手动传 Cookie、`_csrf_token` 或 Bearer token。
+- 默认模式下，不要后台执行 `openyida login`、提取 URL 后再次执行 `open`。
+- 不要固定 `sleep` 后再检查登录态。
+- 不要仅凭浏览器关闭或 OAuth 回调到达就判定最终登录成功。
 
 ## 完成条件
 
