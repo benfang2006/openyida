@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.17-2] - 2026-08-17
+
+### Changed
+
+- 强化 `caller_open_url` 登录模式的 Agent 行为契约：web sandbox 下 `openyida login --no-browser` 后，Agent 必须优先调用宿主沙箱浏览器 / 内置 Browser 打开 CLI 输出的授权 URL，只有无浏览器工具或调用失败时才回退让用户手动打开；`agent-capabilities` 快照新增 `url_source` / `manual_user_open_fallback` / `must_not_only_print_url_when_agent_browser_available` 字段，并同步 yida-login 与环境准备技能文档（受影响平台：QwenWork web sandbox 等 agent browser 环境）。
+
 ## [2026.8.17-1] - 2026-08-17
 
 ### Added
