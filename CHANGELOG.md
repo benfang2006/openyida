@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.17-3] - 2026-08-17
+
+### Added
+
+- auth profile 管理 UX：新增 `openyida auth profiles` 列出共享登录档案、`openyida auth profile switch <profile|corpId>` 非破坏性切换当前项目指针；auth status / agent-capabilities 新增 `profile_required` 候选与 `next_step` 提示。
+
+### Changed
+
+- logout 语义拆分：默认 `openyida auth logout` 只解绑当前项目指针 / legacy token，保留共享用户档案；`--profile <id>` 删单个档案，`--all` 删全部。
+- 移除已废弃的 cookie authRef 兼容分支：`createAuthRef` 仅接受 token 登录态，HTTP helper 不再构造 `Cookie` / `global_csrf_token` header，legacy cookie 数组参数被忽略并继续走 Bearer token；与 `agent-capabilities` 的 `cookie_auth_supported:false` 声明对齐。（无破坏性变更：删除的是已声明不支持的 cookie 登录回退路径，OAuth token / host-injected token 路径不受影响。）
+
 ## [2026.8.17-2] - 2026-08-17
 
 ### Changed
