@@ -1,6 +1,6 @@
 <div align="center">
 
-![OpenYida](https://img.alicdn.com/imgextra/i2/O1CN01wTOPxK1nEA3rWDp6I_!!6000000005057-2-tps-1672-941.png)
+![OpenYida](https://img.alicdn.com/imgextra/i2/O1CN01fwUxry9qUtJ3OTaP_!!6000000008165-2-tps-1672-941.png)
 
 # OpenYida
 
