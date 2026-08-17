@@ -10,6 +10,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.17-1] - 2026-08-17
+
+### Added
+
+- 新增 `openyida check-prd-completeness`：对照 PRD 与应用实际资源的交付风险雷达（只读命令，输出结构化 JSON）。
+- 用户级 auth profile store：优先用户级登录档案，保留项目级缓存兼容；宿主注入 token 仍为最高优先且不持久化。
+- `agent-capabilities --summary-json` 暴露登录/浏览器能力提示与项目根/技能目录来源说明。
+
+### Changed
+
+- 发布健康检查改为基于 token 鉴权的 schema 回读比对（指纹校验 Canvas runtimeCode / native compiled），取代已失效的 Cookie + HTML 检查。
+- 稳定 QwenWork / Mule / Qoder 工作区识别，避免 `work` 与 `work/project` 漂移。
+- Release notes 技能包文案改为通用表述。
+
+### Fixed
+
+- 修正 #489 带入的 `package.json` 版本回退（`2026.8.16-beta.1` → `2026.8.17-1`），使仓库版本重新高于已发布的 latest。
+
 ## [2026.8.17] - 2026-08-17
 
 ### Added
