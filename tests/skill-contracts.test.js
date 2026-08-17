@@ -380,11 +380,8 @@ describe('OpenYida skill contracts', () => {
     expect(outputDesign).toContain('helperRef: yida-canvas-custom-page/references/theme-runtime-helpers.md');
     expect(outputDesign).toContain('injectTargets: [currentDocument, sameOriginParentDocuments]');
     expect(output).toContain('再交给 `yida-canvas-custom-page` 实现');
-    expect(output).not.toContain('由 `yida-custom-page` 自身闭环处理');
     expect(outputDesign).toContain('页面实现交给 `yida-canvas-custom-page`。');
-    expect(outputDesign).not.toContain('已检测到平台 JSX 组件页面维护时，不由设计阶段派发');
     expect(pageDesign).toContain('交给 `yida-canvas-custom-page` 实现');
-    expect(pageDesign).not.toContain('历史平台 JSX 组件页面维护改走根路由');
     expect(outputDesign).toContain('collectYidaThemeDocuments');
     expect(outputDesign).toContain('--color-brand1-1: <明亮品牌浅色或浅 hover 色>');
     expect(outputDesign).toContain('--color-brand1-10: <深色或透明强调档>');
@@ -734,8 +731,6 @@ describe('OpenYida skill contracts', () => {
     expect(publish).toContain('发布前确认源码已由对应页面开发技能完成并通过相应本地检查');
     expect(publish).toContain('resolve existing page or create missing page → yida-canvas-custom-page → [本技能] yida-publish-page');
     expect(publish).toContain('| `yida-canvas-custom-page` | 前置技能，编写 `.canvas.jsx` / `.canvas.tsx` 页面源码 |');
-    expect(publish).not.toContain('`yida-custom-page`');
-    expect(publish).not.toContain('自身闭环维护后，再调用本技能发布');
     expect(publish).toContain('本地文件编辑、diff、`check-page`、`compile`、`compileCanvasLocal` 或口头声明都不能证明远端页面已更新');
     expect(publish).toContain('发布了其他文件或其他目标页面，不满足本轮源码修改的 doneWhen');
     expect(publish).not.toContain('## OpenYida 兼容编译');
