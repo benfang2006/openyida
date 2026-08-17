@@ -33,7 +33,7 @@ description: 自定义页面编译发布技能。
 ## 严格要求 (MUST DO)
 
 - 发布前确认页面源码已通过对应页面开发技能编写：`.canvas.jsx` / `.canvas.tsx` 发布为 `YidaCodeCanvas` 组件；`.oyd.jsx` / `.jsx` / `.tsx` 发布为平台 `Jsx` 组件
-- 平台 `Jsx` 组件 / `oyb.jsx` / `renderJsx` 维护源码发布前优先执行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；该类编译规则归 `yida-custom-page` 维护，本技能只把它作为发布前 guard
+- 平台 `Jsx` 组件 / `oyb.jsx` / `renderJsx` 维护源码发布前优先执行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；本技能只把它们作为发布前 guard
 - 使用 `YidaCodeCanvas` 组件实现的页面不单独运行普通 JSX 编译命令；执行 `openyida publish <源文件> <appType> <displayPageFormUuid>` 时，由发布流程校验并写入 `runtimeCode + importedModules`
 - 推荐源码放在 `project/pages/src/`：使用 `YidaCodeCanvas` 组件实现的页面用 `<页面名>.canvas.jsx` / `<页面名>.canvas.tsx`；平台 `Jsx` 组件维护源码用 `<页面名>.oyd.jsx` / `<页面名>.jsx` / `<页面名>.tsx`
 - 发布前注意 CLI 会检查 `<workspace>/project/pages/src/` 与 `<workspace>/projects/<id>/artifacts/` 中同名源码是否内容不一致；出现警告时必须确认实际要发布哪一份
@@ -70,7 +70,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 路径口径：从仓库根执行时，源文件用 `project/pages/src/...`；如果 Bash cwd 已经是 `<workspace>/project`，源文件用 `pages/src/...`，不要传 `project/pages/src/...` 导致查找 `project/project/pages/src/...`。发布失败提示源文件不存在时，先按该规则切换路径，不要自动发布另一份文件。
 
 > `openyida publish` 会按源码扩展名选择发布模式：`.canvas.jsx` / `.canvas.tsx` 写入 `YidaCodeCanvas`，`.oyd.jsx` / `.jsx` / `.tsx` 写入平台 `Jsx` 组件。
-> 发布前本地检查归对应页面开发技能处理：`.canvas.jsx` / `.canvas.tsx` 先看 `yida-canvas-custom-page`；`.oyd.jsx` / `.jsx` / `.tsx` 只有在历史平台 JSX 组件维护闭环内才看 `yida-custom-page`。本技能只把真实成功的 `openyida publish` 作为远端完成证据。
+> 发布前确认源码已由对应页面开发技能完成并通过相应本地检查；本技能只把真实成功的 `openyida publish` 作为远端完成证据。
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
@@ -118,7 +118,7 @@ openyida list-forms <appType> --keyword <页面名>
 1. `.canvas.jsx` / `.canvas.tsx`：执行 `YidaCodeCanvas` 页面编译，产出并写入 `runtimeCode` 与 `importedModules`。该类源码不使用 `openyida check-page` / `openyida compile` 作为预检。
 2. `.oyd.jsx` / `.openyida.jsx` 或显式 `--compat`：先运行 OpenYida compatibility compiler，输出宜搭平台 `Jsx` 组件可执行源码。
 3. 普通 `.jsx` / `.tsx` 源码如果已有 `export function renderJsx()`：视为平台 `Jsx` 组件源码，执行 lint、Babel、UglifyJS 后构建 Schema。
-4. 普通 `.jsx` / `.tsx` 源码如果没有 `renderJsx` 但存在 `export default function Page()`：只允许走有限 authoring 降级；Hooks、生命周期和运行态限制以 `yida-custom-page` 为准。
+4. 普通 `.jsx` / `.tsx` 源码如果没有 `renderJsx` 但存在 `export default function Page()`：只允许走有限 authoring 降级；Hooks、生命周期和运行态限制以`yida-custom-page` 为准。
 5. 兼容构建会补齐 `renderJsx` 所需基础运行时导出，并修复事件绑定、数组回调等机械问题；这些是编译器职责，不要让 Agent 手写反复改。
 6. `check-page` 会硬拦截生命周期大小写错误、小写 `onclick`、渲染时直接执行事件函数、箭头函数只引用不调用方法、可见 `<button>` 没有事件等按钮不可点击问题。
 7. 构建后的平台 `Jsx` 组件源码会继续执行 Babel 转 ES5、UglifyJS 压缩，再构建 Schema 发布。

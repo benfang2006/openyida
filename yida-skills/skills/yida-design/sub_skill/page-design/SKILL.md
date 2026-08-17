@@ -31,7 +31,7 @@ description: 宜搭单页设计子流程。用于已有应用里的单个自定�
 | 4 | [规划页面和导航](../../workflow/step-3-information-architecture.md) | 只补当前页与平台导航、上游入口、下钻页面、原生表单/流程的关系 |
 | 5 | [页面结构和交互设计](../../workflow/step-4-wireframe-interaction.md) | 明确布局骨架、主操作、详情抽屉、表单提交入口和 PC/移动端差异 |
 | 6 | [UI 视觉和状态设计](../../workflow/step-5-visual-states.md) | 细化当前页视觉、素材、图标、空态、加载态、错误态和业务化自检 |
-| 7 | [写入 prd.md 和 design.md](../../workflow/step-6-handoff.md) | 输出单页 PRD 章节，交给 `yida-canvas-custom-page` 实现；历史平台 JSX 组件页面维护改走根路由的“JSX 自定义页面开发”入口 |
+| 7 | [写入 prd.md 和 design.md](../../workflow/step-6-handoff.md) | 输出单页 PRD 章节，交给 `yida-canvas-custom-page` 实现 |
 
 ## 主题决策口径
 
