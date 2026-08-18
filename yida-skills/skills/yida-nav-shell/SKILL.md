@@ -8,23 +8,43 @@ description: >
 
 ## 核心定位
 
-自定义页显式隐藏应用导航后，页面需要自己承担应用级导航。本技能负责形态选型、状态机制、URL 纪律和代码骨架；若用户只是要求页面内 tab / 内容区导航但没有说要顶部导航、侧边导航或导航壳，默认仍保留宜搭导航，不进入隐藏导航链路。
+自定义页显式隐藏应用导航后，页面需要自己承担应用级导航。本技能负责形态选型、状态机制、URL 纪律和代码骨架。
 
-本技能不配置宜搭平台真实导航树；平台导航分组由 `yida-nav-group` 处理。
+先记住三句话：
+
+- 普通应用默认用宜搭平台导航，不进入本技能。
+- 自定义页自己做应用级顶部导航、侧边导航或导航壳时，必须先隐藏应用导航。
+- `isRenderNav=false` 是页面级导航隐藏，不负责隐藏应用导航。
+
+本技能不配置宜搭平台真实导航树；平台导航分组由 `yida-nav-group` 处理。若用户只是要求页面内 tab / 内容区导航，默认仍保留宜搭导航。
 
 ## 前置判定
 
-- 导航未隐藏：通常使用宜搭平台导航，不需要本技能。
-- 用户明确隐藏导航、无导航、全屏无框、独立分享页、`isRenderNav=false`，或要求在自定义页面中加顶部导航/侧边导航/导航壳：使用本技能。
-- 仅说“门户 / 工作台 / 看板 / 页面内导航”不等于隐藏导航；默认保持平台导航可见。
-- 隐藏导航链路下，页面内自绘应用级导航与宜搭原导航不得同时出现。
+| 用户需求 | 判断 | 动作 |
+| --- | --- | --- |
+| “加侧边导航 / 顶部导航 / 导航壳 / 自绘应用导航” | 自定义页承担应用级导航 | 使用本技能，并执行 `openyida update-app <appType> --hide-app-nav` |
+| “隐藏应用导航” | 应用基础设置隐藏导航 | 执行 `openyida update-app <appType> --hide-app-nav`；需要页面内导航时使用本技能 |
+| “隐藏页面导航 / 全屏 / 无导航 / isRenderNav=false” | 页面级导航隐藏 | 优先走 `yida-page-config`；不自动进入本技能 |
+| “页面内 tab / 分段 / 内容区导航” | 当前页内部切换 | 不隐藏应用导航，不使用本技能 |
+| “门户 / 工作台 / 看板 / 大屏 / 首页” | 页面场景，不是导航隐藏信号 | 默认保留平台应用导航 |
 
-发布后必须配置并验证：
+隐藏应用导航后，页面内自绘应用级导航与宜搭原应用导航不得同时出现。
+
+## 必做配置
 
 ```bash
 openyida update-app <appType> --hide-app-nav
+```
+
+这一步勾选应用基础设置里的“隐藏应用导航”，字段值为 `hideAppNav='y'`。
+
+只有用户同时明确要求页面级导航也隐藏时，才额外执行：
+
+```bash
 openyida update-form-config <appType> <shellFormUuid> false "<页面标题>"
 ```
+
+不要为了隐藏应用导航给自定义页 URL 拼 `?isRenderNav=false`。
 
 ## 选型
 
@@ -101,11 +121,18 @@ const NAV_ITEMS = [
 ];
 ```
 
-- 跨自定义页：`/{appType}/custom/{formUuid}?isRenderNav=false`。
-- 内容区 iframe 表单列表：`/{appType}/workbench/{formUuid}?iframe=true`。
+| 目标 | URL | 说明 |
+| --- | --- | --- |
+| 跨自定义页 | `/{appType}/custom/{formUuid}` | 应用导航隐藏由 `hideAppNav='y'` 控制，不靠 URL 参数 |
+| 内容区 iframe 表单列表 | `/{appType}/workbench/{formUuid}?iframe=true` | 只用于嵌入列表 |
+| 原生提交页 | `/{appType}/submission/{formUuid}?isRenderNav=false` | 这是表单页隐藏页面导航 |
+| 原生详情页 | `/{appType}/formDetail/{formUuid}?formInstId=...&navConfig.layout=1180&isRenderNav=false` | 这是详情页隐藏页面导航 |
+
+实现要求：
+
 - 合并并白名单保留 `corpid`、`locale` 和业务深链参数。
 - 使用 `URL` / `URLSearchParams` 构造地址；不要字符串拼接重复 `?`。
-- 不使用可能吞掉 `isRenderNav=false` 的裸 `router.push(formUuid)`。
+- 不使用会吞掉业务参数的裸 `router.push(formUuid)`。
 - 最终至少验证一个跨页 URL 和一个浏览器回退动作。
 
 ## 移动端
@@ -124,11 +151,11 @@ const NAV_ITEMS = [
 - `renderJsx` 按 activeView 渲染。
 - `this.utils.isMobile()` 只用于平台 JSX 组件页面响应式。
 
-跨页 URL 规则与 Canvas 完全相同，不能因为是 legacy 就省略 `isRenderNav=false` 或业务参数。
+跨页 URL 规则与 Canvas 完全相同，不能因为是 legacy 就省略业务参数；应用导航隐藏由应用基础设置控制。
 
 ## 严格要求
 
-1. 自绘顶部导航或侧边导航前先隐藏宜搭原导航：应用级执行 `openyida update-app <appType> --hide-app-nav`，页面级执行 `openyida update-form-config <appType> <shellFormUuid> false "<页面标题>"`。
+1. 自绘顶部导航或侧边导航前先隐藏宜搭应用导航：应用级执行 `openyida update-app <appType> --hide-app-nav`；页面级 `openyida update-form-config <appType> <shellFormUuid> false "<页面标题>"` 只在用户同时要求页面导航隐藏时执行。
 2. 选中态必须一眼可辨，不能只靠极淡颜色。
 3. 导航项必须真正可点击，未知 key 有 fallback。
 4. hash/event/matchMedia 等监听必须 cleanup。
@@ -138,7 +165,7 @@ const NAV_ITEMS = [
 
 ## 验收
 
-- 应用配置已开启 `hideAppNav`，发布配置和最终 URL 均为 `isRenderNav=false`。
+- 应用配置已开启 `hideAppNav='y'`；自定义页最终 URL 不依赖 `isRenderNav=false` 隐藏应用导航。
 - 当前视图、选中态、内容区一致。
 - hash 深链、前进/后退、刷新恢复可用。
 - 跨页参数不丢，表单工作台 URL 类型正确。
@@ -150,5 +177,5 @@ const NAV_ITEMS = [
 | 文档 | 用途 |
 | --- | --- |
 | [导航壳形态目录](references/nav-shell-patterns.md) | 五种形态、默认骨架、平台 JSX 组件/native 示例与自查 |
-| `use_skill("yida-design", "判定导航与视觉策略")` | 判定是否隐藏导航及视觉策略 |
+| `use_skill("yida-design", "判定应用导航隐藏和页面导航隐藏")` | 区分 `hideAppNav` 与 `isRenderNav=false` |
 | [字段与 URL 参考](../../references/field-and-url-reference.md) | 页面 URL 和参数规范 |

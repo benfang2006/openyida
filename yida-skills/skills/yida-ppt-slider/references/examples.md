@@ -30,7 +30,7 @@ openyida create-page APP_DEMO123 "产品路演2026"
 # Step 6：用户确认后发布页面
 openyida publish project/pages/src/product-ppt.canvas.jsx APP_DEMO123 FORM-PPT001
 
-# Step 7：隐藏平台导航并回读
+# Step 7：配置页面级隐藏导航并回读
 openyida update-form-config APP_DEMO123 FORM-PPT001 false "产品路演2026"
 openyida get-schema APP_DEMO123 FORM-PPT001
 ```

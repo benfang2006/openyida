@@ -919,27 +919,35 @@ describe('OpenYida skill contracts', () => {
     const navShell = readSkill('yida-skills/skills/yida-nav-shell/SKILL.md');
 
     expect(pageUiux).toContain('默认页面保留平台应用导航');
-    expect(pageUiux).toContain('只有用户明确要求在自定义页面中加顶部导航、侧边导航、导航壳');
-    expect(pageUiux).toContain('才写 `appBlueprint.hideAppNav: true`');
+    expect(pageUiux).toContain('先分清两类隐藏');
+    expect(pageUiux).toContain("应用导航隐藏写 `appBlueprint.hideAppNav: 'y'`");
     expect(pageUiux).toContain('同应用页面优先放入平台导航或导航分组');
     expect(navStep).toContain('默认自定义页**保留平台应用导航**');
     expect(navStep).toContain('页面内 tab / 分段导航 / 内容区局部导航记录为当前页内容结构，同时保持平台导航可见');
-    expect(navStep).toContain('用户明确要求在自定义页面里加顶部导航、侧边导航或导航壳时，写 `appBlueprint.hideAppNav: true`');
+    expect(navStep).toContain('先区分两件事');
+    expect(navStep).toContain('自定义页要做顶部导航、侧边导航、导航壳、自绘应用级导航');
+    expect(navStep).toContain("写 `appBlueprint.hideAppNav: 'y'`，并交给 `yida-nav-shell`");
     expect(navStep).toContain('仅说「工作台 / 门户 / 看板 / 大屏 / 首页」时，优先解释为平台导航下的当前页面体验');
-    expect(pageGeneration).toContain('默认实现保留平台应用导航，同应用内页面入口写入 `appBlueprint.navigation` 或平台导航分组');
-    expect(pageGeneration).toContain('页面内 tab、分段筛选、内容区快捷入口不隐藏平台导航');
-    expect(pageGeneration).toContain('`appBlueprint.hideAppNav: true` 和 `appBlueprint.renderNav: false`');
+    expect(pageGeneration).toContain('### 导航生成规则');
+    expect(pageGeneration).toContain('| 普通自定义页、工作台、门户、看板、首页 | 不写 `hideAppNav` | 保留平台应用导航 |');
+    expect(pageGeneration).toContain("| 自定义页顶部导航、侧边导航、导航壳、自绘应用级导航 | 写 `appBlueprint.hideAppNav: 'y'` | 执行 `openyida update-app <appType> --hide-app-nav` |");
+    expect(pageGeneration).toContain('| 页面隐藏导航、无导航全屏、`isRenderNav=false` | 写 `appBlueprint.renderNav: false` | 执行 `openyida update-form-config <appType> <formUuid> false "<页面标题>"` |');
     expect(pageGeneration).toContain('openyida update-app <appType> --hide-app-nav');
     expect(navPatterns).toContain('默认不要在自定义页面里自建同级导航');
     expect(navPatterns).toContain('必须开启应用级 `hideAppNav`');
+    expect(navPatterns).toContain('不用 `isRenderNav=false` 表达应用导航隐藏');
     expect(navShell).toContain('openyida update-app <appType> --hide-app-nav');
+    expect(navShell).toContain('自定义页最终 URL 不依赖 `isRenderNav=false` 隐藏应用导航');
+    expect(navShell).toContain('先记住三句话');
     expect(createPage).toContain('默认生成页面导航可见');
     expect(createPage).toContain('`--mode dashboard` | 否 | 看板/驾驶舱页面推荐使用；只表达页面模式，不会自动隐藏导航');
+    expect(createPage).toContain('这不等同于应用导航隐藏');
     expect(createPage).toContain('改由 `yida-canvas-custom-page` 编写页面源码，再由 `yida-publish-page` 发布');
     expect(createPage).toContain('本技能不使用 `yida-custom-page` 处理新建页面');
     expect(navStep).toContain('快捷入口目标是同应用内页面时');
-    expect(pageGeneration).toContain('快捷入口目标是同应用内页面时');
+    expect(pageGeneration).toContain('### 快捷入口生成规则');
     expect(navGuide).toContain('同应用内页面优先在平台应用导航内切换');
+    expect(navGuide).toContain('| “隐藏页面导航 / 全屏 / 无导航 / isRenderNav=false” | 页面级导航隐藏 | 走 `yida-page-config`，不自动隐藏应用导航 |');
   });
 
   test('workbench pages avoid low-density giant card templates', () => {
@@ -1044,7 +1052,7 @@ describe('OpenYida skill contracts', () => {
 
     expect(pageUiux).toContain('PC 端默认在侧边抽屉中用 iframe 承载宜搭原生表单');
     expect(pageUiux).toContain('抽屉默认半屏 `50vw`');
-    expect(pageUiux).toContain('新增/提交页 URL 默认使用隐藏导航的 `submission/{formUuid}?isRenderNav=false`');
+    expect(pageUiux).toContain('新增/提交页 URL 默认使用页面级隐藏导航的 `submission/{formUuid}?isRenderNav=false`');
     expect(pageUiux).toContain('formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false');
     expect(canvas).toContain('表单打开入口统一容器');
     expect(canvas).toContain('FormOpenContainer');
@@ -1067,10 +1075,10 @@ describe('OpenYida skill contracts', () => {
     expect(navGuide).toContain('FormOpenContainer');
     expect(navGuide).toContain('按钮事件只调用 `openForm(request)`');
     expect(navGuide).not.toContain('runtime.openDrawer');
-    expect(pageGeneration).toContain('`targetType: "submission"` 与 `openMode: "responsive-drawer"`');
-    expect(pageGeneration).toContain('`targetType: "detail"`、目标 `formUuid` 和真实 `formInstId` 来源');
-    expect(pageGeneration).toContain('默认 `hideNav: true` / `isRenderNav=false`');
-    expect(pageGeneration).toContain('抽屉默认半屏 `50vw`');
+    expect(pageGeneration).toContain('| 表单新建/提交 | `targetType: "submission"` + `openMode: "responsive-drawer"` | PC 用 `FormOpenContainer` 右侧抽屉 iframe，URL 带 `isRenderNav=false` |');
+    expect(pageGeneration).toContain('| 表单查看详情 | `targetType: "detail"` + 目标 `formUuid` + 真实 `formInstId` 来源 | PC 用同一套抽屉宽度，详情 URL 带 `navConfig.layout=1180&isRenderNav=false` |');
+    expect(pageGeneration).toContain('表单提交/详情里的 `isRenderNav=false` 只隐藏原生表单页或详情页的页面导航');
+    expect(pageGeneration).toContain('PC 用 `FormOpenContainer` 右侧抽屉 iframe');
     expect(pageGeneration).toContain('PC 抽屉 iframe 不会自动继承父页面 CSS 变量');
     expect(themeHelpers).toContain('function installYidaGlobalThemeIntoFrame');
     expect(themeHelpers).toContain('FormOpenContainer');

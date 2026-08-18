@@ -309,7 +309,7 @@ inferred_modules:
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 平台预置主题 | 只有 `themePresetKey` 命中平台预置 key 且 `shouldPassCreateAppTheme=true` 时，`create-app/update-app` 才传 `theme/colour`                                                    |
 | 自定义色盘   | `shouldPassCreateAppTheme=false`，创建应用时不传 `theme/colour`                                                                                                              |
-| 页面注入     | 自定义色盘、隐藏导航沉浸页、页面级独立主题使用 `style#yida-global-theme`                                                                                                     |
+| 页面注入     | 自定义色盘、页面级沉浸页、应用导航隐藏后的自绘壳、页面级独立主题使用 `style#yida-global-theme`                                                                                                     |
 | 应用级换肤   | 需要全应用换肤时写 `customThemeStyle.tokens`，页面运行态统一注入 `style#yida-global-theme`                                                                                   |
 | 表单运行态   | 普通表单、流程表单、提交页和 formDetail 详情页必须消费同一套应用主题 token；表单 JS 固定注入 `style#yida-global-theme`                                                        |
 | 详情页样式   | formDetail 页面必须由同一个 `openyidaThemeDidMount` 条件注入 `style#yida-form-detail-style`，不得只完成页面主题而漏掉详情页样式                                                |

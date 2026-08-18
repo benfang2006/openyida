@@ -37,11 +37,11 @@ describe('update-app helpers', () => {
   test('parseArgs supports app nav visibility flags', () => {
     expect(parseArgs(['APP_1', '--hide-app-nav'])).toMatchObject({
       appType: 'APP_1',
-      hideAppNav: true,
+      hideAppNav: 'y',
     });
     expect(parseArgs(['APP_1', '--show-app-nav'])).toMatchObject({
       appType: 'APP_1',
-      hideAppNav: false,
+      hideAppNav: 'n',
     });
   });
 

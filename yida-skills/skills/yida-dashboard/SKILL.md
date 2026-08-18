@@ -115,7 +115,7 @@ metadata:
 5. 所有可见按钮必须有真实 handler 或显式 disabled。
 6. 截图按钮必须可用，并在截图时用 class/属性排除自身。
 7. 移动端 KPI 改 2 列或横向滚动，图表纵向堆叠。
-8. 隐藏平台导航后需要跨模块切换时，交 `yida-nav-shell`，默认用 React `useState` / hash。
+8. 隐藏应用导航后需要跨模块切换时，交 `yida-nav-shell`，默认用 React `useState` / hash。
 
 ## 图表路由边界
 

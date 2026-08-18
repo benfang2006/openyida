@@ -110,7 +110,7 @@ description: >
 | 页面视觉方向、页面美化、去 AI 味 | `yida-design` 产出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec；实现阶段默认交给 `yida-canvas-custom-page` |
 | 应用级主题、品牌色、全局换肤 | `yida-design` |
 | 平台左侧导航树分组/排序 | `yida-nav-group` |
-| 页面隐藏原导航后自绘导航壳 | `yida-nav-shell` |
+| 应用导航隐藏后自绘导航壳 | `yida-nav-shell` |
 | 普通报表/统计 | `yida-report` |
 | PPT 页面 | `yida-ppt-slider` |
 | 公开访问/组织内分享 | `yida-page-config` |
