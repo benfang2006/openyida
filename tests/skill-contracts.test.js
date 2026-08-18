@@ -916,17 +916,23 @@ describe('OpenYida skill contracts', () => {
     const navPatterns = readSkill('yida-skills/skills/yida-design/references/app/navigation-patterns.md');
     const navGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/navigation-and-entry-guide.md');
     const createPage = readSkill('yida-skills/skills/yida-create-page/SKILL.md');
+    const navShell = readSkill('yida-skills/skills/yida-nav-shell/SKILL.md');
 
     expect(pageUiux).toContain('默认页面保留平台应用导航');
-    expect(pageUiux).toContain('页面内 tab、自绘侧边栏或独立门户壳写 `appBlueprint.hasPageNavigation: true`，同时保持平台导航可见');
+    expect(pageUiux).toContain('只有用户明确要求在自定义页面中加顶部导航、侧边导航、导航壳');
+    expect(pageUiux).toContain('才写 `appBlueprint.hideAppNav: true`');
     expect(pageUiux).toContain('同应用页面优先放入平台导航或导航分组');
     expect(navStep).toContain('默认自定义页**保留平台应用导航**');
-    expect(navStep).toContain('页面内 tab / 分段导航 / 自绘导航记录为当前页内容结构，同时保持平台导航可见');
+    expect(navStep).toContain('页面内 tab / 分段导航 / 内容区局部导航记录为当前页内容结构，同时保持平台导航可见');
+    expect(navStep).toContain('用户明确要求在自定义页面里加顶部导航、侧边导航或导航壳时，写 `appBlueprint.hideAppNav: true`');
     expect(navStep).toContain('仅说「工作台 / 门户 / 看板 / 大屏 / 首页」时，优先解释为平台导航下的当前页面体验');
     expect(pageGeneration).toContain('默认实现保留平台应用导航，同应用内页面入口写入 `appBlueprint.navigation` 或平台导航分组');
-    expect(pageGeneration).toContain('页面内 tab、自绘侧边栏或独立门户壳最多写 `appBlueprint.hasPageNavigation: true`，并保持平台导航可见');
+    expect(pageGeneration).toContain('页面内 tab、分段筛选、内容区快捷入口不隐藏平台导航');
+    expect(pageGeneration).toContain('`appBlueprint.hideAppNav: true` 和 `appBlueprint.renderNav: false`');
+    expect(pageGeneration).toContain('openyida update-app <appType> --hide-app-nav');
     expect(navPatterns).toContain('默认不要在自定义页面里自建同级导航');
-    expect(navPatterns).toContain('页面内导航不自动隐藏平台导航');
+    expect(navPatterns).toContain('必须开启应用级 `hideAppNav`');
+    expect(navShell).toContain('openyida update-app <appType> --hide-app-nav');
     expect(createPage).toContain('默认生成页面导航可见');
     expect(createPage).toContain('`--mode dashboard` | 否 | 看板/驾驶舱页面推荐使用；只表达页面模式，不会自动隐藏导航');
     expect(createPage).toContain('改由 `yida-canvas-custom-page` 编写页面源码，再由 `yida-publish-page` 发布');

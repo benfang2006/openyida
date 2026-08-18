@@ -8,20 +8,21 @@ description: >
 
 ## 核心定位
 
-自定义页显式隐藏应用导航（`isRenderNav=false`）后，页面需要自己承担应用级导航。本技能负责形态选型、状态机制、URL 纪律和代码骨架；若用户只是要求页面内 tab / 内容区导航但没有说隐藏平台导航，默认仍保留宜搭导航，不进入隐藏导航链路。
+自定义页显式隐藏应用导航后，页面需要自己承担应用级导航。本技能负责形态选型、状态机制、URL 纪律和代码骨架；若用户只是要求页面内 tab / 内容区导航但没有说要顶部导航、侧边导航或导航壳，默认仍保留宜搭导航，不进入隐藏导航链路。
 
 本技能不配置宜搭平台真实导航树；平台导航分组由 `yida-nav-group` 处理。
 
 ## 前置判定
 
 - 导航未隐藏：通常使用宜搭平台导航，不需要本技能。
-- 用户明确隐藏导航、无导航、全屏无框、独立分享页或 `isRenderNav=false`：使用本技能。
+- 用户明确隐藏导航、无导航、全屏无框、独立分享页、`isRenderNav=false`，或要求在自定义页面中加顶部导航/侧边导航/导航壳：使用本技能。
 - 仅说“门户 / 工作台 / 看板 / 页面内导航”不等于隐藏导航；默认保持平台导航可见。
 - 隐藏导航链路下，页面内自绘应用级导航与宜搭原导航不得同时出现。
 
 发布后必须配置并验证：
 
 ```bash
+openyida update-app <appType> --hide-app-nav
 openyida update-form-config <appType> <shellFormUuid> false "<页面标题>"
 ```
 
@@ -127,7 +128,7 @@ const NAV_ITEMS = [
 
 ## 严格要求
 
-1. 自绘导航前先隐藏宜搭原导航。
+1. 自绘顶部导航或侧边导航前先隐藏宜搭原导航：应用级执行 `openyida update-app <appType> --hide-app-nav`，页面级执行 `openyida update-form-config <appType> <shellFormUuid> false "<页面标题>"`。
 2. 选中态必须一眼可辨，不能只靠极淡颜色。
 3. 导航项必须真正可点击，未知 key 有 fallback。
 4. hash/event/matchMedia 等监听必须 cleanup。
@@ -137,7 +138,7 @@ const NAV_ITEMS = [
 
 ## 验收
 
-- 发布配置和最终 URL 均为 `isRenderNav=false`。
+- 应用配置已开启 `hideAppNav`，发布配置和最终 URL 均为 `isRenderNav=false`。
 - 当前视图、选中态、内容区一致。
 - hash 深链、前进/后退、刷新恢复可用。
 - 跨页参数不丢，表单工作台 URL 类型正确。
