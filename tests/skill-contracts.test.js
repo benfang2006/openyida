@@ -67,6 +67,18 @@ describe('OpenYida skill contracts', () => {
     expect(localeSource).not.toContain('openyida check-page pages/src/home.canvas.jsx');
   });
 
+  test('optional locale login help keeps the no-browser ownership contract', () => {
+    const localeDir = path.join(ROOT, 'locales-extra', 'core');
+    const localeFiles = fs.readdirSync(localeDir).filter((file) => file.endsWith('.js'));
+
+    for (const file of localeFiles) {
+      const source = fs.readFileSync(path.join(localeDir, file), 'utf8');
+      expect(source).toContain('[--no-browser]');
+      expect(source).toContain('openyida login --no-browser');
+      expect(source).toMatch(/authorization URL|授權連結/);
+    }
+  });
+
   test('skill guidance does not route through sample templates', () => {
     const files = listMarkdownAndJsonFiles(path.join(ROOT, 'yida-skills'))
       .filter(isSampleRoutingGuidanceFile);
@@ -85,6 +97,9 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('`openyida agent-capabilities --json` 是完整能力信息');
     expect(skill).toContain('不要把完整能力信息放进常规完整搭建链路');
     expect(skill).toContain('`workdir` 对应完整能力信息里的 `active.projectRoot`');
+    expect(skill).toContain('builder_path.interactive_login.mode=caller_open_url');
+    expect(skill).toContain('沙箱浏览器 / 内置 Browser');
+    expect(skill).toContain('只有没有浏览器工具或工具调用失败时');
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
@@ -97,6 +112,8 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('不要把固定 `sleep`');
     expect(skill).toContain('`ok=true` 与 `can_auto_use=true`');
     expect(skill).toContain('用户未授权就关闭浏览器时');
+    expect(skill).toContain('不要只把 URL 贴给用户然后等待');
+    expect(skill).toContain('沙箱浏览器 / 内置 Browser');
   });
 
   test('QwenWork install guidance aligns with QoderWork user-level skills layout', () => {

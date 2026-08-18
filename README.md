@@ -1,6 +1,6 @@
 <div align="center">
 
-![OpenYida](https://img.alicdn.com/imgextra/i2/O1CN01wTOPxK1nEA3rWDp6I_!!6000000005057-2-tps-1672-941.png)
+![OpenYida](https://img.alicdn.com/imgextra/i2/O1CN01fwUxry9qUtJ3OTaP_!!6000000008165-2-tps-1672-941.png)
 
 # OpenYida
 
@@ -68,9 +68,9 @@ OpenYida returns a compact machine-readable summary with the version, login stat
 openyida login
 ```
 
-OpenYida login defaults to OAuth token mode. It opens the DingTalk OAuth authorization page, receives the local loopback callback, exchanges `code` / `authCode` with the Yida server, and stores `access_token` / `refresh_token` in the current project cache.
+OpenYida login defaults to OAuth token mode. It opens the DingTalk OAuth authorization page, receives the local loopback callback, exchanges `code` / `authCode` with the Yida server, and stores `access_token` / `refresh_token` in the user auth store when available. If the user auth store is not writable, OpenYida explicitly falls back to the current project cache and reports that narrower persistence scope.
 
-When the user names a target Yida entry URL, pass it to the login command so OpenYida can select the matching environment and token session file. For example, Alibaba intranet Yida uses `auth-token-alibaba.json`:
+When the user names a target Yida entry URL, pass it to the login command so OpenYida can select the matching environment and auth profile. For example:
 
 ```bash
 openyida login https://yida-group.alibaba-inc.com/
@@ -83,6 +83,15 @@ For token status checks, use:
 openyida login --check-only --json
 openyida auth status
 ```
+
+To reuse an existing shared login profile for the current project, switch first instead of starting a new OAuth login:
+
+```bash
+openyida auth profiles
+openyida auth profile switch <auth_profile>
+```
+
+If the target profile is not listed, run `openyida login` to add it, then switch to the new profile.
 
 OpenYida does not install Playwright by default.
 
@@ -356,9 +365,9 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | Command | Description |
 |---------|-------------|
 | `openyida login [target-url] [--env <name>\|--intl\|--overseas\|--global\|--yidaapps\|--alibaba] [--client-id <clientId>] [--endpoint <url>] [--no-browser]` | Login with OAuth token mode |
-| `openyida logout` | Logout / clear token |
-| `openyida auth <status\|login\|refresh\|logout>` | Token login state management |
-| `openyida org <list\|switch> [--json] [--corp-id <corpId>]` | Organization management (list / switch by OAuth re-login) |
+| `openyida logout` | Logout / unbind current project auth |
+| `openyida auth <status\|login\|refresh\|logout\|profiles\|profile switch>` | Token login state and profile management |
+| `openyida org <list\|switch> [--json] [--corp-id <corpId>]` | Organization management (list / switch existing profiles first) |
 | `openyida env [--json\|setup\|list\|show\|switch\|add\|remove] [options]` | Detect AI tool environment & token login state |
 
 ### App Management
@@ -393,6 +402,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida list-forms <appType> [--keyword <text>]` | List forms/pages in an app |
 | `openyida aggregate-table <list\|create-empty\|inspect\|preview\|save\|publish\|status> <appType> ...` | Manage aggregate tables (virtualView) |
 | `openyida get-schema <appType> <formUuid\|--all> [--summary-json\|--field-map-json]` | Get one form Schema or all form Schemas |
+| `openyida check-prd-completeness <prd.md> --app-type <appType> [--build-manifest <file>] [--json]` | Check PRD page/resource count risk |
 | `openyida er <appType> [--format mermaid\|json] [--output file] [--include-system] [--include-pages]` | Export app entity relationship diagram |
 | `openyida create-page <appType> "<name>" [--mode dashboard] [--hide-nav] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a custom display page |
 | `openyida build-page <sourceFile> [--output file\|--write]` | Build Yida-compatible page source |
