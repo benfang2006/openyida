@@ -35,7 +35,7 @@ OpenYida 任务完成后，除了交付当前结果，还要判断是否有可�
    用户要求参考 Dribbble / 优秀示例时，必须把参考转成可执行设计变量：页面类型、构图、视觉锚点、信息密度、色彩关系、组件细节、反默认点。交付时说明“参考转译成了什么”。
 
 2. **独立品牌页使用页面级主题**
-   独立品牌页、活动页和隐藏导航沉浸页应自带页面级主题 token。普通业务页、页面重构和局部美化优先读取当前应用主题色。
+   独立品牌页、活动页、页面级沉浸页和应用导航隐藏后的自绘壳应自带页面级主题 token。普通业务页、页面重构和局部美化优先读取当前应用主题色。
 
 3. **`--theme` 只能填平台预置 key**
    `deepBlue/podBlue/royalBlue/lightBlue/teal/podGreen/deepPurple/purple/podOrange/yellow/magenta/red/greyBlue/coffee/black` 才能作为 app `colour`。默认优先使用 `podBlue`、`podGreen`、`podOrange`；自定义“活力橙”“深玫红”“暗黑金”等设计主题，应在每个页面注入 `style#yida-global-theme` 或 scoped tokens，`blue`、`green`、`orange` 作为应用主题 token profile 保留原名。

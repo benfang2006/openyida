@@ -1,8 +1,18 @@
 # B 端导航壳形态目录
 
-当页面被用户显式要求隐藏应用导航（`isRenderNav=false`，先用 `use_skill("yida-design", "判定导航与视觉策略")` 完成入口判断），页面要**自带导航壳**接管应用级导航。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
+当页面被用户显式要求隐藏应用导航，或在自定义页面中加顶部导航/侧边导航/导航壳时，页面要**自带导航壳**接管应用级导航，并先用 `use_skill("yida-design", "判定导航与视觉策略")` 完成入口判断。本文件是 B 端常见导航形态的选型 + 骨架 + 代码示例目录。挑一种主形态，可与标签页叠加做二级导航。
 
 > 这里给**方向 + 骨架 + 可直接改的代码示例**。正文以 React hooks + antd/自绘组件为主；文中 `_customState`、`renderJsx`、`this.utils.isMobile()` 代码统一视为 **平台 JSX 组件/native 示例**，只用于对应运行时维护。
+
+## 先做这三步
+
+| 步骤 | 要做什么 | 说明 |
+| --- | --- | --- |
+| 1 | 确认用户真的要自绘应用级导航 | 只有顶部导航、侧边导航、导航壳、自绘应用导航才进入本文件 |
+| 2 | 执行 `openyida update-app <appType> --hide-app-nav` | 这是应用基础设置，字段为 `hideAppNav='y'` |
+| 3 | 自定义页内实现导航壳 | 自定义页 URL 不拼 `isRenderNav=false` 来隐藏应用导航 |
+
+只要求页面全屏、无导航或 `isRenderNav=false` 时，不走这里，走页面级隐藏配置。
 
 ## 选型速查
 
@@ -16,13 +26,14 @@
 
 ## 通用纪律（B 端 + 去 AI 味）
 
+- **先判定层级**：应用导航隐藏看 `hideAppNav='y'`；页面导航隐藏看 `isRenderNav=false`。两者不要互相代替。
 - **选中态要一眼可辨**：左侧边用「左侧 3px 主色条 + 浅色底 + 字重加粗」；顶部用「底部 2px 主色下划线 + 主色文字」。别只靠淡淡变色。
 - **图标只作功能用途**：导航项用 `lucide-react` 或 `@ant-design/icons` 的具体组件 + 文字，默认 `lucide-react`，同页一套图标风格；**禁 emoji**、CSS 绘制图形、字母占位和每项前配装饰图标（见 [yida-design UI 视觉和状态设计](../../yida-design/workflow/step-5-visual-states.md)）。
 - **不做营销脸**：没有巨 Logo Hero、没有渐变横幅。顶部条左侧放「应用名/模块名 + 面包屑」，右侧放「用户/操作」，克制。
 - **密度可偏高**：B 端导航允许信息密集，但要有主次；分组用小标题或分隔线，不要一长串平铺。
 - **主色策略**：导航隐藏时主色相可自立（见 yida-design 入口路由）；仍要么走品牌 `var(--color-brand1-*)`、要么用自定主色一以贯之，语义色固定。
-- **先关原导航**：只有用户显式要求隐藏平台导航时，发布目标页面才配置 `isRenderNav=false`；不要因为普通页面内 tab / 内容区导航默认关闭平台导航。
-- **URL 参数不丢失**：跨页导航项要保存 `params` 并统一构造 URL；自定义页目标至少带 `isRenderNav=false`，需要跨组织或深链时合并 `corpid`、`tab`、`view` 等白名单参数。
+- **先关应用导航**：用户显式要求自定义页面顶部导航/侧边导航/导航壳时，先执行 `openyida update-app <appType> --hide-app-nav`；不要因为普通页面内 tab / 内容区导航默认关闭平台导航。
+- **URL 参数不丢失**：跨页导航项要保存 `params` 并统一构造 URL；自定义页目标不靠 `isRenderNav=false` 隐藏应用导航，需要跨组织或深链时合并 `corpid`、`tab`、`view` 等白名单参数。
 
 ## 多视图切换机制（导航壳的核心）
 
@@ -30,14 +41,13 @@
 
 - `React.useState('home')` 管本地视图；需要可分享/可后退时用 URL hash，并在 `useEffect` 注册 `hashchange`、cleanup 移除监听。
 - 平台 JSX 组件/native 示例使用 `_customState.activeView`、`this.setCustomState({ activeView: key })` 和 `renderJsx` 分支，仅作对应运行时维护参考。
-- **跨页跳转**（跳到别的自定义页/表单）：用 [field-and-url-reference.md](../../../references/field-and-url-reference.md) 的模板拼 URL，目标自定义页必须带 `?isRenderNav=false` 保持沉浸；不要假设应用导航还在。不要只调用 `router.push(formUuid, {}, false)`，它无法表达完整的隐藏导航 URL 和业务参数。
+- **跨页跳转**（跳到别的自定义页/表单）：用 [field-and-url-reference.md](../../../references/field-and-url-reference.md) 的模板拼 URL；自定义页目标用 `/custom/{formUuid}`，应用导航隐藏由应用配置控制。不要只调用 `router.push(formUuid, {}, false)`，它无法表达完整业务参数。
 
 ### Canvas 跨页导航 URL 模板
 
 ```jsx
 const BASE_URL = 'https://www.aliwork.com';
 const APP_TYPE = 'APP_XXX';
-const COMMON_NAV_PARAMS = { isRenderNav: 'false' };
 
 const NAV = [
   { key: 'overview', label: '概览', type: 'custom', formUuid: 'FORM-OVERVIEW', params: { tab: 'overview' } },
@@ -49,9 +59,7 @@ function buildNavUrl(item) {
     ? '/' + APP_TYPE + '/workbench/' + item.formUuid
     : '/' + APP_TYPE + '/custom/' + item.formUuid;
   const url = new URL(path, BASE_URL);
-  const params = item.type === 'workbench'
-    ? { ...(item.params || {}) }
-    : { ...COMMON_NAV_PARAMS, ...(item.params || {}) };
+  const params = { ...(item.params || {}) };
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));
@@ -307,7 +315,7 @@ export function renderTabs() {
 - 导航项 = 功能性 SVG + 文字，同页一套图标风格，无 emoji、无每项装饰图标。
 - 顶部/侧边有应用名或面包屑，用户知道「在哪、能去哪」，不是孤零零一个返回按钮。
 - 内容区按 `activeView` 切换（自定义页面默认 `useState`/hash；普通页 `_customState` 仅 legacy），切换有状态、可回来。
-- 发布目标页面已执行 `openyida update-form-config <appType> <formUuid> false "<标题>"`，平台原导航不再出现。
-- 跨页跳转用 URL 模板拼；目标自定义页带 `?isRenderNav=false`，导航项的 `params` 没丢。
+- 已执行 `openyida update-app <appType> --hide-app-nav`，应用原导航不再出现。
+- 跨页跳转用 URL 模板拼；自定义页目标不靠 `isRenderNav=false` 隐藏应用导航，导航项的 `params` 没丢。
 - 移动端：侧边→抽屉、顶部→汉堡、浮动→底部胶囊；自定义页面用 media query/`matchMedia` hook，legacy 普通页才用 `this.utils.isMobile()`。
 - 浮动导航留出内容安全间距，不遮关键信息。

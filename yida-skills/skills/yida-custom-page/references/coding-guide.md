@@ -631,7 +631,7 @@ export function closeYidaForm() {
 
 ### 16.1 自定义主题注入到 iframe 窗口
 
-平台 JSX 组件页面需要自定义色盘、隐藏导航沉浸页或 iframe 中承载原生表单时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper。该 helper 会向当前文档、同源可访问的所有父级窗口文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档注入 `style#yida-global-theme`；跨域窗口静默降级。不要只向当前页面 `document.head` 写 style，否则嵌套 iframe 时父级壳层和抽屉内表单可能读不到同一套 token。
+平台 JSX 组件页面需要自定义色盘、页面级沉浸页、应用导航隐藏后的自绘壳或 iframe 中承载原生表单时，复制 `yida-canvas-custom-page/references/theme-runtime-helpers.md` 的 Ordinary JSX helper。该 helper 会向当前文档、同源可访问的所有父级窗口文档，以及 `FormOpenContainer` 打开的同源提交页/详情页子 iframe 文档注入 `style#yida-global-theme`；跨域窗口静默降级。不要只向当前页面 `document.head` 写 style，否则嵌套 iframe 时父级壳层和抽屉内表单可能读不到同一套 token。
 
 ### 17. 下拉选项控制选项卡（Tabs）表格页显示/隐藏
 

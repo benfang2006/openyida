@@ -35,7 +35,7 @@ description: "宜搭全屏幻灯片页面开发，兼容旧 yida-ppt / PPT / 演
 5. **图片完整展示**：默认 `object-fit: contain`，不得裁掉关键演示素材。
 6. **hash 双向同步**：初始页读取 hash；翻页更新 hash；浏览器前进/后退能恢复页码。
 7. **全屏由用户手势触发**：监听 `fullscreenchange` 同步 UI；卸载时移除监听。
-8. **隐藏平台导航**：演示页发布后配置 `isRenderNav=false` 并验证最终 URL。
+8. **页面级隐藏导航**：演示页发布后配置 `isRenderNav=false` 并验证最终 URL；这不等同于应用导航隐藏。
 
 ## 开发流程
 

@@ -377,7 +377,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida app-list [--size N]` | List my Yida apps |
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | Query enterprise efficiency overview and detail reports |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a Yida app |
-| `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue]` | Update app info |
+| `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue] [--hide-app-nav\|--show-app-nav]` | Update app info |
 | `openyida app-online <appType> [--to-ding-app-center] [--show-app-center]` | Enable a Yida app |
 | `openyida app-offline <appType> [--to-ding-app-center] [--show-app-center]` | Disable a Yida app |
 | `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |

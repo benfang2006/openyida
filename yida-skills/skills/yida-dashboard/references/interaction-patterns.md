@@ -669,7 +669,7 @@ export function didUnmount() {
 
 ---
 
-## 5. 组织内短链 + 隐藏导航
+## 5. 组织内短链 + 页面级隐藏导航
 
 ### 5.1 发布后验证短链
 
@@ -680,7 +680,7 @@ export function didUnmount() {
 # 2. 用 CLI 验证
 openyida verify-short-url <appType> <formUuid> https://y.aliwork.com/t/abc123
 
-# 3. 保存分享配置，开启隐藏导航
+# 3. 保存分享配置，开启页面级隐藏导航
 openyida save-share-config <appType> <formUuid> --hide-nav --internal
 ```
 
@@ -689,8 +689,9 @@ openyida save-share-config <appType> <formUuid> --hide-nav --internal
 | URL 形态 | 用途 |
 |---------|------|
 | `{base}/{appType}/custom/{formUuid}` | 默认访问，带导航 |
-| `{base}/{appType}/custom/{formUuid}?isRenderNav=false` | 隐藏导航（看板专用）|
-| `{base}/{appType}/custom/{formUuid}?isRenderNav=false&corpid={corpId}` | 跨组织访问时追加 corpid |
+| `{base}/{appType}/custom/{formUuid}?isRenderNav=false` | 页面级隐藏导航（看板专用，不等同应用导航隐藏） |
+| `{base}/{appType}/custom/{formUuid}?isRenderNav=false&corpid={corpId}` | 页面级隐藏导航并跨组织访问 |
+| `{base}/{appType}/custom/{formUuid}` + 应用基础设置 `hideAppNav='y'` | 自定义页自绘应用级导航时隐藏应用导航 |
 | 组织内短链 `{base}/t/xxx` | 分享给内部用户，自动认证 |
 
 ### 5.3 交付话术模板
@@ -702,7 +703,7 @@ openyida save-share-config <appType> <formUuid> --hide-nav --internal
 
 1. PC 端（推荐，大屏投屏用）
    短链：https://y.aliwork.com/t/xxx
-   直链：https://www.aliwork.com/APP_XXX/custom/FORM-XXX?isRenderNav=false
+   直链：https://www.aliwork.com/APP_XXX/custom/FORM-XXX
 
 2. 移动端（钉钉内）
    在钉钉对话框粘贴短链 → 自动展开卡片 → 点击"立即查看"

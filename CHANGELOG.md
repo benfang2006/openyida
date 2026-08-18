@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.19] - 2026-08-19
+
+### Added
+- `openyida update-app` 新增 `--hide-app-nav` / `--show-app-nav` 及兼容别名，用于自定义页面自绘顶部导航或侧边导航壳时显式隐藏或恢复访问态应用导航。
+
+### Changed
+- 自定义页面、完整应用设计和导航壳技能规则统一为默认保留平台应用导航，仅在用户明确要求自定义页侧边导航、顶部导航、导航壳或全屏无导航时才开启隐藏应用导航。
+- 同步命令 manifest、README 命令表和能力清单中的 `update-app` 导航隐藏参数，并补齐 `nav-group auto-order` 能力清单说明。
+
+### Fixed
+- `hideAppNav` 默认不写入更新应用请求，避免普通应用或未明确导航诉求的自定义页面被误隐藏应用导航。
 ## [2026.8.17-3] - 2026-08-17
 
 ### Added

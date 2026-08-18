@@ -74,7 +74,7 @@
 | 应用首页 | `{base_url}/{appType}/workbench` |
 | 表单提交页（默认隐藏导航） | `{base_url}/{appType}/submission/{formUuid}?isRenderNav=false` |
 | 自定义页面 | `{base_url}/{appType}/custom/{formUuid}` |
-| 自定义页面（隐藏导航） | `{base_url}/{appType}/custom/{formUuid}?isRenderNav=false` |
+| 自定义页面（应用导航隐藏） | `{base_url}/{appType}/custom/{formUuid}`；由应用基础设置 `hideAppNav='y'` 控制 |
 | 表单详情页（抽屉/隐藏导航） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&navConfig.layout=1180&isRenderNav=false` |
 | 表单详情页（编辑模式） | `{base_url}/{appType}/formDetail/{formUuid}?formInstId={formInstId}&mode=edit&navConfig.layout=1180&isRenderNav=false` |
 

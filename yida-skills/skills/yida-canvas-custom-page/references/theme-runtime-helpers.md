@@ -1,6 +1,6 @@
 # Yida Global Theme Runtime Helpers
 
-本文件提供自定义主题 token 的复制型 helper。它不是设计事实源，不生成配色，也不解释视觉 DNA；调用方必须先从 `yida-design` 输出的 `design.md` 读取 `tokens`，再把同一份 token 交给本 helper。页面需要自定义色盘、`style#yida-global-theme`、隐藏导航沉浸页，或页面在 iframe 中承载原生表单时，优先复制对应 helper 到页面源码，不要临场重写。
+本文件提供自定义主题 token 的复制型 helper。它不是设计事实源，不生成配色，也不解释视觉 DNA；调用方必须先从 `yida-design` 输出的 `design.md` 读取 `tokens`，再把同一份 token 交给本 helper。页面需要自定义色盘、`style#yida-global-theme`、页面级沉浸页、应用导航隐藏后的自绘壳，或页面在 iframe 中承载原生表单时，优先复制对应 helper 到页面源码，不要临场重写。
 
 ## 推荐策略
 
