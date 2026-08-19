@@ -55,6 +55,7 @@ openyida save-permission <appType> <formUuid> [选项]
 | `--action-permission <json>` | 修改操作权限（完全替换，只保留 true 的项） |
 | `--field-permission <json>` | 修改字段权限，传入宜搭 `fieldPermit` 对象或 `{ "role": "DEFAULT", "fieldPermit": {...} }` |
 | `--members <userIds>` | 修改成员，多个 userId 逗号分隔 |
+| `--all-members` | 设置权限组为「全员可见」（`roleData.include` 为 `DEFAULT/ALL`） |
 
 ### 数据权限 `dataRange` 可选值
 
@@ -79,13 +80,25 @@ openyida save-permission <appType> <formUuid> --create --name <名称> [选项]
 示例：
 
 ```bash
-openyida save-permission APP_XXX FORM-XXX \
+openyida save-permission APP_XXX FORM_XXX \
   --create --name "部门数据查看组" \
   --members "54255850977641" \
   --data-permission '{"dataRange":"ORIGINATOR_DEPARTMENT"}' \
   --action-permission '{"operations":{"OPERATE_VIEW":true}}' \
   --field-permission '{"fieldRange":"FORM"}'
 ```
+
+> 设置「全部人员看全部数据」时，必须加上 `--all-members`，确保 `roleData.include` 为 `DEFAULT/ALL`：
+>
+> ```bash
+> openyida save-permission APP_XXX FORM_XXX \
+>   --create --name "全部人员看全部数据" \
+>   --all-members \
+>   --data-permission '{"dataRange":"ALL"}' \
+>   --action-permission '{"operations":{"OPERATE_VIEW":true}}'
+> ```
+>
+> 若目标表单已存在 DEFAULT 权限组，也可直接用 `--all-members --data-permission '{"dataRange":"ALL"}'` 更新该组。
 
 ## 字段权限
 

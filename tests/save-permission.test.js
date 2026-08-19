@@ -125,6 +125,132 @@ describe('save-permission command', () => {
     });
   });
 
+  test('creates an all-members group when --all-members is provided', async () => {
+    utils.httpPost.mockResolvedValueOnce({
+      success: true,
+      content: 'pkg-all',
+    });
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--create',
+      '--name',
+      '全部人员看全部数据',
+      '--all-members',
+      '--data-permission',
+      '{"dataRange":"ALL"}',
+    ]);
+
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(body.packageUuid).toBeUndefined();
+    expect(body).toMatchObject({
+      formUuid: 'FORM-1',
+      dataPermit: '{"rule":[{"type":"ALL","value":"y"}]}',
+      operatePermit: '{"OPERATE_VIEW":"y"}',
+      fieldPermit: '{"fieldRange":"FORM"}',
+    });
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [{ roleType: 'DEFAULT', roleValue: 'ALL' }],
+    });
+    const output = JSON.parse(mockLog.mock.calls[0][0]);
+    expect(output).toMatchObject({
+      success: true,
+      packageUuid: 'pkg-all',
+      summary: {
+        name: '全部人员看全部数据',
+        dataPermission: '数据范围: ALL',
+      },
+      message: '权限组已新增',
+    });
+  });
+
+  test('updates existing package to all-members when --all-members is provided', async () => {
+    utils.httpGet
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          formPermit: [
+            {
+              packageUuid: 'pkg-1',
+              packageName: { zh_CN: '默认组' },
+              roleMembers: [{ roleType: 'DEFAULT' }],
+              roleData: '{"include":[{"roleType":"DEFAULT","roleValue":"ALL"}]}',
+              dataPermit: '{"rule":[{"type":"SELF","value":"y"}]}',
+              operatePermit: '{"OPERATE_VIEW":"y"}',
+              fieldPermit: '{"fieldRange":"FORM"}',
+            },
+          ],
+        },
+      });
+    utils.httpPost.mockResolvedValueOnce({ success: true });
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--all-members',
+      '--data-permission',
+      '{"dataRange":"ALL"}',
+    ]);
+
+    expect(utils.httpGet).toHaveBeenCalledTimes(1);
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(body).toMatchObject({
+      formUuid: 'FORM-1',
+      packageUuid: 'pkg-1',
+      dataPermit: '{"rule":[{"type":"ALL","value":"y"}]}',
+    });
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [{ roleType: 'DEFAULT', roleValue: 'ALL' }],
+    });
+    const output = JSON.parse(mockLog.mock.calls[0][0]);
+    expect(output).toMatchObject({
+      success: true,
+      summary: {
+        dataPermission: '数据范围: ALL',
+      },
+      message: '权限配置已保存',
+    });
+  });
+
+  test('creates a manager+persons group when --members is provided', async () => {
+    utils.httpPost.mockResolvedValueOnce({
+      success: true,
+      content: 'pkg-persons',
+    });
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--create',
+      '--name',
+      '指定人员组',
+      '--members',
+      'user1,user2',
+    ]);
+
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [
+        { roleType: 'MANAGER', roleValue: 'appMainAdminRole,corpAdminRole' },
+        { roleType: 'PERSONS', roleValue: 'user1,user2' },
+      ],
+    });
+    const output = JSON.parse(mockLog.mock.calls[0][0]);
+    expect(output).toMatchObject({
+      success: true,
+      packageUuid: 'pkg-persons',
+      summary: {
+        name: '指定人员组',
+        members: '成员: user1, user2',
+      },
+      message: '权限组已新增',
+    });
+  });
+
   test('invalid JSON rejects with CliError instead of exiting', async () => {
     let error;
     try {
