@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.19-1] - 2026-08-19
+
+### Fixed
+
+- 修正云端宿主注入 token 的识别：`OPENYIDA_AUTH_MODE=token` 且存在 `OPENYIDA_ACCESS_TOKEN` 或 `OPENYIDA_REFRESH_TOKEN` 时，即使未设置 `YIDA_AUTH_ENABLED` 也识别为宿主注入登录态，不再回退到 OAuth 浏览器登录（修正 yida-agent 等无浏览器云端环境下 refresh-token 会误触发 OAuth 的问题）。
+- `openyida login` 在宿主注入模式下短路返回 `login_action=noop`：凭证可用时直接报 `ok=true`，缺 token 时给出“请宿主注入 token”的明确提示，两者均不弹浏览器。
+
+### Changed
+
+- host-injected 登录判定收敛为单一事实源：`agent-capabilities` 与 `core/utils` 统一复用 `token-store` 的 `isHostInjectedTokenMode`，CLI 层的 `isEnvAuthMode()` 分支下沉至 `tokenLogin`，消除多处判定漂移（受影响环境：yida-agent 云端等宿主注入 token 场景，本地 OAuth 与三端浏览器拉起路径不变）。
+
 ## [2026.8.19] - 2026-08-19
 
 ### Added
