@@ -56,6 +56,7 @@ openyida save-permission <appType> <formUuid> [选项]
 | `--field-permission <json>` | 修改字段权限，传入宜搭 `fieldPermit` 对象或 `{ "role": "DEFAULT", "fieldPermit": {...} }` |
 | `--members <userIds>` | 修改成员，多个 userId 逗号分隔 |
 | `--all-members` | 设置权限组为「全员可见」（`roleData.include` 为 `DEFAULT/ALL`） |
+| `--matrix <json>` | 使用权限矩阵作为权限成员，JSON 格式 `{"matrixId":"MATRIX-XXX","columnId":"column_YYY"}`，与 `--members` / `--all-members` 互斥 |
 
 ### 数据权限 `dataRange` 可选值
 
@@ -66,6 +67,7 @@ openyida save-permission <appType> <formUuid> [选项]
 | `DEPARTMENT` / `ORIGINATOR_DEPARTMENT` | 本部门提交 |
 | `SAME_LEVEL_DEPARTMENT` | 同级部门 |
 | `SUBORDINATE_DEPARTMENT` | 下级部门 |
+| `MATRIX` | 权限矩阵条件 |
 
 > 如需同时设置多个数据范围、自定义部门或自定义过滤条件，可直接传入宜搭完整的 `dataPermit` JSON（必须包含 `rule` 数组）。例如截图中的「本人提交 + 本部门 + 同级部门 + 下级部门 + 免登 + 自定义部门 + 自定义过滤条件」可表示为：
 >
@@ -134,6 +136,18 @@ openyida save-permission APP_XXX FORM_XXX \
 > ```
 >
 > 若目标表单已存在 DEFAULT 权限组，也可直接用 `--all-members --data-permission '{"dataRange":"ALL"}'` 更新该组。
+>
+> ### 使用权限矩阵
+> 1. 先在宜搭后台「权限矩阵」中获取目标矩阵 ID 与结果列 columnId；或调用底层服务 `/query/matrix/getMatrixList.json` / `/query/matrix/getMatrixById.json` 查询。
+> 2. 创建/更新权限组时指定 `--matrix '{"matrixId":"MATRIX-XXX","columnId":"column_YYY"}'`，并配合 `--data-permission` 设置包含 `MATRIX` 的数据范围。
+>
+> ```bash
+> openyida save-permission APP_XXX FORM_XXX \
+>   --create --name "使用权限矩阵的权限组" \
+>   --matrix '{"matrixId":"MATRIX-XNCVJYB60YW7L0HPY9HE","columnId":"column_1767839664612"}' \
+>   --data-permission '{"rule":[{"type":"ORIGINATOR","value":"y"},{"type":"MATRIX","value":"y"}]}' \
+>   --action-permission '{"operations":{"OPERATE_VIEW":true,"OPERATE_EDIT":true,"OPERATE_DELETE":true,"OPERATE_HISTORY":true,"OPERATE_COMMENT":true,"OPERATE_PRINT":true}}'
+> ```
 
 ## 字段权限
 

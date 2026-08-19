@@ -16,7 +16,7 @@ jest.mock('../lib/core/i18n', () => ({
 }));
 
 const utils = require('../lib/core/utils');
-const { run, buildDataPermit } = require('../lib/permission/save-permission');
+const { run, buildDataPermit, validateMatrix } = require('../lib/permission/save-permission');
 
 const mockAuthData = {
   base_url: 'https://www.aliwork.com',
@@ -301,6 +301,124 @@ describe('save-permission command', () => {
     });
   });
 
+  test('creates a permission group with matrix member', async () => {
+    utils.httpPost.mockResolvedValueOnce({
+      success: true,
+      content: 'pkg-matrix',
+    });
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--create',
+      '--name',
+      '使用权限矩阵的权限组',
+      '--matrix',
+      '{"matrixId":"MATRIX-XNCVJYB60YW7L0HPY9HE","columnId":"column_1767839664612"}',
+      '--data-permission',
+      '{"rule":[{"type":"ORIGINATOR","value":"y"},{"type":"MATRIX","value":"y"}]}',
+      '--action-permission',
+      '{"operations":{"OPERATE_VIEW":true,"OPERATE_EDIT":true}}',
+    ]);
+
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(body.packageUuid).toBeUndefined();
+    expect(JSON.parse(body.dataPermit)).toEqual({
+      rule: [
+        { type: 'ORIGINATOR', value: 'y' },
+        { type: 'MATRIX', value: 'y' },
+      ],
+    });
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [{
+        roleType: 'MATRIX',
+        roleValue: [{ matrixId: 'MATRIX-XNCVJYB60YW7L0HPY9HE', columnId: 'column_1767839664612' }],
+      }],
+    });
+    const output = JSON.parse(mockLog.mock.calls[0][0]);
+    expect(output).toMatchObject({
+      success: true,
+      packageUuid: 'pkg-matrix',
+      summary: {
+        name: '使用权限矩阵的权限组',
+        members: '权限矩阵: MATRIX-XNCVJYB60YW7L0HPY9HE / column_1767839664612',
+      },
+      message: '权限组已新增',
+    });
+  });
+
+  test('updates existing matrix package when --matrix is provided', async () => {
+    utils.httpGet
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          formPermit: [
+            {
+              packageUuid: 'pkg-matrix-old',
+              packageName: { zh_CN: '旧矩阵组' },
+              roleMembers: [{ roleType: 'MATRIX' }],
+              roleData: JSON.stringify({
+                include: [{ roleType: 'MATRIX', roleValue: [{ matrixId: 'OLD', columnId: 'OLD' }] }],
+              }),
+            },
+          ],
+        },
+      });
+    utils.httpPost.mockResolvedValueOnce({ success: true });
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--matrix',
+      '{"matrixId":"MATRIX-XNCVJYB60YW7L0HPY9HE","columnId":"column_1767839664612"}',
+      '--data-permission',
+      '{"rule":[{"type":"ORIGINATOR","value":"y"},{"type":"MATRIX","value":"y"}]}',
+    ]);
+
+    expect(utils.httpGet).toHaveBeenCalledTimes(1);
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(body.packageUuid).toBe('pkg-matrix-old');
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [{
+        roleType: 'MATRIX',
+        roleValue: [{ matrixId: 'MATRIX-XNCVJYB60YW7L0HPY9HE', columnId: 'column_1767839664612' }],
+      }],
+    });
+    expect(JSON.parse(body.dataPermit)).toEqual({
+      rule: [
+        { type: 'ORIGINATOR', value: 'y' },
+        { type: 'MATRIX', value: 'y' },
+      ],
+    });
+  });
+
+  test('rejects mixing --matrix with --members or --all-members', async () => {
+    let error;
+    try {
+      await run([
+        'APP-1',
+        'FORM-1',
+        '--create',
+        '--name',
+        '冲突组',
+        '--matrix',
+        '{"matrixId":"MATRIX-1","columnId":"col-1"}',
+        '--members',
+        'user1',
+      ]);
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeTruthy();
+    expect(error.isCliError).toBe(true);
+    expect(error.code).toBe('SAVE_PERMISSION_INVALID_ARGUMENTS');
+    expect(utils.httpGet).not.toHaveBeenCalled();
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
   test('invalid JSON rejects with CliError instead of exiting', async () => {
     let error;
     try {
@@ -349,5 +467,19 @@ describe('buildDataPermit', () => {
       },
     };
     expect(JSON.parse(buildDataPermit(complex))).toEqual(complex);
+  });
+});
+
+describe('validateMatrix', () => {
+  test('accepts valid matrix object', () => {
+    expect(() => validateMatrix({ matrixId: 'MATRIX-1', columnId: 'col-1' })).not.toThrow();
+  });
+
+  test('rejects missing matrixId', () => {
+    expect(() => validateMatrix({ columnId: 'col-1' })).toThrow('matrixId');
+  });
+
+  test('rejects missing columnId', () => {
+    expect(() => validateMatrix({ matrixId: 'MATRIX-1' })).toThrow('columnId');
   });
 });
