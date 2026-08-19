@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.19-2] - 2026-08-19
+
+### Fixed
+
+- 修正 `2026.8.19-1`（#497）引入的 env token 不落盘语义：`OPENYIDA_AUTH_MODE=token` 现在按 **env token bootstrap** 处理，refresh 结果写入项目级 token 缓存（文件权限 0600，原子写入）并优先复用，避免每次命令重复 refresh；也避免 refresh token 轮换场景下新凭证丢失导致后续认证失败。落盘隔离在项目作用域，不污染用户级共享登录档案。
+- refresh-only 的 env token 现在正确上报 `ok` / `can_auto_use=true`。
+
+### Changed
+
+- 保留“不回退 OAuth”保障：env token 模式下 `openyida login` 仍返回 noop 结果（凭证可用→`ok=true`；缺凭证→明确提示请运行环境注入 token），两者均不弹浏览器。
+- 移除 CLI 对 `YIDA_AUTH_ENABLED` 的依赖，判定统一为 `OPENYIDA_AUTH_MODE=token`；`agent-capabilities` 将 `host_injected_token_mode` / `host_token_env_detected` / `env_token_present` 等重叠字段收敛为单一 env token 语义，`auth_runtime` 新增 `env_token_bootstrap`，`missing_token_action` 统一为 `STOP_AND_REQUEST_ENV_TOKEN`（受影响环境：yida-agent 云端等运行环境注入 token 场景；本地 OAuth 与三端浏览器拉起路径不变）。
+
 ## [2026.8.19-1] - 2026-08-19
 
 ### Fixed
