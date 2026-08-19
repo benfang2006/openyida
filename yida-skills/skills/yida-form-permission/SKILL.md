@@ -67,6 +67,41 @@ openyida save-permission <appType> <formUuid> [选项]
 | `SAME_LEVEL_DEPARTMENT` | 同级部门 |
 | `SUBORDINATE_DEPARTMENT` | 下级部门 |
 
+> 如需同时设置多个数据范围、自定义部门或自定义过滤条件，可直接传入宜搭完整的 `dataPermit` JSON（必须包含 `rule` 数组）。例如截图中的「本人提交 + 本部门 + 同级部门 + 下级部门 + 免登 + 自定义部门 + 自定义过滤条件」可表示为：
+>
+> ```json
+> {
+>   "rule": [
+>     { "type": "ORIGINATOR", "value": "y" },
+>     { "type": "ORIGINATOR_DEPARTMENT", "value": "y" },
+>     { "type": "SAME_LEVEL_DEPARTMENT", "value": "y" },
+>     { "type": "SUBORDINATE_DEPARTMENT", "value": "y" },
+>     { "type": "FREE_LOGIN", "value": "y" },
+>     { "type": "CUSTOM_DEPARTMENT", "value": "y" },
+>     { "type": "FORMULA", "value": "y" }
+>   ],
+>   "customDepartmentData": {
+>     "departmentIds": ["637215248"],
+>     "drillDown": "n"
+>   },
+>   "formulaData": {
+>     "condition": "OR",
+>     "ruleId": "group-xxx",
+>     "rules": []
+>   }
+> }
+> ```
+>
+> 命令示例：
+>
+> ```bash
+> openyida save-permission APP_XXX FORM_XXX \
+>   --create --name "全部成员可查看本人提交数据" \
+>   --all-members \
+>   --data-permission '{"rule":[{"type":"ORIGINATOR","value":"y"},{"type":"ORIGINATOR_DEPARTMENT","value":"y"},{"type":"SAME_LEVEL_DEPARTMENT","value":"y"},{"type":"SUBORDINATE_DEPARTMENT","value":"y"},{"type":"FREE_LOGIN","value":"y"},{"type":"CUSTOM_DEPARTMENT","value":"y"},{"type":"FORMULA","value":"y"}],"customDepartmentData":{"departmentIds":["637215248"],"drillDown":"n"},"formulaData":{"condition":"OR","ruleId":"group-xxx","rules":[]}}' \
+>   --action-permission '{"operations":{"OPERATE_VIEW":true,"OPERATE_EDIT":true,"OPERATE_DELETE":true,"OPERATE_HISTORY":true,"OPERATE_COMMENT":true,"OPERATE_PRINT":true}}'
+> ```
+
 ### 操作权限 key
 
 `OPERATE_VIEW`、`OPERATE_EDIT`、`OPERATE_DELETE`、`OPERATE_HISTORY`、`OPERATE_COMMENT`、`OPERATE_PRINT`、`OPERATE_CREATE`、`OPERATE_BATCH_EDIT`、`OPERATE_BATCH_EXPORT`、`OPERATE_BATCH_IMPORT`、`OPERATE_BATCH_DELETE`、`OPERATE_BATCH_PRINT`、`OPERATE_BATCH_DOWNLOAD`、`OPERATE_BATCH_DOWNLOAD_QRCODE`

@@ -16,7 +16,7 @@ jest.mock('../lib/core/i18n', () => ({
 }));
 
 const utils = require('../lib/core/utils');
-const { run } = require('../lib/permission/save-permission');
+const { run, buildDataPermit } = require('../lib/permission/save-permission');
 
 const mockAuthData = {
   base_url: 'https://www.aliwork.com',
@@ -251,6 +251,56 @@ describe('save-permission command', () => {
     });
   });
 
+  test('creates a permission group with complex data-permit rules', async () => {
+    utils.httpPost.mockResolvedValueOnce({
+      success: true,
+      content: 'pkg-complex',
+    });
+
+    const complexDataPermission = {
+      rule: [
+        { type: 'ORIGINATOR', value: 'y' },
+        { type: 'ORIGINATOR_DEPARTMENT', value: 'y' },
+        { type: 'CUSTOM_DEPARTMENT', value: 'y' },
+      ],
+      customDepartmentData: {
+        departmentIds: ['637215248'],
+        drillDown: 'n',
+      },
+    };
+
+    await run([
+      'APP-1',
+      'FORM-1',
+      '--create',
+      '--name',
+      '复杂数据权限组',
+      '--all-members',
+      '--data-permission',
+      JSON.stringify(complexDataPermission),
+      '--action-permission',
+      '{"operations":{"OPERATE_VIEW":true,"OPERATE_EDIT":true}}',
+    ]);
+
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    const body = querystring.parse(utils.httpPost.mock.calls[0][2]);
+    expect(body.packageUuid).toBeUndefined();
+    expect(JSON.parse(body.dataPermit)).toEqual(complexDataPermission);
+    expect(JSON.parse(body.roleData)).toEqual({
+      include: [{ roleType: 'DEFAULT', roleValue: 'ALL' }],
+    });
+    const output = JSON.parse(mockLog.mock.calls[0][0]);
+    expect(output).toMatchObject({
+      success: true,
+      packageUuid: 'pkg-complex',
+      summary: {
+        name: '复杂数据权限组',
+        dataPermission: '数据范围: 自定义规则（3 条）',
+      },
+      message: '权限组已新增',
+    });
+  });
+
   test('invalid JSON rejects with CliError instead of exiting', async () => {
     let error;
     try {
@@ -264,5 +314,40 @@ describe('save-permission command', () => {
     expect(error.code).toBe('SAVE_PERMISSION_INVALID_ARGUMENTS');
     expect(utils.httpGet).not.toHaveBeenCalled();
     expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+});
+
+describe('buildDataPermit', () => {
+  test('maps simple dataRange to single rule', () => {
+    expect(JSON.parse(buildDataPermit({ dataRange: 'ALL' }))).toEqual({
+      rule: [{ type: 'ALL', value: 'y' }],
+    });
+    expect(JSON.parse(buildDataPermit({ dataRange: 'SELF' }))).toEqual({
+      rule: [{ type: 'ORIGINATOR', value: 'y' }],
+    });
+  });
+
+  test('defaults to ALL when dataPermission is empty', () => {
+    expect(JSON.parse(buildDataPermit(null))).toEqual({
+      rule: [{ type: 'ALL', value: 'y' }],
+    });
+  });
+
+  test('passes through complex permission payload with rule array', () => {
+    const complex = {
+      rule: [
+        { type: 'ORIGINATOR', value: 'y' },
+        { type: 'ORIGINATOR_DEPARTMENT', value: 'y' },
+      ],
+      customDepartmentData: {
+        departmentIds: ['637215248'],
+        drillDown: 'n',
+      },
+      formulaData: {
+        condition: 'OR',
+        rules: [],
+      },
+    };
+    expect(JSON.parse(buildDataPermit(complex))).toEqual(complex);
   });
 });
