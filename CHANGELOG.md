@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.20] - 2026-08-20
+
+### Added
+
+- `openyida save-permission` 支持复杂 `dataPermit` 规则透传与权限矩阵成员配置，可在保留原始权限表达能力的同时批量生成成员维度的数据权限。
+- `save-permission --all-members` 新增全员可见全部数据快捷配置，并同步表单权限技能文档中的权限矩阵与全员数据可见说明。
+
+### Fixed
+
+- 流程表单数据提交改用 `startInstance` 链路，避免通过通用数据更新路径发起流程实例时出现提交语义不一致。
+
 ## [2026.8.19-2] - 2026-08-19
 
 ### Fixed
