@@ -108,7 +108,7 @@ describe('integration spec builder', () => {
       'finish',
     ]);
     expect(built.processJson.nodes[1].props.condition.rules[0]).toMatchObject({
-      id: 'pid',
+      id: 'form_inst_id',
       value: '__masterdata_form_inst_id',
       opCode: 'Equal',
     });
@@ -411,6 +411,34 @@ describe('integration spec builder', () => {
     expect(processRules.map((rule) => rule.ruleValue)).toEqual([0, false, '']);
     expect(viewRules.map((rule) => rule.value)).toEqual([0, false, '']);
     expect(viewRules.map((rule) => rule.ruleValue)).toEqual([0, false, '']);
+  });
+
+  test.each([
+    ['process', ['processFinish'], ['agree'], 'process_form', 'process', 'pid', 'proc_inst_id', '流程实例ID'],
+    ['receipt', ['insert'], [], 'form', 'receipt', 'form_inst_id', 'form_inst_id', '表单实例ID'],
+  ])('maps %s getSelf metadata for the designer', (name, events, approvalActions, originalType, formType, queryField, viewQueryField, queryFieldName) => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events,
+        approvalActions,
+        nodes: [{ id: 'self', type: 'getSelf' }],
+      },
+      processCode: `LPROC-${name.toUpperCase()}`,
+      appType: 'APP-SPEC',
+      formUuid: `FORM-${name.toUpperCase()}`,
+      flowName: `${name} flow`,
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.self);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.self);
+    expect(processNode.props).toMatchObject({
+      originalType,
+      condition: { rules: [{ id: queryField, name: queryFieldName }] },
+    });
+    expect(viewNode.props.getData).toMatchObject({
+      originalType,
+      condition: { rules: [{ id: viewQueryField, name: queryFieldName }] },
+      targetItem: { formItem: { formType } },
+    });
   });
 
   test('rejects undeclared sendMessage messageInfo.content instead of silently using a default', () => {

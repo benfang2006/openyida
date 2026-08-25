@@ -603,4 +603,36 @@ describe('integration create command', () => {
     expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
   });
+
+  test.each([
+    ['process', 'FORM-PROCESS', 'processFinish', 'agree', 'process_form', 'pid', 'proc_inst_id', 'process', '流程实例ID'],
+    ['receipt', 'FORM-RECEIPT', 'insert', '', 'form', 'form_inst_id', 'form_inst_id', 'receipt', '表单实例ID'],
+  ])('uses source form metadata for simple %s get-self flows', async (
+    name, formUuid, event, approvalAction, originalType, queryField, viewQueryField, formType, queryFieldName
+  ) => {
+    fetchFormPageList.mockResolvedValue([
+      { formUuid, formName: `${name} form`, formType },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    const args = ['APP_TEST', formUuid, `${name} get-self`, '--events', event, '--get-self'];
+    if (approvalAction) {
+      args.push('--approval-actions', approvalAction);
+    }
+    await run(args);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processDataNode.props).toMatchObject({
+      originalType,
+      condition: { rules: [{ id: queryField, name: queryFieldName }] },
+    });
+    expect(viewDataNode.props.getData).toMatchObject({
+      originalType,
+      condition: { rules: [{ id: viewQueryField, name: queryFieldName }] },
+      targetItem: { formItem: { formType } },
+    });
+  });
 });
