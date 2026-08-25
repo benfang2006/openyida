@@ -433,6 +433,43 @@ describe('integration spec builder', () => {
     expect(_private.resolveNodeRefs('literal-self', context)).toBe('literal-self');
   });
 
+  test('resolves __source references on update assignments', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'update',
+            type: 'dataUpdate',
+            source: 'lookup',
+            assignments: [{
+              column: 'numberField_total',
+              valueType: 'column',
+              value: '${lookup}.numberField_total+1',
+              __source: '#{lookup//numberField_total}+1',
+              __display: '获取单条数据.总数+1',
+            }],
+          },
+        ],
+      },
+      processCode: 'LPROC-SOURCE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Formula source flow',
+    });
+
+    const updateNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.update);
+    const updateViewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.update);
+    const expectedAssignment = {
+      value: `\${${built.nodeIdMap.lookup}}.numberField_total+1`,
+      __source: `#{${built.nodeIdMap.lookup}//numberField_total}+1`,
+      __display: '获取单条数据.总数+1',
+    };
+    expect(updateNode.props.assignments[0]).toMatchObject(expectedAssignment);
+    expect(updateViewNode.props.updateDataRules.assignments[0]).toMatchObject(expectedAssignment);
+  });
+
   test('rejects unresolved aliases, invalid assignments, and routes with multiple default branches', () => {
     const base = {
       processCode: 'LPROC-SPEC',

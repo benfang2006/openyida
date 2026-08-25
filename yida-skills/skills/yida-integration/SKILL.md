@@ -266,6 +266,8 @@ openyida integration create APP_XXX FORM-XXX "获取自身后分支更新" \
 - `fieldId`：字段 ID（可通过 `yida-get-schema` 技能查询）
 - `ComponentType`：字段组件类型（如 `TextField`、`NumberField`、`SelectField` 等）
 
+在结构化 spec 的公式赋值中，`valueType: "column"` 的 `value` 使用 `${alias}.fieldId` 引用上游节点；如果同时提供设计器展示用的 `__source`，使用 `#{alias//fieldId}`。CLI 会把这两种别名引用都替换成真实节点 ID；不要只写 `value` 后假设设计器一定能恢复“值设置”展示。
+
 ## 输出结果
 
 命令执行成功后，向 stdout 输出 JSON：
