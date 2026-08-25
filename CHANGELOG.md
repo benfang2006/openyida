@@ -10,6 +10,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.8.25-1] - 2026-08-25
+
+### Fixed
+
+- 修复连接器列表分页失效导致的查找失败：`listConnectors` 此前硬编码 `currentPage=1` 且未使用 `total` 判断后续分页，企业连接器数量超过单页上限（默认 100）时，靠列表匹配定位的命令会误报「连接器不存在」。受影响命令为 `connector detail` / `connector add-action` / `connector delete-action` / `connector list-connections` / `connector create-connection`；现改为逐页遍历，触达 100 页上限时抛 `CONNECTOR_LIST_PAGINATION_LIMIT`（鉴权账号列表同理抛 `CONNECTOR_CONNECTION_PAGINATION_LIMIT`），不再基于不完整列表下结论。
+- 修复 i18n 棘轮校验长期失效：此前 `CORE_CHECK_LOCALES` 将棘轮限定为仅校验 `en`，10 个可选语言完全跳过，且基线记录的缺失数远高于实际值，使 `current > saved` 永不成立。现所有语言均参与棘轮，并改为记录 `missingKeys` 精确路径比对，防止「补一个 key 同时漏一个新 key」在总数不变时绕过校验；`ar` / `de` / `es` / `fr` / `hi` / `ja` / `ko` / `pt` / `vi` / `zh-HK` 已补齐全部缺失文案（含 `publish.lint_*` 等历史欠账），11 个目标语言包与基准 `zh` 完全对齐。
+
+### Changed
+
+- `openyida aggregate-table`、`openyida report`、`openyida connector` 三个业务域统一改为「本地契约校验 → 一次性远端写 → canonical 回读逐字段比对」：校验不通过抛 `AGGREGATE_DESIGN_CONTRACT_INVALID` / `CONNECTOR_CONTRACT_JSON_INVALID`，回读不一致抛 `AGGREGATE_DESIGN_READBACK_MISMATCH` / `REPORT_SCHEMA_READBACK_MISMATCH` / `CONNECTOR_READBACK_MISMATCH`，聚合表写入额外校验服务端 revision 变化（`AGGREGATE_WRITE_REVISION_MISSING` / `AGGREGATE_WRITE_REVISION_UNCHANGED`），不再仅依赖接口返回码判定成功。
+- `openyida connector delete <id> [--force]` 明确为只读指引命令：CLI 仅查询并展示目标连接器，输出平台手工删除入口，不执行删除。因连接器为企业级共享资源，CLI 无法确定性证明其未被表单、页面、流程或集成自动化引用，故不代为执行不可逆删除。README、技能文档与 12 个语言包的命令描述已同步对齐。
+- 连接器保存不再向平台 `description` 字段写入操作者 userId（此前会写入 `👤 创建人` / `✏️ 最近修改人`）。已存在该内容的连接器在下次保存时会自动清除，无需手工处理。
+
+### Added
+
+- 新增聚合表、报表与连接器的契约模块（`lib/aggregate-table/contract.js`、`lib/report/contract.js`、`lib/connector/contract.js`）及配套真实环境 E2E 校验资产；`lib/core/yida-client.js` 新增受 one-shot 鉴权约束的 `postJsonOnce` 写通道。
+
 ## [2026.8.25] - 2026-08-25
 
 ### Changed
