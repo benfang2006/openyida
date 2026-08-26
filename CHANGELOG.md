@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- 真实 E2E 默认使用仓内专用、零依赖 Canvas fixture，并在创建远端资源前完成文件存在性与本地编译校验。
+- `create-form`、自定义页面发布、应用导入和表单详情样式的 Schema 保存链路不再调用无实际作用的 `updateFormConfig`，消除冗余请求及误导性 warning；独立 `update-form-config` 命令继续使用有效的 `updateFormSchemaInfo` 接口。
+- 应用导入在创建目标表单后读取目标表单的当前 revision，再保存迁移 Schema，避免沿用源表单 revision 导致“页面已变更”。
+
 ### Changed
 
 - `integration create --process-code` 执行整图替换时必须同时传入 `--replace`；LLM 在确认目标 `appType`、`formUuid`、`processCode` 和替换摘要后执行该命令。已有命令补充 `--replace` 后继续使用。
