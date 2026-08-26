@@ -632,7 +632,87 @@ describe('integration create command', () => {
     expect(viewDataNode.props.getData).toMatchObject({
       originalType,
       condition: { rules: [{ id: viewQueryField, name: queryFieldName }] },
-      targetItem: { formItem: { formType } },
+      targetItem: { formItem: { formType, title: `${name} form` } },
+    });
+  });
+
+  test('fails closed when the source form navigation cannot be read', async () => {
+    fetchFormPageList.mockRejectedValue(new Error('navigation unavailable'));
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'unverified source',
+      '--get-self',
+    ])).rejects.toThrow(/取数来源表单信息/);
+
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
+  test('allows a structured source fallback only with a validated explicit form type', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [{
+        id: 'self',
+        type: 'getSelf',
+        formType: 'process',
+        formName: '显式流程来源',
+      }],
+    });
+    fetchFormPageList.mockRejectedValue(new Error('navigation unavailable'));
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'explicit source type',
+      '--spec',
+      specPath,
+    ]);
+
+    expect(integrationApi.createLogicflow).toHaveBeenCalledTimes(1);
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(viewDataNode.props.getData).toMatchObject({
+      originalType: 'process_form',
+      targetItem: { formItem: { formType: 'process', title: '显式流程来源' } },
+    });
+  });
+
+  test('uses source form metadata for structured process getSelf on insert/update events', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert', 'update'],
+      nodes: [{ id: 'self', type: 'getSelf' }],
+    });
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: '流程来源表单', formType: 'process' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'structured process get-self',
+      '--spec',
+      specPath,
+    ]);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processDataNode.props).toMatchObject({
+      originalType: 'process_form',
+      condition: { rules: [{ id: 'pid', name: '流程实例ID' }] },
+    });
+    expect(viewDataNode.props.getData).toMatchObject({
+      originalType: 'process_form',
+      condition: { rules: [{ id: 'proc_inst_id', name: '流程实例ID' }] },
+      targetItem: { formItem: { formType: 'process', title: '流程来源表单' } },
     });
   });
 });

@@ -427,6 +427,8 @@ describe('integration spec builder', () => {
       appType: 'APP-SPEC',
       formUuid: `FORM-${name.toUpperCase()}`,
       flowName: `${name} flow`,
+      dataFormType: formType,
+      dataFormName: `${name} source form`,
     });
     const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.self);
     const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.self);
@@ -438,6 +440,34 @@ describe('integration spec builder', () => {
       originalType,
       condition: { rules: [{ id: viewQueryField, name: queryFieldName }] },
       targetItem: { formItem: { formType } },
+    });
+    expect(viewNode.props.getData.targetItem.formItem.title).toBe(`${name} source form`);
+  });
+
+  test('does not infer a process source from insert/update events', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert', 'update'],
+        nodes: [{ id: 'self', type: 'getSelf' }],
+      },
+      processCode: 'LPROC-PROCESS-INSERT',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-PROCESS',
+      flowName: 'process insert flow',
+      dataSourceFormsByUuid: new Map([
+        ['FORM-PROCESS', { formUuid: 'FORM-PROCESS', formName: '流程来源表单', formType: 'process' }],
+      ]),
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.self);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.self);
+    expect(processNode.props).toMatchObject({
+      originalType: 'process_form',
+      condition: { rules: [{ id: 'pid', name: '流程实例ID' }] },
+    });
+    expect(viewNode.props.getData).toMatchObject({
+      originalType: 'process_form',
+      condition: { rules: [{ id: 'proc_inst_id', name: '流程实例ID' }] },
+      targetItem: { formItem: { formType: 'process', title: '流程来源表单' } },
     });
   });
 
