@@ -99,6 +99,40 @@ describe('integration create command', () => {
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
   });
 
+  test('rejects dangling designer source node IDs before any remote write', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [
+        { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+        {
+          id: 'update',
+          type: 'dataUpdate',
+          source: 'lookup',
+          assignments: [{
+            column: 'numberField_total',
+            valueType: 'column',
+            value: '${lookup}.numberField_total+1',
+            __source: '#{node_typo//numberField_total}+1',
+          }],
+        },
+      ],
+    });
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-A',
+      'dangling designer source',
+      '--spec',
+      specPath,
+    ])).rejects.toThrow(/Unknown integration spec node alias: node_typo/);
+
+    expect(integrationApi.getFormSchema).not.toHaveBeenCalled();
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
   test.each([
     ['ASCII', 'x'.repeat(31)],
     ['Unicode code points', '😀'.repeat(31)],
