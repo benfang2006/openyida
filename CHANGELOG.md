@@ -12,11 +12,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.26] - 2026-08-26
+
 ### Fixed
 
 - 真实 E2E 默认使用仓内专用、零依赖 Canvas fixture，并在创建远端资源前完成文件存在性与本地编译校验。
 - `create-form`、自定义页面发布、应用导入和表单详情样式的 Schema 保存链路不再调用无实际作用的 `updateFormConfig`，消除冗余请求及误导性 warning；独立 `update-form-config` 命令继续使用有效的 `updateFormSchemaInfo` 接口。
 - 应用导入在创建目标表单后读取目标表单的当前 revision，再保存迁移 Schema，避免沿用源表单 revision 导致“页面已变更”。
+- `create-form` 与 `create-page` 的创建请求不再在登录态变化后被自动重放，避免重复创建表单或页面。创建前先发一次只读探测刷新登录态，创建请求本身只发送一次；若创建期间登录态仍发生变化，返回 `errorCode: NON_IDEMPOTENT_RESULT_UNKNOWN` 并提示先核对目标状态再决定是否重试。只读探测接口自身不可用时不阻塞创建。
+- Canvas 编译新增平台 JSX 实例 API 校验：Code Canvas 组件中使用实例 API 时在本地编译阶段即报 `OPENYIDA_CANVAS_INSTANCE_API_UNAVAILABLE`，并提示改用 React hooks、props 或 `window.__OPENYIDA_YIDA_API__` 数据桥，避免发布后页面运行时才失败。
 
 ### Changed
 
