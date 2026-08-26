@@ -447,6 +447,109 @@ describe('compileCanvasLocal', () => {
     }));
   });
 
+  test('rejects every unbound helper and ref identifier before publish', () => {
+    const badSource = `
+      import React from 'react';
+      export default function App() {
+        const row = { id: 'ROW-1' };
+        return <div>{getInstId(row)}{loadedRef.current ? '已加载' : '加载中'}</div>;
+      }
+    `;
+
+    let error;
+    try {
+      compileCanvasLocal(badSource, {
+        sourcePath: 'pages/src/customer-management.canvas.jsx',
+      });
+    } catch (compileError) {
+      error = compileError;
+    }
+
+    expect(error).toEqual(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_UNBOUND_IDENTIFIER',
+      details: expect.objectContaining({
+        sourcePath: 'pages/src/customer-management.canvas.jsx',
+        issues: expect.arrayContaining([
+          expect.objectContaining({ name: 'getInstId', line: 5 }),
+          expect.objectContaining({ name: 'loadedRef', line: 5 }),
+        ]),
+      }),
+    }));
+    expect(error.message).toContain('getInstId');
+    expect(error.message).toContain('loadedRef');
+  });
+
+  test('allows standard ECMAScript, browser, and Canvas wrapper globals', () => {
+    const source = `
+      import React from 'react';
+      export default function App() {
+        const query = new URLSearchParams({ page: '1' });
+        const image = new Image();
+        const audio = new Audio();
+        const imageRef = new WeakRef(image);
+        const modernWebApis = [URLPattern, navigation, cookieStore, scheduler, Temporal];
+        const timer = setTimeout(function () { console.log(Math.max(1, 2)); }, 0);
+        const idle = requestIdleCallback(function () { WebAssembly.validate(new Uint8Array()); });
+        clearTimeout(timer);
+        cancelIdleCallback(idle);
+        if (document.hidden || !window || !parentWindow || !localStorage) {
+          return <div>不可见</div>;
+        }
+        fetch('/health?' + query.toString());
+        return <div>{audio && imageRef && modernWebApis.length ? '正常' : '异常'}</div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
+  });
+
+  test('allows intentional non-standard runtime capabilities through window properties', () => {
+    const source = `
+      export default function App() {
+        const hostApi = typeof window.customHostApi === 'undefined'
+          ? null
+          : window.customHostApi;
+        return <div>{hostApi ? hostApi.getVersion() : '不支持'}</div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
+  });
+
+  test('rejects an unknown bare runtime global even when probed with typeof', () => {
+    const source = `
+      export default function App() {
+        return <div>{typeof customHostApi === 'undefined' ? '不支持' : customHostApi.getVersion()}</div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_UNBOUND_IDENTIFIER',
+      message: expect.stringContaining('window.<name>'),
+      details: expect.objectContaining({
+        issues: [expect.objectContaining({ name: 'customHostApi' })],
+      }),
+    }));
+  });
+
+  test('rejects Node-only globals that are unavailable in the Canvas browser runtime', () => {
+    const source = `
+      export default function App() {
+        return <div>{process.env.NODE_ENV}{Buffer.from('x')}</div>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_UNBOUND_IDENTIFIER',
+      details: expect.objectContaining({
+        issues: expect.arrayContaining([
+          expect.objectContaining({ name: 'process' }),
+          expect.objectContaining({ name: 'Buffer' }),
+        ]),
+      }),
+    }));
+  });
+
   test('rejects desktop form submission/detail new-tab opens before publish', () => {
     const badSource = `
       import React from 'react';
@@ -571,6 +674,44 @@ describe('compileCanvasLocal', () => {
           setFormRequest({ type: 'detail', title: '订单详情', formUuid: 'FORM_XXX', formInstId });
         }
         return <button onClick={() => openDetail({ formInstId: 'FINST_1' })}>{formRequest ? '打开中' : '详情'}</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source)).not.toThrow();
+  });
+
+  test.each([
+    ['props.utils.getDataList', 'props.utils.getDataList({})'],
+    ['this.utils.yida.searchFormDatas', 'this.utils.yida.searchFormDatas({})'],
+    ['this.dataSourceMap.orders.load', 'this.dataSourceMap.orders.load()'],
+    ['this.$', 'this.$("textField_x")'],
+  ])('rejects unavailable Canvas instance API %s', (_label, expression) => {
+    const source = `
+      import React from 'react';
+      export default function App(props) {
+        function load() { return ${expression}; }
+        return <button onClick={load}>加载</button>;
+      }
+    `;
+
+    expect(() => compileCanvasLocal(source, {
+      sourcePath: 'pages/src/workbench.canvas.jsx',
+    })).toThrow(expect.objectContaining({
+      code: 'OPENYIDA_CANVAS_INSTANCE_API_UNAVAILABLE',
+      details: expect.objectContaining({
+        issues: expect.arrayContaining([
+          expect.objectContaining({ api: expect.any(String) }),
+        ]),
+      }),
+    }));
+  });
+
+  test('allows ordinary component props in Canvas source', () => {
+    const source = `
+      import React from 'react';
+      export default function App(props) {
+        const title = props.utils ? props.utils.format(props.title) : props.title;
+        return <div>{title || '标题'}</div>;
       }
     `;
 

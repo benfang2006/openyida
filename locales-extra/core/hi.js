@@ -73,7 +73,7 @@ module.exports = {
     cmd_connector_list: 'HTTP कनेक्टर सूचीबद्ध करें',
     cmd_connector_create: 'कनेक्टर बनाएं',
     cmd_connector_detail: 'कनेक्टर विवरण देखें',
-    cmd_connector_delete: 'कनेक्टर हटाएं',
+    cmd_connector_delete: 'मैन्युअल हटाने के निर्देश दिखाएँ (CLI नहीं हटाता)',
     cmd_connector_add_action: 'Add an action',
     cmd_connector_list_actions: 'List actions',
     cmd_connector_delete_action: 'Delete an action',
@@ -86,6 +86,7 @@ module.exports = {
     cmd_connector_more: 'अधिक उप-कमांड देखें',
     group_integration: 'एकीकरण & DingTalk',
     cmd_integration: 'एकीकरण स्वचालन फ्लो बनाएं',
+    cmd_integration_update: 'Probe integration update capability (currently blocked without full readback)',
     cmd_integration_list: 'List integration automation flows',
     cmd_integration_enable: 'Enable integration automation flow',
     cmd_integration_disable: 'Disable integration automation flow',
@@ -170,7 +171,7 @@ module.exports = {
       '  connector list [options]                                     List HTTP connectors\n' +
       '  connector create "<name>" "<domain>" --operations <file> [options]  Create connector\n' +
       '  connector detail <connector-id>                              View connector details\n' +
-      '  connector delete <connector-id> [--force]                    Delete connector\n' +
+      '  connector delete <connector-id> [--force]                    मैन्युअल हटाने के निर्देश दिखाएँ (CLI नहीं हटाता)\n' +
       '  connector add-action --operations <file> --connector-id <id> Add action to connector\n' +
       '  connector list-actions <connector-id>                        List actions\n' +
       '  connector delete-action <connector-id> <operation-id>        Delete action\n' +
@@ -181,6 +182,7 @@ module.exports = {
       '  connector parse-api [options]                                Parse API info\n' +
       '  connector gen-template [output]                              Generate API doc template\n' +
       '  integration create <appType> <formUuid> <flowName> [options] Create integration & automation flow\n' +
+      '  integration update <appType> <formUuid> <processCode> --spec <file>  Probe blocked update capability\n' +
       '  integration check <appType...> [--json] [--output xlsx]     Check abnormal integration automation run logs\n' +
       '  create-report <appType> "<name>" <chartsJSON|file>           Create Yida report\n' +
       '  append-chart <appType> <reportId> <chartsJSON|file>          Append chart to existing report\n' +
@@ -247,7 +249,7 @@ module.exports = {
     forbidden_alias_get_schema_form_uuid_option: '`{0}` takes formUuid as the second positional argument, not `{1}`.',
     nearest_command_suggestion: 'Unknown OpenYida command root "{0}". Did you mean "{1}"?',
     run_help: 'Run openyida --help for usage',
-    integration_help: 'उपयोग: openyida integration <create|list|enable|disable> ...',
+    integration_help: 'Usage: openyida integration <create|update|list|enable|disable|check|diagnose> ...',
     integration_unknown: 'अज्ञात integration उप-कमांड: {0}',
     integration_help_hint: 'उपलब्ध उप-कमांड देखने के लिए openyida integration --help चलाएं',
     integration_list_usage: 'उपयोग: openyida integration list <appType> [--form-uuid <uuid>] [--status y|n] [--key <kw>] [--page <n>] [--size <n>] [--json]',
@@ -374,7 +376,8 @@ module.exports = {
     create_arg_form_uuid: '  formUuid             Trigger form UUID, such as FORM-XXX',
     create_arg_flow_name: '  flowName             Integration automation name',
     create_options_title: 'Options:',
-    create_opt_process_code: '  --process-code <code>       Update an existing logic flow processCode',
+    create_opt_process_code: '  --process-code <code>       Select an existing flow for full replacement',
+    create_opt_replace: '  --replace                     Confirm --process-code is a full replacement, not a safe update',
     create_opt_receivers: '  --receivers <ids>            DingTalk notification receiver userIds, comma-separated',
     create_opt_title: '  --title <text>                Notification title, supports #{fieldId-ComponentType}#',
     create_opt_content: '  --content <text>              Notification content, supports #{fieldId-ComponentType}#',
@@ -398,6 +401,7 @@ module.exports = {
     create_example1: '  openyida integration create APP_XXX FORM-XXX "New record notice" --receivers user123 --publish',
     create_example2: '  openyida integration create APP_XXX FORM-XXX "Get self then notify" --get-self --publish',
     create_missing_args: 'Missing required arguments.',
+    create_replace_required: 'Using --process-code fully replaces the existing flow. Pass --replace explicitly. Safe editing is not currently available; integration update only reports capability status.',
     create_flow_name_too_long: 'Logic-flow names cannot exceed {0} characters (received {1}).',
     create_invalid_events: 'No valid trigger event was recognized.',
     create_no_receivers: 'No notification receiver or user field specified; no message node will be generated.',
@@ -405,7 +409,7 @@ module.exports = {
     create_app_type: 'App ID: {0}',
     create_form_uuid: 'Trigger form: {0}',
     create_flow_name: 'Flow name: {0}',
-    create_mode_update: 'Mode: update existing logic flow',
+    create_mode_update: 'Mode: full replacement of existing logic flow (not a safe update)',
     create_mode_new: 'Mode: create new logic flow',
     create_process_code: 'Logic flow ID: {0}',
     create_events: 'Trigger events: {0}',
@@ -437,7 +441,10 @@ module.exports = {
     create_published_ok: 'Logic flow published',
     create_done_published: 'Integration automation created and published',
     create_done_draft: 'Integration automation draft saved',
-    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.'
+    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.',
+    update_usage: 'Usage: openyida integration update <appType> <formUuid> <processCode> --spec <desired-spec.json> [--publish]',
+    update_missing_args: 'Missing required arguments: appType, formUuid, processCode, and --spec are required.',
+    update_capability_blocked: 'Safe integration update is unavailable: full platform processJson + viewJson readback is not proven. No authentication or remote write was attempted.',
   },
   env: {
     title: '  openyida env - AI टूल वातावरण पहचान',
@@ -675,8 +682,6 @@ module.exports = {
     version_label: '  Current version: {0}',
     save_schema_failed: '\n❌ Failed to save Schema: {0}',
     save_failed: '\n❌ Failed to save Schema: {0}',
-    step_update_config: '\n⚙️  Step {0}: Update form config',
-    sending_config: '  Sending updateFormConfig request...',
     step_get_schema: '\n📄 Step {0}: Get current form Schema',
     sending_get_schema: '  Sending getFormSchema request...',
     sending_get: '  Sending getFormSchema request...',
@@ -700,12 +705,7 @@ module.exports = {
     update_success: '  ✅ Form updated successfully!',
     form_uuid_label: '  formUuid: {0}',
     url_label: '  URL: {0}',
-    config_updated_0: '  Config updated: MINI_RESOURCE = 0',
-    config_updated: '  Config updated: MINI_RESOURCE = 0',
     changes_applied: '  Changes applied: {0}',
-    config_failed: '  ⚠️  Config update failed: {0}',
-    schema_ok_config_failed: '  Schema saved, but config update failed',
-    schema_saved_config_failed: '  Schema saved, but config update failed',
     create_post_failure_retry_advice: 'Do not repeat create directly. First run openyida list-forms {0} --keyword "{1}" to check for an existing same-title form; if this run already created a blank/existing form, prefer create-form update or a future --resume-form-uuid flow.',
     error: '\n❌ निर्माण त्रुटि: {0}',
     usage_create: 'Usage: openyida create-form create <appType> <formTitle> <fieldsJsonFile>',
@@ -1207,6 +1207,8 @@ module.exports = {
     canvas_compiling: '  🎨 कस्टम पेज स्रोत को स्थानीय रूप से संकलित किया जा रहा है...',
     canvas_compile_done: '  ✅ कस्टम पेज संकलित!',
     canvas_compile_failed: '  ❌ कस्टम पेज संकलन विफल: {0}',
+    canvas_unbound_identifiers: 'Code Canvas स्रोत में अघोषित पहचानकर्ता हैं: {0}। उसी फ़ाइल में छूटा हुआ import, फ़ंक्शन, Ref, state या स्थानीय चर घोषित करें और सभी संदर्भों में वही नाम रखें। यदि पहचानकर्ता किसी गैर-मानक runtime से मिलता है, तो window.<name> या parentWindow.<name> से स्पष्ट रूप से पहुँचें और पहले उसके मौजूद होने की जाँच करें।',
+    canvas_instance_api_unavailable: 'Code Canvas कॉम्पोनेंट इन प्लेटफ़ॉर्म JSX इंस्टेंस API का उपयोग नहीं कर सकते: {0}। React hooks, props या window.__OPENYIDA_YIDA_API__ डेटा ब्रिज का उपयोग करें।',
     step_login: '\n🔑 Step 2: लॉगिन जानकारी पढ़ें',
     step_publish: '\n📤 Step 3: स्कीमा प्रकाशित करें\n',
     resend_save_csrf: '  🔄 Resending saveFormSchema request (csrf_token refreshed)...',
@@ -1218,18 +1220,8 @@ module.exports = {
     schema_success: '  ✅ Schema published successfully!',
     form_uuid_label: '  formUuid: {0}',
     version_label: '  version:  {0}',
-    step_config: '\n⚙️  Step 4: फॉर्म कॉन्फ़िगरेशन अपडेट करें\n',
-    sending_config: '  Sending updateFormConfig request...',
-    resend_config_csrf: '  🔄 Resending updateFormConfig request (csrf_token refreshed)...',
-    resend_config: '  🔄 Resending updateFormConfig request after re-login...',
-    config_csrf_retry: '  🔄 Resending updateFormConfig request (csrf_token refreshed)...',
-    config_relogin_retry: '  🔄 Resending updateFormConfig request after re-login...',
     success: '  ✅ सफलतापूर्वक प्रकाशित!',
     publish_success: '  ✅ Published successfully!',
-    config_updated: '  Config updated: MINI_RESOURCE = 8',
-    config_failed: '  ⚠️  कॉन्फ़िगरेशन अपडेट विफल: {0}',
-    schema_ok_config_failed: 'Schema published, but config update failed',
-    schema_published_config_failed: '  Schema published, but config update failed',
     step_health_check: '\n🩺 Step 5: Publish readback check\n',
     health_check_ok: '  ✅ Publish readback check passed: {0}',
     health_check_failed: '  ⚠️  Publish readback check failed: {0} {1}',
@@ -1724,8 +1716,6 @@ module.exports = {
     schema_empty_msg: 'Schema is empty',
     save_schema_failed: '    ❌ Failed to save Schema: {0}',
     schema_saved: '    ✅ Schema saved',
-    config_failed: '    ⚠️  Config update failed (Schema saved): {0}',
-    config_updated: '    ✅ Form config updated',
     step_write_report: '\n📄 Step 5: Write migration report',
     report_written: '  ✅ Migration report written: {0}',
     done: '  ✅ Migration complete!',
@@ -1766,3 +1756,81 @@ module.exports = {
     error: '\n❌ आयात त्रुटि: {0}'
   }
 };
+
+// Safety-critical verification and publish lint messages.
+Object.assign(module.exports.app_permission || (module.exports.app_permission = {}), {
+  verify_failed: 'प्रशासक सहेजित जांच विफल हुई',
+});
+
+Object.assign(module.exports.corp_manager || (module.exports.corp_manager = {}), {
+  address_book_verify_failed: 'पता पुस्तिका अनुमति सेव विफल: अपेक्षित={0}, वास्तविक={1}',
+  admin_verify_failed: 'प्रशासक सेव विफल: {0} को {1} सूची में नहीं मिला',
+  sub_admin_scope_verify_failed: 'उप-प्रशासक दायरा सेव विफल: अपेक्षित={0}, वास्तविक={1}',
+  admin_remove_verify_failed: 'प्रशासक हटाया जांच विफल: {0} अभी भी {1} सूची में है',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  confirm_member_replace_usage: 'युग्मित सदस्यों को बदलने के लिए --confirm-member-replace की आवश्यकता होती है',
+  data_object_required: 'डेटा अनुमति एक JSON वस्तु होनी चाहिए',
+  data_rule_required: 'डेटा अनुमति नियत नहीं खाली हो सकता',
+  data_rule_type_required: 'हर डेटा अनुमति नियत पद में प्रकार शामिल करना होगा',
+  data_rule_value_invalid: 'डेटा अनुमति नियत {0} का मान y/n या बूल्न होना चाहिए',
+  data_enabled_required: 'डेटा अनुमति कम से कम एक डेटा श्रेणी सक्षम करनी होगी',
+  custom_department_ids_required: 'CUSTOM_DEPARTMENT के लिए खाली नहीं होने वाले कस्टमDepartmentData.departmentIds की आवश्यकता है',
+  formula_data_required: 'FORMULA के लिए खाली नहीं होने वाला formulaData की आवश्यकता है',
+  data_range_required: 'डेटा अनुमति में एक खाली डेटाRange या नियत होना चाहिए',
+  action_enabled_required: 'कार्य अनुमति में कम से कम एक ऑपरेशन सत्य करके शामिल करना होगा',
+  action_value_boolean: 'कार्य अनुमति {0} बूल्न होनी चाहिए',
+  field_range_invalid: 'क्षेत्र अनुमति क्षेत्रRange केवल FORM या CUSTOM को समर्थन करता है',
+  field_status_required: 'CUSTOM क्षेत्र अनुमति में एक खाली fieldStatus अरे की आवश्यकता है',
+  field_status_item_required: 'हर fieldStatus पद में लेबल, fieldName, componentName और मान शामिल करना होगा',
+  field_status_value_invalid: 'अमान्य क्षेत्र अनुमति मान: {0}; वैध मान: {1}',
+  json_object_required: '{0} एक JSON वस्तु होना चाहिए',
+  parse_failed: '{0} को पारित करने में विफलता: {1}',
+  role_conflict: 'अनुमति तर्ग असंगत भूमिकाएं निर्दिष्ट करते हैं: {0}',
+  matrix_role_only: '--matrix केवल एक role=MATRIX अनुमति समूह को अपडेट कर सकता है',
+  all_members_role_only: '--all-members केवल एक role=DEFAULT अनुमति समूह को अपडेट कर सकता है',
+  target_role_invalid: 'अमान्य भूमिका: {0}; वैध मान: {1}',
+  unnamed_package: 'नामहीन',
+  missing_package_uuid: 'कोई UUID नहीं',
+  target_no_match: 'role={0} के लिए कोई अनुमति समूह मेल नहीं खाता; अनपेक्षित अपडेट को रोकने के साथ शून्य लिखतों से विरुद्ध किया गया है। वर्तमान अनुमति समूह:\n{2}',
+  target_ambiguous: 'role={0} ने {1} अनुमति समूहों का मेल खाया; अनपेक्षित अपडेट को रोकने के साथ शून्य लिखतों से विरुद्ध किया गया है。\n{2}',
+  unknown_operate_keys: 'वर्तमान अनुमति समूह में CLI द्वारा अज्ञात ऑपरेशन चाबीएं शामिल हैं, इसलिए action-permutation बदला नहीं जा सकता: {0}। अन्य आयाम अभी भी बदले जा सकते हैं और अज्ञात चाबियां बिना परिवर्तन रखी जाएंगी।',
+  matrix_role_value_required: 'MATRIX roleData.roleValue एक खाली अरे होनी चाहिए',
+  matrix_data_required: 'जब सदस्य MATRIX का उपयोग करते हैं, तो डेटा अनुमति नियत में MATRIX शामिल करना होगा',
+  data_matrix_member_required: 'डेटा अनुमति में MATRIX होने पर, सदस्यों को एक वैध अनुमति मैट्रिक्स चुनना होगा',
+  members_all_conflict: '--members और --all-members आपसी रूप से विरोधी हैं',
+  invalid_arguments: 'तर्ग जांच विफल: {0}',
+  query_limit: 'अनुमति समूह प्रश्न वर्तमान 20-पद सीमा को पहुंच गया, इसलिए वैश्विक भूमिका एकता का सिद्ध नहीं किया जा सकता। शून्य लिखतों के साथ विरुद्ध किया गया है。\n{0}',
+  unique_target: '  ✅ अकेला लक्ष्य: {0}',
+  member_before: '  सदस्यों से पहले: {0}',
+  member_after: '  सदस्यों के बाद:  {0}',
+  member_removed: '  हटाने वाले सदस्य भूमिकाएं: {0}',
+  member_replace_confirm: 'सदस्य प्रतिस्थापन मौजूदा युग्मित भूमिकाओं को हटाएगा। पहले/बाद और --confirm-member-replace जोड़ने से पहले समीक्षा करें। खो जाने वाले प्रविष्टियां: {0}',
+});
+
+Object.assign(module.exports.save_share_config || (module.exports.save_share_config = {}), {
+  err_page_url_prefix: 'openUrl /o/ या /s/ के साथ शुरू होना चाहिए, वर्तमान मान: {0}',
+  verify_failed: 'सेव-बाद जांच विफल हुई: {0}',
+  current_state_incomplete: 'सेव रद्द किया गया है: वर्तमान सार्वजनिक पहुंच कॉन्फ़िगरेशन openPageAuthConfig की कमी रखता है, इसलिए सुरक्षित संरक्षण का सिद्ध नहीं किया जा सकता',
+});
+
+Object.assign(module.exports.publish || (module.exports.publish = {}), {
+  lint_jsx_text_identifier: 'JSX कॉपी {{0}} के रूप में लिखा नहीं जा सकता; इसे एक चर के रूप में माना जाता है और {0} परिभाषित नहीं है। साधारण टेक्स्ट {0} या उद्धृत शब्द {\'{0}\'} का उपयोग करें इसके बजाय।',
+  lint_form_open_container: 'कस्टम पेज से Yida फॉर्म सबमिशन/विस्तार पृष्ठ खोलने के लिए FormOpenContainer का उपयोग करना चाहिए: डेस्कटॉप पर एक 50vw ड्रायर iframe, और मोबाइल पर केवल पूरा/नया पृष्ठ। बटन हैंडल openForm({ type: "submission" | "detail", ... }) को कॉल करनी चाहिए।',
+  lint_form_detail_link: 'Yida फॉर्म विस्तार पृष्ठ एक वास्तविक formInstId का उपयोग करना चाहिए: पहले row.formInstId पढ़ें, और instance id की कमी होने पर बंद या चेतावन दें, खाली formInstId के साथ एक formDetail लिंक खोलने के बजाय।',
+  lint_searchformdata_http_path: 'एक सीधा searchFormDatas.json कॉल /dingtalk/web/<appType>/v1/form/searchFormDatas.json का उपयोग करना चाहिए; /query/form/searchFormDatas.json एक वैध फॉर्म डेटा एंडपॉइंट नहीं है',
+  lint_searchformdata_http_query_params: 'सीधा searchFormDatas.json URL प्रश्न आवश्यक पैरामीटर्स की कमी रखता है: {0}। appType, formUuid, currentPage, pageSize और searchFieldJson के साथ URLSearchParams का उपयोग करें',
+  lint_searchformdata_http_csrf: 'एक सीधा searchFormDatas.json कॉल runtime CSRF टोकन को दोनों _csrf_token URL प्रश्न और global_csrf_token अनुरोध हेडर में रखना चाहिए',
+  lint_searchformdata_http_credentials: 'एक सीधा searchFormDatas.json कॉल credentials: "include" सेट करना होगा ताकि ब्राउज़र सम-मूल्य लॉगिन कोकीज भेजे',
+  lint_canvas_yida_api_bridge_missing: 'YidaCodeCanvas फॉर्म डेटा पढ़ें window.__OPENYIDA_YIDA_API__ पहले उपभोग करना चाहिए (पब्लिश स्तर बाहरी didMount से this.utils.yida ब्रिज इंजेक्ट करता है); हाथ से लिखी गई आंतरिक searchFormDatas fetch पर डिफ़ॉल्ट न करें',
+});
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  form_mode_unverified: 'फ़ॉर्म {0} का प्रकार सत्यापित नहीं हो सका। किसी भी डेटा लेखन से पहले निर्माण रोक दिया गया।',
+  resource_required: 'data query में संसाधन प्रकार form नहीं है। सुझाया गया कमांड: {0}',
+});
+
+Object.assign(module.exports.common || (module.exports.common = {}), {
+  non_idempotent_result_unknown: 'निर्माण अनुरोध के दौरान प्रमाणीकरण बदल गया; परिणाम अज्ञात है। पुनः प्रयास करने से पहले लक्ष्य की स्थिति जाँचें।',
+});

@@ -413,11 +413,16 @@ describe('publish prechecks', () => {
       )).resolves.toMatchObject({
         ok: true,
         mode: 'publish_readback',
+        expectedPublishMode: 'canvas',
         authMode: 'token',
         targetReadable: true,
         schemaParsed: true,
         displayComponentPresent: true,
         publishedContentMatched: true,
+        readback: {
+          hasYidaCodeCanvas: true,
+          runtimeCodeBytes: expect.any(Number),
+        },
       });
 
       expect(requestSpy).not.toHaveBeenCalled();
@@ -533,6 +538,8 @@ describe('publish prechecks', () => {
       expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('display_component_missing'));
       expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('nav order broke'));
       expect(autoOrderNavigationMock).toHaveBeenCalledWith('APP_XXX', expect.any(Object));
+      expect(mockUtils.httpPost).toHaveBeenCalledTimes(1);
+      expect(mockUtils.httpPost.mock.calls[0][1]).toContain('/saveFormSchema.json');
       const outputPayload = consoleSpy.mock.calls
         .map((call) => call[0])
         .filter((line) => typeof line === 'string' && line.startsWith('{'))
@@ -542,8 +549,10 @@ describe('publish prechecks', () => {
         success: true,
         appType: 'APP_XXX',
         formUuid: 'FORM-PAGE',
+        publishMode: 'canvas',
         healthCheck: {
           ok: false,
+          expectedPublishMode: 'canvas',
           reason: 'display_component_missing',
         },
         navOrderWarning: 'nav order broke',

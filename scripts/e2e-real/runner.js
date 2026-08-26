@@ -5,12 +5,13 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { compileCanvasLocal } = require('../../lib/app/canvas-compile');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const BIN = path.join(ROOT, 'bin', 'yida.js');
 const DEFAULT_REGISTRY_DIR = path.join(ROOT, 'project', '.cache', 'e2e-real');
 const DEFAULT_FIELDS_FILE = path.join(__dirname, 'fixtures', 'form-fields.json');
-const DEFAULT_PAGE_SOURCE = path.join(ROOT, 'lib', 'templates', 'yida-canvas-custom-page', 'dashboard-starter.canvas.jsx');
+const DEFAULT_PAGE_SOURCE = path.join(__dirname, 'fixtures', 'page.canvas.jsx');
 
 function nowStamp(date = new Date()) {
   return date.toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
@@ -153,6 +154,25 @@ function requireSuccess(stepName, commandResult) {
   return commandResult.json;
 }
 
+function requireCanvasPublishHealth(publishResult) {
+  const health = publishResult && publishResult.healthCheck;
+  const readback = health && health.readback;
+  if (
+    publishResult &&
+    publishResult.publishMode === 'canvas' &&
+    health && health.ok === true &&
+    health.expectedPublishMode === 'canvas' &&
+    readback && readback.hasYidaCodeCanvas === true &&
+    Number(readback.runtimeCodeBytes) > 0
+  ) {
+    return publishResult;
+  }
+  throw new Error(`publish Canvas health check failed: ${JSON.stringify({
+    publishMode: publishResult && publishResult.publishMode,
+    healthCheck: health || null,
+  })}`);
+}
+
 function run(options = {}) {
   const env = options.env || process.env;
   const config = options.config || getConfig(env);
@@ -170,6 +190,15 @@ function run(options = {}) {
   }
   if (!config.skipPublish && !fs.existsSync(config.pageSource)) {
     throw new Error(`E2E page source not found: ${config.pageSource}`);
+  }
+  if (!config.skipPublish) {
+    try {
+      compileCanvasLocal(fs.readFileSync(config.pageSource, 'utf8'), {
+        sourcePath: config.pageSource,
+      });
+    } catch (error) {
+      throw new Error(`E2E page source is not compilable: ${config.pageSource}\n${error.message}`);
+    }
   }
 
   const { registry, registryPath } = registryFactory(config);
@@ -217,14 +246,16 @@ function run(options = {}) {
         '--no-open',
       ]));
       trackResource(registry, registryPath, { type: 'page', appType: app.appType, pageId: page.pageId, name: config.pageName, url: page.url });
-      requireSuccess('publish page', runStep('publish', [
+      const publishResult = requireSuccess('publish page', runStep('publish', [
         'publish',
         config.pageSource,
         app.appType,
         page.pageId,
+        '--canvas',
         '--health-check',
         '--no-open',
       ]));
+      requireCanvasPublishHealth(publishResult);
     }
 
     registry.status = 'passed';
@@ -256,6 +287,7 @@ module.exports = {
   extractJsonObjects,
   getConfig,
   parseLastJson,
+  requireCanvasPublishHealth,
   run,
   runCli,
   writeRegistry,

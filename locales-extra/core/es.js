@@ -73,7 +73,7 @@ module.exports = {
     cmd_connector_list: 'Listar conectores HTTP',
     cmd_connector_create: 'Crear conector',
     cmd_connector_detail: 'Ver detalles del conector',
-    cmd_connector_delete: 'Eliminar conector',
+    cmd_connector_delete: 'Mostrar instrucciones de eliminación manual (la CLI no elimina)',
     cmd_connector_add_action: 'Agregar acción',
     cmd_connector_list_actions: 'Listar acciones',
     cmd_connector_delete_action: 'Eliminar acción',
@@ -86,6 +86,7 @@ module.exports = {
     cmd_connector_more: 'Ver más subcomandos',
     group_integration: 'Integración & DingTalk',
     cmd_integration: 'Crear flujo de automatización',
+    cmd_integration_update: 'Probe integration update capability (currently blocked without full readback)',
     cmd_integration_list: 'Listar flujos de automatización',
     cmd_integration_enable: 'Habilitar flujo de automatización',
     cmd_integration_disable: 'Deshabilitar flujo de automatización',
@@ -170,7 +171,7 @@ module.exports = {
       '  connector list [options]                                     List HTTP connectors\n' +
       '  connector create "<name>" "<domain>" --operations <file> [options]  Create connector\n' +
       '  connector detail <connector-id>                              View connector details\n' +
-      '  connector delete <connector-id> [--force]                    Delete connector\n' +
+      '  connector delete <connector-id> [--force]                    Mostrar instrucciones de eliminación manual (la CLI no elimina)\n' +
       '  connector add-action --operations <file> --connector-id <id> Add action to connector\n' +
       '  connector list-actions <connector-id>                        List actions\n' +
       '  connector delete-action <connector-id> <operation-id>        Delete action\n' +
@@ -181,6 +182,7 @@ module.exports = {
       '  connector parse-api [options]                                Parse API info\n' +
       '  connector gen-template [output]                              Generate API doc template\n' +
       '  integration create <appType> <formUuid> <flowName> [options] Create integration & automation flow\n' +
+      '  integration update <appType> <formUuid> <processCode> --spec <file>  Probe blocked update capability\n' +
       '  integration check <appType...> [--json] [--output xlsx]     Check abnormal integration automation run logs\n' +
       '  create-report <appType> "<name>" <chartsJSON|file>           Create Yida report\n' +
       '  append-chart <appType> <reportId> <chartsJSON|file>          Append chart to existing report\n' +
@@ -247,7 +249,7 @@ module.exports = {
     forbidden_alias_get_schema_form_uuid_option: '`{0}` takes formUuid as the second positional argument, not `{1}`.',
     nearest_command_suggestion: 'Unknown OpenYida command root "{0}". Did you mean "{1}"?',
     run_help: 'Run openyida --help for usage',
-    integration_help: 'Uso: openyida integration <create|list|enable|disable> ...',
+    integration_help: 'Usage: openyida integration <create|update|list|enable|disable|check|diagnose> ...',
     integration_unknown: 'Subcomando integration desconocido: {0}',
     integration_help_hint: 'Use openyida integration --help para ver los subcomandos disponibles',
     integration_list_usage: 'Uso: openyida integration list <appType> [--form-uuid <uuid>] [--status y|n] [--key <kw>] [--page <n>] [--size <n>] [--json]',
@@ -374,7 +376,8 @@ module.exports = {
     create_arg_form_uuid: '  formUuid             Trigger form UUID, such as FORM-XXX',
     create_arg_flow_name: '  flowName             Integration automation name',
     create_options_title: 'Options:',
-    create_opt_process_code: '  --process-code <code>       Update an existing logic flow processCode',
+    create_opt_process_code: '  --process-code <code>       Select an existing flow for full replacement',
+    create_opt_replace: '  --replace                     Confirm --process-code is a full replacement, not a safe update',
     create_opt_receivers: '  --receivers <ids>            DingTalk notification receiver userIds, comma-separated',
     create_opt_title: '  --title <text>                Notification title, supports #{fieldId-ComponentType}#',
     create_opt_content: '  --content <text>              Notification content, supports #{fieldId-ComponentType}#',
@@ -398,6 +401,7 @@ module.exports = {
     create_example1: '  openyida integration create APP_XXX FORM-XXX "New record notice" --receivers user123 --publish',
     create_example2: '  openyida integration create APP_XXX FORM-XXX "Get self then notify" --get-self --publish',
     create_missing_args: 'Missing required arguments.',
+    create_replace_required: 'Using --process-code fully replaces the existing flow. Pass --replace explicitly. Safe editing is not currently available; integration update only reports capability status.',
     create_flow_name_too_long: 'Logic-flow names cannot exceed {0} characters (received {1}).',
     create_invalid_events: 'No valid trigger event was recognized.',
     create_no_receivers: 'No notification receiver or user field specified; no message node will be generated.',
@@ -405,7 +409,7 @@ module.exports = {
     create_app_type: 'App ID: {0}',
     create_form_uuid: 'Trigger form: {0}',
     create_flow_name: 'Flow name: {0}',
-    create_mode_update: 'Mode: update existing logic flow',
+    create_mode_update: 'Mode: full replacement of existing logic flow (not a safe update)',
     create_mode_new: 'Mode: create new logic flow',
     create_process_code: 'Logic flow ID: {0}',
     create_events: 'Trigger events: {0}',
@@ -437,7 +441,10 @@ module.exports = {
     create_published_ok: 'Logic flow published',
     create_done_published: 'Integration automation created and published',
     create_done_draft: 'Integration automation draft saved',
-    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.'
+    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.',
+    update_usage: 'Usage: openyida integration update <appType> <formUuid> <processCode> --spec <desired-spec.json> [--publish]',
+    update_missing_args: 'Missing required arguments: appType, formUuid, processCode, and --spec are required.',
+    update_capability_blocked: 'Safe integration update is unavailable: full platform processJson + viewJson readback is not proven. No authentication or remote write was attempted.',
   },
   env: {
     title: '  openyida env - Detección del entorno de herramienta IA',
@@ -675,8 +682,6 @@ module.exports = {
     version_label: '  Current version: {0}',
     save_schema_failed: '\n❌ Failed to save Schema: {0}',
     save_failed: '\n❌ Failed to save Schema: {0}',
-    step_update_config: '\n⚙️  Step {0}: Update form config',
-    sending_config: '  Sending updateFormConfig request...',
     step_get_schema: '\n📄 Step {0}: Get current form Schema',
     sending_get_schema: '  Sending getFormSchema request...',
     sending_get: '  Sending getFormSchema request...',
@@ -700,12 +705,7 @@ module.exports = {
     update_success: '  ✅ Form updated successfully!',
     form_uuid_label: '  formUuid: {0}',
     url_label: '  URL: {0}',
-    config_updated_0: '  Config updated: MINI_RESOURCE = 0',
-    config_updated: '  Config updated: MINI_RESOURCE = 0',
     changes_applied: '  Changes applied: {0}',
-    config_failed: '  ⚠️  Config update failed: {0}',
-    schema_ok_config_failed: '  Schema saved, but config update failed',
-    schema_saved_config_failed: '  Schema saved, but config update failed',
     create_post_failure_retry_advice: 'Do not repeat create directly. First run openyida list-forms {0} --keyword "{1}" to check for an existing same-title form; if this run already created a blank/existing form, prefer create-form update or a future --resume-form-uuid flow.',
     error: '\n❌ Error de creación: {0}',
     usage_create: 'Usage: openyida create-form create <appType> <formTitle> <fieldsJsonFile>',
@@ -1209,6 +1209,8 @@ module.exports = {
     canvas_compiling: '  🎨 Compilando la fuente de la página personalizada localmente...',
     canvas_compile_done: '  ✅ ¡Página personalizada compilada!',
     canvas_compile_failed: '  ❌ Error al compilar la página personalizada: {0}',
+    canvas_unbound_identifiers: 'El código fuente de Code Canvas contiene identificadores no declarados: {0}. Añade en el mismo archivo la importación o declaración de función, Ref, estado o variable local que falte y usa el mismo nombre en todas las referencias. Si un entorno de ejecución no estándar proporciona el identificador, accede a él explícitamente mediante window.<name> o parentWindow.<name> y comprueba antes que exista.',
+    canvas_instance_api_unavailable: 'Los componentes de Code Canvas no pueden usar estas API de instancia JSX de la plataforma: {0}. Usa hooks de React, props o el puente de datos window.__OPENYIDA_YIDA_API__.',
     step_login: '\n🔑 Step 2: Leer credenciales de sesión',
     step_publish: '\n📤 Step 3: Publicar esquema\n',
     resend_save_csrf: '  🔄 Resending saveFormSchema request (csrf_token refreshed)...',
@@ -1220,18 +1222,8 @@ module.exports = {
     schema_success: '  ✅ Schema published successfully!',
     form_uuid_label: '  formUuid: {0}',
     version_label: '  version:  {0}',
-    step_config: '\n⚙️  Step 4: Actualizar configuración del formulario\n',
-    sending_config: '  Sending updateFormConfig request...',
-    resend_config_csrf: '  🔄 Resending updateFormConfig request (csrf_token refreshed)...',
-    resend_config: '  🔄 Resending updateFormConfig request after re-login...',
-    config_csrf_retry: '  🔄 Resending updateFormConfig request (csrf_token refreshed)...',
-    config_relogin_retry: '  🔄 Resending updateFormConfig request after re-login...',
     success: '  ✅ ¡Publicado exitosamente!',
     publish_success: '  ✅ Published successfully!',
-    config_updated: '  Config updated: MINI_RESOURCE = 8',
-    config_failed: '  ⚠️  Error al actualizar configuración: {0}',
-    schema_ok_config_failed: 'Schema published, but config update failed',
-    schema_published_config_failed: '  Schema published, but config update failed',
     step_health_check: '\n🩺 Step 5: Publish readback check\n',
     health_check_ok: '  ✅ Publish readback check passed: {0}',
     health_check_failed: '  ⚠️  Publish readback check failed: {0} {1}',
@@ -1726,8 +1718,6 @@ module.exports = {
     schema_empty_msg: 'Schema is empty',
     save_schema_failed: '    ❌ Failed to save Schema: {0}',
     schema_saved: '    ✅ Schema saved',
-    config_failed: '    ⚠️  Config update failed (Schema saved): {0}',
-    config_updated: '    ✅ Form config updated',
     step_write_report: '\n📄 Step 5: Write migration report',
     report_written: '  ✅ Migration report written: {0}',
     done: '  ✅ Migration complete!',
@@ -1768,3 +1758,81 @@ module.exports = {
     error: '\n❌ Error de importación: {0}'
   }
 };
+
+// Safety-critical verification and publish lint messages.
+Object.assign(module.exports.app_permission || (module.exports.app_permission = {}), {
+  verify_failed: 'La verificación de guardado del administrador falló',
+});
+
+Object.assign(module.exports.corp_manager || (module.exports.corp_manager = {}), {
+  address_book_verify_failed: 'El guardado de la permisión de libreta de direcciones falló: esperado={0}, real={1}',
+  admin_verify_failed: 'El guardado como administrador falló: {0} no se encontró en la lista {1}',
+  sub_admin_scope_verify_failed: 'El guardado del alcance de subadministrador falló: esperado={0}, real={1}',
+  admin_remove_verify_failed: 'La verificación de eliminación como administrador falló: {0} sigue estando en la lista {1}',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  confirm_member_replace_usage: 'Reemplazar miembros compuestos también requiere --confirm-member-replace',
+  data_object_required: 'El permiso de datos debe ser un objeto JSON',
+  data_rule_required: 'La regla del permiso de datos no puede estar vacía',
+  data_rule_type_required: 'Cada elemento de la regla del permiso de datos debe incluir el tipo',
+  data_rule_value_invalid: 'El valor de la regla del permiso de datos {0} debe ser y/n o booleano',
+  data_enabled_required: 'El permiso de datos debe habilitar al menos un rango de datos',
+  custom_department_ids_required: 'CUSTOM_DEPARTMENT requiere departmentIds no vacío en customDepartmentData',
+  formula_data_required: 'FORMULA requiere formulaData no vacío',
+  data_range_required: 'El permiso de datos requiere dataRange o rule no vacíos',
+  action_enabled_required: 'El permiso de acción debe contener al menos una operación establecida en true',
+  action_value_boolean: 'La permisión de acción {0} debe ser booleana',
+  field_range_invalid: 'fieldRange del permiso de campo solo soporta FORM o CUSTOM',
+  field_status_required: 'El permiso de campo CUSTOM requiere un array fieldStatus no vacío',
+  field_status_item_required: 'Cada elemento de fieldStatus debe incluir label, fieldName, componentName y value',
+  field_status_value_invalid: 'Valor del permiso de campo inválido: {0}; valores válidos: {1}',
+  json_object_required: '{0} debe ser un objeto JSON',
+  parse_failed: 'Error al analizar {0}: {1}',
+  role_conflict: 'Los argumentos del permiso especifican roles inconsistentes: {0}',
+  matrix_role_only: '--matrix solo puede actualizar el grupo de permisos role=MATRIX',
+  all_members_role_only: '--all-members solo puede actualizar el grupo de permisos role=DEFAULT',
+  target_role_invalid: 'Rol inválido: {0}; valores válidos: {1}',
+  unnamed_package: 'Sin nombre',
+  missing_package_uuid: 'No hay UUID',
+  target_no_match: 'No se encontró grupo de permisos que coincida con role={0}; abortado con cero escrituras para prevenir una actualización no intencionada. Grupos de permisos actuales:\n{2}',
+  target_ambiguous: 'role={0} coincide con {1} grupos de permisos; abortado con cero escrituras para prevenir una actualización no intencionada.\n{2}',
+  unknown_operate_keys: 'El grupo actual de permisos contiene claves de operación desconocidas por la CLI, así que action-permission no puede cambiar: {0}. Otras dimensiones aún pueden cambiarse y las claves desconocidas se preservarán tal cual.',
+  matrix_role_value_required: 'roleData.roleValue del rol MATRIX debe ser un array no vacío',
+  matrix_data_required: 'Cuando los miembros usan MATRIX, la regla de permiso de datos debe incluir MATRIX',
+  data_matrix_member_required: 'Cuando el permiso de datos incluye MATRIX, los miembros deben seleccionar una matriz de permisos válida',
+  members_all_conflict: '--members y --all-members son mutuamente excluyentes',
+  invalid_arguments: 'La validación de argumentos falló: {0}',
+  query_limit: 'La consulta del grupo de permisos alcanzó el límite actual de 20 elementos, por lo que no se puede probar la unicidad global de los roles. Abortado con cero escrituras.\n{0}',
+  unique_target: '  ✅ Objetivo único: {0}',
+  member_before: '  Miembros antes: {0}',
+  member_after: '  Miembros después:  {0}',
+  member_removed: '  Roles de miembros a eliminar: {0}',
+  member_replace_confirm: 'El reemplazo de miembro eliminará los roles compuestos existentes. Revise antes/después y agregue --confirm-member-replace. Entradas que se perderán: {0}',
+});
+
+Object.assign(module.exports.save_share_config || (module.exports.save_share_config = {}), {
+  err_page_url_prefix: 'openUrl debe comenzar con /o/ o /s/, valor actual: {0}',
+  verify_failed: 'La verificación post-guardado falló: {0}',
+  current_state_incomplete: 'Guardado abortado: la configuración de acceso público actual carece de openPageAuthConfig, por lo que no se puede probar una preservación segura',
+});
+
+Object.assign(module.exports.publish || (module.exports.publish = {}), {
+  lint_jsx_text_identifier: 'La copia JSX no se puede escribir como {{0}}; se trata como variable y causa {0} is not defined. Use plain text {0} o una cadena con comillas {\'{0}\'} en su lugar.',
+  lint_form_open_container: 'Abrir páginas de envío/detalles del formulario Yida desde una página personalizada debe usar FormOpenContainer: un iframe drawer de 50vw para escritorio, y solo nueva/página completa para móvil. Los manejadores de botón deben llamar openForm({ type: "submission" | "detail", ... }).',
+  lint_form_detail_link: 'Las páginas de detalle del formulario Yida deben usar una formInstId real: lea row.formInstId primero, y deshabilite o advierta cuando el id de instancia esté ausente en lugar de abrir un enlace formDetail con un formInstId vacío.',
+  lint_searchformdata_http_path: 'Una llamada directa a searchFormDatas.json debe usar /dingtalk/web/<appType>/v1/form/searchFormDatas.json; /query/form/searchFormDatas.json no es un endpoint válido de datos del formulario',
+  lint_searchformdata_http_query_params: 'La consulta URL directa de searchFormDatas.json falta los parámetros requeridos: {0}. Use URLSearchParams con appType, formUuid, currentPage, pageSize y searchFieldJson',
+  lint_searchformdata_http_csrf: 'Una llamada directa a searchFormDatas.json debe poner el token CSRF en tiempo de ejecución tanto en _csrf_token como en global_csrf_token header',
+  lint_searchformdata_http_credentials: 'Una llamada directa a searchFormDatas.json debe establecer credentials: "include" para que el navegador envíe cookies de inicio de sesión del mismo origen',
+  lint_canvas_yida_api_bridge_missing: 'Las lecturas de datos del formulario YidaCodeCanvas deben consumir window.__OPENYIDA_YIDA_API__ primero (la capa publish inyecta this.utils.yida desde didMount externo); no use por defecto la búsqueda interna manual fetch searchFormDatas',
+});
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  form_mode_unverified: 'No se pudo verificar el tipo del formulario {0}. La creación se detuvo antes de escribir datos.',
+  resource_required: 'Falta el tipo de recurso form en data query. Comando sugerido: {0}',
+});
+
+Object.assign(module.exports.common || (module.exports.common = {}), {
+  non_idempotent_result_unknown: 'La autenticación cambió durante la solicitud de creación; se desconoce el resultado. Verifica el estado del destino antes de volver a intentarlo.',
+});
