@@ -320,8 +320,6 @@ OPENYIDA_E2E=1 npm run eval:all -- --skill yida-dashboard --screenshot
 # whitelist. Use the Node version you start it with, so run `nvm use 20` first.
 npm run eval:dashboard          # http://127.0.0.1:4500
 
-# You can also run eval directly via the CLI:
-openyida eval --mode comprehensive --skill yida-dashboard
 ```
 
 Configuration precedence is `CLI flag > env (OPENYIDA_EVAL_*) > scripts/eval/eval.config.json > defaults`.
@@ -501,7 +499,6 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida copy [--force]` | Copy project working directory |
 | `openyida sample [--list]` | Output code samples/templates |
 | `openyida doctor [--fix]` | Environment diagnostics & auto-fix |
-| `openyida eval --mode <mode> [--skill <name>] [--runs N]` | Multi-dimensional skill evaluation (doc quality, routing accuracy, safety, etc.) |
 | `openyida db-seq-fix [--fix]` | Detect and repair PostgreSQL sequence drift |
 | `openyida formula evaluate <formula\|file> [--schema file]` | Static-check Yida formula syntax and field refs |
 | `openyida update` | Check and update to latest version |

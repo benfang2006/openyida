@@ -36,6 +36,8 @@ const ALLOWED_PACKAGE_SCRIPTS = new Set([
   'scripts/postinstall.js',
 ]);
 
+const STATIC_RELATIVE_REQUIRE = /require\(\s*['"](\.{1,2}\/[^'"]+)['"]\s*\)/g;
+
 function formatBytes(bytes) {
   if (bytes < 1024) {
     return `${bytes} B`;
@@ -125,6 +127,33 @@ function validatePackageContents(files) {
     if (filePath.startsWith('scripts/') && !ALLOWED_PACKAGE_SCRIPTS.has(filePath)) {
       fail(`development script was included: ${filePath}`);
     }
+  }
+
+  validatePublishedScriptRequires(packagePaths);
+}
+
+// Publishing only a narrow scripts/ allowlist is safe only when packaged runtime
+// modules do not still point at excluded development scripts.
+function validatePublishedScriptRequires(packagePaths) {
+  for (const packagePath of packagePaths) {
+    if (!/\.(?:cjs|js|mjs)$/.test(packagePath)) {
+      continue;
+    }
+
+    const sourcePath = path.join(__dirname, '..', packagePath);
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    let match;
+    while ((match = STATIC_RELATIVE_REQUIRE.exec(source)) !== null) {
+      const resolvedBase = path.posix.normalize(path.posix.join(path.posix.dirname(packagePath), match[1]));
+      if (!resolvedBase.startsWith('scripts/')) {
+        continue;
+      }
+      const candidates = [resolvedBase, `${resolvedBase}.js`, `${resolvedBase}.json`, `${resolvedBase}/index.js`];
+      if (!candidates.some(candidate => packagePaths.has(candidate))) {
+        fail(`${packagePath} requires unpublished script: ${match[1]}`);
+      }
+    }
+    STATIC_RELATIVE_REQUIRE.lastIndex = 0;
   }
 }
 

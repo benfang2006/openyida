@@ -1258,12 +1258,6 @@ async function main() {
       break;
     }
 
-    case 'eval': {
-      const { main: evalMain } = require('../scripts/eval/runner');
-      await evalMain(args);
-      break;
-    }
-
     default: {
       throwUnknownCommand(command, args);
     }
