@@ -12,6 +12,8 @@
 | 新增数据节点 | `dataCreate` | `AddDataNode` |
 | 获取单条数据节点 | `dataRetrieve` | `GetSingleDataNode` |
 | 更新数据节点 | `dataUpdate` | `UpdateDataNode` |
+| 调用连接器节点 | `innerConnector` / `httpConnector` | `ConnectorNode` |
+| 发起审批节点 | `initiateApproval` | `InitiateApprovalNode` |
 | 条件分支容器 | `route` | `ConditionContainer` |
 | 条件分支子节点 | `condition` | `ConditionNode` |
 | 结束节点 | `finish` | `EndNode` |
@@ -337,7 +339,7 @@ trigger
 | `processCode` | String | 是 | 逻辑流唯一标识，格式 `LPROC-xxx` |
 | `needReportLine` | String | 是 | 固定 `"y"` |
 
-- **返回值**：`{ "success": true }`
+- **返回值**：`{ "success": true }` 只表示写请求被接受，不是最终发布状态证据。发布后必须按 `formUuid + processCode` 完成全量 list、`status=y` 与 `getProcess` 详情回读；任一项无法证明都失败。
 
 ---
 
@@ -358,6 +360,13 @@ trigger
 
 > ⚠️ `totalCount` 是表单分组数（不是自动化总数），每个分组内的 `flowList` 才是具体的自动化列表。
 > ⚠️ 应用级列表对同一表单只返回首批 `flowList`；当分组 `hasMore=true` 时，需要继续调用 `/query/formLogicflowBinding/listflow.json` 拉取该表单下的剩余自动化。
+> CLI 公共 `integration list` 与写后回读必须复用同一安全 paginator，不得只读第一页。
+
+### getLogicflowDetail（按 processCode 查询设计详情）
+
+- **地址**：`GET /alibaba/web/{appType}/query/simpleProcess/getProcess.json`
+- **精确参数**：`appType`、`formUuid`、`processCode`
+- **证据边界**：已观测返回可包含 `schema/globalSetting` 等 view 内容，只可证明目标设计详情存在；完整 runtime graph wrapper 仍为 `PLATFORM_PROBE_REQUIRED`，不得据此执行安全 update。
 
 ---
 
@@ -375,7 +384,13 @@ trigger
 | `enable` | String | 是 | `"y"`=开启，`"n"`=关闭 |
 | `type` | String | 是 | 固定 `"1"` |
 
-> ⚠️ 若目标逻辑流已处于目标状态，接口仍返回 `success: true`，不会报错。
+> ⚠️ 写响应不能证明最终状态。CLI 必须在写后按 `formUuid + processCode` 精确匹配唯一列表项、校验 `status=y/n`，并完成详情回读；否则启停命令失败。
+
+### ConnectorNode schema 证据
+
+- action 的 `inputs/outputs` 只能来自平台只读 connector detail 的 exact action 匹配，或仓库固定已证 preset。
+- 未知连接器、未知 action、缺失/malformed operations、assignment 字段不在已验证 inputs 中时，必须在首个远端写之前失败。
+- 禁止把未知输入合成为 `TextField`，也禁止把调用方 `--connector-inputs` 文件当成平台 schema 证据。
 
 ---
 

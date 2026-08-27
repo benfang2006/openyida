@@ -41,9 +41,18 @@ jest.mock('../lib/integration/integration-api', () => ({
   createLogicflow: jest.fn(),
   saveProcess: jest.fn(),
 }));
+jest.mock('../lib/integration/integration-readback', () => ({
+  verifyLogicflowFinalState: jest.fn(),
+}));
+jest.mock('../lib/integration/integration-connector-schema', () => ({
+  resolveConnectorActionSchema: jest.fn(),
+  validateConnectorAssignmentsAgainstSchema: jest.fn(),
+}));
 
 const { fetchFormPageList } = require('../lib/app/form-navigation');
 const integrationApi = require('../lib/integration/integration-api');
+const integrationReadback = require('../lib/integration/integration-readback');
+const connectorSchema = require('../lib/integration/integration-connector-schema');
 const { run } = require('../lib/integration/integration-create');
 const { loadIntegrationScenarios } = require('../scripts/eval/integration-contract/scenario-loader');
 
@@ -69,6 +78,18 @@ describe('integration create command', () => {
     integrationApi.getFormSchema.mockReset();
     integrationApi.saveProcess.mockReset();
     fetchFormPageList.mockReset();
+    integrationReadback.verifyLogicflowFinalState.mockResolvedValue({
+      verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT',
+      processCode: 'LPROC-TEST',
+      status: 'y',
+    });
+    connectorSchema.resolveConnectorActionSchema.mockResolvedValue({
+      inputs: [{ name: 'month', componentName: 'TextField', paramType: 'String' }],
+      outputs: [],
+      description: 'discovered',
+      openDevSchemaType: 'normal',
+      verificationLevel: 'PLATFORM_READ_ONLY_DISCOVERY',
+    });
     tempDirs = [];
   });
 
@@ -281,6 +302,37 @@ describe('integration create command', () => {
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
   });
 
+  test('fails closed before the first write when connector action schema discovery is unverified', async () => {
+    const error = new Error('action schema unavailable');
+    error.code = 'INTEGRATION_CONNECTOR_SCHEMA_UNVERIFIED';
+    connectorSchema.resolveConnectorActionSchema.mockRejectedValue(error);
+
+    await expect(run([
+      'APP_TEST', 'FORM-A', 'unknown connector',
+      '--connector-id', 'Http_unknown',
+      '--action-id', 'missing-action',
+    ])).rejects.toMatchObject({ code: 'INTEGRATION_CONNECTOR_SCHEMA_UNVERIFIED' });
+
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
+  test('rejects caller-authored connector input schema instead of trusting guessed field types', async () => {
+    await expect(run([
+      'APP_TEST', 'FORM-A', 'unverified connector file',
+      '--connector-id', 'Http_unknown',
+      '--action-id', 'sync',
+      '--connector-inputs', '/not/read/inputs.json',
+    ])).rejects.toMatchObject({
+      code: 'INTEGRATION_CONNECTOR_SCHEMA_UNVERIFIED',
+      details: expect.objectContaining({ remoteWrites: 0 }),
+    });
+
+    expect(require('../lib/core/utils').loadAuthData).not.toHaveBeenCalled();
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
   test('rejects unsupported approval actions before any remote write', async () => {
     await expect(run([
       'APP_TEST',
@@ -317,6 +369,41 @@ describe('integration create command', () => {
       processCode: 'LPROC-TEST',
     });
     expect(exitSpy).not.toHaveBeenCalled();
+  });
+
+  test('publishes only after exact list/detail final-state readback succeeds', async () => {
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run(['APP_TEST', 'FORM-A', 'publish verified', '--publish']);
+
+    expect(integrationReadback.verifyLogicflowFinalState).toHaveBeenCalledWith(expect.any(Object), {
+      appType: 'APP_TEST', formUuid: 'FORM-A', processCode: 'LPROC-TEST', expectedStatus: 'y',
+    });
+    expect(JSON.parse(logSpy.mock.calls[0][0])).toMatchObject({
+      success: true,
+      published: true,
+      verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT',
+      verification: { verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT' },
+    });
+  });
+
+  test('publish write success without exact final-state proof fails closed', async () => {
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+    const error = new Error('status mismatch');
+    error.code = 'INTEGRATION_READBACK_STATUS_MISMATCH';
+    integrationReadback.verifyLogicflowFinalState.mockRejectedValue(error);
+
+    await expect(run(['APP_TEST', 'FORM-A', 'publish unverified', '--publish']))
+      .rejects.toMatchObject({ code: 'INTEGRATION_PUBLISH_READBACK_UNVERIFIED' });
+
+    expect(JSON.parse(logSpy.mock.calls[0][0])).toMatchObject({
+      success: false,
+      published: null,
+      publishRequested: true,
+      verificationLevel: 'UNVERIFIED',
+    });
   });
 
   test('rejects process forms as add-data targets before creating a broken flow', async () => {

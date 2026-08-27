@@ -37,6 +37,22 @@ function getFlatMessagePair(options = {}) {
 }
 
 describe('integration process/view builder consistency', () => {
+  test('unknown connector actions fail closed instead of synthesizing TextField inputs', () => {
+    expect(() => buildViewJson({
+      processCode: 'LPROC-UNKNOWN',
+      formUuid: 'FORM-A',
+      appType: 'APP-A',
+      formEventTypes: ['insert'],
+      connectorId: 'Http_unknown',
+      actionId: 'missing',
+      connectorMode: 5,
+      connectorAssignments: [{ column: 'amount', valueType: 'literal', value: 1 }],
+      hasMessageNode: false,
+      toUsers: [],
+      nodeIds: ['canvas', 'trigger', 'connector', 'end'],
+    })).toThrow(expect.objectContaining({ code: 'INTEGRATION_CONNECTOR_SCHEMA_UNVERIFIED' }));
+  });
+
   test('flat builders preserve the exact declared recipient collections without implicit user fields', () => {
     const pair = getFlatMessagePair();
 
@@ -93,6 +109,9 @@ describe('integration process/view builder consistency', () => {
           connectionId: 'connection-1',
           name: 'HTTP connector',
           assignments: [{ column: 'code', valueType: 'literal', value: '0012' }],
+          inputs: [{ name: 'code', componentName: 'TextField', paramType: 'String' }],
+          outputs: [],
+          schemaVerificationLevel: 'FIXED_CONTRACT_FIXTURE',
         }],
       },
       processCode: 'LPROC-SPEC',
@@ -134,6 +153,9 @@ describe('integration process/view builder consistency', () => {
       connectorMode: 5,
       hasMessageNode: false,
       toUsers: [],
+      connectorInputs: [],
+      connectorOutputs: [],
+      connectorSchemaVerificationLevel: 'FIXED_CONTRACT_FIXTURE',
     };
     const flatProcess = buildProcessJson({ ...flatOptions, nodeIds: ['trigger', 'connector', 'end'] });
     const flatView = buildViewJson({ ...flatOptions, nodeIds: ['canvas', 'trigger', 'connector', 'end'] });
@@ -158,6 +180,9 @@ describe('integration process/view builder consistency', () => {
           type: 'connector',
           connectorId: 'Http_123',
           actionId: 'publish',
+          inputs: [],
+          outputs: [],
+          schemaVerificationLevel: 'FIXED_CONTRACT_FIXTURE',
         }],
       },
       processCode: 'LPROC-SPEC-HTTP',
