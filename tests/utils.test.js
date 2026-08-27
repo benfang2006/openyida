@@ -902,35 +902,13 @@ describe('detectActiveTool', () => {
     expect(detectActiveTool()).toBeNull();
   });
 
-  test('TERM_PROGRAM=vscode 且有 .aone_copilot 目录时检测为 Aone Copilot', () => {
-    delete process.env.CLAUDE_CODE;
-    delete process.env.CLAUDE_CODE_ENTRYPOINT;
-    delete process.env.OPENCODE;
-    delete process.env.OPENCODE_CLIENT;
-    delete process.env.QODER_IDE;
-    delete process.env.QODER_AGENT;
-    delete process.env.QODERCLI_INTEGRATION_MODE;
-    delete process.env.CODEX_SHELL;
-    delete process.env.CODEX_CI;
-    delete process.env.CODEX_THREAD_ID;
-    delete process.env.CODEX_HOME;
-    delete process.env.__CFBundleIdentifier;
-    delete process.env.CURSOR_TRACE_ID;
-    process.env.TERM_PROGRAM = 'vscode';
-
-    // 模拟 .aone_copilot 目录存在（CI 环境可能没有）
-    const originalExistsSync = fs.existsSync;
-    fs.existsSync = (p) => {
-      if (p.includes('.aone_copilot')) {return true;}
-      return originalExistsSync(p);
-    };
-
-    const result = detectActiveTool();
-    expect(result).not.toBeNull();
-    expect(result.tool).toBe('aone-copilot');
-
-    // 恢复 fs.existsSync
-    fs.existsSync = originalExistsSync;
+  test('退役的 Aone Copilot VSCode 环境不再识别为 AI 工具', () => {
+    const result = detectRuntimeCapabilities({
+      env: { TERM_PROGRAM: 'vscode' },
+      cwd: '/tmp/project',
+      platform: 'darwin',
+    });
+    expect(result.tool).toBeNull();
   });
 
   test('无任何 AI 工具环境变量时返回 null', () => {
@@ -951,18 +929,8 @@ describe('detectActiveTool', () => {
     delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
 
-    // 确保 .aone_copilot 目录不存在（避免干扰）
-    const originalExistsSync = fs.existsSync;
-    fs.existsSync = (p) => {
-      if (p.includes('.aone_copilot')) {return false;}
-      return originalExistsSync(p);
-    };
-
     const result = detectActiveTool();
     expect(result).toBeNull();
-
-    // 恢复 fs.existsSync
-    fs.existsSync = originalExistsSync;
   });
 
   test('detectRuntimeCapabilities 在无桌面且无 Agent 浏览器时显式标记无浏览器能力', () => {

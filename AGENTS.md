@@ -1,6 +1,6 @@
 # OpenYida — AI Agent 开发指引
 
-本文件为 AI 编程助手（Codex、Claude Code、Aone Copilot、Cursor、OpenCode、Qoder 等）提供项目上下文，帮助 AI 更准确地理解项目结构和开发规范。
+本文件为 AI 编程助手（Codex、Claude Code、Cursor、OpenCode、Qoder 等）提供项目上下文，帮助 AI 更准确地理解项目结构和开发规范。
 
 ## 项目简介
 
@@ -190,7 +190,7 @@ openyida/
 
 ### 环境检测
 - `lib/core/env.js` 负责检测当前运行的 AI 工具环境
-- 支持环境：Codex、Claude Code、Aone Copilot、Cursor、OpenCode、QwenWork、QoderWork、Qoder
+- 支持环境：Codex、Claude Code、Cursor、OpenCode、QwenWork、QoderWork、Qoder
 - 不同环境会影响工作区路径、浏览器可用性和 agent 能力；登录态统一走 OAuth token session，不再依赖 Cookie 提取
 
 ### Codex 特殊说明

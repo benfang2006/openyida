@@ -322,7 +322,7 @@ module.exports = {
     first_run_tip1: '  1. Run {0}openyida env{1}   to detect environment and login status',
     first_run_tip2: '  2. Run {0}openyida login{1} to log in to Yida',
     first_run_tip3: '  3. Chat with your AI tool and describe the app you want 🚀',
-    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Aone Copilot / Cursor / OpenCode',
+    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Cursor / OpenCode',
     first_run_footer2: '  📚 Docs: https://github.com/openyida/openyida',
     first_run_footer3: '  (This guide only shows on first run. Use openyida --help to see all commands)',
     auth_usage: 'Usage: openyida auth <status|login|refresh|logout|profiles|profile switch>',
@@ -1039,11 +1039,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: '\n❌ Nenhum ambiente de ferramenta IA ativo detectado',
-    supported_tools: '   Ferramentas suportadas: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   Ferramentas suportadas: Codex, OpenCode, Claude Code, Cursor, Qoder',
     current_result: '\n   Resultados de detecção atuais:',
     force_hint: '\n   Para forçar a cópia para o diretório atual:\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1289,7 +1289,7 @@ module.exports = {
     install_success: '  ✅ Instalação concluída! {0} A ferramenta de desenvolvimento IA Yida está pronta.',
     update_success: '  ✅ Atualização concluída! {0} OpenYida foi atualizado para a versão mais recente.',
     ai_mode_title: '  🚀 Modo de conversa IA',
-    ai_mode_desc: '  No Codex / Claude Code / Aone Copilot / Cursor, converse diretamente:',
+    ai_mode_desc: '  No Codex / Claude Code / Cursor, converse diretamente:',
     prompt1: '  📋  "Crie um sistema de gestão de presença com Yida"',
     prompt2: '  💰  "Construa um app de calculadora de salário pessoal"',
     prompt3: '  🏢  "Crie um sistema CRM de gestão de clientes"',

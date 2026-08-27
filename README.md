@@ -114,7 +114,6 @@ The agent can then call OpenYida commands to create the application, generate so
 | [Codex](https://openai.com/codex/) | Full support |
 | [Claude Code](https://claude.ai/code) | Full support |
 | [MuleRun](https://mulerun.com) | Full support |
-| [Aone Copilot](https://copilot.code.alibaba-inc.com) | Full support |
 | [OpenCode](https://opencode.ai) | Full support |
 | [Cursor](https://cursor.com/) | Full support |
 | [Visual Studio Code](https://code.visualstudio.com/) | Full support |

@@ -322,7 +322,7 @@ module.exports = {
     first_run_tip1: '  1. Run {0}openyida env{1}   to detect environment and login status',
     first_run_tip2: '  2. Run {0}openyida login{1} to log in to Yida',
     first_run_tip3: '  3. Chat with your AI tool and describe the app you want 🚀',
-    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Aone Copilot / Cursor / OpenCode',
+    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Cursor / OpenCode',
     first_run_footer2: '  📚 Docs: https://github.com/openyida/openyida',
     first_run_footer3: '  (This guide only shows on first run. Use openyida --help to see all commands)',
     auth_usage: 'Usage: openyida auth <status|login|refresh|logout|profiles|profile switch>',
@@ -1038,11 +1038,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: '\n❌ 활성 AI 도구 환경이 감지되지 않았습니다',
-    supported_tools: '   지원 도구: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   지원 도구: Codex, OpenCode, Claude Code, Cursor, Qoder',
     current_result: '\n   현재 감지 결과:',
     force_hint: '\n   현재 디렉토리에 강제 복사하려면:\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1288,7 +1288,7 @@ module.exports = {
     install_success: '  ✅ 설치 완료! {0} Yida AI 개발 도구가 준비되었습니다.',
     update_success: '  ✅ 업데이트 완료! {0} OpenYida가 최신 버전으로 업그레이드되었습니다.',
     ai_mode_title: '  🚀 AI 대화 모드',
-    ai_mode_desc: '  Codex / Claude Code / Aone Copilot / Cursor 등 AI 도구에서 바로 대화하세요:',
+    ai_mode_desc: '  Codex / Claude Code / Cursor 등 AI 도구에서 바로 대화하세요:',
     prompt1: '  📋  "Yida로 근태 관리 시스템을 만들어줘"',
     prompt2: '  💰  "개인 급여 계산기 앱을 만들어줘"',
     prompt3: '  🏢  "CRM 고객 관리 시스템을 만들어줘"',

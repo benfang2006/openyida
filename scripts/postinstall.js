@@ -13,7 +13,6 @@
  *   ~/.claude/skills/yida-skills/          ← <package>/yida-skills (copy)
  *   ~/.codex/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.opencode/skills/yida-skills/        ← <package>/yida-skills (copy)
- *   ~/.aone_copilot/skills/yida-skills/    ← <package>/yida-skills (copy)
  *   ~/.cursor/skills/yida-skills/          ← <package>/yida-skills (copy)
  *   ~/.qwenworkcn/skills/yida-skills/      ← <package>/yida-skills (copy)
  *   ~/.qoderwork/skills/yida-skills/       ← <package>/yida-skills (copy)
@@ -432,13 +431,6 @@ safeExec(() => {
   }
 });
 
-// Aone Copilot — 仅在已安装时安装
-safeExec(() => {
-  if (fs.existsSync(path.join(HOME_DIR, '.aone_copilot'))) {
-    installSkillsToTool(path.join(HOME_DIR, '.aone_copilot'));
-  }
-});
-
 // Cursor — 仅在已安装时安装
 safeExec(() => {
   if (fs.existsSync(path.join(HOME_DIR, '.cursor'))) {
@@ -539,7 +531,7 @@ function printWelcomeGuide(isFirstInstall, hasCodexPlugin) {
   console.log('');
   console.log(`${BOLD}${CYAN}  🚀 开启 AI 问答模式${RESET}`);
   console.log(
-    '  在 Codex / Claude Code / MuleRun / Aone Copilot / Cursor 等 AI 工具中直接对话：',
+    '  在 Codex / Claude Code / MuleRun / Cursor 等 AI 工具中直接对话：',
   );
   console.log('');
 
