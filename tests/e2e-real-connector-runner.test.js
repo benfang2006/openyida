@@ -7,11 +7,29 @@ const {
   buildEchoOperation,
   cleanupOwnedConnectorResources,
   getConfig,
+  parseCliJsonStdout,
   run,
+  validateControlledFixtureResponse,
 } = require('../scripts/e2e-real/connector/runner');
 const { setLanguage } = require('../lib/core/i18n');
 
 describe('real connector E2E runner', () => {
+  test('parses the real pretty login JSON and a single-line connector JSON with CLI noise', () => {
+    const loginFixture = JSON.stringify({
+      ok: true,
+      status: 'ok',
+      corp_id: 'corp-fixture',
+      auth_profile: 'profile-fixture',
+    }, null, 2);
+    expect(parseCliJsonStdout(loginFixture)).toMatchObject({
+      ok: true,
+      corp_id: 'corp-fixture',
+    });
+    expect(parseCliJsonStdout('✓ created\n{"success":true,"connectorId":"101"}\nDone'))
+      .toEqual({ success: true, connectorId: '101' });
+    expect(parseCliJsonStdout('not json')).toBeNull();
+  });
+
   test('requires an explicit controlled fixture and target organization', () => {
     expect(getConfig({}, new Date('2026-08-27T00:00:00Z'))).toMatchObject({
       enabled: false,
@@ -182,7 +200,7 @@ describe('real connector E2E runner', () => {
               success: true,
               statusLine: 'HTTP/1.1 200 OK',
               responseHeaders: { 'x-openyida-fixture-owner': 'openyida-team' },
-              content: '{"runId":"OY_E2E_CONNECTOR_TEST","fixtureMarker":"fixture-v1","Authorization":"Basic ***"}',
+              content: '{"runId":"OY_E2E_CONNECTOR_TEST","fixtureMarker":"fixture-v1","authorization":"Basic ***"}',
             },
           };
         }
@@ -216,6 +234,144 @@ describe('real connector E2E runner', () => {
     expect(fs.existsSync(result.registry.evidenceFixture.path)).toBe(true);
     expect(result.registry.cleanup.removed).toHaveLength(1);
     expect(result.registry.cleanup.removed[0].resource.type).toBe('temporary-local-artifact');
+    expect(result.registry.writeAttempts.map(attempt => attempt.status)).toEqual(['completed', 'completed']);
+  });
+
+  test('records connector create as outcome_unknown and stops without a second write', async () => {
+    const registryDir = fs.mkdtempSync(path.join(os.tmpdir(), 'connector-e2e-connector-unknown-'));
+    const calls = [];
+    await expect(run({
+      config: {
+        enabled: true,
+        ready: true,
+        missing: [],
+        prefix: 'OY_E2E_CONNECTOR_UNKNOWN',
+        connectorName: 'OY_E2E_CONNECTOR_UNKNOWN__Connector',
+        connectionName: 'OY_E2E_CONNECTOR_UNKNOWN__Account',
+        echoBaseUrl: 'https://fixture.openyida.team/e2e/echo',
+        fixtureMarker: 'fixture-v1',
+        fixtureOwner: 'openyida-team',
+        registryDir,
+        corpId: 'corp-connector-unknown',
+      },
+      logger: () => {},
+      runCli: args => {
+        calls.push(args.slice(0, 2).join(' '));
+        if (args[0] === 'login') {
+          return { json: { ok: true, status: 'ok', corp_id: 'corp-connector-unknown', auth_profile: 'profile-one' } };
+        }
+        throw new Error('socket closed after connector request');
+      },
+    })).rejects.toThrow('socket closed after connector request');
+
+    expect(calls).toEqual(['login --check-only', 'connector create']);
+    const registry = JSON.parse(fs.readFileSync(path.join(registryDir, 'OY_E2E_CONNECTOR_UNKNOWN.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(registryDir, 'OY_E2E_CONNECTOR_UNKNOWN.manifest.json'), 'utf8'));
+    expect(registry.remoteWrites).toBe(1);
+    expect(registry.writeAttempts).toEqual([
+      expect.objectContaining({ stage: 'connector-create', status: 'outcome_unknown' }),
+    ]);
+    expect(manifest.writeAttempts).toEqual(registry.writeAttempts);
+    expect(manifest).toMatchObject({
+      status: 'failed',
+      cleanup: { status: 'cleanup_blocked' },
+      resources: expect.arrayContaining([
+        expect.objectContaining({ type: 'connector-candidate', owned: false, outcome: 'outcome_unknown' }),
+      ]),
+    });
+    expect(registry.cleanup).toMatchObject({
+      status: 'cleanup_blocked',
+      residual: [expect.objectContaining({ reason: 'remote_outcome_unknown' })],
+    });
+    expect(registry.cleanup.residual[0].resource).toMatchObject({
+      type: 'connector-candidate',
+      owned: false,
+      outcome: 'outcome_unknown',
+    });
+  });
+
+  test('records connection create as outcome_unknown after the connector is verified and never retries', async () => {
+    const registryDir = fs.mkdtempSync(path.join(os.tmpdir(), 'connector-e2e-connection-unknown-'));
+    const calls = [];
+    await expect(run({
+      config: {
+        enabled: true,
+        ready: true,
+        missing: [],
+        prefix: 'OY_E2E_CONNECTION_UNKNOWN',
+        connectorName: 'OY_E2E_CONNECTION_UNKNOWN__Connector',
+        connectionName: 'OY_E2E_CONNECTION_UNKNOWN__Account',
+        echoBaseUrl: 'https://fixture.openyida.team/e2e/echo',
+        fixtureMarker: 'fixture-v1',
+        fixtureOwner: 'openyida-team',
+        registryDir,
+        corpId: 'corp-connection-unknown',
+      },
+      logger: () => {},
+      runCli: args => {
+        const command = args.slice(0, 2).join(' ');
+        calls.push(command);
+        if (args[0] === 'login') {
+          return { json: { ok: true, status: 'ok', corp_id: 'corp-connection-unknown', auth_profile: 'profile-one' } };
+        }
+        if (command === 'connector create') {
+          return { json: { success: true, connectorId: '101', connectorName: 'Http_owned', readbackVerified: true } };
+        }
+        throw new Error('socket closed after connection request');
+      },
+    })).rejects.toThrow('socket closed after connection request');
+
+    expect(calls).toEqual(['login --check-only', 'connector create', 'connector create-connection']);
+    const registry = JSON.parse(fs.readFileSync(path.join(registryDir, 'OY_E2E_CONNECTION_UNKNOWN.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(registryDir, 'OY_E2E_CONNECTION_UNKNOWN.manifest.json'), 'utf8'));
+    expect(registry.writeAttempts).toEqual([
+      expect.objectContaining({ stage: 'connector-create', status: 'completed', exactId: '101' }),
+      expect.objectContaining({ stage: 'connection-create', status: 'outcome_unknown' }),
+    ]);
+    expect(manifest.writeAttempts).toEqual(registry.writeAttempts);
+    expect(manifest).toMatchObject({
+      status: 'failed',
+      cleanup: { status: 'cleanup_blocked' },
+      resources: expect.arrayContaining([
+        expect.objectContaining({ type: 'connection-candidate', owned: false, outcome: 'outcome_unknown' }),
+      ]),
+    });
+    expect(registry.cleanup.status).toBe('cleanup_blocked');
+    expect(registry.cleanup.residual).toEqual(expect.arrayContaining([
+      expect.objectContaining({ reason: 'remote_cleanup_unsupported' }),
+      expect.objectContaining({ reason: 'remote_outcome_unknown' }),
+    ]));
+    expect(registry.resources).toContainEqual(expect.objectContaining({
+      type: 'connection-candidate', owned: false, outcome: 'outcome_unknown', connectorId: '101',
+    }));
+  });
+
+  test('requires exact controlled fixture fields and rejects malformed or substring-only evidence', () => {
+    const config = {
+      prefix: 'RUN-EXACT',
+      fixtureMarker: 'fixture-v1',
+      fixtureOwner: 'openyida-team',
+    };
+    const valid = {
+      statusLine: 'HTTP/1.1 200 OK',
+      responseHeaders: { 'x-openyida-fixture-owner': 'openyida-team' },
+      content: '{"runId":"RUN-EXACT","fixtureMarker":"fixture-v1","authorization":"Basic ***"}',
+    };
+    expect(validateControlledFixtureResponse(valid, config)).toBe(true);
+    expect(validateControlledFixtureResponse({
+      ...valid,
+      content: '{"message":"RUN-EXACT fixture-v1 Basic ***"}',
+    }, config)).toBe(false);
+    expect(validateControlledFixtureResponse({
+      ...valid,
+      content: '{"runId":"RUN-EXACT-suffix","fixtureMarker":"prefix-fixture-v1","authorization":"Basic *** trailing"}',
+    }, config)).toBe(false);
+    expect(validateControlledFixtureResponse({ ...valid, content: '{broken' }, config)).toBe(false);
+    expect(validateControlledFixtureResponse({ ...valid, responseHeaders: '{broken' }, config)).toBe(false);
+    expect(validateControlledFixtureResponse({
+      ...valid,
+      responseHeaders: { 'x-openyida-fixture-owner': 'openyida-team-suffix' },
+    }, config)).toBe(false);
   });
 
   test('cleanup is owned-only and never guesses unsupported remote deletion', () => {

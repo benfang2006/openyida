@@ -122,6 +122,62 @@ function buildEchoOperation() {
   };
 }
 
+function parseCliJsonStdout(stdout) {
+  const text = String(stdout || '').trim();
+  if (!text) {return null;}
+  try {
+    return JSON.parse(text);
+  } catch {
+    // CLI commands may print human-readable lines before or after their JSON.
+  }
+
+  let lastParsed = null;
+  let lastEnd = -1;
+  for (let start = 0; start < text.length; start++) {
+    if (text[start] !== '{' && text[start] !== '[') {continue;}
+    const stack = [];
+    let inString = false;
+    let escaped = false;
+    for (let index = start; index < text.length; index++) {
+      const char = text[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+        } else if (char === '\\') {
+          escaped = true;
+        } else if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (char === '{' || char === '[') {
+        stack.push(char);
+        continue;
+      }
+      if (char !== '}' && char !== ']') {continue;}
+      const expected = char === '}' ? '{' : '[';
+      if (stack.pop() !== expected) {break;}
+      if (stack.length === 0) {
+        try {
+          const parsed = JSON.parse(text.slice(start, index + 1));
+          if (index > lastEnd) {
+            lastParsed = parsed;
+            lastEnd = index;
+          }
+        } catch {
+          // Keep scanning later top-level candidates.
+        }
+        break;
+      }
+    }
+  }
+  return lastParsed;
+}
+
 function runCli(args, env = process.env) {
   const result = spawnSync(process.execPath, [BIN, ...args], {
     cwd: ROOT,
@@ -135,12 +191,35 @@ function runCli(args, env = process.env) {
   if (result.status !== 0) {
     throw new Error(redactCorpIdentifiers(redactString((stderr.trim() || stdout.trim()).slice(0, 1600))));
   }
-  const lines = stdout.split('\n').map(line => line.trim()).filter(Boolean);
-  let json = null;
-  for (let i = lines.length - 1; i >= 0; i--) {
-    try {json = JSON.parse(lines[i]); break;} catch { /* keep scanning */ }
+  return { stdout, stderr, json: parseCliJsonStdout(stdout) };
+}
+
+function parseStrictJsonObject(value) {
+  let parsed = value;
+  if (typeof value === 'string') {
+    try {
+      parsed = JSON.parse(value.trim());
+    } catch {
+      return null;
+    }
   }
-  return { stdout, stderr, json };
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+}
+
+function validateControlledFixtureResponse(response, config) {
+  if (!response || !String(response.statusLine || '').match(/^HTTP\/\d(?:\.\d)?\s+2\d\d(?:\s|$)/)) {
+    return false;
+  }
+  const content = parseStrictJsonObject(response.content);
+  const headers = parseStrictJsonObject(response.responseHeaders);
+  if (!content || !headers) {return false;}
+  const ownerHeaders = Object.entries(headers)
+    .filter(([name]) => name.toLowerCase() === 'x-openyida-fixture-owner');
+  return content.runId === config.prefix &&
+    content.fixtureMarker === config.fixtureMarker &&
+    content.authorization === 'Basic ***' &&
+    ownerHeaders.length === 1 &&
+    ownerHeaders[0][1] === config.fixtureOwner;
 }
 
 function writeOperations(config, operations) {
@@ -185,6 +264,7 @@ function createEvidence(config, operationArtifact) {
     preWriteCheckpoint: { ready: false, remoteWrites: 0 },
     resources: [],
     commands: [],
+    writeAttempts: [],
   };
   const manifest = {
     runId: config.prefix,
@@ -193,6 +273,7 @@ function createEvidence(config, operationArtifact) {
     ownedResourcePlan,
     fixture,
     preWriteCheckpoint: registry.preWriteCheckpoint,
+    writeAttempts: registry.writeAttempts,
   };
   return { registry, manifest };
 }
@@ -231,6 +312,10 @@ function cleanupOwnedConnectorResources(options) {
   const skipped = [];
   const removePath = options.removePath || (targetPath => fs.rmSync(targetPath, { recursive: true, force: true }));
   for (const resource of (options.resources || []).slice().reverse()) {
+    if (resource && resource.runId === options.runId && resource.outcome === 'outcome_unknown') {
+      residual.push({ resource, reason: 'remote_outcome_unknown' });
+      continue;
+    }
     const ownership = ownershipResult(resource, {
       runId: options.runId,
       namePrefix: options.namePrefix,
@@ -289,6 +374,10 @@ async function run(options = {}) {
     manifest.organizationSelection = registry.organizationSelection;
     manifest.preWriteCheckpoint = registry.preWriteCheckpoint;
     manifest.remoteWrites = registry.remoteWrites;
+    manifest.writeAttempts = registry.writeAttempts;
+    manifest.status = registry.status;
+    manifest.resources = registry.resources;
+    manifest.cleanup = registry.cleanup || null;
     persistManifest(manifestPath, manifest);
     persistRegistry(registryPath, registry);
   }
@@ -352,18 +441,49 @@ async function run(options = {}) {
   const commandEnv = { ...env, OPENYIDA_AUTH_CORP_ID: config.corpId };
   delete commandEnv.OPENYIDA_AUTH_PROFILE;
   delete commandEnv.OPENYIDA_AUTH_USER_ID;
-  function step(name, args, stepOptions = {}) {
-    if (stepOptions.remoteWrite) {
-      if (!registry.preWriteCheckpoint.ready || !fs.existsSync(registryPath) || !fs.existsSync(manifestPath)) {
-        throw new Error(t('connector_e2e.prewrite_evidence_missing'));
-      }
-      registry.remoteWrites += 1;
-      persistEvidence();
-    }
+  function step(name, args) {
     const result = executeCli(args, commandEnv);
     registry.commands.push({ name, args: redactRecordedArgs(args), completedAt: new Date().toISOString() });
     persistEvidence();
     return result;
+  }
+
+  function beginRemoteWrite(stage, candidate) {
+    if (!registry.preWriteCheckpoint.ready || !fs.existsSync(registryPath) || !fs.existsSync(manifestPath)) {
+      throw new Error(t('connector_e2e.prewrite_evidence_missing'));
+    }
+    const attempt = {
+      stage,
+      status: 'attempted',
+      attemptedAt: new Date().toISOString(),
+      candidate: { ...candidate, owned: false },
+    };
+    registry.writeAttempts.push(attempt);
+    registry.remoteWrites += 1;
+    persistEvidence();
+    return attempt;
+  }
+
+  function completeRemoteWrite(attempt, exactId) {
+    attempt.status = 'completed';
+    attempt.completedAt = new Date().toISOString();
+    attempt.exactId = String(exactId);
+    persistEvidence();
+  }
+
+  function markRemoteWriteUnknown(attempt) {
+    if (!attempt || attempt.status === 'completed' || attempt.status === 'outcome_unknown') {return;}
+    attempt.status = 'outcome_unknown';
+    attempt.outcomeRecordedAt = new Date().toISOString();
+    registry.resources.push({
+      ...attempt.candidate,
+      runId: config.prefix,
+      owned: false,
+      outcome: 'outcome_unknown',
+      stage: attempt.stage,
+      recordedAt: attempt.outcomeRecordedAt,
+    });
+    persistEvidence();
   }
 
   const runtimeAuth = {
@@ -391,25 +511,48 @@ async function run(options = {}) {
     };
     persistEvidence();
 
-    const created = requireResult('step_connector_create', step('connector-create', [
-      'connector', 'create', config.connectorName, config.echoBaseUrl,
-      '--auth', '基本身份验证', '--username', runtimeAuth.username, '--password', runtimeAuth.password,
-      '--operations', operationArtifact.temporaryPath, '--json',
-    ], { remoteWrite: true }));
-    if (!created.connectorId || !created.connectorName || created.readbackVerified !== true) {
-      throw new Error(t('connector_e2e.connector_identity_unverified'));
+    const connectorAttempt = beginRemoteWrite('connector-create', {
+      type: 'connector-candidate',
+      name: config.connectorName,
+    });
+    let created;
+    try {
+      created = requireResult('step_connector_create', step('connector-create', [
+        'connector', 'create', config.connectorName, config.echoBaseUrl,
+        '--auth', '基本身份验证', '--username', runtimeAuth.username, '--password', runtimeAuth.password,
+        '--operations', operationArtifact.temporaryPath, '--json',
+      ]));
+      if (!created.connectorId || !created.connectorName || created.readbackVerified !== true) {
+        throw new Error(t('connector_e2e.connector_identity_unverified'));
+      }
+      completeRemoteWrite(connectorAttempt, created.connectorId);
+    } catch (error) {
+      markRemoteWriteUnknown(connectorAttempt);
+      throw error;
     }
     trackResource({
       type: 'connector', runId: config.prefix, owned: true, name: config.connectorName,
       exactId: String(created.connectorId), connectorName: created.connectorName,
     });
 
-    const connection = requireResult('step_connection_create', step('connector-create-connection', [
-      'connector', 'create-connection', String(created.connectorId), config.connectionName,
-      '--username', runtimeAuth.username, '--password', runtimeAuth.password, '--json',
-    ], { remoteWrite: true }));
-    if (!connection.connectionId || connection.readbackVerified !== true) {
-      throw new Error(t('connector_e2e.connection_identity_unverified'));
+    const connectionAttempt = beginRemoteWrite('connection-create', {
+      type: 'connection-candidate',
+      name: config.connectionName,
+      connectorId: String(created.connectorId),
+    });
+    let connection;
+    try {
+      connection = requireResult('step_connection_create', step('connector-create-connection', [
+        'connector', 'create-connection', String(created.connectorId), config.connectionName,
+        '--username', runtimeAuth.username, '--password', runtimeAuth.password, '--json',
+      ]));
+      if (!connection.connectionId || connection.readbackVerified !== true) {
+        throw new Error(t('connector_e2e.connection_identity_unverified'));
+      }
+      completeRemoteWrite(connectionAttempt, connection.connectionId);
+    } catch (error) {
+      markRemoteWriteUnknown(connectionAttempt);
+      throw error;
     }
     trackResource({
       type: 'connection', runId: config.prefix, owned: true, name: config.connectionName,
@@ -429,17 +572,7 @@ async function run(options = {}) {
       '--query-json', JSON.stringify({ runId: config.prefix }), '--header-json', '{}',
       '--body-json', markerBody, '--json',
     ]));
-    const testedContent = tested.content && typeof tested.content === 'object'
-      ? JSON.stringify(tested.content)
-      : String(tested.content || '');
-    const testedHeaders = typeof tested.responseHeaders === 'string'
-      ? tested.responseHeaders
-      : JSON.stringify(tested.responseHeaders || {});
-    if (!String(tested.statusLine || '').match(/^HTTP\/\d(?:\.\d)?\s+2\d\d\b/) ||
-        !testedContent.includes(config.prefix) ||
-        !testedContent.includes(config.fixtureMarker) ||
-        !testedHeaders.includes(config.fixtureOwner) ||
-        !/Basic\s+\*\*\*/i.test(testedContent)) {
+    if (!validateControlledFixtureResponse(tested, config)) {
       throw new Error(t('connector_e2e.test_contract_unverified'));
     }
     const after = requireResult('step_action_readback_after', step('connector-list-actions-after', [
@@ -499,7 +632,9 @@ module.exports = {
   getConfig,
   hashIdentity,
   isControlledFixtureUrl,
+  parseCliJsonStdout,
   run,
   runCli,
+  validateControlledFixtureResponse,
   writeOperations,
 };

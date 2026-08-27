@@ -471,28 +471,12 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida connector add-action --operations <file> --connector-id <id>` | Add an action |
 | `openyida connector list-actions <id>` | List actions |
 | `openyida connector delete-action <id> <operation-id>` | Delete an action |
-| `openyida connector test --connector-id <id> --action <actionId> [--path-json JSON] [--query-json JSON] [--header-json JSON] [--body-json JSON] [--account-id <id>]` | Test an action with location-specific parameters and an owned auth account |
+| `openyida connector test --connector-id <id> --action <actionId> [--path-json JSON] [--query-json JSON] [--header-json JSON] [--body-json JSON] [--account-id <id>]` | Test an action |
 | `openyida connector list-connections <id>` | List auth connections |
 | `openyida connector create-connection <id> <name>` | Create an auth connection |
-| `openyida connector smart-create --curl "..."` | Generate a redacted connector action draft from cURL (does not create remote resources) |
+| `openyida connector smart-create --curl "..."` | Generate a redacted action draft from cURL (no remote create) |
 | `openyida connector parse-api [options]` | Parse API information |
 | `openyida connector gen-template [output]` | Generate API document template |
-
-`connector test` keeps the legacy flat `--params` option, but dispatches each key only to the location proven by the action schema. Unknown or ambiguous keys fail closed. Authenticated connectors require `--account-id`, and that account must belong to the selected connector. The test response follows the frontend canonical contract `{statusLine,responseHeaders,content}`; unknown envelopes and non-2xx status lines are failures.
-
-The opt-in connector E2E is intentionally separate from the shared full runner:
-
-```bash
-OPENYIDA_E2E=1 \
-OPENYIDA_E2E_CONNECTOR=1 \
-OPENYIDA_E2E_CORP_ID='<target-corp-id>' \
-OPENYIDA_E2E_CONNECTOR_ECHO_URL='https://<team-controlled-host>/<stable-echo-path>' \
-OPENYIDA_E2E_CONNECTOR_FIXTURE_MARKER='<expected-response-marker>' \
-OPENYIDA_E2E_CONNECTOR_FIXTURE_OWNER='<expected-owner-header-value>' \
-node scripts/e2e-real/connector/runner.js
-```
-
-The runner rejects public generic echo services such as httpbin and example.com. Before its first remote write it selects and verifies the explicit organization profile, prints a redacted resource plan, and persists synchronized registry/manifest evidence plus the SHA-256 of the preserved operations fixture. It creates a uniquely owned Basic-auth connector, verifies the controlled fixture marker/owner header and that testing does not change the persisted action, deletes only its temporary local copy, and reports remote connector/account cleanup as blocked because the CLI has no proven delete API. If organization or fixture ownership cannot be proven, it returns `PLATFORM_PROBE_REQUIRED` with zero remote writes.
 
 ### Integration & DingTalk
 
@@ -536,6 +520,24 @@ The runner rejects public generic echo services such as httpbin and example.com.
 <!-- OPENYIDA_COMMANDS_END -->
 
 ### CLI Notes
+
+#### Connector Safety and Real E2E
+
+`connector test` keeps the legacy flat `--params` option, but dispatches each key only to the location proven by the action schema. Unknown or ambiguous keys fail closed. Authenticated connectors require `--account-id`, and that account must belong to the selected connector. The test response follows the frontend canonical contract `{statusLine,responseHeaders,content}`; unknown envelopes and non-2xx status lines are failures.
+
+The opt-in connector E2E is intentionally separate from the shared full runner:
+
+```bash
+OPENYIDA_E2E=1 \
+OPENYIDA_E2E_CONNECTOR=1 \
+OPENYIDA_E2E_CORP_ID='<target-corp-id>' \
+OPENYIDA_E2E_CONNECTOR_ECHO_URL='https://<team-controlled-host>/<stable-echo-path>' \
+OPENYIDA_E2E_CONNECTOR_FIXTURE_MARKER='<expected-response-marker>' \
+OPENYIDA_E2E_CONNECTOR_FIXTURE_OWNER='<expected-owner-header-value>' \
+node scripts/e2e-real/connector/runner.js
+```
+
+The runner rejects public generic echo services such as httpbin and example.com. Before its first remote write it selects and verifies the explicit organization profile, prints a redacted resource plan, and persists synchronized registry/manifest evidence plus the SHA-256 of the preserved operations fixture. The controlled fixture must return exact JSON fields `content.runId`, `content.fixtureMarker`, and `content.authorization === "Basic ***"`, plus the exact `x-openyida-fixture-owner` response header. Substring matches, malformed JSON, and wrong fields fail closed. Each remote create is persisted as `attempted` before execution and becomes `completed` only after exact readback; an exception is recorded as `outcome_unknown` with a non-owned residual candidate and is never retried. The runner deletes only its temporary local copy and reports remote connector/account cleanup as blocked because the CLI has no proven delete API. If organization or fixture ownership cannot be proven, it returns `PLATFORM_PROBE_REQUIRED` with zero remote writes.
 
 `openyida asset resolve --hero <path-or-url> --product <path-or-url> --require-hero --upload-assets --json` is the preferred preflight for homepage visuals. It verifies public image URLs, uploads local images when CDN is configured, mirrors verified external images to CDN when `--upload-assets` is passed, and returns `materialStatus: final|draft|none` so agents do not claim an unfinished visual page is final.
 
