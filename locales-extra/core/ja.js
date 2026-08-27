@@ -1790,3 +1790,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ 書き込み要求が成功しました。正確な再読み取りを開始します',
   saved_message: '権限設定を保存しました',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'getProcessById の内容は有効な JSON である必要があります: {0}',
+  platform_view_request_failed: 'getProcessById は成功レスポンスを返しませんでした。',
+  platform_view_content_invalid: 'getProcessById の内容はオブジェクトとして解決される必要があります。',
+  platform_view_schema_missing: 'プラットフォームビューには CanvasEngine schema が必要です。',
+  platform_view_nodes_missing: 'プラットフォームビューの schema.children は配列である必要があります。',
+  multi_approval_mode_invalid: '複数承認モードは all、or、oneByOne のいずれかである必要があります: {0}',
+  form_mode_operation_failed: 'フォームモード操作に失敗しました。',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: '再試行する前に appType、formUuid、プロセスの関連付けを確認してください。',
+  authorize_replacement: '完全な置換概要を提示し、明示的な確認を得てから --replace を指定してください。',
+  verify_published_view: '公開済みの可能性があります。書き込みを再試行せず、正確な PUBLISHED バージョンとプラットフォームビューを読み取り専用で確認してください。',
+  unknown_result: '書き込み結果は不明です。読み取り専用の状態確認または手動検証のみを行い、書き込みを直接再試行しないでください。',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: '有効な宜搭ログイン状態がありません。先に openyida login を実行してください。',
+});

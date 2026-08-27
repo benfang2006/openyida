@@ -167,6 +167,100 @@ describe('configure-process replacement and verification safety', () => {
     fs.rmSync(harness.tempDir, { recursive: true, force: true });
   });
 
+  test('recovers a success-without-id draft only from one exact new SAVED identity', async () => {
+    const harness = loadSubject();
+    queueExistingProcess(harness, {
+      saved: [{ id: 50, version: '1', status: 'SAVED' }],
+    });
+    harness.mockPostFormOnce
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: true });
+    harness.mockGetOnce
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          data: [
+            { id: 50, version: '1', status: 'SAVED' },
+            { id: 101, version: '3', status: 'SAVED' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ success: true, content: { data: [{ id: 101, version: '3' }] } })
+      .mockResolvedValueOnce(platformView('FORM_TEST'));
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await harness.subject.run([
+      'APP_TEST', 'FORM_TEST', harness.definitionFile, 'TPROC_TEST', '--replace',
+    ]);
+
+    const savedBody = harness.mockPostFormOnce.mock.calls[1][1]({ csrfToken: 'csrf' });
+    expect(savedBody).toMatchObject({ processId: '101', processVersion: '3' });
+    expect(result).toMatchObject({ processId: 101, processVersion: 3 });
+    fs.rmSync(harness.tempDir, { recursive: true, force: true });
+  });
+
+  test.each([
+    ['zero', [{ id: 50, version: '1', status: 'SAVED' }], 0],
+    ['multiple', [
+      { id: 50, version: '1', status: 'SAVED' },
+      { id: 101, version: '3', status: 'SAVED' },
+      { id: 102, version: '3', status: 'SAVED' },
+    ], 2],
+  ])('fails closed when success-without-id recovery has %s exact candidates', async (_label, observed, candidateCount) => {
+    const harness = loadSubject();
+    queueExistingProcess(harness, {
+      saved: [{ id: 50, version: '1', status: 'SAVED' }],
+    });
+    harness.mockPostFormOnce.mockResolvedValueOnce({ success: true });
+    harness.mockGetOnce.mockResolvedValueOnce({ success: true, content: { data: observed } });
+
+    await expect(harness.subject.run([
+      'APP_TEST', 'FORM_TEST', harness.definitionFile, 'TPROC_TEST', '--replace',
+    ])).rejects.toMatchObject({
+      code: 'NON_IDEMPOTENT_RESULT_UNKNOWN',
+      details: expect.objectContaining({
+        resultUnknown: true,
+        identityRecovery: expect.objectContaining({ candidateCount }),
+      }),
+    });
+    expect(harness.mockPostFormOnce).toHaveBeenCalledTimes(1);
+    fs.rmSync(harness.tempDir, { recursive: true, force: true });
+  });
+
+  test('does not mistake a concurrent higher SAVED version for the requested draft', async () => {
+    const harness = loadSubject();
+    queueExistingProcess(harness, {
+      saved: [{ id: 50, version: '1', status: 'SAVED' }],
+    });
+    harness.mockPostFormOnce
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: true });
+    harness.mockGetOnce
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          data: [
+            { id: 50, version: '1', status: 'SAVED' },
+            { id: 999, version: '4', status: 'SAVED' },
+            { id: 101, version: '3', status: 'SAVED' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ success: true, content: { data: [{ id: 101, version: '3' }] } })
+      .mockResolvedValueOnce(platformView('FORM_TEST'));
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await harness.subject.run([
+      'APP_TEST', 'FORM_TEST', harness.definitionFile, 'TPROC_TEST', '--replace',
+    ]);
+
+    expect(result).toMatchObject({ processId: 101, processVersion: 3 });
+    expect(result.processId).not.toBe(999);
+    fs.rmSync(harness.tempDir, { recursive: true, force: true });
+  });
+
   test('returns a stable unknown-result code and never retries a challenged draft write', async () => {
     const harness = loadSubject();
     queueExistingProcess(harness, { published: false });

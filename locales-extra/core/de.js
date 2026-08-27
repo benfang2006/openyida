@@ -1863,3 +1863,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ Schreibanforderung angenommen; exakter Rücklesevorgang wird gestartet',
   saved_message: 'Berechtigungskonfiguration gespeichert',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'Der Inhalt von getProcessById muss gültiges JSON sein: {0}',
+  platform_view_request_failed: 'getProcessById hat keine erfolgreiche Antwort geliefert.',
+  platform_view_content_invalid: 'Der Inhalt von getProcessById muss ein Objekt ergeben.',
+  platform_view_schema_missing: 'Die Plattformansicht muss ein CanvasEngine-Schema enthalten.',
+  platform_view_nodes_missing: 'schema.children der Plattformansicht muss ein Array sein.',
+  multi_approval_mode_invalid: 'Der Mehrfachgenehmigungsmodus muss all, or oder oneByOne sein: {0}',
+  form_mode_operation_failed: 'Der Formularmodus-Vorgang ist fehlgeschlagen.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'Prüfen Sie appType, formUuid und die Prozessbindung, bevor Sie es erneut versuchen.',
+  authorize_replacement: 'Zeigen Sie die vollständige Ersetzungsübersicht und holen Sie eine ausdrückliche Bestätigung ein, bevor Sie --replace übergeben.',
+  verify_published_view: 'Die Veröffentlichung könnte erfolgreich gewesen sein. Lesen Sie zuerst die exakte PUBLISHED-Version und Plattformansicht ohne Schreibzugriff zurück.',
+  unknown_result: 'Das Schreibergebnis ist unbekannt. Verwenden Sie nur schreibgeschützte Statusabfragen oder eine manuelle Prüfung; wiederholen Sie den Schreibvorgang nicht direkt.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'Keine gültige Yida-Anmeldung gefunden. Führen Sie zuerst openyida login aus.',
+});

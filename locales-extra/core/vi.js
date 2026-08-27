@@ -1863,3 +1863,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ Yêu cầu ghi đã thành công; bắt đầu đọc lại chính xác',
   saved_message: 'Đã lưu cấu hình quyền',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'Nội dung getProcessById phải là JSON hợp lệ: {0}',
+  platform_view_request_failed: 'getProcessById không trả về phản hồi thành công.',
+  platform_view_content_invalid: 'Nội dung getProcessById phải được phân giải thành một đối tượng.',
+  platform_view_schema_missing: 'Chế độ xem nền tảng phải chứa schema CanvasEngine.',
+  platform_view_nodes_missing: 'schema.children của chế độ xem nền tảng phải là một mảng.',
+  multi_approval_mode_invalid: 'Chế độ phê duyệt nhiều người phải là all, or hoặc oneByOne: {0}',
+  form_mode_operation_failed: 'Thao tác chế độ biểu mẫu thất bại.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'Hãy kiểm tra appType, formUuid và liên kết quy trình trước khi thử lại.',
+  authorize_replacement: 'Hiển thị toàn bộ tóm tắt thay thế và nhận xác nhận rõ ràng trước khi truyền --replace.',
+  verify_published_view: 'Có thể việc phát hành đã thành công. Chỉ đọc lại phiên bản PUBLISHED chính xác và chế độ xem nền tảng trước khi thử ghi thêm.',
+  unknown_result: 'Không xác định được kết quả ghi. Chỉ dùng kiểm tra trạng thái chỉ đọc hoặc xác minh thủ công; không trực tiếp thử ghi lại.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'Không tìm thấy phiên đăng nhập Yida hợp lệ. Hãy chạy openyida login trước.',
+});

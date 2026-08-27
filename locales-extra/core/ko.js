@@ -1864,3 +1864,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ 쓰기 요청이 성공했습니다. 정확한 재조회를 시작합니다',
   saved_message: '권한 설정이 저장되었습니다',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'getProcessById 내용은 유효한 JSON이어야 합니다: {0}',
+  platform_view_request_failed: 'getProcessById가 성공 응답을 반환하지 않았습니다.',
+  platform_view_content_invalid: 'getProcessById 내용은 객체로 해석되어야 합니다.',
+  platform_view_schema_missing: '플랫폼 뷰에는 CanvasEngine schema가 있어야 합니다.',
+  platform_view_nodes_missing: '플랫폼 뷰의 schema.children은 배열이어야 합니다.',
+  multi_approval_mode_invalid: '다중 승인 모드는 all, or 또는 oneByOne이어야 합니다: {0}',
+  form_mode_operation_failed: '폼 모드 작업에 실패했습니다.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: '다시 시도하기 전에 appType, formUuid 및 프로세스 연결을 확인하세요.',
+  authorize_replacement: '전체 교체 요약을 보여 주고 명시적 확인을 받은 후에만 --replace를 전달하세요.',
+  verify_published_view: '게시가 적용되었을 수 있습니다. 쓰기를 재시도하지 말고 정확한 PUBLISHED 버전과 플랫폼 뷰를 읽기 전용으로 확인하세요.',
+  unknown_result: '쓰기 결과를 알 수 없습니다. 읽기 전용 상태 확인 또는 수동 검증만 수행하고 쓰기를 직접 재시도하지 마세요.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: '유효한 Yida 로그인 상태가 없습니다. 먼저 openyida login을 실행하세요.',
+});

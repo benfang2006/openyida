@@ -1863,3 +1863,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ लेखन अनुरोध सफल; सटीक पुनर्पठन शुरू किया जा रहा है',
   saved_message: 'अनुमति कॉन्फ़िगरेशन सहेजा गया',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'getProcessById सामग्री मान्य JSON होनी चाहिए: {0}',
+  platform_view_request_failed: 'getProcessById ने सफल प्रतिक्रिया नहीं दी।',
+  platform_view_content_invalid: 'getProcessById सामग्री एक ऑब्जेक्ट में बदलनी चाहिए।',
+  platform_view_schema_missing: 'प्लेटफ़ॉर्म दृश्य में CanvasEngine schema होना चाहिए।',
+  platform_view_nodes_missing: 'प्लेटफ़ॉर्म दृश्य का schema.children एक array होना चाहिए।',
+  multi_approval_mode_invalid: 'बहु-अनुमोदन मोड all, or या oneByOne होना चाहिए: {0}',
+  form_mode_operation_failed: 'फ़ॉर्म मोड कार्रवाई विफल हुई।',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'पुनः प्रयास से पहले appType, formUuid और प्रक्रिया बाइंडिंग जाँचें।',
+  authorize_replacement: 'पूरा प्रतिस्थापन सारांश दिखाएँ और स्पष्ट पुष्टि मिलने के बाद ही --replace दें।',
+  verify_published_view: 'प्रकाशन सफल हो सकता है। दोबारा लिखने से पहले सटीक PUBLISHED संस्करण और प्लेटफ़ॉर्म दृश्य को केवल पढ़ने के लिए जाँचें।',
+  unknown_result: 'लेखन परिणाम अज्ञात है। केवल-पठन स्थिति जाँच या मैन्युअल सत्यापन करें; लेखन सीधे दोबारा न चलाएँ।',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'कोई मान्य Yida लॉगिन सत्र नहीं मिला। पहले openyida login चलाएँ।',
+});

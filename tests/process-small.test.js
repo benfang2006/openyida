@@ -41,6 +41,8 @@ jest.mock('../lib/app/create-form', () => ({
 
 const childProcess = require('child_process');
 const utils = require('../lib/core/utils');
+const chalk = require('../lib/core/chalk');
+const i18n = require('../lib/core/i18n');
 const configureProcess = require('../lib/process/configure-process');
 const createForm = require('../lib/app/create-form');
 const createProcess = require('../lib/process/create-process');
@@ -65,6 +67,7 @@ describe('small process commands', () => {
     utils.findProjectRoot.mockReturnValue(tmpDir);
     utils.requestWithAutoLogin.mockImplementation((requestFn, authRef) => requestFn(authRef));
     childProcess.spawnSync.mockReturnValue({ status: 0 });
+    i18n.setLanguage('zh');
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
@@ -109,6 +112,27 @@ describe('small process commands', () => {
     });
     expect(createForm.createFormForLegacyProcess).not.toHaveBeenCalled();
     expect(utils.httpPost).not.toHaveBeenCalled();
+    expect(configureProcess.run).not.toHaveBeenCalled();
+  });
+
+  test('create-process returns localized compiler errors through the public English call chain', async () => {
+    const processDefPath = path.join(tmpDir, 'process-en.json');
+    fs.writeFileSync(processDefPath, JSON.stringify({
+      nodes: [{
+        type: 'multiApproval',
+        name: 'Joint review',
+        mode: 'invalid',
+        approver: { type: 'user', users: [{ id: 'user-1', name: 'Reviewer' }] },
+      }],
+    }), 'utf8');
+    i18n.setLanguage('en');
+
+    await expect(createProcess.run([
+      'APP_XXX', '--formUuid', 'FORM_1', processDefPath,
+    ])).rejects.toMatchObject({
+      code: 'PROCESS_COMPILE_MULTI_APPROVAL_MODE_INVALID',
+      message: 'Multi-approval mode must be all, or, or oneByOne: invalid',
+    });
     expect(configureProcess.run).not.toHaveBeenCalled();
   });
 
@@ -278,6 +302,44 @@ describe('small process commands', () => {
       },
     });
     expect(thrown.details.stage).not.toBe('configure_process');
+  });
+
+  test.each([
+    ['draft unknown', 'NON_IDEMPOTENT_RESULT_UNKNOWN', 'create_draft'],
+    ['save unknown', 'NON_IDEMPOTENT_RESULT_UNKNOWN', 'save_definition'],
+    ['publish unknown', 'NON_IDEMPOTENT_RESULT_UNKNOWN', 'publish_process'],
+    ['published unverified', 'PUBLISHED_UNVERIFIED', 'verify_published_view'],
+  ])('create-process preserves %s and never emits a write retry command', async (_label, code, stage) => {
+    const processDefPath = path.join(tmpDir, 'process.json');
+    fs.writeFileSync(processDefPath, JSON.stringify({ nodes: [] }), 'utf8');
+    configureProcess.run.mockRejectedValueOnce(new CliError('unsafe result', {
+      code,
+      details: {
+        stage,
+        completedStages: ['read_definition', 'load_auth', 'build_definition'],
+        nextStep: '修正后重试写入。',
+      },
+    }));
+
+    let thrown;
+    try {
+      await createProcess.run(['APP_XXX', '--formUuid', 'FORM_1', processDefPath]);
+    } catch (error) {
+      thrown = error;
+    }
+    const payload = logSpy.mock.calls
+      .map(call => call[0])
+      .filter(line => typeof line === 'string' && line.startsWith('{'))
+      .map(line => JSON.parse(line))
+      .find(item => item && item.success === false);
+    const warnings = chalk.warn.mock.calls.map(call => call.join(' ')).join('\n');
+
+    expect(thrown).toMatchObject({ code });
+    expect(payload).toMatchObject({ errorCode: code, stage });
+    expect(payload).not.toHaveProperty('retryCommand');
+    expect(payload.nextStep).toMatch(/只读|人工/);
+    expect(thrown.details.context).not.toHaveProperty('retryCommand');
+    expect(warnings).not.toContain('openyida create-process');
   });
 
   test('preview-process writes an HTML preview and returns metadata', async () => {

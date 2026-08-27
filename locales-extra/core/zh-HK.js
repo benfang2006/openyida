@@ -1738,3 +1738,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ 寫入請求成功，開始精確回讀',
   saved_message: '權限設定已儲存',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'getProcessById 返回內容必須是有效 JSON：{0}',
+  platform_view_request_failed: 'getProcessById 未返回成功回應。',
+  platform_view_content_invalid: 'getProcessById 返回內容必須解析為物件。',
+  platform_view_schema_missing: '平台視圖必須包含 CanvasEngine schema。',
+  platform_view_nodes_missing: '平台視圖的 schema.children 必須是陣列。',
+  multi_approval_mode_invalid: '多人審批模式必須是 all、or 或 oneByOne：{0}',
+  form_mode_operation_failed: '表單模式操作失敗。',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: '核對 appType、formUuid 與流程綁定後重試。',
+  authorize_replacement: '展示完整替換摘要並取得明確確認後，才可傳入 --replace。',
+  verify_published_view: '發佈可能已生效；先唯讀查詢精確 PUBLISHED 版本和平台視圖，不要直接重試寫入。',
+  unknown_result: '寫入結果未知；只能唯讀回讀平台狀態或人工核驗，不得直接重試寫入。',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: '未取得有效宜搭登入狀態，請先執行 openyida login。',
+});

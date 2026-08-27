@@ -1863,3 +1863,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ تم قبول الكتابة؛ بدء إعادة القراءة الدقيقة',
   saved_message: 'تم حفظ إعدادات الأذونات',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'يجب أن يكون محتوى getProcessById بصيغة JSON صالحة: {0}',
+  platform_view_request_failed: 'لم يُرجع getProcessById استجابة ناجحة.',
+  platform_view_content_invalid: 'يجب أن ينتج محتوى getProcessById كائناً.',
+  platform_view_schema_missing: 'يجب أن يحتوي عرض المنصة على مخطط CanvasEngine.',
+  platform_view_nodes_missing: 'يجب أن تكون schema.children في عرض المنصة مصفوفة.',
+  multi_approval_mode_invalid: 'يجب أن يكون وضع الموافقة المتعددة all أو or أو oneByOne: {0}',
+  form_mode_operation_failed: 'فشلت عملية وضع النموذج.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'تحقق من appType وformUuid وربط العملية قبل إعادة المحاولة.',
+  authorize_replacement: 'اعرض ملخص الاستبدال الكامل واحصل على تأكيد صريح قبل تمرير --replace.',
+  verify_published_view: 'قد يكون النشر قد نجح. اقرأ إصدار PUBLISHED الدقيق وعرض المنصة فقط قبل محاولة أي كتابة أخرى.',
+  unknown_result: 'نتيجة الكتابة غير معروفة. استخدم فحوصات القراءة فقط أو التحقق اليدوي، ولا تُعد محاولة الكتابة مباشرة.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'لم يتم العثور على جلسة Yida صالحة. شغّل openyida login أولاً.',
+});

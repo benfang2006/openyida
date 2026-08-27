@@ -1865,3 +1865,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ Écriture acceptée ; démarrage de la relecture exacte',
   saved_message: 'Configuration des permissions enregistrée',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'Le contenu de getProcessById doit être un JSON valide : {0}',
+  platform_view_request_failed: 'getProcessById n’a pas renvoyé de réponse réussie.',
+  platform_view_content_invalid: 'Le contenu de getProcessById doit correspondre à un objet.',
+  platform_view_schema_missing: 'La vue de la plateforme doit contenir un schéma CanvasEngine.',
+  platform_view_nodes_missing: 'schema.children de la vue de la plateforme doit être un tableau.',
+  multi_approval_mode_invalid: 'Le mode d’approbation multiple doit être all, or ou oneByOne : {0}',
+  form_mode_operation_failed: 'L’opération sur le mode du formulaire a échoué.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'Vérifiez appType, formUuid et l’association du processus avant de réessayer.',
+  authorize_replacement: 'Présentez le résumé complet du remplacement et obtenez une confirmation explicite avant de passer --replace.',
+  verify_published_view: 'La publication a peut-être réussi. Relisez la version PUBLISHED exacte et la vue de la plateforme sans écriture avant toute nouvelle tentative.',
+  unknown_result: 'Le résultat de l’écriture est inconnu. Effectuez uniquement une relecture sans écriture ou une vérification manuelle ; ne relancez pas directement l’écriture.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'Aucune session Yida valide n’a été trouvée. Exécutez d’abord openyida login.',
+});

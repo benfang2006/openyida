@@ -1865,3 +1865,23 @@ Object.assign(module.exports.save_permission || (module.exports.save_permission 
   write_accepted_readback: '    ✅ Escrita aceita; iniciando releitura exata',
   saved_message: 'Configuração de permissões salva',
 });
+Object.assign(module.exports.process_errors || (module.exports.process_errors = {}), {
+  platform_view_json_invalid: 'O conteúdo de getProcessById deve ser JSON válido: {0}',
+  platform_view_request_failed: 'getProcessById não retornou uma resposta bem-sucedida.',
+  platform_view_content_invalid: 'O conteúdo de getProcessById deve resultar em um objeto.',
+  platform_view_schema_missing: 'A visualização da plataforma deve conter um schema CanvasEngine.',
+  platform_view_nodes_missing: 'schema.children da visualização da plataforma deve ser um array.',
+  multi_approval_mode_invalid: 'O modo de aprovação múltipla deve ser all, or ou oneByOne: {0}',
+  form_mode_operation_failed: 'A operação do modo de formulário falhou.',
+});
+
+Object.assign(module.exports.process_diagnostics || (module.exports.process_diagnostics = {}), {
+  preflight_form_mode: 'Verifique appType, formUuid e a vinculação do processo antes de tentar novamente.',
+  authorize_replacement: 'Mostre o resumo completo da substituição e obtenha confirmação explícita antes de passar --replace.',
+  verify_published_view: 'A publicação pode ter sido concluída. Consulte em modo somente leitura a versão PUBLISHED exata e a visualização da plataforma antes de qualquer nova escrita.',
+  unknown_result: 'O resultado da escrita é desconhecido. Use apenas consultas somente leitura ou verificação manual; não repita diretamente a escrita.',
+});
+
+Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
+  login_required: 'Nenhuma sessão válida do Yida foi encontrada. Execute openyida login primeiro.',
+});

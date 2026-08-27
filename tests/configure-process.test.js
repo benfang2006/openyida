@@ -637,7 +637,7 @@ describe('configure-process command runner', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  test('refreshes SAVED id and version when draft creation returns an empty object', async () => {
+  test('recovers the exact requested SAVED id when draft creation returns an empty object', async () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-configure-process-'));
     const definitionFile = path.join(tempDir, 'process.json');
     fs.writeFileSync(definitionFile, JSON.stringify({ nodes: [] }));
@@ -652,11 +652,11 @@ describe('configure-process command runner', () => {
     const mockGetOnce = jest.fn()
       .mockResolvedValueOnce({
         success: true,
-        content: { data: [{ id: 102, processVersion: '4', status: 'SAVED' }] },
+        content: { data: [{ id: 102, processVersion: '3', status: 'SAVED' }] },
       })
       .mockResolvedValueOnce({
         success: true,
-        content: { data: [{ id: 102, processVersion: '4', status: 'PUBLISHED' }] },
+        content: { data: [{ id: 102, processVersion: '3', status: 'PUBLISHED' }] },
       })
       .mockResolvedValueOnce(platformView('FORM_TEST'));
     const mockPostForm = jest.fn();
@@ -688,7 +688,7 @@ describe('configure-process command runner', () => {
       '--replace',
     ]);
 
-    expect(result).toMatchObject({ processId: 102, processVersion: 4 });
+    expect(result).toMatchObject({ processId: 102, processVersion: 3 });
     expect(mockGet).toHaveBeenCalledTimes(3);
     expect(mockGetOnce).toHaveBeenCalledTimes(3);
     expect(mockPostForm).not.toHaveBeenCalled();
