@@ -1037,11 +1037,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: '\n❌ Không phát hiện môi trường công cụ AI nào đang hoạt động',
-    supported_tools: '   Công cụ hỗ trợ: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   Công cụ hỗ trợ: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
     current_result: '\n   Kết quả phát hiện hiện tại:',
     force_hint: '\n   Để buộc sao chép vào thư mục hiện tại:\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1062,9 +1062,6 @@ module.exports = {
     symlinks_created: '   Liên kết tượng trưng đã tạo: {0}',
     result_symlink: '   {0} → {1} (liên kết tượng trưng)',
     result_copy: '   {0} → {1} ({2} tệp)',
-    wukong_skills_cleanup: '\n🗑️  Môi trường Wukong: Đang dọn dẹp liên kết tượng trưng yida-skills/...',
-    wukong_skills_cleaned: 'đã dọn dẹp',
-    wukong_skills_not_found: '    ℹ️  Không tìm thấy liên kết tượng trưng hoặc thư mục yida-skills/: {0}',
     remove_failed: '    ❌ Xóa thất bại: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Tạo liên kết tượng trưng Windows thất bại (cần quyền admin), sử dụng sao chép thư mục: {0}',
     symlink_failed: '    ❌ Tạo liên kết tượng trưng thất bại: {0} ({1})'
@@ -1685,7 +1682,7 @@ module.exports = {
   },
   codex_login: {
     title: '  openyida login {0} - {1} Login Mode',
-    not_codex: 'Current environment is not detected as Codex / Qoder / Wukong; returning an in-app browser login handoff only.',
+    not_codex: 'Current environment is not detected as Codex / Qoder; returning an in-app browser login handoff only.',
     no_playwright: '{0} mode does not require Playwright or a separate Chromium install.',
     using_browser: '{0} in-app Browser is only suitable for unauthenticated page previews; use openyida login for CLI auth.',
     browser_handoff_hint: '{0} in-app Browser is not used for CLI auth. Use openyida login.',

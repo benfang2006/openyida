@@ -19,8 +19,6 @@
  *   ~/.qoderwork/skills/yida-skills/       ← <package>/yida-skills (copy)
  *   ~/.qoder/skills/yida-skills/           ← <package>/yida-skills (copy)
  *   ~/.mulerun/skills/yida-skills/          ← <package>/yida-skills (copy)
- *
- * 悟空（Wukong）通过手动上传技能，不在此安装。
  */
 
 'use strict';
@@ -410,7 +408,7 @@ function installCodexPlugin() {
 }
 
 // ── 1. Skills 安装 ───────────────────────────────────────────────────
-// 安装到各 AI 工具的正确 skills 目录（悟空跳过，悟空通过手动上传技能）
+// 安装到各 AI 工具的正确 skills 目录
 
 let codexPluginInstalled = false;
 
@@ -487,11 +485,6 @@ safeExec(() => {
   if (fs.existsSync(path.join(HOME_DIR, '.mulerun'))) {
     installSkillsToTool(path.join(HOME_DIR, '.mulerun'));
   }
-});
-
-// 悟空（Wukong）— 跳过安装，只清理旧版遗留
-safeExec(() => {
-  cleanupLegacy(path.join(HOME_DIR, '.real', 'yida-skills'));
 });
 
 // ── 2. 首次安装欢迎引导 ──────────────────────────────────────────────

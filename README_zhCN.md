@@ -4,7 +4,7 @@
 
 **面向 AI 编程工具的宜搭低代码 CLI。**
 
-OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
+OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder 等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
 
 [快速开始](#快速开始) · [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter) · [核心能力](#核心能力) · [完整功能列表](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=capabilities) · [案例展示](https://demo.aliwork.com/o/openyida/helpCenter?openyidaRoute=showcase) · [自定义页面开发](#自定义页面开发) · [常用命令](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=features/skills) · [开发与校验](#开发与校验)
 
@@ -113,20 +113,6 @@ openyida login --intl
 ```
 
 Agent 会读取 `yida-skills/` 中的技能说明，调用 OpenYida CLI 创建应用、表单、页面、流程和报表，并返回最终访问链接。
-
-## 悟空安装
-
-悟空使用手动上传技能包：
-
-1. 从 GitHub Releases 下载最新 `.zip` 技能包。
-2. 打开悟空。
-3. 进入 **技能中心** > **上传技能**，选择下载的 zip。
-
-悟空终端执行 Node/npm 命令前，先设置内置 Node 路径：
-
-```bash
-export PATH="$HOME/.real/.bin/node/bin:$PATH"
-```
 
 ## 语言包
 
@@ -418,19 +404,6 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `yida-skills/skills/<skill-name>/SKILL.md` | 每个子技能的独立说明 |
 | `yida-skills/references/` | 跨技能共享参考文档 |
 
-构建悟空可上传技能包：
-
-```bash
-npm run build:skills
-```
-
-输出：
-
-```text
-dist/skills/openyida/
-openyida-skills.zip
-```
-
 QwenWork（千问办公）与 QoderWork 一样使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
 
 ## 开发与校验
@@ -438,7 +411,6 @@ QwenWork（千问办公）与 QoderWork 一样使用用户级全局 skill 目录
 ```bash
 npm test
 npm run check:skills
-npm run build:skills
 npm run check:ci
 ```
 
@@ -464,7 +436,6 @@ npm run eval:dashboard
 
 ```bash
 npm run check:skills
-npm run build:skills
 ```
 
 更多说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)。

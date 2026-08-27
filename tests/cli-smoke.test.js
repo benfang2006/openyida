@@ -346,7 +346,6 @@ describe('CLI offline smoke', () => {
       '--browser',
       '--codex',
       '--qoder',
-      '--wukong',
     ];
 
     for (const flag of removedFlags) {

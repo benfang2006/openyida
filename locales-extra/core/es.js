@@ -1039,11 +1039,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: '\n❌ No se detectó ningún entorno de herramienta IA activo',
-    supported_tools: '   Herramientas soportadas: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   Herramientas soportadas: Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
     current_result: '\n   Resultados de detección actuales:',
     force_hint: '\n   Para forzar la copia al directorio actual:\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1064,9 +1064,6 @@ module.exports = {
     symlinks_created: '   Enlaces simbólicos creados: {0}',
     result_symlink: '   {0} → {1} (enlace simbólico)',
     result_copy: '   {0} → {1} ({2} archivos)',
-    wukong_skills_cleanup: '\n🗑️  Entorno Wukong: Limpiando enlace simbólico yida-skills/...',
-    wukong_skills_cleaned: 'limpiado',
-    wukong_skills_not_found: '    ℹ️  No se encontró enlace simbólico o directorio yida-skills/: {0}',
     remove_failed: '    ❌ Error al eliminar: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Creación de enlace simbólico Windows fallida (requiere permisos de admin), usando copia de directorio: {0}',
     symlink_failed: '    ❌ Error al crear enlace simbólico: {0} ({1})'
@@ -1687,7 +1684,7 @@ module.exports = {
   },
   codex_login: {
     title: '  openyida login {0} - {1} Login Mode',
-    not_codex: 'Current environment is not detected as Codex / Qoder / Wukong; returning an in-app browser login handoff only.',
+    not_codex: 'Current environment is not detected as Codex / Qoder; returning an in-app browser login handoff only.',
     no_playwright: '{0} mode does not require Playwright or a separate Chromium install.',
     using_browser: '{0} in-app Browser is only suitable for unauthenticated page previews; use openyida login for CLI auth.',
     browser_handoff_hint: '{0} in-app Browser is not used for CLI auth. Use openyida login.',

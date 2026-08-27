@@ -14,7 +14,6 @@ const {
   detectActiveTool,
   detectRuntimeCapabilities,
   hasDesktopEnvironment,
-  resolveWukongWorkspaceRoot,
   httpPost,
   httpPostJson,
   httpGet,
@@ -898,34 +897,9 @@ describe('detectActiveTool', () => {
     expect(result.dirName).toBe('.codex');
   });
 
-  test('AGENT_WORK_ROOT 包含 .real 时检测为悟空', () => {
-    delete process.env.CLAUDE_CODE;
-    delete process.env.CLAUDE_CODE_ENTRYPOINT;
-    delete process.env.OPENCODE;
-    delete process.env.OPENCODE_CLIENT;
-    delete process.env.QODER_IDE;
-    delete process.env.QODERCLI_INTEGRATION_MODE;
-    delete process.env.QWENWORK_INTEGRATION_MODE;
-    delete process.env.QWENWORKCN_INTEGRATION_MODE;
-    delete process.env.CODEX_SHELL;
-    delete process.env.CURSOR_TRACE_ID;
+  test('退役的 AGENT_WORK_ROOT 信号不再识别为 AI 工具', () => {
     process.env.AGENT_WORK_ROOT = '/home/user/.real/workspace';
-    const result = detectActiveTool();
-    expect(result.tool).toBe('wukong');
-    expect(result.workspaceRoot).toBe('/home/user/.real/workspace');
-  });
-
-  test('resolveWukongWorkspaceRoot 优先使用已有 config.json 的真实工作区', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wukong-root-'));
-    const workspace = path.join(root, 'workspace');
-    fs.mkdirSync(workspace, { recursive: true });
-    fs.writeFileSync(path.join(workspace, 'config.json'), '{}', 'utf8');
-
-    try {
-      expect(resolveWukongWorkspaceRoot(root)).toBe(workspace);
-    } finally {
-      fs.rmSync(root, { recursive: true, force: true });
-    }
+    expect(detectActiveTool()).toBeNull();
   });
 
   test('TERM_PROGRAM=vscode 且有 .aone_copilot 目录时检测为 Aone Copilot', () => {
@@ -942,7 +916,6 @@ describe('detectActiveTool', () => {
     delete process.env.CODEX_HOME;
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
-    delete process.env.AGENT_WORK_ROOT;
     process.env.TERM_PROGRAM = 'vscode';
 
     // 模拟 .aone_copilot 目录存在（CI 环境可能没有）
@@ -974,7 +947,6 @@ describe('detectActiveTool', () => {
     delete process.env.CODEX_HOME;
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
-    delete process.env.AGENT_WORK_ROOT;
     delete process.env.MULERUN_CHAT_ID;
     delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;

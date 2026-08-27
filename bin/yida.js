@@ -369,7 +369,6 @@ const UNSUPPORTED_LEGACY_LOGIN_FLAGS = new Set([
   '--browser',
   '--codex',
   '--qoder',
-  '--wukong',
 ]);
 
 function findUnsupportedLegacyLoginFlag(...argLists) {
