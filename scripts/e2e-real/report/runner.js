@@ -86,6 +86,48 @@ function hash(value) {
   return crypto.createHash('sha256').update(input).digest('hex');
 }
 
+function sanitizeReportEvidence(value, corpId) {
+  const rawCorpId = typeof corpId === 'string' ? corpId : String(corpId || '');
+  if (!rawCorpId) {return value;}
+  const runtimeFingerprint = hash(rawCorpId);
+  const replacement = `<corpId:sha256:${runtimeFingerprint}>`;
+
+  function sanitize(current) {
+    if (typeof current === 'string') {
+      return current.includes(rawCorpId)
+        ? current.split(rawCorpId).join(replacement)
+        : current;
+    }
+    if (Array.isArray(current)) {return current.map(sanitize);}
+    if (!current || typeof current !== 'object') {return current;}
+
+    const result = {};
+    let hasCorpId = false;
+    let observedCorpId;
+    for (const [key, child] of Object.entries(current)) {
+      if (key === 'corpId') {
+        hasCorpId = true;
+        observedCorpId = child;
+        continue;
+      }
+      const safeKey = key.includes(rawCorpId)
+        ? key.split(rawCorpId).join(replacement)
+        : key;
+      result[safeKey] = sanitize(child);
+    }
+    if (hasCorpId) {
+      const normalized = typeof observedCorpId === 'string'
+        ? observedCorpId
+        : String(observedCorpId || '');
+      result.corpIdMatched = normalized === rawCorpId;
+      result.corpIdFingerprint = normalized ? hash(normalized) : null;
+    }
+    return result;
+  }
+
+  return sanitize(value);
+}
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${safeJsonStringify(value)}\n`, 'utf8');
@@ -94,6 +136,21 @@ function writeJson(filePath, value) {
 
 function sanitizedError(error) {
   return error ? { code: error.code || 'REPORT_E2E_FAILED', message: error.message } : null;
+}
+
+function sanitizeErrorForOutput(error, corpId) {
+  if (!error) {return error;}
+  if (typeof error.message === 'string') {
+    error.message = sanitizeReportEvidence(error.message, corpId);
+  }
+  if (typeof error.stack === 'string') {
+    error.stack = sanitizeReportEvidence(error.stack, corpId);
+  }
+  for (const key of Object.keys(error)) {
+    if (key === 'reportResult') {continue;}
+    error[key] = sanitizeReportEvidence(redactSensitive(error[key]), corpId);
+  }
+  return error;
 }
 
 function createManifest(registry) {
@@ -125,9 +182,10 @@ function createManifest(registry) {
   });
 }
 
-function persistCheckpoint(persist, registryPath, manifestPath, registry) {
-  persist(registryPath, redactSensitive(registry));
-  persist(manifestPath, createManifest(registry));
+function persistCheckpoint(persist, registryPath, manifestPath, registry, corpId) {
+  const evidenceCorpId = corpId || registry.corpId;
+  persist(registryPath, sanitizeReportEvidence(redactSensitive(registry), evidenceCorpId));
+  persist(manifestPath, sanitizeReportEvidence(createManifest(registry), evidenceCorpId));
 }
 
 function recordTrace(registry, step, status, details) {
@@ -538,8 +596,9 @@ async function performCleanup(options, registry, config, resource, candidate) {
   return { status: 'passed', exactIdentity: true, deleted: true, reportAbsent: true };
 }
 
-function resultFromRegistry(registry, registryPath, manifestPath, binding) {
-  return {
+function resultFromRegistry(registry, registryPath, manifestPath, binding, corpId) {
+  const evidenceCorpId = corpId || registry.corpId;
+  return sanitizeReportEvidence(redactSensitive({
     skipped: false,
     status: registry.status,
     runId: registry.runId,
@@ -555,7 +614,7 @@ function resultFromRegistry(registry, registryPath, manifestPath, binding) {
     restore: registry.restore,
     residual: registry.residual,
     remoteWrites: registry.remoteWrites,
-  };
+  }), evidenceCorpId);
 }
 
 async function run(options = {}) {
@@ -576,6 +635,7 @@ async function run(options = {}) {
     schemaVersion: 1,
     runId: config.runId,
     marker: config.marker,
+    corpId: config.corpId,
     status: 'running',
     writeState: 'not_started',
     ownership: { status: 'pending' },
@@ -788,8 +848,9 @@ async function run(options = {}) {
 
   const result = resultFromRegistry(registry, registryPath, manifestPath, binding);
   if (primaryError) {
-    primaryError.reportResult = result;
-    throw primaryError;
+    const safeError = sanitizeErrorForOutput(primaryError, config.corpId);
+    safeError.reportResult = result;
+    throw safeError;
   }
   return result;
 }

@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -318,6 +319,85 @@ describe('report domain E2E runner', () => {
         create: { componentCount: 1, layoutNonOverlapping: true },
         append: { componentCount: 2, originalComponentsPreserved: true, layoutNonOverlapping: true },
       });
+    } finally {
+      harness.cleanup();
+    }
+  });
+
+  test('keeps corpId in memory for ownership and cleanup but removes it from all serialized evidence', async () => {
+    const corpId = 'corp-secret-UNIQUE-20260828';
+    const corpIdFingerprint = crypto.createHash('sha256').update(corpId).digest('hex');
+    const harness = createHarness({ config: { corpId } });
+    let cleanupInput;
+    harness.options.prepare = async () => ({
+      authorized: true,
+      ownership: {
+        owned: true,
+        runId: harness.config.runId,
+        marker: harness.marker,
+        corpId,
+        appType: harness.config.appType,
+        remoteWritesAllowed: true,
+      },
+      baseline: {
+        existingReportIds: ['REPORT_EXISTING'],
+        reportIdentities: [{
+          reportId: 'REPORT_EXISTING',
+          reportTitle: `existing-${corpId}`,
+          marker: null,
+          appType: harness.config.appType,
+          corpId,
+        }],
+      },
+      runtimeFixture: harness.runtimeExpected,
+    });
+    harness.options.createReport = async () => ({
+      reportId: 'REPORT_1',
+      appType: harness.config.appType,
+      corpId,
+      marker: harness.marker,
+      reportTitle: harness.config.reportTitle,
+      url: `https://example.test/${corpId}/report`,
+    });
+    harness.options.cleanupReport = async (input) => {
+      cleanupInput = input;
+      throw Object.assign(new Error(`cleanup failed for ${corpId}`), {
+        code: 'CLEANUP_FAILED',
+      });
+    };
+    try {
+      const result = await run(harness.options);
+      const registry = JSON.parse(fs.readFileSync(result.registryPath, 'utf8'));
+      const manifest = JSON.parse(fs.readFileSync(result.manifestPath, 'utf8'));
+      expect(cleanupInput).toMatchObject({
+        corpId,
+        exactIdentity: { corpId },
+      });
+      expect(registry.exactIdentity).toMatchObject({
+        corpIdMatched: true,
+        corpIdFingerprint,
+      });
+      expect(registry.baseline.reportIdentities[0]).toMatchObject({
+        corpIdMatched: true,
+        corpIdFingerprint,
+      });
+      expect(registry.resources[0].exactIdentity).toMatchObject({
+        corpIdMatched: true,
+        corpIdFingerprint,
+      });
+      expect(manifest.exactIdentity).toMatchObject({
+        corpIdMatched: true,
+        corpIdFingerprint,
+      });
+      expect(registry.candidate.url).toContain(corpIdFingerprint);
+      expect(registry.cleanup.error.message).toContain(corpIdFingerprint);
+      expect(result).toMatchObject({
+        status: 'cleanup_blocked',
+        residual: [expect.objectContaining({ owned: true, cleanupAttempted: true })],
+      });
+      expect(JSON.stringify(registry)).not.toContain(corpId);
+      expect(JSON.stringify(manifest)).not.toContain(corpId);
+      expect(JSON.stringify(result)).not.toContain(corpId);
     } finally {
       harness.cleanup();
     }
