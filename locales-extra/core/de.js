@@ -1707,6 +1707,7 @@ module.exports = {
     disabled: 'AI approval prompts disabled',
     unknown_subcommand: 'Unknown ai-form-setting subcommand: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages').de,
   safe_json: {
     hint_unquoted_key: 'Ein Schlüssel scheint nicht in Anführungszeichen zu stehen (JSON erfordert, dass alle Schlüssel in doppelte Anführungszeichen gesetzt werden, z. B. {"name":1})',
     hint_single_quote: `Es wurden vermutlich einfache Anführungszeichen verwendet (JSON erlaubt nur doppelte Anführungszeichen ", keine einfachen ')`,

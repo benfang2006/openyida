@@ -23,6 +23,9 @@ function schemaFixture() {
         componentName: 'Page',
         children: [{
           componentName: 'RootContent',
+          props: {
+            layout: [{ i: 'field_1', x: 0, y: 0, w: 3, h: 22, moved: false, static: false }],
+          },
           children: [{
             componentName: 'YoushuGroupedBarChart',
             id: 'node_1',
@@ -85,6 +88,7 @@ describe('report inspect', () => {
         filterKeys: ['filter-1'],
         cubeCodes: ['FORM_1'],
       }],
+      layout: [{ i: 'field_1', x: 0, y: 0, w: 3, h: 22, moved: false, static: false }],
     });
   });
 

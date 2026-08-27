@@ -1658,6 +1658,7 @@ module.exports = {
     disabled: 'AI approval prompts disabled',
     unknown_subcommand: 'Unknown ai-form-setting subcommand: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages').ja,
   safe_json: {
     hint_unquoted_key: 'キー名がダブルクォートで囲まれていない可能性があります（JSON ではすべてのキーをダブルクォートで囲む必要があります。例: {"name":1}）',
     hint_single_quote: `シングルクォートが使用されている可能性があります（JSON はダブルクォート " のみ許可し、シングルクォート ' は許可しません）`,

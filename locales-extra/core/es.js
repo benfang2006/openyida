@@ -1709,6 +1709,7 @@ module.exports = {
     disabled: 'AI approval prompts disabled',
     unknown_subcommand: 'Unknown ai-form-setting subcommand: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages').es,
   safe_json: {
     hint_unquoted_key: 'Parece que una clave no está entre comillas (JSON requiere que todas las claves estén entre comillas dobles, p. ej. {"name":1})',
     hint_single_quote: `Probablemente se usaron comillas simples (JSON solo permite comillas dobles ", no comillas simples ')`,

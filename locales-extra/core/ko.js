@@ -1708,6 +1708,7 @@ module.exports = {
     disabled: 'AI approval prompts disabled',
     unknown_subcommand: 'Unknown ai-form-setting subcommand: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages').ko,
   safe_json: {
     hint_unquoted_key: '키에 큰따옴표가 없는 것으로 보입니다(JSON은 모든 키를 큰따옴표로 감싸야 합니다. 예: {"name":1})',
     hint_single_quote: `작은따옴표를 사용한 것으로 보입니다(JSON은 큰따옴표 "만 허용하며 작은따옴표 '는 허용하지 않습니다)`,

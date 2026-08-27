@@ -1707,6 +1707,7 @@ module.exports = {
     disabled: 'AI approval prompts disabled',
     unknown_subcommand: 'Unknown ai-form-setting subcommand: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages').vi,
   safe_json: {
     hint_unquoted_key: 'A key looks unquoted (JSON requires all keys wrapped in double quotes, e.g. {"name":1})',
     hint_single_quote: `Single quotes were likely used (JSON only allows double quotes ", not single quotes ')`,

@@ -227,7 +227,9 @@ cubeCode:  FORM_AB4ACB9DD12C470D82047E05CDC19166CJSU  ← 连字符替换为下�
 
 ### 只读检查与绑定提取
 
-创建或追加后使用 `openyida report inspect <appType> <REPORT_xxx> --json` 回读 `schemaVersion=V5`、`domainCode=tEXDRG` 的真实 Schema。输出包含 revision、组件 `cid`、`dataSetKeys`、`filterKeys`、`cubeCodes`、`prdId` 和 `pageId`；字段缺失时保持 `null`/空数组，不得猜测。运行字段（包括 `css`、`lifeCycles`、`utils`）属于严格 readback 内容，不作为“设计器字段”全局忽略。
+创建或追加后使用 `openyida report inspect <appType> <REPORT_xxx> --json` 回读 `schemaVersion=V5`、`domainCode=tEXDRG` 的真实 Schema。输出包含 revision、组件 `cid`、`dataSetKeys`、`filterKeys`、`cubeCodes`、RGL `layout`、`prdId` 和 `pageId`；字段缺失时保持 `null`/空数组，不得猜测。运行字段（包括 `css`、`lifeCycles`、`utils`）属于严格 readback 内容，不作为“设计器字段”全局忽略。
+
+真实报表 E2E 必须使用独立 `OY_REPORT_` runId 与 marker，先只读证明 corp/app/预置数据和 owned 写入范围，并在首次写入前同步落盘脱敏 registry、acceptance manifest 与 baseline hash。platform、runtime、UI 三层机器断言通过后仍必须执行 exact-identity owned cleanup；无法证明安全删除时结果只能是 `cleanup_blocked` 并报告 residual，截图仅作辅助证据。
 
 ### fieldCode 后缀规则
 

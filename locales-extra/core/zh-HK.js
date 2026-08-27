@@ -1645,6 +1645,7 @@ module.exports = {
     disabled: 'AI 審批提示已關閉',
     unknown_subcommand: '未知的 ai-form-setting 子命令: {0}'
   },
+  report_runtime: require('../../lib/report/i18n-messages')['zh-HK'],
   safe_json: {
     hint_unquoted_key: '疑似鍵名未加雙引號（JSON 要求所有鍵用雙引號包裹，如 {"name":1}）',
     hint_single_quote: `疑似使用了單引號（JSON 只允許雙引號 "，不允許單引號 '）`,
