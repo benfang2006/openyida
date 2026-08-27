@@ -504,6 +504,32 @@ describe('aggregate-table run', () => {
     expect(utils.httpPost).not.toHaveBeenCalled();
   });
 
+  test('save expected stash revision precondition fails before the initial write', async () => {
+    const design = buildPublishableDesign();
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { ...design, gmtModified: 9, stashGmtModified: 21 },
+    });
+
+    await expect(run([
+      'save',
+      'APP_XXX',
+      'FORM-VIEW',
+      JSON.stringify(design),
+      '--expected-revision',
+      '20',
+      '--no-open',
+    ])).rejects.toMatchObject({
+      code: 'AGGREGATE_WRITE_PRECONDITION_FAILED',
+      details: {
+        revisionAxis: 'stashGmtModified',
+        expectedRevision: '20',
+        observedRevision: 21,
+      },
+    });
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
   test('inspect, preview, and status expose their command contracts', async () => {
     const design = buildPublishableDesign();
     utils.httpGet

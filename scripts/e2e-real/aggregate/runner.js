@@ -241,16 +241,29 @@ function persistPreWriteEvidence(config, baseline, ownership, options = {}) {
   return { manifestPath, registry, registryPath, snapshotPath, writer };
 }
 
-function persistRunState(artifacts, status, writes, restore) {
+function persistRunState(artifacts, status, writes, restore, residual) {
+  const hasUnknownWrite = writes.some((write) => write.status === 'outcome_unknown');
+  const confirmedWrites = writes.filter((write) => write.status === 'completed').length;
   artifacts.registry.status = status;
   artifacts.registry.writes = writes.slice();
+  artifacts.registry.remoteWrites = hasUnknownWrite ? 'unknown' : confirmedWrites;
+  artifacts.registry.remoteWritesConfirmed = confirmedWrites;
   artifacts.registry.restore = restore || null;
+  artifacts.registry.residual = residual || null;
   artifacts.writer(artifacts.registryPath, artifacts.registry);
   const manifest = JSON.parse(fs.readFileSync(artifacts.manifestPath, 'utf8'));
   manifest.status = status;
   manifest.executedWrites = writes.slice();
+  manifest.remoteWrites = hasUnknownWrite ? 'unknown' : confirmedWrites;
+  manifest.remoteWritesConfirmed = confirmedWrites;
   manifest.restore = restore || null;
+  manifest.residual = residual || null;
   artifacts.writer(artifacts.manifestPath, manifest);
+}
+
+function safeErrorCode(error, fallback) {
+  const code = error && error.code ? String(error.code) : '';
+  return /^[A-Z][A-Z0-9_]{2,100}$/.test(code) ? code : fallback;
 }
 
 function revisionEvidence(stage, payload) {
@@ -287,7 +300,8 @@ async function run(options = {}) {
   const wait = options.delay || delay;
   const plan = buildCommandPlan(config);
   const evidence = [];
-  let remoteWrites = 0;
+  let remoteWritesConfirmed = 0;
+  let remoteWritesUnknown = false;
   const writes = [];
 
   parseCliJson(execute(plan[0].args), 'auth');
@@ -338,19 +352,178 @@ async function run(options = {}) {
     writeJson: options.writeJson,
   });
 
-  const savePayload = parseCliJson(execute(plan[4].args), 'save');
-  remoteWrites += 1;
-  writes.push({ stage: 'save', status: 'completed' });
-  assertRevisionStage('save', savePayload, 'stashGmtModified');
-  evidence.push(revisionEvidence('save', savePayload));
-  persistRunState(artifacts, 'save_completed', writes, null);
+  function inspectObservedState(stage) {
+    let payload;
+    try {
+      payload = parseCliJson(execute(plan[2].args), stage);
+    } catch (error) {
+      return {
+        verified: false,
+        reason: 'inspect_unproven',
+        errorCode: safeErrorCode(error, 'AGGREGATE_E2E_INSPECT_FAILED'),
+      };
+    }
+    const observedOwnership = verifyOwnership(config, listPayload, payload);
+    let canonicalHash = null;
+    try {
+      canonicalHash = canonicalFingerprint(canonicalDesignConfig(payload.config));
+    } catch (error) {
+      return {
+        verified: false,
+        reason: 'canonical_readback_unproven',
+        ownership: observedOwnership,
+        payload,
+      };
+    }
+    const state = {
+      verified: observedOwnership.verified === true,
+      reason: observedOwnership.verified ? null : observedOwnership.reason,
+      ownership: observedOwnership,
+      canonicalHash,
+      payload,
+      revisions: {
+        gmtModified: payload.config && payload.config.gmtModified,
+        stashGmtModified: payload.config && payload.config.stashGmtModified,
+      },
+    };
+    evidence.push({
+      stage,
+      verified: state.verified,
+      canonicalHash,
+      liveRevisionFingerprint: fingerprint(state.revisions.gmtModified),
+      stashRevisionFingerprint: fingerprint(state.revisions.stashGmtModified),
+    });
+    return state;
+  }
 
-  const publishPayload = parseCliJson(execute(plan[5].args), 'publish');
-  remoteWrites += 1;
-  writes.push({ stage: 'publish', status: 'completed' });
-  assertRevisionStage('publish', publishPayload, 'gmtModified');
+  function buildResidual(observed) {
+    const owned = observed && observed.ownership
+      ? observed.ownership.verified === true
+      : 'unknown';
+    const matchesBaseline = observed && observed.canonicalHash === baseline.canonicalHash;
+    return {
+      status: matchesBaseline ? 'none' : owned === true ? 'owned_residual' : 'residual_unproven',
+      owned,
+      targetFingerprint: fingerprint(config.formUuid),
+      canonicalFingerprint: observed && observed.canonicalHash || null,
+      liveRevisionFingerprint: observed && observed.revisions
+        ? fingerprint(observed.revisions.gmtModified)
+        : null,
+      stashRevisionFingerprint: observed && observed.revisions
+        ? fingerprint(observed.revisions.stashGmtModified)
+        : null,
+    };
+  }
+
+  function finishResult(status, runtime, restore, operation, residual) {
+    persistRunState(artifacts, status, writes, restore, residual);
+    return {
+      skipped: false,
+      status,
+      runId: config.runId,
+      targetFingerprint: fingerprint(`${config.appType}\u0000${config.formUuid}`),
+      remoteWrites: remoteWritesUnknown ? 'unknown' : remoteWritesConfirmed,
+      remoteWritesConfirmed,
+      evidence,
+      runtime,
+      operation,
+      restore,
+      residual,
+      cleanup: restore.status === 'restored' || restore.status === 'not_required'
+        ? { status: 'restored_to_baseline', targetFingerprint: fingerprint(config.formUuid) }
+        : { status: 'cleanup_blocked', reason: 'restore_blocked', targetFingerprint: fingerprint(config.formUuid) },
+      manifestPath: artifacts.manifestPath,
+      registryPath: artifacts.registryPath,
+    };
+  }
+
+  function executeWrite(stage, args, revisionAxis) {
+    const record = { stage, status: 'attempted' };
+    writes.push(record);
+    persistRunState(artifacts, `${stage}_attempted`, writes, null, null);
+    try {
+      const payload = parseCliJson(execute(args), stage);
+      assertRevisionStage(stage, payload, revisionAxis);
+      record.status = 'completed';
+      remoteWritesConfirmed += 1;
+      persistRunState(artifacts, `${stage}_completed`, writes, null, null);
+      return { ok: true, payload };
+    } catch (error) {
+      const preconditionFailed = error.code === 'AGGREGATE_WRITE_PRECONDITION_FAILED';
+      record.status = preconditionFailed ? 'not_written_precondition_failed' : 'outcome_unknown';
+      record.errorCode = safeErrorCode(error, `AGGREGATE_E2E_${stage.toUpperCase()}_FAILED`);
+      if (!preconditionFailed) { remoteWritesUnknown = true; }
+      persistRunState(artifacts, `${stage}_failed`, writes, null, null);
+      return {
+        ok: false,
+        errorCode: record.errorCode,
+        outcome: record.status,
+      };
+    }
+  }
+
+  function finishFailedOperation(failedStage, writeFailure, observedState) {
+    const observed = observedState || inspectObservedState(`${failedStage}_failure_inspect`);
+    const residual = buildResidual(observed);
+    const blockedReason = writeFailure.outcome === 'not_written_precondition_failed'
+      ? 'concurrent_revision_change'
+      : writeFailure.outcome === 'not_attempted_post_save_guard'
+        ? 'post_save_state_unproven'
+        : 'write_outcome_unknown';
+    const restore = residual.status === 'none'
+      ? { status: 'not_required', reason: 'baseline_canonical_unchanged', remoteWrites: 0 }
+      : {
+        status: 'restore_blocked',
+        reason: blockedReason,
+        remoteWrites: 0,
+      };
+    const status = restore.status === 'restore_blocked' ? 'restore_blocked' : 'PLATFORM_PROBE_REQUIRED';
+    return finishResult(
+      status,
+      { status: 'PLATFORM_PROBE_REQUIRED', reason: `${failedStage}_write_incomplete` },
+      restore,
+      {
+        status: 'failed',
+        failedStage,
+        outcome: writeFailure.outcome,
+        errorCode: writeFailure.errorCode,
+      },
+      residual
+    );
+  }
+
+  const saveArgs = [
+    ...plan[4].args,
+    '--expected-revision', String(beforeRaw.stashGmtModified),
+  ];
+  const save = executeWrite('save', saveArgs, 'stashGmtModified');
+  if (!save.ok) {
+    return finishFailedOperation('save', save);
+  }
+  evidence.push(revisionEvidence('save', save.payload));
+
+  const postSaveState = inspectObservedState('post_save_inspect');
+  const postSaveLiveRevision = postSaveState.revisions && postSaveState.revisions.gmtModified;
+  const postSaveStashRevision = postSaveState.revisions && postSaveState.revisions.stashGmtModified;
+  if (!postSaveState.verified || postSaveLiveRevision === undefined || postSaveLiveRevision === null ||
+      String(postSaveLiveRevision) !== String(beforeRaw.gmtModified) ||
+      String(postSaveStashRevision) !== String(save.payload.readbackRevision)) {
+    return finishFailedOperation('publish', {
+      outcome: 'not_attempted_post_save_guard',
+      errorCode: 'AGGREGATE_E2E_POST_SAVE_STATE_UNPROVEN',
+    }, postSaveState);
+  }
+
+  const publishArgs = [
+    ...plan[5].args,
+    '--expected-revision', String(postSaveLiveRevision),
+  ];
+  const publish = executeWrite('publish', publishArgs, 'gmtModified');
+  if (!publish.ok) {
+    return finishFailedOperation('publish', publish);
+  }
+  const publishPayload = publish.payload;
   evidence.push(revisionEvidence('publish', publishPayload));
-  persistRunState(artifacts, 'publish_completed', writes, null);
 
   let operationFailure = null;
   let buildPayload = null;
@@ -389,17 +562,12 @@ async function run(options = {}) {
   }
 
   let restore;
-  let restoreInspect = null;
-  try {
-    restoreInspect = parseCliJson(execute(plan[2].args), 'restore_preflight');
-  } catch (error) {
+  let residual = null;
+  const restoreState = inspectObservedState('restore_preflight');
+  const observedRevision = restoreState.revisions && restoreState.revisions.gmtModified;
+  if (!restoreState.verified) {
     restore = { status: 'restore_blocked', reason: 'restore_preflight_unproven', remoteWrites: 0 };
-  }
-  const restoreOwnership = restoreInspect && verifyOwnership(config, listPayload, restoreInspect);
-  const observedRevision = restoreInspect && restoreInspect.config && restoreInspect.config.gmtModified;
-  if (restore) {
-    // The structured preflight failure above is final and performs no restore write.
-  } else if (!restoreOwnership.verified) {
+  } else if (!restoreState.ownership.verified) {
     restore = { status: 'restore_blocked', reason: 'ownership_evidence_changed', remoteWrites: 0 };
   } else if (observedRevision === undefined || observedRevision === null ||
       String(observedRevision) !== String(publishPayload.readbackRevision)) {
@@ -409,15 +577,19 @@ async function run(options = {}) {
       'aggregate-table', 'publish', config.appType, config.formUuid, artifacts.snapshotPath,
       '--expected-revision', String(observedRevision), '--json', '--no-open',
     ];
-    try {
-      const restorePayload = parseCliJson(execute(restoreArgs), 'restore');
-      assertRevisionStage('restore', restorePayload, 'gmtModified');
-      remoteWrites += 1;
-      writes.push({ stage: 'conditional_restore', status: 'completed' });
-      const restoredInspect = parseCliJson(execute(plan[2].args), 'restore_readback');
-      const restoredOwnership = verifyOwnership(config, listPayload, restoredInspect);
-      const restoredFingerprint = canonicalFingerprint(canonicalDesignConfig(restoredInspect.config));
-      if (!restoredOwnership.verified || restoredFingerprint !== baseline.canonicalHash) {
+    const restoreWrite = executeWrite('conditional_restore', restoreArgs, 'gmtModified');
+    if (!restoreWrite.ok) {
+      restore = {
+        status: 'restore_blocked',
+        reason: restoreWrite.outcome === 'not_written_precondition_failed'
+          ? 'concurrent_revision_change'
+          : 'conditional_restore_unproven',
+        remoteWrites: restoreWrite.outcome === 'not_written_precondition_failed' ? 0 : 'unknown',
+      };
+    } else {
+      const restoredState = inspectObservedState('restore_readback');
+      const restoredFingerprint = restoredState.canonicalHash;
+      if (!restoredState.verified || restoredFingerprint !== baseline.canonicalHash) {
         restore = {
           status: 'restore_blocked',
           reason: 'exact_restore_readback_mismatch',
@@ -433,43 +605,22 @@ async function run(options = {}) {
           restoredFingerprint,
         };
       }
-    } catch (error) {
-      const preconditionFailed = error.code === 'AGGREGATE_WRITE_PRECONDITION_FAILED';
-      if (!preconditionFailed) {
-        writes.push({ stage: 'conditional_restore', status: 'outcome_unknown' });
-      }
-      restore = {
-        status: 'restore_blocked',
-        reason: preconditionFailed
-          ? 'concurrent_revision_change'
-          : 'conditional_restore_unproven',
-        remoteWrites: preconditionFailed ? 0 : 'unknown',
-        writeAttempted: true,
-      };
     }
   }
 
+  if (restore.status !== 'restored') {
+    residual = buildResidual(restoreState);
+  }
   const finalStatus = restore.status === 'restored'
     ? (operationFailure ? 'PLATFORM_PROBE_REQUIRED' : runtime.status === 'verified' ? 'verified' : 'PLATFORM_PROBE_REQUIRED')
     : 'restore_blocked';
-  persistRunState(artifacts, finalStatus, writes, restore);
-
-  return {
-    skipped: false,
-    status: finalStatus,
-    runId: config.runId,
-    targetFingerprint: fingerprint(`${config.appType}\u0000${config.formUuid}`),
-    remoteWrites: restore.remoteWrites === 'unknown' ? 'unknown' : remoteWrites,
-    remoteWritesConfirmed: remoteWrites,
-    evidence,
+  return finishResult(
+    finalStatus,
     runtime,
     restore,
-    cleanup: restore.status === 'restored'
-      ? { status: 'restored_to_baseline', targetFingerprint: fingerprint(config.formUuid) }
-      : { status: 'cleanup_blocked', reason: 'restore_blocked', targetFingerprint: fingerprint(config.formUuid) },
-    manifestPath: artifacts.manifestPath,
-    registryPath: artifacts.registryPath,
-  };
+    { status: operationFailure ? 'failed' : 'completed', errorCode: operationFailure && operationFailure.code },
+    residual
+  );
 }
 
 if (require.main === module) {

@@ -99,6 +99,7 @@ describe('aggregate domain real E2E runner', () => {
   function createCliHarness(options = {}) {
     let statusCalls = 0;
     let inspectCalls = 0;
+    let saveCalls = 0;
     let publishCalls = 0;
     const beforeConfig = {
       title: { zh_CN: 'OY_AGG_RUN_001__aggregate' },
@@ -115,7 +116,12 @@ describe('aggregate domain real E2E runner', () => {
       stashGmtModified: 20,
       ...(options.beforeConfigOverride || {}),
     };
-    const mutatedConfig = { ...beforeConfig, gmtModified: 11, stashGmtModified: 21 };
+    const savedConfig = { ...beforeConfig, gmtModified: 10, stashGmtModified: 21 };
+    const publishedConfig = { ...beforeConfig, gmtModified: 11, stashGmtModified: 21 };
+    const changedConfig = {
+      ...publishedConfig,
+      formulaFields: [{ id: 'metric_count', name: '数量', formula: 'SUM(field_name)' }],
+    };
     const calls = [];
     const runCli = (args) => {
       calls.push(args);
@@ -128,14 +134,28 @@ describe('aggregate domain real E2E runner', () => {
       }
       if (args[0] === 'aggregate-table' && args[1] === 'inspect') {
         inspectCalls += 1;
-        if (options.restorePreflightFails && inspectCalls === 2) {
+        if (options.restorePreflightFails && inspectCalls === 3) {
           return { status: 1, stderr: 'unproven' };
         }
-        let config = inspectCalls === 1 ? beforeConfig : mutatedConfig;
-        if (options.concurrentRevision && inspectCalls === 2) {
-          config = { ...mutatedConfig, gmtModified: options.concurrentRevision };
+        let config = inspectCalls === 1
+          ? beforeConfig
+          : inspectCalls === 2
+            ? savedConfig
+            : publishedConfig;
+        if (options.saveFailureInspect && inspectCalls === 2) {
+          config = options.saveFailureInspect === 'changed'
+            ? { ...changedConfig, gmtModified: 10, stashGmtModified: 21 }
+            : options.saveFailureInspect;
         }
-        if (inspectCalls >= 3) { config = beforeConfig; }
+        if (options.publishFailureInspect && inspectCalls === 3) {
+          config = options.publishFailureInspect === 'changed'
+            ? changedConfig
+            : options.publishFailureInspect;
+        }
+        if (options.concurrentRevision && inspectCalls === 3) {
+          config = { ...publishedConfig, gmtModified: options.concurrentRevision };
+        }
+        if (inspectCalls >= 4) { config = beforeConfig; }
         return { status: 0, json: {
           aggregateTableId: 'FORM-VIEW',
           formUuid: 'FORM-VIEW',
@@ -147,7 +167,14 @@ describe('aggregate domain real E2E runner', () => {
         } };
       }
       if (args[0] === 'aggregate-table' && args[1] === 'save') {
+        saveCalls += 1;
         if (options.onSave) { options.onSave(); }
+        if (options.saveFailure === 'precondition') {
+          return { status: 1, stderr: JSON.stringify({ errorCode: 'AGGREGATE_WRITE_PRECONDITION_FAILED' }) };
+        }
+        if (options.saveFailure === 'unknown') {
+          return { status: 1, stderr: 'socket closed after request' };
+        }
         return { status: 0, json: {
           readbackVerified: true,
           revisionAxis: 'stashGmtModified',
@@ -159,6 +186,12 @@ describe('aggregate domain real E2E runner', () => {
       }
       if (args[0] === 'aggregate-table' && args[1] === 'publish') {
         publishCalls += 1;
+        if (options.publishFailure === 'precondition') {
+          return { status: 1, stderr: JSON.stringify({ errorCode: 'AGGREGATE_WRITE_PRECONDITION_FAILED' }) };
+        }
+        if (options.publishFailure === 'unknown') {
+          return { status: 1, stdout: 'not-json' };
+        }
         return { status: 0, json: publishCalls === 1 ? {
           readbackVerified: true,
           revisionAxis: 'gmtModified',
@@ -181,7 +214,14 @@ describe('aggregate domain real E2E runner', () => {
       }
       return { status: 0, json: { success: true } };
     };
-    return { beforeConfig, calls, getPublishCalls: () => publishCalls, getStatusCalls: () => statusCalls, runCli };
+    return {
+      beforeConfig,
+      calls,
+      getPublishCalls: () => publishCalls,
+      getSaveCalls: () => saveCalls,
+      getStatusCalls: () => statusCalls,
+      runCli,
+    };
   }
 
   test('requires runId ownership evidence and performs zero writes on exact-name mismatch', async () => {
@@ -214,8 +254,13 @@ describe('aggregate domain real E2E runner', () => {
 
   test('persists redacted manifest and registry before save and never emits corpId', async () => {
     let filesAtSave = [];
+    let manifestAtSave = null;
     const harness = createCliHarness({
-      onSave: () => { filesAtSave = fs.readdirSync(path.join(artifactRoot, 'OY_AGG_RUN_001')); },
+      onSave: () => {
+        const workDir = path.join(artifactRoot, 'OY_AGG_RUN_001');
+        filesAtSave = fs.readdirSync(workDir);
+        manifestAtSave = JSON.parse(fs.readFileSync(path.join(workDir, 'acceptance-manifest.json'), 'utf8'));
+      },
     });
     let statusCalls = 0;
     const result = await run({
@@ -234,6 +279,10 @@ describe('aggregate domain real E2E runner', () => {
       'registry.json',
       'before-design.json',
     ]));
+    expect(manifestAtSave).toMatchObject({
+      status: 'save_attempted',
+      executedWrites: [{ stage: 'save', status: 'attempted' }],
+    });
     const artifactJson = filesAtSave.map((file) => fs.readFileSync(path.join(artifactRoot, 'OY_AGG_RUN_001', file), 'utf8')).join('\n');
     const manifest = JSON.parse(fs.readFileSync(path.join(artifactRoot, 'OY_AGG_RUN_001', 'acceptance-manifest.json'), 'utf8'));
     const registry = JSON.parse(fs.readFileSync(path.join(artifactRoot, 'OY_AGG_RUN_001', 'registry.json'), 'utf8'));
@@ -307,7 +356,97 @@ describe('aggregate domain real E2E runner', () => {
       remoteWrites: 1,
       beforeFingerprint: result.restore.restoredFingerprint,
     });
-    const restoreCall = harness.calls.find((args) => args[1] === 'publish' && args.includes('--expected-revision'));
-    expect(restoreCall).toEqual(expect.arrayContaining(['--expected-revision', '11']));
+    const saveCall = harness.calls.find((args) => args[1] === 'save');
+    const initialPublishCall = harness.calls.find((args) => args[1] === 'publish' && args.includes('/external/aggregate-design.json'));
+    expect(saveCall).toEqual(expect.arrayContaining(['--expected-revision', '20']));
+    expect(initialPublishCall).toEqual(expect.arrayContaining(['--expected-revision', '10']));
+    expect(harness.calls.filter((args) => args[1] === 'publish' && args.includes('--expected-revision'))[1])
+      .toEqual(expect.arrayContaining(['--expected-revision', '11']));
+  });
+
+  test('stash concurrency after ownership is rejected before the initial save POST', async () => {
+    const harness = createCliHarness({
+      saveFailure: 'precondition',
+      saveFailureInspect: { ...createCliHarness().beforeConfig, stashGmtModified: 99 },
+    });
+    const result = await run({
+      env: buildEnv({ OPENYIDA_AGGREGATE_E2E_REGISTRY_DIR: artifactRoot }),
+      readDesignFixture: () => ({}),
+      runCli: harness.runCli,
+    });
+
+    const saveCall = harness.calls.find((args) => args[1] === 'save');
+    expect(saveCall).toEqual(expect.arrayContaining(['--expected-revision', '20']));
+    expect(harness.getSaveCalls()).toBe(1);
+    expect(harness.getPublishCalls()).toBe(0);
+    expect(result).toMatchObject({
+      remoteWrites: 0,
+      operation: { failedStage: 'save', outcome: 'not_written_precondition_failed' },
+    });
+  });
+
+  test('live concurrency after save is rejected before the initial publish POST', async () => {
+    const harness = createCliHarness({
+      publishFailure: 'precondition',
+      publishFailureInspect: {
+        ...createCliHarness().beforeConfig,
+        gmtModified: 99,
+        stashGmtModified: 21,
+        formulaFields: [{ id: 'metric_count', name: '数量', formula: 'SUM(field_name)' }],
+      },
+    });
+    const result = await run({
+      env: buildEnv({ OPENYIDA_AGGREGATE_E2E_REGISTRY_DIR: artifactRoot }),
+      readDesignFixture: () => ({}),
+      runCli: harness.runCli,
+    });
+
+    const publishCall = harness.calls.find((args) => args[1] === 'publish');
+    expect(publishCall).toEqual(expect.arrayContaining(['--expected-revision', '10']));
+    expect(harness.getSaveCalls()).toBe(1);
+    expect(harness.getPublishCalls()).toBe(1);
+    expect(result).toMatchObject({
+      remoteWrites: 1,
+      operation: { failedStage: 'publish', outcome: 'not_written_precondition_failed' },
+      restore: { status: 'restore_blocked', remoteWrites: 0 },
+    });
+  });
+
+  test.each([
+    ['save', { saveFailure: 'unknown', saveFailureInspect: 'changed' }],
+    ['publish', { publishFailure: 'unknown', publishFailureInspect: 'changed' }],
+  ])('%s unknown outcome persists owned residual evidence without blind retry', async (stage, failureOptions) => {
+    const harness = createCliHarness(failureOptions);
+    const result = await run({
+      env: buildEnv({ OPENYIDA_AGGREGATE_E2E_REGISTRY_DIR: artifactRoot }),
+      readDesignFixture: () => ({}),
+      runCli: harness.runCli,
+    });
+    const workDir = path.join(artifactRoot, 'OY_AGG_RUN_001');
+    const manifest = JSON.parse(fs.readFileSync(path.join(workDir, 'acceptance-manifest.json'), 'utf8'));
+    const registry = JSON.parse(fs.readFileSync(path.join(workDir, 'registry.json'), 'utf8'));
+
+    expect(result).toMatchObject({
+      status: 'restore_blocked',
+      remoteWrites: 'unknown',
+      operation: { failedStage: stage, outcome: 'outcome_unknown' },
+      restore: { status: 'restore_blocked', remoteWrites: 0 },
+      residual: { status: 'owned_residual', owned: true },
+    });
+    expect(manifest).toMatchObject({
+      status: 'restore_blocked',
+      remoteWrites: 'unknown',
+      executedWrites: expect.arrayContaining([
+        { stage, status: 'outcome_unknown', errorCode: expect.stringMatching(/^AGGREGATE_E2E_/) },
+      ]),
+      residual: { status: 'owned_residual', owned: true },
+    });
+    expect(registry).toMatchObject({
+      status: 'restore_blocked',
+      remoteWrites: 'unknown',
+      residual: { status: 'owned_residual', owned: true },
+    });
+    expect(harness.getSaveCalls()).toBe(1);
+    expect(harness.getPublishCalls()).toBe(stage === 'publish' ? 1 : 0);
   });
 });
