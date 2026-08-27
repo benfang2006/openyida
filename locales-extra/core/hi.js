@@ -165,9 +165,9 @@ module.exports = {
       '  import <file> [name]                                         Import migration package, rebuild app\n' +
       '  get-permission <appType> <formUuid>                          Query form permission config\n' +
       '  save-permission <appType> <formUuid> [--data-permission <json>] [--action-permission <json>]  Save form permission config\n' +
-      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode]  Configure and publish process\n' +
+      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]  Configure and publish process\n' +
       '  create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>  Create process form (all-in-one)\n' +
-      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile>         Reuse existing form for process\n' +
+      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]         Reuse existing form for process\n' +
       '  connector list [options]                                     List HTTP connectors\n' +
       '  connector create "<name>" "<domain>" --operations <file> [options]  Create connector\n' +
       '  connector detail <connector-id>                              View connector details\n' +
@@ -288,10 +288,10 @@ module.exports = {
     import_usage: 'Usage: openyida import <file> [name]',
     import_example1: 'Example: openyida import ./yida-export.json',
     import_example2: '        openyida import ./yida-export.json "Quality System (Production)"',
-    configure_process_usage: 'Usage: openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode]',
+    configure_process_usage: 'Usage: openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]',
     configure_process_example: 'Example: openyida configure-process "APP_XXX" "FORM-YYY" .cache/openyida/process/process-definition.json',
     create_process_usage: 'Usage: openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>\n' +
-      '        openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+      '        openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     create_process_example: 'Example: openyida create-process "APP_XXX" "Order Form" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     process_usage: 'Usage: openyida process <subcommand>\n' +
       '\n' +
@@ -970,10 +970,16 @@ module.exports = {
     done: 'Process form creation completed',
     url: 'URL',
     usage: 'Usage: openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>',
-    usage2: '       openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+    usage2: '       openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     example: 'Example: openyida create-process "APP_XXX" "Order Form" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     example2: '         openyida create-process "APP_XXX" --formUuid FORM-YYY .cache/openyida/process/process-definition.json'
   },
+  configure_process: {
+    replace_required: 'प्रकाशित प्रक्रिया या सहेजा गया ड्राफ्ट मौजूद है। पूर्ण प्रतिस्थापन के लिए स्पष्ट --replace आवश्यक है; कोई रिमोट लिखाई नहीं की गई।',
+    ownership_unverified: 'यह सिद्ध नहीं हो सका कि processCode इसी फ़ॉर्म का है। कोई रिमोट लिखाई नहीं की गई।',
+    published_unverified: 'प्रकाशन सफल रहा, लेकिन सटीक PUBLISHED प्लेटफ़ॉर्म दृश्य का पूर्ण सत्यापन नहीं हो सका। पुनः प्रयास से पहले स्थिति पढ़ें।',
+  },
+
   update_form_config: {
     usage: 'उपयोग: openyida update-form-config <appType> <formUuid> <isRenderNav> <title>',
     example: 'Example: openyida update-form-config "APP_XXX" "FORM_XXX" "keep" "My Page"',

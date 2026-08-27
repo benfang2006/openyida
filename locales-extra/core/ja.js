@@ -163,9 +163,9 @@ module.exports = {
       '  import <file> [name]                                         移行パッケージをインポートしてアプリを再構築\n' +
       '  get-permission <appType> <formUuid>                          フォーム権限設定を照会\n' +
       '  save-permission <appType> <formUuid> [--data-permission <json>] [--action-permission <json>]  フォーム権限設定を保存\n' +
-      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode]  プロセスを設定して公開\n' +
+      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]  プロセスを設定して公開\n' +
       '  create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>  プロセスフォームを作成（一体化）\n' +
-      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile>         既存フォームでプロセス作成\n' +
+      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]         既存フォームでプロセス作成\n' +
       '  connector list [オプション]                                  HTTP コネクター一覧\n' +
       '  connector create "名前" "ドメイン" --operations <file> [オプション]  コネクター作成\n' +
       '  connector detail <connector-id>                              コネクター詳細を表示\n' +
@@ -274,10 +274,10 @@ module.exports = {
     import_usage: '使用方法: openyida import <file> [name]',
     import_example1: '例: openyida import ./yida-export.json',
     import_example2: '    openyida import ./yida-export.json "品質追跡システム（本番環境）"',
-    configure_process_usage: 'Usage: openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode]',
+    configure_process_usage: 'Usage: openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]',
     configure_process_example: 'Example: openyida configure-process "APP_XXX" "FORM-YYY" .cache/openyida/process/process-definition.json',
     create_process_usage: 'Usage: openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>\n' +
-      '        openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+      '        openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     create_process_example: 'Example: openyida create-process "APP_XXX" "Order Form" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     process_usage: 'Usage: openyida process <subcommand>\n' +
       '\n' +
@@ -924,10 +924,16 @@ module.exports = {
     done: 'Process form creation completed',
     url: 'URL',
     usage: 'Usage: openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>',
-    usage2: '       openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+    usage2: '       openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     example: 'Example: openyida create-process "APP_XXX" "Order Form" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     example2: '         openyida create-process "APP_XXX" --formUuid FORM-YYY .cache/openyida/process/process-definition.json'
   },
+  configure_process: {
+    replace_required: '公開済みプロセスまたは保存済み下書きがあります。完全置換には --replace の明示指定が必要です。リモート書き込みは行われていません。',
+    ownership_unverified: 'processCode がこのフォームに属することを確認できません。別のプロセスを上書きしないよう、リモート書き込みは行われていません。',
+    published_unverified: '公開要求は成功しましたが、PUBLISHED バージョンのプラットフォームビューを完全に検証できませんでした。再試行前に状態を読み戻してください。',
+  },
+
   update_form_config: {
     usage: '使用方法: openyida update-form-config <appType> <formUuid> <isRenderNav> <title>',
     example: '例: openyida update-form-config "APP_XXX" "FORM_XXX" "false" "マイページ"',

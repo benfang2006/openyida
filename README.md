@@ -221,6 +221,10 @@ openyida get-permission APP_XXX FORM_XXX
 }
 ```
 
+`configure-process` 会先通过表单绑定和流程版本只读接口证明 `processCode` ownership。目标已有 PUBLISHED 流程或 SAVED 草稿时，整图替换必须在人工确认后显式传入 `--replace`；未确认或 ownership 不匹配时远程写入数为 0。draft/save/publish 均为 one-shot，认证异常返回 `NON_IDEMPOTENT_RESULT_UNKNOWN`，不得自动重试。
+
+发布成功还必须精确回读同一 PUBLISHED `processId/processVersion` 的 `getProcessById` 平台视图，并验证可见节点的组件、名称、顺序和审批模式。只有输出 `verificationLevel: "PLATFORM_VIEW_VERIFIED"` 才表示平台 view 已验证；`PUBLISHED_UNVERIFIED` 表示发布可能已生效但回读不完整，不能宣称 `processJson` 已验证，也不能直接重放写请求。
+
 When creating or updating test data with `openyida data`, Yida date fields must use 13-digit millisecond timestamps, for example `"dateField_xxx": 1719705600000`. Do not submit `YYYY-MM-DD` strings for `DateField` or `CascadeDateField` values.
 Temporary JSON, CSV, and one-off import scripts should live under `.cache/openyida/` so generated run artifacts do not clutter the repository root.
 
@@ -423,8 +427,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida configure-process <appType> ...` | Configure and publish process rules |
-| `openyida create-process <appType> ...` | Create process form (all-in-one) |
+| `openyida configure-process <appType> <formUuid> <definition> [processCode] [--replace]` | Configure and publish process rules |
+| `openyida create-process <appType> ... [--replace]` | Create process form (all-in-one) |
 | `openyida ai-form-setting <get\|fields\|models\|enable\|disable\|save> <appType> ...` | Manage process form AI approval prompts |
 | `openyida process preview <appType> ...` | Preview process instance (visual flowchart) |
 

@@ -102,7 +102,17 @@ function buildProcessStageHarness(tmpDir, registry, readbackMarker = marker => m
         if (command === 'create-form' && sub === 'create') {return { json: { success: true, formUuid: 'FORM-PROC' } };}
         if (command === 'get-schema') {return { json: buildProcessStageSchema() };}
         if (command === 'create-process') {
-          const json = { success: true, processCode: 'TPROC-PROC', formUuid: 'FORM-PROC', appType: 'APP_PROC', url: 'https://www.aliwork.com/APP_PROC/workbench/FORM-PROC' };
+          const json = {
+            success: true,
+            processCode: 'TPROC-PROC',
+            processId: 'PID-PROC',
+            processVersion: 2,
+            formUuid: 'FORM-PROC',
+            appType: 'APP_PROC',
+            url: 'https://www.aliwork.com/APP_PROC/workbench/FORM-PROC',
+            verificationLevel: 'PLATFORM_VIEW_VERIFIED',
+            platformViewVerified: true,
+          };
           return { stdout: JSON.stringify(json), json };
         }
         if (command === 'data' && sub === 'create' && resource === 'form') {

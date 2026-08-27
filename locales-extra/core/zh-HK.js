@@ -163,9 +163,9 @@ module.exports = {
       '  import <file> [name]                                         匯入遷移包，在目標環境重建應用程式\n' +
       '  get-permission <appType> <formUuid>                          查詢表單權限設定\n' +
       '  save-permission <appType> <formUuid> [--data-permission <json>] [--action-permission <json>]  儲存表單權限設定\n' +
-      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode]  設定並發布流程\n' +
+      '  configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]  設定並發布流程\n' +
       '  create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>  建立流程表單（一體化）\n' +
-      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile>         複用已有表單建立流程\n' +
+      '  create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]         複用已有表單建立流程\n' +
       '  connector list [選項]                                        列出 HTTP 連接器\n' +
       '  connector create "名稱" "網域" --operations <file> [選項]    建立連接器\n' +
       '  connector detail <connector-id>                              查看連接器詳情\n' +
@@ -273,10 +273,10 @@ module.exports = {
     import_usage: '用法：openyida import <file> [name]',
     import_example1: '範例：openyida import ./yida-export.json',
     import_example2: '      openyida import ./yida-export.json "品質追溯系統（正式環境）"',
-    configure_process_usage: '用法：openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode]',
+    configure_process_usage: '用法：openyida configure-process <appType> <formUuid> <processDefinitionFile> [processCode] [--replace]',
     configure_process_example: '範例：openyida configure-process "APP_XXX" "FORM-YYY" .cache/openyida/process/process-definition.json',
     create_process_usage: '用法：openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>\n' +
-      '      openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+      '      openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     create_process_example: '範例：openyida create-process "APP_XXX" "訂單處理表" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     process_usage: '用法：openyida process <子指令>\n\n子指令：\n  preview <appType> <processInstanceId> [--output <path>]  預覽流程實例（產生視覺化流程圖）',
     process_preview_usage: '用法：openyida process preview <appType> <processInstanceId> [--output <path>]',
@@ -914,10 +914,16 @@ module.exports = {
     done: '流程表单创建完成',
     url: '访问地址',
     usage: '用法: openyida create-process <appType> <formTitle> <fieldsJsonFile> <processDefinitionFile>',
-    usage2: '      openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile>',
+    usage2: '      openyida create-process <appType> --formUuid <formUuid> <processDefinitionFile> [--replace]',
     example: '示例: openyida create-process "APP_XXX" "订单处理表" .cache/openyida/process/fields.json .cache/openyida/process/process-definition.json',
     example2: '      openyida create-process "APP_XXX" --formUuid FORM-YYY .cache/openyida/process/process-definition.json'
   },
+  configure_process: {
+    replace_required: '偵測到已發布流程或已儲存草稿；完整取代必須明確傳入 --replace。未授權時不會執行遠端寫入。',
+    ownership_unverified: '無法證明 processCode 屬於目前表單；為避免覆蓋其他流程，不會執行遠端寫入。',
+    published_unverified: '發布請求已成功，但未能透過 PUBLISHED 版本的平台檢視完整驗證；請先回讀平台狀態，不要直接重試寫入。',
+  },
+
   update_form_config: {
     usage: '用法：openyida update-form-config <appType> <formUuid> <isRenderNav> <title>',
     example: '範例：openyida update-form-config "APP_XXX" "FORM_XXX" "false" "我的頁面"',
