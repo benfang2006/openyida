@@ -257,7 +257,11 @@ describe('auto update policy', () => {
 
   test('installVersion 使用参数数组安装精确版本', () => {
     const execFileSyncFn = jest.fn();
-    installVersion('2026.8.27-beta.2', { execFileSyncFn, npmExecutable: '/opt/npm' });
+    installVersion('2026.8.27-beta.2', {
+      execFileSyncFn,
+      npmExecutable: '/opt/npm',
+      platform: 'linux',
+    });
     expect(execFileSyncFn).toHaveBeenCalledWith(
       '/opt/npm',
       ['install', '-g', 'openyida@2026.8.27-beta.2'],
