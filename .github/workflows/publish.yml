@@ -117,6 +117,6 @@ jobs:
           npm install -g openyida
           ```
 
-          安装后即可在 Claude Code / OpenCode / Aone Copilot / Cursor / Qoder 中直接使用，零配置。
+          安装后即可在 Codex / Claude Code / OpenCode / Cursor / QwenWork / Qoder / Qoder IDE / QoderWork 中直接使用，零配置。
 
         generate_release_notes: true
