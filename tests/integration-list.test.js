@@ -196,6 +196,36 @@ describe('integration-list runList', () => {
       message: '集成自動化一覧が安全なページネーション上限を超えました。',
     });
   });
+
+  test('在 maxPages 边界页完成时不会误报分页上限', async () => {
+    integrationApi.listLogicflows
+      .mockResolvedValueOnce({ data: [], totalCount: 2, hasMore: true })
+      .mockResolvedValueOnce({ data: [], totalCount: 2, hasMore: false });
+
+    await expect(listAllLogicflows({}, 'APP_X', {
+      flowTypes: ['1'], pageSize: 1, maxPages: 2,
+    })).resolves.toEqual([]);
+    expect(integrationApi.listLogicflows).toHaveBeenCalledTimes(2);
+  });
+
+  test('表单分组剩余页超过 maxPages 时 fail-closed', async () => {
+    integrationApi.listLogicflows.mockResolvedValue({
+      data: [{ formUuid: 'FORM-1', formName: 'F1', hasMore: true, flowList: [] }],
+      totalCount: 1,
+      hasMore: false,
+    });
+    integrationApi.listFormLogicflows.mockResolvedValue({
+      data: [{ formUuid: 'FORM-1', processCode: 'LPROC-1' }],
+      totalCount: 2,
+      hasMore: true,
+    });
+
+    await expect(listAllLogicflows({}, 'APP_X', {
+      flowTypes: ['1'], pageSize: 1, maxPages: 1,
+    })).rejects.toMatchObject({ code: 'INTEGRATION_LIST_PAGINATION_LIMIT' });
+    expect(integrationApi.listLogicflows).toHaveBeenCalledTimes(1);
+    expect(integrationApi.listFormLogicflows).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('integration-list runEnable / runDisable', () => {
