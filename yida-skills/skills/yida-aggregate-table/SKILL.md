@@ -15,9 +15,9 @@ description: 宜搭聚合表（virtualView）管理。用于列出、创建空�
 
 - 写操作前必须从当前资源上下文取得精确 `appType` 和聚合表 `formUuid`，不得按名称猜 ID。
 - `preview` 是远端计算请求但不持久化；`save` 写草稿；`publish` 写 live 配置并触发构建。
-- `save` 的并发轴是 `stashGmtModified`，`publish` 的并发轴是 `gmtModified`。命令必须返回对应 `revisionAxis`、已前进的 `revision` 和 `readbackVerified: true`；响应缺 revision 时，`revisionSource=readback` 且对应 readback 轴必须前进。
+- `save` 的并发轴是 `stashGmtModified`，`publish` 的并发轴是 `gmtModified`。对应 GET readback 轴必须存在且前进；响应包含 revision 时还必须与该 readback 轴一致，不能用响应替代回读证据。
 - 设计 JSON 的六个顶层数组是 `relationForms`、`relationships`、`aggregatedFields`、`auxFields`、`formulaFields`、`validators`。显式错误类型必须失败，不能改成空数组继续写。
-- 不实现或猜测整表 delete。当前没有固定前端证据证明删除 API；cleanup 必须报告 `remote_cleanup_unsupported`，不能声称物理清理成功。
+- 不实现或猜测整表 delete。当前没有固定前端证据证明删除 API；物理 cleanup 必须报告 `remote_cleanup_unsupported`，不能声称删除成功。域内真实 E2E 只能在 exact runId/name ownership 证明成立后写入，并以 live revision 条件恢复至写前 canonical 配置；并发或归属证据变化时必须 `restore_blocked`，不得覆盖。
 - 动态租户 limits、真实公式语法、stash/live 可见性延迟、published runtime 查询和删除协议均为 `PLATFORM_PROBE_REQUIRED`。
 
 ## 工作流
@@ -64,9 +64,9 @@ openyida aggregate-table status <appType> <formUuid> --json
 ## 完成契约
 
 - 只读任务：返回精确 `appType/formUuid`、当前六数组摘要与 revision 状态。
-- 草稿任务：`revisionAxis=stashGmtModified`、动作 revision 已前进且六数组 canonical readback 一致；响应缺 revision 时必须由 stash readback revision 证明。
-- 发布任务：`revisionAxis=gmtModified`、动作 revision 已前进且六数组 canonical readback 一致；响应缺 revision 时必须由 live readback revision 证明，并读取构建终态。
-- 真实运行态结果与 cleanup 在平台协议未探明前必须明确标注 `PLATFORM_PROBE_REQUIRED` / `remote_cleanup_unsupported`，不能用命令退出 0 替代运行态证据。
+- 草稿任务：`revisionAxis=stashGmtModified`、stash readback revision 已前进且六数组 canonical readback 一致；响应 revision 存在时须与 stash readback 一致。
+- 发布任务：`revisionAxis=gmtModified`、live readback revision 已前进且六数组 canonical readback 一致；响应 revision 存在时须与 live readback 一致，并读取构建终态。
+- 真实运行态结果与物理 cleanup 在平台协议未探明前必须明确标注 `PLATFORM_PROBE_REQUIRED` / `remote_cleanup_unsupported`；域内 E2E 的 conditional restore 还必须单独给出 exact readback 证据，不能用命令退出 0 替代。
 
 ## WHEN NOT（明确不做）
 

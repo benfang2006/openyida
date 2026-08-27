@@ -1064,7 +1064,7 @@
       "command_ids": [
         "aggregate-table"
       ],
-      "done_when": "写操作返回 readbackVerified=true；save 证明 stashGmtModified 动作 revision 前进，publish 证明 gmtModified 动作 revision 前进并读取构建状态；响应缺 revision 时必须由对应 readback 轴证明；runtime 与 cleanup 未证时明确 PLATFORM_PROBE_REQUIRED。"
+      "done_when": "写操作返回 readbackVerified=true；save 的 stashGmtModified 与 publish 的 gmtModified GET readback 轴必须存在且前进，响应 revision 存在时须与对应 readback 一致；publish 后读取构建状态；runtime 与物理 cleanup 未证时明确 PLATFORM_PROBE_REQUIRED。"
     },
     {
       "name": "yida-report",

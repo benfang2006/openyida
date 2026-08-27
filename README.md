@@ -354,7 +354,9 @@ openyida aggregate-table publish APP_XXX FORM_XXX .cache/openyida/aggregate/desi
 openyida aggregate-table status APP_XXX FORM_XXX --json
 ```
 
-Aggregate-table `save` verifies the draft `stashGmtModified` axis; `publish` verifies the live `gmtModified` axis. Both commands require canonical readback of `relationForms`, `relationships`, `aggregatedFields`, `auxFields`, `formulaFields`, and `validators`. The CLI intentionally does not expose aggregate-table deletion, AI authoring, a high-level design DSL, or tenant-dynamic limits until the corresponding platform contracts are proven.
+Aggregate-table `save` verifies the draft `stashGmtModified` axis; `publish` verifies the live `gmtModified` axis. Both commands require the corresponding GET readback revision to advance; when a response revision exists it must equal that readback axis. Both commands also require canonical readback of `relationForms`, `relationships`, `aggregatedFields`, `auxFields`, `formulaFields`, and `validators`. The CLI intentionally does not expose aggregate-table deletion, AI authoring, a high-level design DSL, or tenant-dynamic limits until the corresponding platform contracts are proven.
+
+The opt-in aggregate real-E2E runner additionally requires `OPENYIDA_AGGREGATE_E2E_RUN_ID` and an exact `OPENYIDA_AGGREGATE_E2E_OWNED_MARKER` beginning with `<runId>__`. Before its first write it verifies the exact list/inspect identity and name, persists a redacted manifest, registry, and baseline snapshot, then conditionally restores the baseline using the latest live revision. Missing ownership proof or concurrent revision movement produces `PLATFORM_PROBE_REQUIRED` / `restore_blocked` without a restore write.
 
 ## CLI Reference
 

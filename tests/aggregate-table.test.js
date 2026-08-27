@@ -353,7 +353,7 @@ describe('aggregate-table run', () => {
       JSON.stringify(design),
       '--no-open',
     ])).rejects.toMatchObject({
-      code: 'AGGREGATE_WRITE_REVISION_UNCHANGED',
+      code: 'AGGREGATE_WRITE_READBACK_REVISION_UNCHANGED',
     });
 
     expect(utils.httpGet).toHaveBeenCalledTimes(2);
@@ -411,11 +411,11 @@ describe('aggregate-table run', () => {
       JSON.stringify(design),
       '--no-open',
     ])).rejects.toMatchObject({
-      code: 'AGGREGATE_WRITE_REVISION_UNCHANGED',
+      code: 'AGGREGATE_WRITE_READBACK_REVISION_UNCHANGED',
     });
   });
 
-  test('save maps a response revision to the stash axis without requiring live-axis movement', async () => {
+  test('save rejects a response revision when the stash readback axis did not advance', async () => {
     const design = buildPublishableDesign();
     utils.httpGet
       .mockResolvedValueOnce({
@@ -427,23 +427,81 @@ describe('aggregate-table run', () => {
         content: { ...design, gmtModified: 7, stashGmtModified: 11 },
       });
     utils.httpPost.mockResolvedValue({ success: true, content: { gmtModified: 12 } });
-    const mockLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-    await run([
+    await expect(run([
       'save',
       'APP_XXX',
       'FORM-VIEW',
       JSON.stringify(design),
       '--no-open',
-    ]);
-
-    expect(JSON.parse(mockLog.mock.calls[0][0])).toMatchObject({
-      revisionAxis: 'stashGmtModified',
-      revisionSource: 'response',
-      revision: 12,
-      readbackRevision: 11,
+    ])).rejects.toMatchObject({
+      code: 'AGGREGATE_WRITE_READBACK_REVISION_UNCHANGED',
     });
-    mockLog.mockRestore();
+  });
+
+  test('publish rejects a response revision when the live readback axis did not advance', async () => {
+    const design = buildPublishableDesign();
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { ...design, gmtModified: 7, stashGmtModified: 11 },
+    });
+    utils.httpPost.mockResolvedValue({ success: true, content: { gmtModified: 8 } });
+
+    await expect(run([
+      'publish',
+      'APP_XXX',
+      'FORM-VIEW',
+      JSON.stringify(design),
+      '--no-open',
+    ])).rejects.toMatchObject({
+      code: 'AGGREGATE_WRITE_READBACK_REVISION_UNCHANGED',
+    });
+  });
+
+  test.each([
+    ['save', 'stashGmtModified', { gmtModified: 7, stashGmtModified: 11 }, { gmtModified: 7, stashGmtModified: 13 }, 12],
+    ['publish', 'gmtModified', { gmtModified: 7, stashGmtModified: 11 }, { gmtModified: 9, stashGmtModified: 11 }, 8],
+  ])('%s rejects response/readback disagreement on the %s axis', async (action, _axis, before, after, responseRevision) => {
+    const design = buildPublishableDesign();
+    utils.httpGet
+      .mockResolvedValueOnce({ success: true, content: { ...design, ...before } })
+      .mockResolvedValueOnce({ success: true, content: { ...design, ...after } });
+    utils.httpPost.mockResolvedValue({ success: true, content: { gmtModified: responseRevision } });
+
+    await expect(run([
+      action,
+      'APP_XXX',
+      'FORM-VIEW',
+      JSON.stringify(design),
+      '--no-open',
+    ])).rejects.toMatchObject({
+      code: 'AGGREGATE_WRITE_RESPONSE_READBACK_REVISION_MISMATCH',
+    });
+  });
+
+  test('publish expected revision precondition fails before the restore write', async () => {
+    const design = buildPublishableDesign();
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { ...design, gmtModified: 9, stashGmtModified: 11 },
+    });
+
+    await expect(run([
+      'publish',
+      'APP_XXX',
+      'FORM-VIEW',
+      JSON.stringify(design),
+      '--expected-revision',
+      '8',
+      '--no-open',
+    ])).rejects.toMatchObject({
+      code: 'AGGREGATE_WRITE_PRECONDITION_FAILED',
+      details: {
+        revisionAxis: 'gmtModified',
+        expectedRevision: '8',
+        observedRevision: 9,
+      },
+    });
+    expect(utils.httpPost).not.toHaveBeenCalled();
   });
 
   test('inspect, preview, and status expose their command contracts', async () => {
