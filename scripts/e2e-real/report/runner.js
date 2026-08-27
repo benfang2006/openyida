@@ -105,6 +105,7 @@ function createManifest(registry) {
     ownership: registry.ownership,
     baseline: registry.baseline,
     expectedEvidence: registry.expectedEvidence,
+    candidate: registry.candidate,
     exactIdentity: registry.exactIdentity,
     remoteWrites: registry.remoteWrites,
     resourceCounts: registry.resourceCounts,
@@ -159,10 +160,51 @@ function validateConfig(config) {
   if (packages.includes('runtime') && (!config.expected || !config.expected.runtime)) {
     throw reportE2EError('REPORT_E2E_CONFIG_INVALID', 'e2e_runtime_expected_required');
   }
+  const runtimeExpected = config.expected && config.expected.runtime;
+  if (packages.includes('runtime') && (!Array.isArray(runtimeExpected.markerPath)
+    || runtimeExpected.markerPath.length === 0
+    || runtimeExpected.markerPath.length > 8
+    || runtimeExpected.markerPath.some(segment => typeof segment !== 'string' || !segment)
+    || runtimeExpected.markerValue !== config.marker)) {
+    throw reportE2EError('REPORT_E2E_CONFIG_INVALID', 'e2e_runtime_marker_contract_invalid');
+  }
   if (packages.includes('ui') && (!config.expected || !config.expected.ui)) {
     throw reportE2EError('REPORT_E2E_CONFIG_INVALID', 'e2e_ui_expected_required');
   }
   return packages;
+}
+
+function normalizeIdentitySummary(identity) {
+  if (!identity || typeof identity !== 'object' || !identity.reportId) {return null;}
+  return {
+    reportId: String(identity.reportId),
+    reportTitle: identity.reportTitle || null,
+    marker: identity.marker || null,
+    appType: identity.appType || null,
+    corpId: identity.corpId || null,
+  };
+}
+
+function normalizeBaseline(baseline) {
+  if (!baseline || typeof baseline !== 'object'
+    || !Array.isArray(baseline.existingReportIds)
+    || !Array.isArray(baseline.reportIdentities)) {
+    throw reportE2EError('REPORT_E2E_BASELINE_REQUIRED', 'e2e_baseline_required');
+  }
+  const existingReportIds = baseline.existingReportIds.map(reportId => String(reportId || ''));
+  if (existingReportIds.some(reportId => !reportId)
+    || new Set(existingReportIds).size !== existingReportIds.length) {
+    throw reportE2EError('REPORT_E2E_BASELINE_REQUIRED', 'e2e_baseline_required');
+  }
+  const reportIdentities = baseline.reportIdentities.map(normalizeIdentitySummary);
+  if (reportIdentities.some(identity => !identity)
+    || reportIdentities.some(identity => !existingReportIds.includes(identity.reportId))) {
+    throw reportE2EError('REPORT_E2E_BASELINE_REQUIRED', 'e2e_baseline_required');
+  }
+  return {
+    existingReportIds,
+    reportIdentities,
+  };
 }
 
 function assertPreflight(preflight, config, packages) {
@@ -176,39 +218,61 @@ function assertPreflight(preflight, config, packages) {
     || ownership.appType !== config.appType) {
     throw reportE2EError('REPORT_E2E_OWNERSHIP_UNPROVEN', 'e2e_ownership_unproven');
   }
-  if (!preflight.baseline || typeof preflight.baseline !== 'object') {
-    throw reportE2EError('REPORT_E2E_BASELINE_REQUIRED', 'e2e_baseline_required');
-  }
+  const baseline = normalizeBaseline(preflight.baseline);
   if (packages.includes('runtime')
     && canonicalJson(preflight.runtimeFixture) !== canonicalJson(config.expected.runtime)) {
     throw reportE2EError('REPORT_E2E_RUNTIME_FIXTURE_MISMATCH', 'e2e_runtime_fixture_mismatch');
   }
   return {
-    status: 'passed',
-    owned: true,
-    runIdMatched: true,
-    markerMatched: true,
-    corpIdMatched: true,
-    appTypeMatched: true,
-    remoteWritesAllowed: true,
+    ownership: {
+      status: 'passed',
+      owned: true,
+      runIdMatched: true,
+      markerMatched: true,
+      corpIdMatched: true,
+      appTypeMatched: true,
+      remoteWritesAllowed: true,
+    },
+    baseline,
   };
 }
 
-function assertCreatedIdentity(created, config) {
-  if (!created || !created.reportId
-    || created.appType !== config.appType
-    || created.corpId !== config.corpId
-    || created.marker !== config.marker
-    || created.reportTitle !== config.reportTitle) {
+function createCandidate(created) {
+  if (!created || !created.reportId) {
     throw reportE2EError('REPORT_E2E_IDENTITY_MISSING', 'e2e_identity_missing');
   }
   return {
-    appType: created.appType,
     reportId: String(created.reportId),
-    corpId: created.corpId,
-    marker: created.marker,
-    reportTitle: created.reportTitle,
+    owned: false,
+    verificationStatus: 'candidate',
+    url: created.url || null,
   };
+}
+
+function identityMatches(identity, expected) {
+  const normalized = normalizeIdentitySummary(identity);
+  return normalized && canonicalJson(normalized) === canonicalJson(expected);
+}
+
+function assertCreatedOwnership(candidate, readback, baseline, config) {
+  const expected = {
+    reportId: candidate.reportId,
+    reportTitle: config.reportTitle,
+    marker: config.marker,
+    appType: config.appType,
+    corpId: config.corpId,
+  };
+  const candidates = readback && readback.identityCandidates;
+  if (!readback || baseline.existingReportIds.includes(candidate.reportId)
+    || !identityMatches(readback, expected)
+    || !Array.isArray(candidates) || candidates.length !== 1
+    || !identityMatches(candidates[0], expected)) {
+    throw reportE2EError(
+      'REPORT_E2E_CREATED_IDENTITY_UNVERIFIED',
+      'e2e_created_identity_unverified'
+    );
+  }
+  return expected;
 }
 
 function runtimeComponents(inspectResult) {
@@ -365,11 +429,31 @@ function runtimeBinding(inspectResult) {
   };
 }
 
+function readMarkerAtPath(row, markerPath) {
+  let current = row;
+  for (const segment of markerPath) {
+    if (!current || typeof current !== 'object'
+      || !Object.prototype.hasOwnProperty.call(current, segment)) {
+      return { found: false, value: undefined };
+    }
+    current = current[segment];
+  }
+  return { found: true, value: current };
+}
+
 function assertRuntimeEvidence(result, expected) {
   const observed = result && result.observed;
+  const markerPathValid = expected && Array.isArray(expected.markerPath)
+    && expected.markerPath.length > 0 && expected.markerPath.length <= 8
+    && expected.markerPath.every(segment => typeof segment === 'string' && segment);
+  const markerMatched = markerPathValid && observed && Array.isArray(observed.rows)
+    && observed.rows.some(row => {
+      const marker = readMarkerAtPath(row, expected.markerPath);
+      return marker.found && marker.value === expected.markerValue;
+    });
   if (!result || canonicalJson(result.expected) !== canonicalJson(expected)
     || !observed || !Array.isArray(observed.rows) || observed.rows.length === 0
-    || !observed.rows.some(row => canonicalJson(row).includes(expected.marker))
+    || !markerMatched
     || canonicalJson(observed.aggregate) !== canonicalJson(expected.aggregate)
     || !expected.filter || expected.filter.before === expected.filter.after
     || canonicalJson(observed.filter) !== canonicalJson(expected.filter)) {
@@ -379,6 +463,7 @@ function assertRuntimeEvidence(result, expected) {
     status: 'passed',
     rowCount: observed.rows.length,
     markerMatched: true,
+    markerPath: [...expected.markerPath],
     aggregateMatched: true,
     filterChanged: true,
   };
@@ -416,13 +501,13 @@ function assertOwnedResource(resource, config) {
     && resource.exactIdentity.reportId;
 }
 
-async function performCleanup(options, registry, config, resource) {
+async function performCleanup(options, registry, config, resource, candidate) {
   if (!resource) {
     if (registry.remoteWrites.attempted > 0) {
       return {
         status: 'cleanup_blocked',
         exactIdentity: false,
-        reason: 'create_result_unknown',
+        reason: candidate ? 'candidate_ownership_unverified' : 'create_result_unknown',
       };
     }
     return { status: 'not_required', exactIdentity: false, reason: 'no_remote_write' };
@@ -499,6 +584,7 @@ async function run(options = {}) {
       sha256: hash(config.expected || {}),
       packages: [...packages],
     },
+    candidate: null,
     exactIdentity: null,
     remoteWrites: { attempted: 0, succeeded: 0 },
     resourceCounts: { created: 0, cleaned: 0, residual: 0 },
@@ -521,6 +607,7 @@ async function run(options = {}) {
 
   let primaryError = null;
   let resource = null;
+  let candidate = null;
   let binding = null;
   try {
     const preflight = await prepare({
@@ -531,12 +618,13 @@ async function run(options = {}) {
       expected: config.expected,
       readOnly: true,
     });
-    registry.ownership = assertPreflight(preflight, config, packages);
+    const preflightEvidence = assertPreflight(preflight, config, packages);
+    registry.ownership = preflightEvidence.ownership;
     registry.baseline = {
-      sha256: hash(preflight.baseline),
-      existingReportCount: Array.isArray(preflight.baseline.existingReportIds)
-        ? preflight.baseline.existingReportIds.length
-        : null,
+      sha256: hash(preflightEvidence.baseline),
+      existingReportIds: [...preflightEvidence.baseline.existingReportIds],
+      reportIdentities: preflightEvidence.baseline.reportIdentities.map(identity => ({ ...identity })),
+      existingReportCount: preflightEvidence.baseline.existingReportIds.length,
     };
     recordTrace(registry, 'prepare-read-only-ownership', 'passed');
     persistCheckpoint(persist, registryPath, manifestPath, registry);
@@ -549,7 +637,32 @@ async function run(options = {}) {
     registry.commands[registry.commands.length - 1].status = 'passed';
     registry.remoteWrites.succeeded += 1;
     registry.resourceCounts.created = 1;
-    registry.exactIdentity = assertCreatedIdentity(created, config);
+    candidate = createCandidate(created);
+    registry.candidate = { ...candidate };
+    registry.writeState = 'candidate_readback_pending';
+    recordTrace(registry, 'create-report-candidate', 'passed', { reportId: candidate.reportId });
+    persistCheckpoint(persist, registryPath, manifestPath, registry);
+
+    const afterCreate = await inspectReport({
+      appType: config.appType,
+      corpId: config.corpId,
+      reportId: candidate.reportId,
+      reportTitle: config.reportTitle,
+      marker: config.marker,
+      includeIdentityCandidates: true,
+      readOnly: true,
+    });
+    registry.exactIdentity = assertCreatedOwnership(
+      candidate,
+      afterCreate,
+      preflightEvidence.baseline,
+      config
+    );
+    registry.candidate = {
+      ...candidate,
+      owned: true,
+      verificationStatus: 'platform_verified',
+    };
     resource = {
       type: 'report',
       runId: config.runId,
@@ -559,11 +672,14 @@ async function run(options = {}) {
       cleanupStatus: 'pending',
     };
     registry.resources.push(resource);
-    registry.writeState = 'created_readback_pending';
-    recordTrace(registry, 'create-report', 'passed', { reportId: registry.exactIdentity.reportId });
+    registry.writeState = 'created_identity_verified';
+    recordTrace(registry, 'create-identity-readback', 'passed', {
+      reportId: registry.exactIdentity.reportId,
+      baselineNew: true,
+      uniqueCandidate: true,
+    });
     persistCheckpoint(persist, registryPath, manifestPath, registry);
 
-    const afterCreate = await inspectReport({ ...registry.exactIdentity });
     assertComponentEvidence(afterCreate, config.charts, config);
     recordTrace(registry, 'create-inspect', 'passed');
 
@@ -630,7 +746,7 @@ async function run(options = {}) {
         registry.remoteWrites.attempted += 1;
         persistCheckpoint(persist, registryPath, manifestPath, registry);
       }
-      registry.cleanup = await performCleanup(options, registry, config, resource);
+      registry.cleanup = await performCleanup(options, registry, config, resource, candidate);
     } catch (error) {
       registry.cleanup = {
         status: 'cleanup_blocked',
@@ -647,9 +763,13 @@ async function run(options = {}) {
         type: 'report',
         runId: config.runId,
         marker: config.marker,
-        owned: resource ? true : 'unknown',
-        reportId: resource && resource.exactIdentity.reportId || null,
-        state: resource ? 'created_cleanup_blocked' : 'create_result_unknown',
+        owned: resource ? true : (candidate ? false : 'unknown'),
+        reportId: resource && resource.exactIdentity.reportId
+          || candidate && candidate.reportId
+          || null,
+        state: resource
+          ? 'created_cleanup_blocked'
+          : (candidate ? 'candidate_ownership_unverified' : 'create_result_unknown'),
         cleanupAttempted: !!resource,
       }];
       registry.resourceCounts.residual = 1;

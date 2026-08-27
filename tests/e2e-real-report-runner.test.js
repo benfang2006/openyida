@@ -20,7 +20,8 @@ function createHarness(overrides = {}) {
   const runId = 'OY_REPORT_TEST_20260827000000000_a1b2c3';
   const marker = `${runId}__marker`;
   const runtimeExpected = {
-    marker,
+    markerPath: ['fixture', 'marker'],
+    markerValue: marker,
     aggregate: { sum: 30, count: 2 },
     filter: { before: 'all', after: 'east' },
   };
@@ -43,6 +44,17 @@ function createHarness(overrides = {}) {
   const calls = { prepare: 0, create: 0, inspect: 0, append: 0, runtime: 0, ui: 0, cleanup: 0 };
   const afterCreate = {
     reportId: 'REPORT_1',
+    reportTitle: config.reportTitle,
+    marker,
+    appType: config.appType,
+    corpId: config.corpId,
+    identityCandidates: [{
+      reportId: 'REPORT_1',
+      reportTitle: config.reportTitle,
+      marker,
+      appType: config.appType,
+      corpId: config.corpId,
+    }],
     revision: 10,
     components: [component('YoushuGroupedBarChart', 'cid_bar', 'field_bar', 'chartData', ['filter_1'])],
     layout: [{ i: 'field_bar', x: 0, y: 0, w: 3, h: 22 }],
@@ -74,7 +86,17 @@ function createHarness(overrides = {}) {
           appType: config.appType,
           remoteWritesAllowed: true,
         },
-        baseline: { existingReportIds: [], appType: config.appType },
+        baseline: {
+          existingReportIds: ['REPORT_EXISTING'],
+          reportIdentities: [{
+            reportId: 'REPORT_EXISTING',
+            reportTitle: 'existing-report',
+            marker: null,
+            appType: config.appType,
+            corpId: config.corpId,
+          }],
+          appType: config.appType,
+        },
         runtimeFixture: runtimeExpected,
       };
     },
@@ -102,7 +124,10 @@ function createHarness(overrides = {}) {
       return {
         expected: runtimeExpected,
         observed: {
-          rows: [{ marker, amount: 10 }, { marker, amount: 20 }],
+          rows: [
+            { fixture: { marker }, amount: 10 },
+            { fixture: { marker }, amount: 20 },
+          ],
           aggregate: { sum: 30, count: 2 },
           filter: { before: 'all', after: 'east' },
         },
@@ -184,6 +209,21 @@ describe('report domain E2E runner', () => {
     }
   });
 
+  test('missing runtime markerPath fails closed before remote writes', async () => {
+    const harness = createHarness();
+    delete harness.config.expected.runtime.markerPath;
+    try {
+      await expect(run(harness.options)).rejects.toMatchObject({
+        code: 'REPORT_E2E_CONFIG_INVALID',
+      });
+      expect(harness.calls.create).toBe(0);
+      expect(harness.calls.append).toBe(0);
+      expect(harness.calls.cleanup).toBe(0);
+    } finally {
+      harness.cleanup();
+    }
+  });
+
   test('persists redacted manifest and registry with baseline hash before create callback', async () => {
     const harness = createHarness();
     let preWrite;
@@ -200,7 +240,14 @@ describe('report domain E2E runner', () => {
         writeState: 'pre_write',
         ownership: { status: 'passed' },
         remoteWrites: { attempted: 1, succeeded: 0 },
-        baseline: { sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
+        baseline: {
+          sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+          existingReportIds: ['REPORT_EXISTING'],
+          reportIdentities: [expect.objectContaining({
+            reportId: 'REPORT_EXISTING',
+            reportTitle: 'existing-report',
+          })],
+        },
       });
       expect(JSON.stringify(preWrite)).not.toContain('access_token');
       return {
@@ -215,6 +262,37 @@ describe('report domain E2E runner', () => {
     try {
       await expect(run(harness.options)).resolves.toMatchObject({ status: 'passed' });
       expect(preWrite).toBeDefined();
+    } finally {
+      harness.cleanup();
+    }
+  });
+
+  test('persists create response as unowned candidate before platform identity readback', async () => {
+    const harness = createHarness();
+    let candidateCheckpoint;
+    harness.options.inspectReport = async () => {
+      harness.calls.inspect += 1;
+      if (harness.calls.inspect === 1) {
+        candidateCheckpoint = JSON.parse(fs.readFileSync(
+          path.join(harness.options.workDir, 'acceptance-manifest.json'),
+          'utf8'
+        ));
+        return harness.afterCreate;
+      }
+      return harness.afterAppend;
+    };
+    try {
+      await expect(run(harness.options)).resolves.toMatchObject({ status: 'passed' });
+      expect(candidateCheckpoint).toMatchObject({
+        writeState: 'candidate_readback_pending',
+        candidate: {
+          reportId: 'REPORT_1',
+          owned: false,
+          verificationStatus: 'candidate',
+        },
+        exactIdentity: null,
+        resources: [],
+      });
     } finally {
       harness.cleanup();
     }
@@ -240,6 +318,67 @@ describe('report domain E2E runner', () => {
         create: { componentCount: 1, layoutNonOverlapping: true },
         append: { componentCount: 2, originalComponentsPreserved: true, layoutNonOverlapping: true },
       });
+    } finally {
+      harness.cleanup();
+    }
+  });
+
+  test.each([
+    ['inspect reportId differs from create candidate', (harness, after) => { after.reportId = 'REPORT_OTHER'; }],
+    ['inspect title differs from the run-owned title', (harness, after) => { after.reportTitle = `${harness.config.reportTitle}_other`; }],
+    ['inspect marker differs from the exact run marker', (harness, after) => { after.marker = `${harness.marker}_other`; }],
+    ['candidate reportId already exists in baseline', (harness) => {
+      harness.options.prepare = async () => ({
+        authorized: true,
+        ownership: {
+          owned: true,
+          runId: harness.config.runId,
+          marker: harness.marker,
+          corpId: harness.config.corpId,
+          appType: harness.config.appType,
+          remoteWritesAllowed: true,
+        },
+        baseline: {
+          existingReportIds: ['REPORT_1'],
+          reportIdentities: [{ reportId: 'REPORT_1', reportTitle: 'existing-report' }],
+          appType: harness.config.appType,
+        },
+        runtimeFixture: harness.runtimeExpected,
+      });
+    }],
+    ['platform list returns multiple matching candidates', (harness, after) => {
+      after.identityCandidates.push({
+        reportId: 'REPORT_2',
+        reportTitle: harness.config.reportTitle,
+        marker: harness.marker,
+        appType: harness.config.appType,
+        corpId: harness.config.corpId,
+      });
+    }],
+  ])('does not cleanup an unverified create candidate: %s', async (_label, mutate) => {
+    const harness = createHarness();
+    const after = structuredClone(harness.afterCreate);
+    mutate(harness, after);
+    harness.options.inspectReport = async () => {
+      harness.calls.inspect += 1;
+      return after;
+    };
+    try {
+      await expect(run(harness.options)).rejects.toMatchObject({
+        code: 'REPORT_E2E_CREATED_IDENTITY_UNVERIFIED',
+        reportResult: {
+          status: 'cleanup_blocked',
+          cleanup: { status: 'cleanup_blocked' },
+          residual: [expect.objectContaining({
+            reportId: 'REPORT_1',
+            runId: harness.config.runId,
+            owned: false,
+            cleanupAttempted: false,
+          })],
+        },
+      });
+      expect(harness.calls.cleanup).toBe(0);
+      expect(harness.calls.append).toBe(0);
     } finally {
       harness.cleanup();
     }
@@ -332,7 +471,10 @@ describe('report domain E2E runner', () => {
 
   test.each([
     ['empty rows', result => { result.observed.rows = []; }],
-    ['missing marker', result => { result.observed.rows = [{ marker: 'other-run' }]; }],
+    ['marker prefix', (result, harness) => { result.observed.rows = [{ fixture: { marker: `${harness.marker}_suffix` } }]; }],
+    ['marker suffix', (result, harness) => { result.observed.rows = [{ fixture: { marker: `prefix_${harness.marker}` } }]; }],
+    ['marker only in another field', (result, harness) => { result.observed.rows = [{ fixture: { marker: 'other-run' }, otherField: harness.marker }]; }],
+    ['marker path missing', (result, harness) => { result.observed.rows = [{ message: harness.marker }]; }],
     ['wrong aggregate', result => { result.observed.aggregate.sum = 29; }],
     ['unchanged filter', result => { result.observed.filter.after = 'all'; }],
   ])('rejects weak runtime evidence: %s', async (_label, mutate) => {
@@ -341,12 +483,12 @@ describe('report domain E2E runner', () => {
       const result = {
         expected: structuredClone(harness.runtimeExpected),
         observed: {
-          rows: [{ marker: harness.marker }],
+          rows: [{ fixture: { marker: harness.marker } }],
           aggregate: { sum: 30, count: 2 },
           filter: { before: 'all', after: 'east' },
         },
       };
-      mutate(result);
+      mutate(result, harness);
       return result;
     };
     try {
