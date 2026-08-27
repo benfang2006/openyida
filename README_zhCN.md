@@ -431,7 +431,9 @@ dist/skills/openyida/
 openyida-skills.zip
 ```
 
-QwenWork（千问办公）与 QoderWork 一样使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
+QwenWork（千问办公）使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
+
+新 Qoder 与 Qoder IDE 共享用户级 `~/.qoder/skills/yida-skills/` 目录；QoderWork 是独立产品，继续使用 `~/.qoderwork/skills/yida-skills/`。
 
 ## 开发与校验
 

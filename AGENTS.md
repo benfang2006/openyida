@@ -191,7 +191,8 @@ openyida/
 
 ### 环境检测
 - `lib/core/env.js` 负责检测当前运行的 AI 工具环境
-- 支持环境：Codex、Claude Code、Aone Copilot、Cursor、OpenCode、Qoder、悟空
+- 支持环境：Codex、Claude Code、Aone Copilot、Cursor、OpenCode、QwenWork、Qoder、Qoder IDE、QoderWork、悟空
+- Qoder 与 Qoder IDE 共用 `.qoder` 配置目录，以 `qoder_app` / `qoder_ide` subtype 区分；QoderWork 是独立产品，继续使用 `.qoderwork`
 - 不同环境会影响工作区路径、浏览器可用性和 agent 能力；登录态统一走 OAuth token session，不再依赖 Cookie 提取
 
 ### Codex 特殊说明

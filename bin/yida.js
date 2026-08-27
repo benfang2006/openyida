@@ -35,6 +35,7 @@ function isAgentEnvironment(env) {
     env.OPENCODE_CLIENT ||
     env.QODER_IDE ||
     env.QODER_AGENT ||
+    env.QODER_PRODUCT_ID ||
     env.QODERCLI_INTEGRATION_MODE ||
     env.QODER_WORK_INTEGRATION_PRODUCT ||
     env.QWENWORK_INTEGRATION_MODE ||
