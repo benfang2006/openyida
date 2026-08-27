@@ -1802,3 +1802,41 @@ module.exports.connector_test = {
   headers_label: '回應標頭:',
   content_label: '回應內容:',
 };
+
+module.exports.connector_contract = {
+  invalid_json: '連接器定義包含無效 JSON。',
+  readback_mismatch: '連接器回讀結果與提交的定義不一致。',
+  security_schemes_invalid: '連接器 securitySchemes 必須是 JSON 物件。',
+  test_envelope_failed: '連接器測試回應信封報告失敗。',
+  test_response_invalid: '連接器測試傳回了無法識別的回應契約。',
+  test_status_invalid: '連接器測試回應缺少規範 HTTP 狀態列。',
+  test_http_failed: '連接器測試失敗：{0}。',
+};
+
+module.exports.connector_api = {
+  connector_pagination_limit: '連接器清單超過安全分頁上限。',
+  write_identity_missing: '連接器寫入成功，但未傳回可恢復的資源識別。',
+  connection_pagination_limit: '驗證帳號清單超過安全分頁上限。',
+  connection_name_exists: '指定歸屬名稱的驗證帳號已存在。',
+  connection_readback_mismatch: '無法透過精確歸屬回讀恢復新建的驗證帳號。',
+};
+
+module.exports.connector_e2e = {
+  skip_missing: '略過連接器真實 E2E；缺少：{0}',
+  resource_plan: '已脫敏的連接器 E2E 資源計劃：{0}',
+  probe_required: 'PLATFORM_PROBE_REQUIRED：{0}；未發起遠端寫入。',
+  result_contract_invalid: '{0} 未傳回成功的 JSON 契約。',
+  step_login_check: '登入狀態核驗',
+  step_connector_create: '建立連接器',
+  step_connection_create: '建立驗證帳號',
+  step_action_readback_before: '測試前動作回讀',
+  step_connector_test: '連接器測試',
+  step_action_readback_after: '測試後動作回讀',
+  auth_selection_unverified: '無法證明選中的登入 profile 屬於目標組織。',
+  prewrite_evidence_missing: '缺少遠端寫入前證據檢查點。',
+  connector_identity_unverified: '連接器建立未傳回經核驗的歸屬資源識別。',
+  connection_identity_unverified: '驗證帳號建立未傳回經核驗的歸屬資源識別。',
+  action_readback_mismatch: '測試前連接器動作回讀與確定性 fixture 不一致。',
+  test_contract_unverified: '連接器測試未能證明受控 fixture、標記、歸屬和驗證執行階段契約。',
+  action_mutated: '連接器測試改變了持久化動作定義。',
+};

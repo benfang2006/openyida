@@ -7,6 +7,7 @@ const {
   canonicalizeConnectorTestResponse,
   connectorRequiresAuth,
 } = require('../lib/connector/contract');
+const { setLanguage } = require('../lib/core/i18n');
 
 describe('connector shared contract', () => {
   test('centralizes the frontend HTTP mode and auth type codes', () => {
@@ -80,5 +81,17 @@ describe('connector shared contract', () => {
       responseHeaders: {},
       content: '{"message":"denied"}',
     })).toThrow(expect.objectContaining({ code: 'CONNECTOR_TEST_HTTP_FAILED' }));
+  });
+
+  test('localizes contract errors outside zh', () => {
+    setLanguage('en');
+    try {
+      expect(() => canonicalizeConnectorTestResponse({ statusCode: 200 }))
+        .toThrow('Connector test returned an unrecognized response contract.');
+    } finally {
+      setLanguage('zh');
+    }
+    expect(() => canonicalizeConnectorTestResponse({ statusCode: 200 }))
+      .toThrow('连接器测试返回了无法识别的响应契约。');
   });
 });

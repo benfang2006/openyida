@@ -483,10 +483,16 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 The opt-in connector E2E is intentionally separate from the shared full runner:
 
 ```bash
-OPENYIDA_E2E=1 OPENYIDA_E2E_CONNECTOR=1 node scripts/e2e-real/connector/runner.js
+OPENYIDA_E2E=1 \
+OPENYIDA_E2E_CONNECTOR=1 \
+OPENYIDA_E2E_CORP_ID='<target-corp-id>' \
+OPENYIDA_E2E_CONNECTOR_ECHO_URL='https://<team-controlled-host>/<stable-echo-path>' \
+OPENYIDA_E2E_CONNECTOR_FIXTURE_MARKER='<expected-response-marker>' \
+OPENYIDA_E2E_CONNECTOR_FIXTURE_OWNER='<expected-owner-header-value>' \
+node scripts/e2e-real/connector/runner.js
 ```
 
-It creates a uniquely owned Basic-auth echo fixture, verifies that testing does not change the persisted action, records only redacted command arguments, and reports remote connector/account cleanup as blocked because the CLI has no proven delete API.
+The runner rejects public generic echo services such as httpbin and example.com. Before its first remote write it selects and verifies the explicit organization profile, prints a redacted resource plan, and persists synchronized registry/manifest evidence plus the SHA-256 of the preserved operations fixture. It creates a uniquely owned Basic-auth connector, verifies the controlled fixture marker/owner header and that testing does not change the persisted action, deletes only its temporary local copy, and reports remote connector/account cleanup as blocked because the CLI has no proven delete API. If organization or fixture ownership cannot be proven, it returns `PLATFORM_PROBE_REQUIRED` with zero remote writes.
 
 ### Integration & DingTalk
 

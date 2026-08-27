@@ -19,6 +19,7 @@ const {
 } = require('../lib/connector/api');
 const { buildConnectorDesc } = require('../lib/connector/api');
 const { buildSecuritySchemes, parseBaseUrl } = require('../lib/connector/connector-create');
+const { setLanguage } = require('../lib/core/i18n');
 
 const authRef = {
   baseUrl: 'https://www.aliwork.com',
@@ -128,6 +129,20 @@ describe('connector frontend API contract', () => {
 
     expect(utils.httpPost).toHaveBeenCalledTimes(1);
     expect(utils.httpGet).not.toHaveBeenCalled();
+  });
+
+  test('localizes the write identity error outside zh', async () => {
+    setLanguage('en');
+    utils.httpPost.mockResolvedValue({ success: true, content: {} });
+    try {
+      await expect(saveConnector(buildConnectorParams(), authRef))
+        .rejects.toThrow('Connector write succeeded without a recoverable identity.');
+    } finally {
+      setLanguage('zh');
+    }
+    utils.httpPost.mockResolvedValue({ success: true, content: {} });
+    await expect(saveConnector(buildConnectorParams(), authRef))
+      .rejects.toThrow('连接器写入成功，但未返回可恢复的资源标识。');
   });
 
   test('listConnections follows the frontend POST pagination contract', async () => {
