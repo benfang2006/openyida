@@ -149,6 +149,104 @@ describe('verify-short-url', () => {
 });
 
 describe('save-share-config', () => {
+  test('omitted openAuth preserves the complete public auth config', async () => {
+    const authConfig = {
+      openAuth: 'y',
+      authType: 'custom',
+      authSources: JSON.stringify({ users: ['user-1'], departments: ['dept-1'] }),
+      nested: { policy: 'owned' },
+    };
+    utils.httpPost
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          isOpen: 'n',
+          openUrl: '/o/old',
+          shareUrl: '/s/keep',
+          openPageAuthConfig: JSON.stringify(authConfig),
+        },
+      })
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          isOpen: 'y',
+          openUrl: '/o/new',
+          shareUrl: '/s/keep',
+          openPageAuthConfig: JSON.stringify({
+            nested: { policy: 'owned' },
+            authSources: JSON.stringify({ departments: ['dept-1'], users: ['user-1'] }),
+            authType: 'custom',
+            openAuth: 'y',
+          }),
+        },
+      });
+
+    const result = await saveShareConfig.run(['APP_XXX', 'FORM_XXX', '/o/new', 'y']);
+
+    const body = querystring.parse(utils.httpPost.mock.calls[1][2]);
+    expect(JSON.parse(body.openPageAuthConfig)).toEqual(authConfig);
+    expect(result.expected.openPageAuthConfig).toEqual(authConfig);
+  });
+
+  test('explicit openAuth patches only openAuth and preserves nested auth fields', async () => {
+    const beforeAuthConfig = {
+      openAuth: 'y',
+      authType: 'source-list',
+      authSources: [{ type: 'DEPARTMENT', ids: ['dept-1'] }],
+    };
+    const afterAuthConfig = { ...beforeAuthConfig, openAuth: 'n' };
+    utils.httpPost
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          isOpen: 'y',
+          openUrl: '/o/old',
+          shareUrl: '/s/keep',
+          openPageAuthConfig: JSON.stringify(beforeAuthConfig),
+        },
+      })
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          isOpen: 'y',
+          openUrl: '/o/new',
+          shareUrl: '/s/keep',
+          openPageAuthConfig: afterAuthConfig,
+        },
+      });
+
+    await saveShareConfig.run(['APP_XXX', 'FORM_XXX', '/o/new', 'y', 'n']);
+
+    const body = querystring.parse(utils.httpPost.mock.calls[1][2]);
+    expect(JSON.parse(body.openPageAuthConfig)).toEqual(afterAuthConfig);
+  });
+
+  test('public update fails closed when the current auth config cannot be parsed', async () => {
+    utils.httpPost.mockResolvedValueOnce({
+      success: true,
+      content: {
+        isOpen: 'n',
+        openUrl: '/o/old',
+        shareUrl: '/s/keep',
+        openPageAuthConfig: 'not-json',
+      },
+    });
+
+    await expect(saveShareConfig.run([
+      'APP_XXX',
+      'FORM_XXX',
+      '/o/new',
+      'y',
+      'n',
+    ])).rejects.toMatchObject({
+      isCliError: true,
+      code: 'SAVE_SHARE_CONFIG_CURRENT_STATE_INCOMPLETE',
+    });
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+  });
+
   test('updates public URL, preserves share URL, and verifies readback', async () => {
     utils.httpPost
       .mockResolvedValueOnce({
@@ -294,7 +392,10 @@ describe('save-share-config', () => {
 
   test('keeps save API business failure as a normal JSON result', async () => {
     utils.httpPost
-      .mockResolvedValueOnce({ success: true, content: {} })
+      .mockResolvedValueOnce({
+        success: true,
+        content: { openPageAuthConfig: '{"openAuth":"n","authSources":[]}' },
+      })
       .mockResolvedValueOnce({
         success: false,
         errorMsg: '保存失败',
@@ -315,7 +416,12 @@ describe('save-share-config', () => {
     utils.httpPost
       .mockResolvedValueOnce({
         success: true,
-        content: { isOpen: 'n', openUrl: '/o/old', shareUrl: '/s/keep' },
+        content: {
+          isOpen: 'n',
+          openUrl: '/o/old',
+          shareUrl: '/s/keep',
+          openPageAuthConfig: '{"openAuth":"n","authSources":[]}',
+        },
       })
       .mockResolvedValueOnce({ success: true })
       .mockResolvedValueOnce({

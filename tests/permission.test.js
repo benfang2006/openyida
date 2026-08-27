@@ -101,6 +101,37 @@ describe('get-permission command regression', () => {
     });
   });
 
+  test('safely paginates and filters by exact package UUID', async () => {
+    const firstPage = Array.from({ length: 20 }, (_item, index) => ({
+      packageUuid: `pkg-${index + 1}`,
+      packageName: { zh_CN: `组 ${index + 1}` },
+    }));
+    utils.httpGet
+      .mockResolvedValueOnce({ success: true, content: { formPermit: firstPage } })
+      .mockResolvedValueOnce({
+        success: true,
+        content: {
+          formPermit: [{ packageUuid: 'pkg-21', packageName: { zh_CN: '目标组' } }],
+        },
+      });
+
+    const output = await run(['APP-1', 'FORM-1', '--package-uuid', 'pkg-21']);
+
+    expect(utils.httpGet).toHaveBeenCalledTimes(2);
+    expect(utils.httpGet.mock.calls[1][2]).toMatchObject({ pageIndex: '2', pageSize: '20' });
+    expect(output).toMatchObject({
+      success: true,
+      totalPackages: 1,
+      query: {
+        packageUuid: 'pkg-21',
+        pagesFetched: 2,
+        totalFetched: 21,
+        complete: true,
+      },
+      permissions: [{ packageUuid: 'pkg-21', packageName: '目标组' }],
+    });
+  });
+
   test('missing login cache triggers login before requestWithAutoLogin', async () => {
     utils.loadAuthData.mockReturnValueOnce(null);
     utils.triggerLogin.mockReturnValueOnce(mockAuthData);
