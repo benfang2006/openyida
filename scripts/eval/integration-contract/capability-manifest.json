@@ -457,7 +457,7 @@
         "realE2ECoverage": "none",
         "currentVerdict": "PLATFORM_PROBE_REQUIRED",
         "verificationLevel": "PLATFORM_PROBE_REQUIRED",
-        "notes": "The CLI now requires exact paginated list status plus non-empty detail readback after switch and fails closed otherwise. This is unit-verified control-plane behavior; the endpoint wrapper, idempotency and real final state remain PLATFORM_PROBE_REQUIRED until a real owned-resource run."
+        "notes": "The CLI now requires exact paginated list status plus non-empty detail presence after switch and fails closed otherwise. The honest result is PLATFORM_LIST_EXACT_DETAIL_PRESENT, not detail exact; the endpoint wrapper, idempotency and real final state remain PLATFORM_PROBE_REQUIRED until a real owned-resource run."
       },
       {
         "capability": "integration_detail_readback_wrapper",
@@ -479,7 +479,7 @@
         "realE2ECoverage": "getProcess and getProcessById returned content containing view schema/globalSetting only; getConfig returned designer component package configuration; no runtime process JSON wrapper was observed",
         "currentVerdict": "PLATFORM_PROBE_REQUIRED",
         "verificationLevel": "PLATFORM_PROBE_REQUIRED",
-        "notes": "One tenant/run established a view-only content wrapper for getProcess/getProcessById, but did not expose runtime process JSON. The CLI may use non-empty detail as existence evidence only; integration update remains PLATFORM_PROBE_REQUIRED because full runtime graph, view graph, ownership and before fingerprint are not simultaneously proven."
+        "notes": "One tenant/run established view-only content for getProcess/getProcessById without a proven identity-bearing wrapper or runtime process JSON. The CLI labels this as detail presence, validates optional top-level processCode/formUuid projections when present, and never promotes it to detail exact; integration update remains PLATFORM_PROBE_REQUIRED."
       },
       {
         "capability": "execution_log_and_status_contract",
@@ -599,7 +599,7 @@
         "realE2ECoverage": "none",
         "currentVerdict": "PLATFORM_PROBE_REQUIRED",
         "verificationLevel": "PLATFORM_PROBE_REQUIRED",
-        "notes": "Publish and switch now require exact full-pagination list status plus non-empty process detail readback and fail closed otherwise. No real platform write was run in this campaign, so the server-side final-state contract remains PLATFORM_PROBE_REQUIRED."
+        "notes": "Publish and switch now require exact full-pagination list status plus non-empty process detail presence and fail closed otherwise. The returned level is PLATFORM_LIST_EXACT_DETAIL_PRESENT; no real platform write was run, so the server-side final-state and identity-bearing detail contracts remain PLATFORM_PROBE_REQUIRED."
       }
     ]
   },

@@ -1,5 +1,7 @@
 'use strict';
 
+const { t } = require('../../../lib/core/i18n');
+
 const CASES = [
   {
     id: 'integration-data-create',
@@ -68,7 +70,7 @@ function getRuntimeCase(caseId) {
 function verifyRuntimeObservation(caseId, observation) {
   const runtimeCase = getRuntimeCase(caseId);
   if (!runtimeCase) {
-    const error = new Error(`Unknown integration runtime case: ${caseId}`);
+    const error = new Error(t('integration.runtime_case_unknown', caseId));
     error.code = 'INTEGRATION_RUNTIME_CASE_UNKNOWN';
     throw error;
   }

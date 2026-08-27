@@ -5,6 +5,7 @@ const {
   verifyRuntimeObservation,
 } = require('../scripts/e2e-real/integration/runtime-contracts');
 const { runRuntimeCases } = require('../scripts/e2e-real/integration/runtime-runner');
+const { getLanguage, setLanguage } = require('../lib/core/i18n');
 
 function passingObservation(runtimeCase) {
   return JSON.parse(JSON.stringify(runtimeCase.expectedObservation));
@@ -13,8 +14,13 @@ function passingObservation(runtimeCase) {
 function createAdapter(overrides = {}) {
   return {
     prepare: jest.fn(async (runtimeCase) => ({
-      ownershipVerified: true,
+      remoteWrites: 0,
       correlationMarker: `OY_INT_${runtimeCase.id}`,
+      ownershipEvidence: {
+        verified: true,
+        resourceFingerprint: `sha256:${runtimeCase.id}`,
+        proofs: [{ type: 'owned-fixture-marker', marker: `OY_INT_${runtimeCase.id}` }],
+      },
     })),
     trigger: jest.fn(async () => ({ accepted: true })),
     readback: jest.fn(async (runtimeCase) => passingObservation(runtimeCase)),
@@ -24,6 +30,12 @@ function createAdapter(overrides = {}) {
 }
 
 describe('integration domain runtime contracts', () => {
+  const initialLanguage = getLanguage();
+
+  afterAll(() => {
+    setLanguage(initialLanguage);
+  });
+
   test('covers every currently declared business node with deterministic real-readback assertions', () => {
     expect(RUNTIME_CASES.map((item) => item.nodeType).sort()).toEqual([
       'connector',
@@ -66,7 +78,15 @@ describe('integration domain runtime contracts', () => {
     const adapter = createAdapter({
       prepare: jest.fn(async (runtimeCase) => {
         calls.push(`${runtimeCase.id}:prepare`);
-        return { ownershipVerified: true, correlationMarker: `OY_INT_${runtimeCase.id}` };
+        return {
+          remoteWrites: 0,
+          correlationMarker: `OY_INT_${runtimeCase.id}`,
+          ownershipEvidence: {
+            verified: true,
+            resourceFingerprint: `sha256:${runtimeCase.id}`,
+            proofs: [{ type: 'owned-fixture-marker', marker: `OY_INT_${runtimeCase.id}` }],
+          },
+        };
       }),
       trigger: jest.fn(async (runtimeCase) => {
         calls.push(`${runtimeCase.id}:trigger`);
@@ -112,9 +132,17 @@ describe('integration domain runtime contracts', () => {
     expect(adapter.cleanup).toHaveBeenCalledTimes(3);
   });
 
-  test('runner refuses to trigger when owned-resource proof or correlation marker is absent', async () => {
+  test('unowned context performs zero trigger, readback, and cleanup side effects', async () => {
     const adapter = createAdapter({
-      prepare: jest.fn(async () => ({ ownershipVerified: false, correlationMarker: '' })),
+      prepare: jest.fn(async () => ({
+        remoteWrites: 0,
+        correlationMarker: 'OY_INT_UNOWNED',
+        ownershipEvidence: {
+          verified: false,
+          resourceFingerprint: 'sha256:unowned',
+          proofs: [],
+        },
+      })),
     });
     await expect(runRuntimeCases({ adapter })).rejects.toMatchObject({
       code: 'INTEGRATION_RUNTIME_OWNERSHIP_UNVERIFIED',
@@ -122,12 +150,70 @@ describe('integration domain runtime contracts', () => {
     });
     expect(adapter.trigger).not.toHaveBeenCalled();
     expect(adapter.readback).not.toHaveBeenCalled();
-    expect(adapter.cleanup).toHaveBeenCalledTimes(1);
+    expect(adapter.cleanup).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ['declared write', async () => ({
+      remoteWrites: 1,
+      correlationMarker: 'OY_INT_PREFLIGHT_WRITE',
+      ownershipEvidence: {
+        verified: true,
+        resourceFingerprint: 'sha256:written',
+        proofs: [{ type: 'owned-fixture-marker', marker: 'OY_INT_PREFLIGHT_WRITE' }],
+      },
+    })],
+    ['reported write before throwing', async () => {
+      const error = new Error('preflight mutated platform state');
+      error.details = { remoteWrites: 1 };
+      throw error;
+    }],
+  ])('prepare %s is rejected with zero follow-up side effects', async (_label, prepare) => {
+    const adapter = createAdapter({ prepare: jest.fn(prepare) });
+    await expect(runRuntimeCases({ adapter })).rejects.toMatchObject({
+      code: 'INTEGRATION_RUNTIME_PREFLIGHT_NOT_READ_ONLY',
+      details: expect.objectContaining({ remoteWrites: 1 }),
+    });
+    expect(adapter.trigger).not.toHaveBeenCalled();
+    expect(adapter.readback).not.toHaveBeenCalled();
+    expect(adapter.cleanup).not.toHaveBeenCalled();
+  });
+
+  test('primary failure and cleanup failure preserve both machine errors and residual evidence', async () => {
+    const primary = new Error('runtime readback unavailable');
+    primary.code = 'INTEGRATION_RUNTIME_READBACK_FAILED';
+    primary.details = { stage: 'readback' };
+    const cleanup = new Error('fixture could not be removed');
+    cleanup.code = 'INTEGRATION_RUNTIME_FIXTURE_DELETE_FAILED';
+    cleanup.details = {
+      residual: { status: 'present', resourceFingerprint: 'sha256:residual-fixture' },
+    };
+    const adapter = createAdapter({
+      readback: jest.fn(async () => { throw primary; }),
+      cleanup: jest.fn(async () => { throw cleanup; }),
+    });
+
+    await expect(runRuntimeCases({ adapter })).rejects.toMatchObject({
+      code: 'INTEGRATION_RUNTIME_PRIMARY_AND_CLEANUP_FAILED',
+      details: {
+        primary: expect.objectContaining({
+          code: 'INTEGRATION_RUNTIME_READBACK_FAILED',
+          details: { stage: 'readback' },
+        }),
+        cleanup: expect.objectContaining({
+          status: 'failed',
+          code: 'INTEGRATION_RUNTIME_FIXTURE_DELETE_FAILED',
+          residual: { status: 'present', resourceFingerprint: 'sha256:residual-fixture' },
+        }),
+      },
+    });
   });
 
   test('runner without the four-method real adapter stays PLATFORM_PROBE_REQUIRED with zero writes', async () => {
+    setLanguage('ja');
     await expect(runRuntimeCases({ adapter: { readback: jest.fn() } })).rejects.toMatchObject({
       code: 'PLATFORM_PROBE_REQUIRED',
+      message: '集成自動化ランタイムアダプターが設定されていません。',
       details: expect.objectContaining({ remoteWrites: 0 }),
     });
   });

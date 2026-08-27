@@ -79,7 +79,7 @@ describe('integration create command', () => {
     integrationApi.saveProcess.mockReset();
     fetchFormPageList.mockReset();
     integrationReadback.verifyLogicflowFinalState.mockResolvedValue({
-      verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT',
+      verificationLevel: 'PLATFORM_LIST_EXACT_DETAIL_PRESENT',
       processCode: 'LPROC-TEST',
       status: 'y',
     });
@@ -371,7 +371,7 @@ describe('integration create command', () => {
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  test('publishes only after exact list/detail final-state readback succeeds', async () => {
+  test('publishes only after exact list/status and detail-presence readback succeeds', async () => {
     integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
     integrationApi.saveProcess.mockResolvedValue({ success: true });
 
@@ -383,8 +383,8 @@ describe('integration create command', () => {
     expect(JSON.parse(logSpy.mock.calls[0][0])).toMatchObject({
       success: true,
       published: true,
-      verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT',
-      verification: { verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT' },
+      verificationLevel: 'PLATFORM_LIST_EXACT_DETAIL_PRESENT',
+      verification: { verificationLevel: 'PLATFORM_LIST_EXACT_DETAIL_PRESENT' },
     });
   });
 

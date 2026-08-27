@@ -98,6 +98,10 @@ describe('integration connector schema discovery', () => {
       'readback_status_mismatch',
       'readback_detail_failed',
       'readback_detail_empty',
+      'readback_detail_identity_mismatch',
+      'detail_api_failed',
+      'list_pagination_limit',
+      'form_list_pagination_limit',
       'connector_schema_file_unverified',
       'connector_not_found',
       'connector_schema_discovery_failed',
@@ -105,6 +109,15 @@ describe('integration connector schema discovery', () => {
       'connector_action_not_found',
       'connector_action_schema_missing',
       'connector_input_unknown',
+      'connector_schema_unverified',
+      'runtime_case_unknown',
+      'runtime_adapter_missing',
+      'runtime_preflight_not_read_only',
+      'runtime_ownership_unverified',
+      'runtime_trigger_rejected',
+      'runtime_contract_failed',
+      'runtime_cleanup_failed',
+      'runtime_primary_cleanup_failed',
     ];
     expect(SUPPORTED_LANGUAGES).toHaveLength(12);
     for (const language of SUPPORTED_LANGUAGES) {

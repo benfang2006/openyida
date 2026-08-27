@@ -5,7 +5,7 @@
   "scope": "Skill 声明、CLI 实现、单测、静态验收与脱敏真实 E2E 结论；真实 ID、身份与 session 证据仅保留在 project/.cache，不进入本文件",
   "findingSnapshot": "pre-optimization baseline plus feat/integration-controlplane-runtime-e2e local deterministic disposition; no new real platform write was run",
   "summary": {
-    "unitTestEvidence": {"suites": 15, "tests": 183, "result": "passed", "scope": "focused integration control-plane, compiler-contract and runtime-runner suites"},
+    "unitTestEvidence": {"suites": 15, "tests": 191, "result": "passed", "scope": "focused integration control-plane, compiler-contract and runtime-runner suites after owner review remediation"},
     "compilerConformance": "passed-supported-scenarios",
     "compilerConformanceEvidence": {
       "scenariosPassed": 6,
@@ -21,9 +21,9 @@
       "branch": "feat/integration-controlplane-runtime-e2e",
       "remotePlatformWrites": 0,
       "publicList": "SAFE_PAGINATOR_REUSED_AND_UNIT_VERIFIED",
-      "publishAndSwitchReadback": "EXACT_LIST_STATUS_AND_DETAIL_REQUIRED_UNIT_VERIFIED_REAL_PLATFORM_NOT_RUN",
+      "publishAndSwitchReadback": "EXACT_LIST_STATUS_PLUS_DETAIL_PRESENCE_UNIT_VERIFIED_REAL_PLATFORM_NOT_RUN",
       "connectorSchema": "FIXED_PRESET_OR_PLATFORM_READ_ONLY_DISCOVERY_FAIL_CLOSED",
-      "runtimeRunner": "SEVEN_DECLARED_NODE_CASES_WITH_DETERMINISTIC_MUTATION_TESTS_REAL_PLATFORM_NOT_RUN",
+      "runtimeRunner": "SEVEN_DECLARED_NODE_CASES_WITH_READ_ONLY_PREFLIGHT_OWNERSHIP_GATED_CLEANUP_AND_RESIDUAL_EVIDENCE_REAL_PLATFORM_NOT_RUN",
       "integrationUpdate": "PLATFORM_PROBE_REQUIRED_REMOTE_WRITES_ZERO_UNCHANGED"
     },
     "realE2EEvidence": {
@@ -195,7 +195,7 @@
         {"location": "scripts/e2e-real/skill-coverage.js:46", "detail": "yida-integration 标记为 opt-in"}
       ],
       "recommendation": "本轮只保留接口，不得把静态 fixture 通过表述为真实 E2E 通过。",
-      "disposition": "DETERMINISTIC_RUNTIME_RUNNER_READY_FOR_SEVEN_DECLARED_NODE_CASES; REAL_PLATFORM_NOT_RUN",
+      "disposition": "DETERMINISTIC_RUNTIME_RUNNER_READY_FOR_SEVEN_DECLARED_NODE_CASES; PREFLIGHT_REMOTE_WRITES_ZERO_AND_STRUCTURED_OWNERSHIP_REQUIRED; CLEANUP_ONLY_AFTER_OWNERSHIP; PRIMARY_AND_CLEANUP_FAILURES_PRESERVE_RESIDUAL; REAL_PLATFORM_NOT_RUN",
       "dispositionEvidence": [
         "scripts/e2e-real/integration/runtime-contracts.js",
         "scripts/e2e-real/integration/runtime-runner.js",
@@ -216,7 +216,7 @@
         {"location": "yida-skills/skills/yida-integration/references/integration-node-schemas.md:344-397", "detail": "参考接口说明不能替代固定平台响应 fixture"}
       ],
       "recommendation": "后续使用最小只读 list/detail/log fixture 与可回收启停资源建立独立控制面合同。",
-      "disposition": "PUBLIC_LIST_PAGINATION_AND_WRITE_READBACK_IMPLEMENTED_WITH_UNIT_EVIDENCE; SERVER_CONTRACT_STILL_PLATFORM_PROBE_REQUIRED",
+      "disposition": "PUBLIC_LIST_PAGINATION_AND_EXACT_LIST_STATUS_READBACK_IMPLEMENTED; DETAIL_IS_PRESENCE_ONLY_UNLESS_OPTIONAL_IDENTITY_PROJECTION_MATCHES; SERVER_CONTRACT_STILL_PLATFORM_PROBE_REQUIRED",
       "dispositionEvidence": [
         "lib/integration/integration-check.js#listAllLogicflows",
         "lib/integration/integration-readback.js",

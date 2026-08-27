@@ -27,6 +27,8 @@ jest.mock('../lib/core/utils', () => {
 
 const integrationApi = require('../lib/integration/integration-api');
 const integrationList = require('../lib/integration/integration-list');
+const { listAllLogicflows } = require('../lib/integration/integration-check');
+const { setLanguage } = require('../lib/core/i18n');
 
 describe('integration-list parseListArgs', () => {
   test('解析 appType 与全部可选 flag', () => {
@@ -99,12 +101,14 @@ describe('integration-list flattenFlowList', () => {
 describe('integration-list runList', () => {
   let logSpy;
   beforeEach(() => {
+    setLanguage('zh');
     process.env.YIDA_QUIET = '1';
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     integrationApi.listLogicflows.mockReset();
     integrationApi.listFormLogicflows.mockReset();
   });
   afterEach(() => {
+    setLanguage('zh');
     delete process.env.YIDA_QUIET;
     logSpy.mockRestore();
   });
@@ -181,6 +185,17 @@ describe('integration-list runList', () => {
     });
     expect(Array.isArray(printed.flows)).toBe(true);
   });
+
+  test('safe paginator limit uses the active non-zh locale', async () => {
+    setLanguage('ja');
+    integrationApi.listLogicflows.mockResolvedValue({ data: [], totalCount: 2, hasMore: true });
+    await expect(listAllLogicflows({}, 'APP_X', {
+      flowTypes: ['1'], pageSize: 1, maxPages: 1,
+    })).rejects.toMatchObject({
+      code: 'INTEGRATION_LIST_PAGINATION_LIMIT',
+      message: '集成自動化一覧が安全なページネーション上限を超えました。',
+    });
+  });
 });
 
 describe('integration-list runEnable / runDisable', () => {
@@ -218,8 +233,8 @@ describe('integration-list runEnable / runDisable', () => {
     const printed = JSON.parse(logSpy.mock.calls[0][0]);
     expect(printed).toMatchObject({
       success: true, action: 'enable', status: 'y', processCode: 'LPROC-1',
-      verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT',
-      verification: { verificationLevel: 'PLATFORM_LIST_DETAIL_EXACT' },
+      verificationLevel: 'PLATFORM_LIST_EXACT_DETAIL_PRESENT',
+      verification: { verificationLevel: 'PLATFORM_LIST_EXACT_DETAIL_PRESENT' },
     });
   });
 

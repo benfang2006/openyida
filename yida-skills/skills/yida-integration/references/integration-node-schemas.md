@@ -339,7 +339,7 @@ trigger
 | `processCode` | String | 是 | 逻辑流唯一标识，格式 `LPROC-xxx` |
 | `needReportLine` | String | 是 | 固定 `"y"` |
 
-- **返回值**：`{ "success": true }` 只表示写请求被接受，不是最终发布状态证据。发布后必须按 `formUuid + processCode` 完成全量 list、`status=y` 与 `getProcess` 详情回读；任一项无法证明都失败。
+- **返回值**：`{ "success": true }` 只表示写请求被接受，不是最终发布状态证据。发布后必须按 `formUuid + processCode` 完成全量 list、`status=y` 与 `getProcess` 详情存在性回读；任一项无法证明都失败。详情未携带可验证 identity 时不得宣称 detail exact。
 
 ---
 
@@ -366,7 +366,7 @@ trigger
 
 - **地址**：`GET /alibaba/web/{appType}/query/simpleProcess/getProcess.json`
 - **精确参数**：`appType`、`formUuid`、`processCode`
-- **证据边界**：已观测返回可包含 `schema/globalSetting` 等 view 内容，只可证明目标设计详情存在；完整 runtime graph wrapper 仍为 `PLATFORM_PROBE_REQUIRED`，不得据此执行安全 update。
+- **证据边界**：已观测返回可包含 `schema/globalSetting` 等 view 内容且不携带已证 identity，只可与精确列表结果组合为 `PLATFORM_LIST_EXACT_DETAIL_PRESENT`。若详情顶层出现 `processCode/formUuid`，CLI 会投影校验并在冲突时失败，但这不提升为 detail exact。完整 runtime graph wrapper 仍为 `PLATFORM_PROBE_REQUIRED`。
 
 ---
 

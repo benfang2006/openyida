@@ -303,13 +303,13 @@ openyida integration create APP_XXX FORM-XXX "获取自身后分支更新" \
 }
 ```
 
-加 `--publish` 后，只有按 `formUuid + processCode` 精确完成全量列表与详情回读、并确认最终 `status=y` 时，`published` 才为 `true`；输出同时包含 `verificationLevel=PLATFORM_LIST_DETAIL_EXACT` 和回读摘要。写响应成功但回读无法证明时命令失败，`published=null`、`verificationLevel=UNVERIFIED`，不得按成功处理。
+加 `--publish` 后，只有按 `formUuid + processCode` 精确完成全量列表与状态回读、并确认 `getProcess` 返回非空详情时，`published` 才为 `true`；输出包含诚实口径 `verificationLevel=PLATFORM_LIST_EXACT_DETAIL_PRESENT` 和回读摘要。详情未携带已证 identity 字段时只证明存在，不能宣称 detail exact；写响应成功但回读无法证明时命令失败，`published=null`、`verificationLevel=UNVERIFIED`。
 
 ## 控制面查询与启停
 
 - `integration list` 会复用 `integration check` 的安全 paginator：拉完应用分组分页，并在分组 `hasMore=true` 时继续拉取表单下剩余逻辑流；不把单页结果冒充完整列表。
 - `integration enable/disable` 写入后必须按 `formUuid + processCode` 精确匹配唯一列表项、校验期望 `status=y/n`，并完成 `getProcess` 详情存在性回读。
-- 回读成功返回 `verificationLevel=PLATFORM_LIST_DETAIL_EXACT`；精确匹配为 0/多条、状态不一致、详情为空或详情请求失败都必须非零失败。
+- 回读成功返回 `verificationLevel=PLATFORM_LIST_EXACT_DETAIL_PRESENT`；精确匹配为 0/多条、状态不一致、详情为空、详情请求失败，或详情顶层 `processCode/formUuid` 与目标冲突，都必须非零失败。
 - 详情回读当前只证明目标设计定义存在，不证明完整 runtime graph；不得据此解锁 `integration update`。
 
 ## 异常日志检查
@@ -346,7 +346,7 @@ openyida integration diagnose --file project/tickets/automation-error.txt --json
 4. 创建新自动化时调用 `createLogicflow.json` 获取真实 `processCode`；整图替换时使用已校验的 `processCode` 和 `--replace`
 5. 调用 `saveProcess` 接口（`isOnline=false`）保存为草稿
 6. 若指定 `--publish`，再次调用 `saveProcess` 接口（`isOnline=true`）
-7. 按 `formUuid + processCode` 执行全量列表、最终状态与详情精确回读；无法证明则失败
+7. 按 `formUuid + processCode` 执行全量列表与最终状态精确回读，并校验详情存在性及可用的 identity 投影；无法证明则失败
 
 > ⚠️ **必须先调用 `createLogicflow.json` 新建绑定关系**，再调用 `saveProcess` 写入内容。直接调用 `saveProcess` 无法创建新逻辑流，只能覆盖更新已有逻辑流。
 
@@ -356,7 +356,7 @@ openyida integration diagnose --file project/tickets/automation-error.txt --json
 
 ## Runtime E2E 证据边界
 
-域内 runner 为 `scripts/e2e-real/integration/runtime-runner.js`，已为 `dataCreate`、`dataRetrieve`、`dataUpdate`、`route`、`sendMessage`、`connector`、`initiateApproval` 固定独立读回合同和 mutation 失败条件。真实平台 adapter 必须实现 owned fixture `prepare`、`trigger`、独立 `readback`、`cleanup` 四步；只有 ownership 与 correlation marker 先通过、取得前后 fingerprint/精确副作用读回并通过合同后，才能标记 `REAL_RUNTIME_OBSERVED`。compiler、builder 单测或写响应不能代替 runtime 证据。
+域内 runner 为 `scripts/e2e-real/integration/runtime-runner.js`，已为 `dataCreate`、`dataRetrieve`、`dataUpdate`、`route`、`sendMessage`、`connector`、`initiateApproval` 固定独立读回合同和 mutation 失败条件。真实平台 adapter 必须实现 owned fixture `prepare`、`trigger`、独立 `readback`、`cleanup` 四步；`prepare` 是只读 preflight，必须声明 `remoteWrites=0` 并提供结构化 `ownershipEvidence`、资源 fingerprint 与 correlation proof。只有 ownership 通过后才允许 trigger/cleanup；主流程与 cleanup 双失败时必须同时报告机器错误与 residual。compiler、builder 单测或写响应不能代替 runtime 证据。
 
 ## 逻辑流节点结构
 
