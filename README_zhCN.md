@@ -393,7 +393,6 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida copy [--force]` | 复制 project 工作目录 |
 | `openyida sample [--list]` | 输出代码示例/骨架 |
 | `openyida doctor [--fix]` | 环境诊断与自动修复 |
-| `openyida eval --mode <mode> [--skill <name>] [--runs N]` | 技能多维评测（文档质量、路由准确率、安全合规等） |
 | `openyida db-seq-fix [--fix]` | PostgreSQL Sequence 漂移检测与修复 |
 | `openyida formula evaluate <formula\|file> [--schema file]` | 静态检查宜搭公式语法和字段引用 |
 | `openyida update` | 检查并更新到最新版本 |

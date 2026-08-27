@@ -236,6 +236,13 @@ describe('CLI: unknown command', () => {
     const result = runAny(['nonexistent-command']);
     expect(result.output.length).toBeGreaterThan(0);
   });
+
+  test('eval 仅作为源码仓 npm script，不再暴露为安装版 CLI 命令', () => {
+    const result = runAny(['eval', '--mode', 'doc-quality']);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain('未知命令');
+    expect(result.output).not.toContain('Cannot find module');
+  });
 });
 
 // ─── 12. 参数校验 ─────────────────────────────────────────────────────
