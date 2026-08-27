@@ -30,6 +30,9 @@ function cliEnv() {
     // 清除可能从父进程继承的 AI 工具环境变量，避免干扰测试
     QODER_IDE: '',
     QODER_AGENT: '',
+    QODER_PRODUCT_ID: '',
+    QODER_SESSION_TYPE: '',
+    QODER_CLI: '',
     QODERCLI_INTEGRATION_MODE: '',
     QODER_WORK_INTEGRATION_PRODUCT: '',
     QODERCN_CONFIG_DIR: '',

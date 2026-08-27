@@ -707,6 +707,9 @@ describe('detectActiveTool', () => {
     delete process.env.OPENCODE_CLIENT;
     delete process.env.QODER_IDE;
     delete process.env.QODER_AGENT;
+    delete process.env.QODER_PRODUCT_ID;
+    delete process.env.QODER_SESSION_TYPE;
+    delete process.env.QODER_CLI;
     delete process.env.QODERCLI_INTEGRATION_MODE;
     delete process.env.QODER_WORK_INTEGRATION_PRODUCT;
     delete process.env.QODERCN_CONFIG_DIR;
@@ -821,12 +824,103 @@ describe('detectActiveTool', () => {
     expect(result.tool).toBe('opencode');
   });
 
-  test('QODER_IDE 环境变量时检测为 Qoder（优先级最高）', () => {
+  test('新 Qoder 真实桌面变量识别为 qoder_app', () => {
+    const result = detectRuntimeCapabilities({
+      env: {
+        QODER_PRODUCT_ID: 'qoder',
+        QODER_SESSION_TYPE: 'app',
+        QODER_CLI: '1',
+        QODER_AGENT_SDK_VERSION: '1.0.27',
+        QODER_AGENT_SDK_ENTRYPOINT: 'sdk-ts',
+        QODERCLI_RUNTIME_PACKAGING: 'worker_mjs',
+        QODER_CONFIG_DIR: '/Users/test/.qoder',
+        QODERCN_CONFIG_DIR: '/Users/test/.qoder',
+        QODER_WORKER_CWD: '/Users/test/Qoder/2026-08-27/task-id',
+        __CFBundleIdentifier: 'com.qoder.app',
+      },
+      cwd: '/tmp/openyida-new-qoder',
+      platform: 'darwin',
+    });
+
+    expect(result).toMatchObject({
+      tool: 'qoder',
+      displayName: 'Qoder',
+      dirName: '.qoder',
+      runtime: 'desktop_shell',
+      subtype: 'qoder_app',
+      workspaceRootSource: 'cwd_project',
+    });
+  });
+
+  test('新 Qoder 在无 macOS Bundle ID 时仍通过跨平台变量识别', () => {
+    const result = detectRuntimeCapabilities({
+      env: {
+        QODER_PRODUCT_ID: 'qoder',
+        QODER_SESSION_TYPE: 'app',
+        QODER_CLI: '1',
+      },
+      cwd: '/tmp/openyida-new-qoder',
+      platform: 'linux',
+    });
+
+    expect(result).toMatchObject({
+      tool: 'qoder',
+      displayName: 'Qoder',
+      dirName: '.qoder',
+      runtime: 'desktop_shell',
+      subtype: 'qoder_app',
+    });
+  });
+
+  test('Qoder IDE 真实变量优先于 QoderWork 兼容路径', () => {
+    const result = detectRuntimeCapabilities({
+      env: {
+        QODER_IDE: '1',
+        QODER_AGENT: 'true',
+        QODER_WORKER_RUNTIME_PATH: '/Users/test/.loongsuite-pilot/hooks/qoderwork-runtime-wrapper.mjs',
+        QW_QODER_WORKER_RUNTIME_PATH: '/Users/test/.loongsuite-pilot/hooks/qoderwork-runtime-wrapper.mjs',
+        __CFBundleIdentifier: 'com.qoder.ide',
+      },
+      cwd: '/tmp/openyida-qoder-ide',
+      platform: 'darwin',
+    });
+
+    expect(result).toMatchObject({
+      tool: 'qoder',
+      displayName: 'Qoder IDE',
+      dirName: '.qoder',
+      subtype: 'qoder_ide',
+    });
+  });
+
+  test('QoderWork 继续通过独立产品精确信号识别', () => {
+    const result = detectRuntimeCapabilities({
+      env: {
+        QODER_IDE: '1',
+        QODER_AGENT: 'true',
+        QODERCLI_INTEGRATION_MODE: 'qoder_work',
+        __CFBundleIdentifier: 'com.qoder.work',
+      },
+      cwd: '/tmp/openyida-qoderwork',
+      platform: 'darwin',
+    });
+
+    expect(result).toMatchObject({
+      tool: 'qoderwork',
+      displayName: 'QoderWork',
+      dirName: '.qoderwork',
+      subtype: 'qoderwork_desktop',
+    });
+  });
+
+  test('QODER_IDE 环境变量时检测为 Qoder IDE（优先于其他 Agent）', () => {
     process.env.QODER_IDE = '1';
     process.env.CLAUDE_CODE = '1';
     process.env.CODEX_SHELL = '1';
     const result = detectActiveTool();
     expect(result.tool).toBe('qoder');
+    expect(result.displayName).toBe('Qoder IDE');
+    expect(result.subtype).toBe('qoder_ide');
   });
 
   test('QWENWORKCN_INTEGRATION_MODE 环境变量时检测为 QwenWork', () => {
@@ -873,7 +967,7 @@ describe('detectActiveTool', () => {
     }
   });
 
-  test('QwenWork 和 QoderWork 环境默认附加浏览器 handoff', () => {
+  test('QwenWork、QoderWork 和新 Qoder 环境默认附加浏览器 handoff', () => {
     process.env.QWENWORKCN_INTEGRATION_MODE = 'qwen_work';
     expect(buildBrowserHandoff('https://example.com/yida')).toMatchObject({
       status: 'open_url',
@@ -882,6 +976,14 @@ describe('detectActiveTool', () => {
 
     delete process.env.QWENWORKCN_INTEGRATION_MODE;
     process.env.QODERCLI_INTEGRATION_MODE = 'qoder_work';
+    expect(buildBrowserHandoff('https://example.com/yida')).toMatchObject({
+      status: 'open_url',
+      handoff_type: 'browser',
+    });
+
+    delete process.env.QODERCLI_INTEGRATION_MODE;
+    process.env.QODER_PRODUCT_ID = 'qoder';
+    process.env.QODER_SESSION_TYPE = 'app';
     expect(buildBrowserHandoff('https://example.com/yida')).toMatchObject({
       status: 'open_url',
       handoff_type: 'browser',
@@ -918,6 +1020,9 @@ describe('detectActiveTool', () => {
     delete process.env.OPENCODE_CLIENT;
     delete process.env.QODER_IDE;
     delete process.env.QODER_AGENT;
+    delete process.env.QODER_PRODUCT_ID;
+    delete process.env.QODER_SESSION_TYPE;
+    delete process.env.QODER_CLI;
     delete process.env.QODERCLI_INTEGRATION_MODE;
     delete process.env.CODEX_SHELL;
     delete process.env.CODEX_CI;

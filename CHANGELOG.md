@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - 移除已退役的悟空 Agent 和 Aone Copilot 专属兼容，包括 `AGENT_WORK_ROOT` / `.real` 工作区、`.aone_copilot` 环境识别与技能安装、悟空自带 Node/npm、技能上传 zip 构建及 GitHub Release 附件；`DingTalkWuKong.app` 的钉钉客户端识别继续保留。
 
+### Fixed
+
+- 新增新 Qoder 桌面应用的跨平台环境识别，并将原 Qoder 正确标识为 Qoder IDE；三者不再因模糊匹配 `qoder` Bundle ID 而误归为 QoderWork，skills 目录与 `builderAiSource` 也会落到对应产品契约。
+
 ## [2026.8.27-1] - 2026-08-27
 
 ### Fixed
