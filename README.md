@@ -345,7 +345,16 @@ openyida integration update APP_XXX FORM_XXX LPROC_XXX \
   --spec .cache/openyida/integration/desired-spec.json
 openyida create-report APP_XXX "Sales Dashboard" .cache/openyida/reports/charts.json
 openyida append-chart APP_XXX REPORT_XXX .cache/openyida/reports/chart.json
+
+# Aggregate tables use two independent optimistic-concurrency axes.
+openyida aggregate-table inspect APP_XXX FORM_XXX --json
+openyida aggregate-table preview APP_XXX FORM_XXX .cache/openyida/aggregate/design.json --json
+openyida aggregate-table save APP_XXX FORM_XXX .cache/openyida/aggregate/design.json --json --no-open
+openyida aggregate-table publish APP_XXX FORM_XXX .cache/openyida/aggregate/design.json --json --no-open
+openyida aggregate-table status APP_XXX FORM_XXX --json
 ```
+
+Aggregate-table `save` verifies the draft `stashGmtModified` axis; `publish` verifies the live `gmtModified` axis. Both commands require canonical readback of `relationForms`, `relationships`, `aggregatedFields`, `auxFields`, `formulaFields`, and `validators`. The CLI intentionally does not expose aggregate-table deletion, AI authoring, a high-level design DSL, or tenant-dynamic limits until the corresponding platform contracts are proven.
 
 ## CLI Reference
 

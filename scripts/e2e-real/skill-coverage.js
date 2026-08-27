@@ -9,6 +9,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const SKILLS_DIR = path.join(ROOT, 'yida-skills', 'skills');
 
 const SKILL_COVERAGE = {
+  'yida-aggregate-table': { level: 'opt-in-real-e2e', stages: ['aggregate'], commands: ['aggregate-table inspect/preview/save/publish/status'], tests: ['tests/aggregate-table.test.js', 'tests/aggregate-table-contract.test.js', 'tests/e2e-real-aggregate-runner.test.js'], reason: 'aggregate writes require an explicitly owned target and fixed designer fixture; runtime query and physical delete remain PLATFORM_PROBE_REQUIRED, so this domain runner is never part of shared full-runner defaults' },
   'yida-app': { level: 'real-e2e', stages: ['app', 'form', 'page', 'data', 'report', 'dashboard'] },
   'yida-app-lifecycle': { level: 'offline-unit', tests: ['tests/app-lifecycle.test.js', 'tests/cli-smoke.test.js'], reason: 'online/offline commands change real app availability; request contracts and agent permission metadata are validated with mocks and never run in shared real E2E' },
   'yida-app-permission': { level: 'offline-unit', tests: ['tests/app-permission.test.js'], reason: 'app admin mutations affect real application access; shared real E2E only validates safe read paths' },
