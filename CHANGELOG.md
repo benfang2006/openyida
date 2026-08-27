@@ -12,6 +12,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.27-1] - 2026-08-27
+
+### Fixed
+
+- 报表日期字段的时间粒度此前被硬编码为 `DAY`，用户在图表配置中指定的 `timeGranularityType` 全部被丢弃；现支持 `YEAR | MONTH | DAY | HOUR | MINUTE | SECOND` 并同步写入查询模型与展示字段（通用图 / 组合图 / 表格 / 透视表 / 仪表盘均覆盖），空值默认仍为 `DAY`，非法值在远程写入前即以 `CREATE_REPORT_CHART_CONFIG_INVALID` 拒绝。
+
+## [2026.8.27] - 2026-08-27
+
+### Changed
+
+- 精简 npm 发布包：移除未使用的 `ajv` 依赖，收敛 `files` 白名单，发布包不再携带 `scripts/eval/`、`scripts/e2e-real/` 与 `validate-*` 等评测/校验工具链；包内容校验改为白名单断言，越界文件会在打包检查阶段直接拦截。
+- 移除 `eval` CLI 入口：发布包内不再包含评测命令，`command-manifest` 与命令帮助同步收敛。
+
 ## [2026.8.26] - 2026-08-26
 
 ### Fixed
