@@ -9,15 +9,11 @@
   "files": [
     "bin/",
     "lib/",
-    "agent/",
     "project/config.json",
     "project/prd/demo-*.md",
     "yida-skills/",
     "!lib/samples/**/assets/**",
-    "scripts/",
-    "!scripts/e2e-real/",
-    "!scripts/eval/",
-    "docs/capabilities.md",
+    "scripts/postinstall.js",
     "README.md",
     "LICENSE"
   ],
@@ -89,7 +85,6 @@
   "homepage": "https://github.com/openyida/openyida#readme",
   "dependencies": {
     "@babel/standalone": "^7.15.1",
-    "ajv": "^8.20.0",
     "globals": "^17.11.0",
     "uglify-js": "^3.19.3"
   },
