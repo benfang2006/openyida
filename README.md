@@ -50,6 +50,10 @@ npm install -g openyida
 
 OpenYida requires Node.js 18 or later. The package exposes both `openyida` and `yida` commands.
 
+For npm global installations, OpenYida checks the npm registry before a normal command at most once every 24 hours. When a newer version is available, it installs that exact version and then reruns the original command. This behavior is identical whether the local command is launched from a terminal, Codex, Claude Code, or Qoder. Managed cloud Agent runtimes are excluded before any cache access, registry request, or npm invocation.
+
+Set `OPENYIDA_NO_AUTO_UPDATE=1` to disable automatic updates. `OPENYIDA_AUTO_UPDATE_SECS` can override the check interval for development and testing. The explicit `openyida update` command remains available.
+
 If Codex is already installed, OpenYida also imports a local Codex plugin during postinstall. Restart Codex after installation, then type `@宜搭` or `@openyida` in the composer to attach the OpenYida context.
 
 ### 2. Check Your Environment

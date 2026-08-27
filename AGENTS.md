@@ -25,9 +25,9 @@ openyida/
 │   │   ├── env-manager.js   # 多环境配置管理（私有化部署多环境切换）
 │   │   ├── copy.js          # 初始化 project 工作目录
 │   │   ├── sample.js        # sample 命令（输出代码示例到工作目录）
-│   │   ├── check-update.js  # 版本检测（每天一次）
+│   │   ├── check-update.js  # npm registry 版本查询与 SemVer 比较
 │   │   ├── check-data.js    # 数据异常检测（流程表单数据校验）
-│   │   ├── update.js        # self-update 命令（通过 npm 自动更新 openyida）
+│   │   ├── update.js        # npm 全局安装的 24h 自动更新与手动 self-update
 │   │   ├── doctor.js        # 环境诊断与自动修复
 │   │   ├── query-data.js    # 统一数据管理命令（表单/流程/任务/子表单）
 │   │   ├── task-center.js   # 全局任务中心（待办/我创建的/我已处理/抄送/代提交）
