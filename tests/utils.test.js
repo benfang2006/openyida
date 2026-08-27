@@ -14,7 +14,6 @@ const {
   detectActiveTool,
   detectRuntimeCapabilities,
   hasDesktopEnvironment,
-  resolveWukongWorkspaceRoot,
   httpPost,
   httpPostJson,
   httpGet,
@@ -898,66 +897,18 @@ describe('detectActiveTool', () => {
     expect(result.dirName).toBe('.codex');
   });
 
-  test('AGENT_WORK_ROOT 包含 .real 时检测为悟空', () => {
-    delete process.env.CLAUDE_CODE;
-    delete process.env.CLAUDE_CODE_ENTRYPOINT;
-    delete process.env.OPENCODE;
-    delete process.env.OPENCODE_CLIENT;
-    delete process.env.QODER_IDE;
-    delete process.env.QODERCLI_INTEGRATION_MODE;
-    delete process.env.QWENWORK_INTEGRATION_MODE;
-    delete process.env.QWENWORKCN_INTEGRATION_MODE;
-    delete process.env.CODEX_SHELL;
-    delete process.env.CURSOR_TRACE_ID;
+  test('退役的 AGENT_WORK_ROOT 信号不再识别为 AI 工具', () => {
     process.env.AGENT_WORK_ROOT = '/home/user/.real/workspace';
-    const result = detectActiveTool();
-    expect(result.tool).toBe('wukong');
-    expect(result.workspaceRoot).toBe('/home/user/.real/workspace');
+    expect(detectActiveTool()).toBeNull();
   });
 
-  test('resolveWukongWorkspaceRoot 优先使用已有 config.json 的真实工作区', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wukong-root-'));
-    const workspace = path.join(root, 'workspace');
-    fs.mkdirSync(workspace, { recursive: true });
-    fs.writeFileSync(path.join(workspace, 'config.json'), '{}', 'utf8');
-
-    try {
-      expect(resolveWukongWorkspaceRoot(root)).toBe(workspace);
-    } finally {
-      fs.rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  test('TERM_PROGRAM=vscode 且有 .aone_copilot 目录时检测为 Aone Copilot', () => {
-    delete process.env.CLAUDE_CODE;
-    delete process.env.CLAUDE_CODE_ENTRYPOINT;
-    delete process.env.OPENCODE;
-    delete process.env.OPENCODE_CLIENT;
-    delete process.env.QODER_IDE;
-    delete process.env.QODER_AGENT;
-    delete process.env.QODERCLI_INTEGRATION_MODE;
-    delete process.env.CODEX_SHELL;
-    delete process.env.CODEX_CI;
-    delete process.env.CODEX_THREAD_ID;
-    delete process.env.CODEX_HOME;
-    delete process.env.__CFBundleIdentifier;
-    delete process.env.CURSOR_TRACE_ID;
-    delete process.env.AGENT_WORK_ROOT;
-    process.env.TERM_PROGRAM = 'vscode';
-
-    // 模拟 .aone_copilot 目录存在（CI 环境可能没有）
-    const originalExistsSync = fs.existsSync;
-    fs.existsSync = (p) => {
-      if (p.includes('.aone_copilot')) {return true;}
-      return originalExistsSync(p);
-    };
-
-    const result = detectActiveTool();
-    expect(result).not.toBeNull();
-    expect(result.tool).toBe('aone-copilot');
-
-    // 恢复 fs.existsSync
-    fs.existsSync = originalExistsSync;
+  test('退役的 Aone Copilot VSCode 环境不再识别为 AI 工具', () => {
+    const result = detectRuntimeCapabilities({
+      env: { TERM_PROGRAM: 'vscode' },
+      cwd: '/tmp/project',
+      platform: 'darwin',
+    });
+    expect(result.tool).toBeNull();
   });
 
   test('无任何 AI 工具环境变量时返回 null', () => {
@@ -974,23 +925,12 @@ describe('detectActiveTool', () => {
     delete process.env.CODEX_HOME;
     delete process.env.__CFBundleIdentifier;
     delete process.env.CURSOR_TRACE_ID;
-    delete process.env.AGENT_WORK_ROOT;
     delete process.env.MULERUN_CHAT_ID;
     delete process.env.MULE_DATA_DIR;
     delete process.env.TERM_PROGRAM;
 
-    // 确保 .aone_copilot 目录不存在（避免干扰）
-    const originalExistsSync = fs.existsSync;
-    fs.existsSync = (p) => {
-      if (p.includes('.aone_copilot')) {return false;}
-      return originalExistsSync(p);
-    };
-
     const result = detectActiveTool();
     expect(result).toBeNull();
-
-    // 恢复 fs.existsSync
-    fs.existsSync = originalExistsSync;
   });
 
   test('detectRuntimeCapabilities 在无桌面且无 Agent 浏览器时显式标记无浏览器能力', () => {
