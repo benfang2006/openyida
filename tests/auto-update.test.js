@@ -6,6 +6,7 @@ const path = require('path');
 const {
   maybeAutoUpdate,
   installVersion,
+  isNpmGlobalInstall,
   isManagedCloudRuntime,
   getAutoUpdateIntervalMs,
   shouldSkipAutoUpdateCommand,
@@ -170,6 +171,26 @@ describe('auto update policy', () => {
     expect(result.reason).toBe('not-npm-global');
     expect(fetchLatestVersionFn).not.toHaveBeenCalled();
     expect(installVersionFn).not.toHaveBeenCalled();
+  });
+
+  test('npm 全局安装检测把自定义环境传给 npm 子进程', () => {
+    const fixture = createGlobalFixture();
+    fixtures.push(fixture);
+    const execFileSyncFn = jest.fn(() => fixture.npmRoot);
+    const env = { NPM_CONFIG_PREFIX: fixture.root };
+
+    expect(isNpmGlobalInstall({
+      packageRoot: fixture.packageRoot,
+      execFileSyncFn,
+      npmExecutable: '/opt/npm',
+      platform: 'linux',
+      env,
+    })).toBe(true);
+    expect(execFileSyncFn).toHaveBeenCalledWith(
+      '/opt/npm',
+      ['root', '-g'],
+      expect.objectContaining({ env })
+    );
   });
 
   test('发现新版时安装查询到的精确版本并以原 argv 重跑', async () => {
