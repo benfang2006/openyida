@@ -81,7 +81,7 @@ module.exports = {
     cmd_connector_test: '測試執行動作',
     cmd_connector_list_connections: '列出認證帳戶',
     cmd_connector_create_connection: '建立認證帳戶',
-    cmd_connector_smart: '智慧建立連接器（從 cURL）',
+    cmd_connector_smart: '從 cURL 產生脫敏動作草稿（不建立遠端資源）',
     cmd_connector_parse_api: '解析 API 資料',
     cmd_connector_gen_template: '產生 API 文件模板',
     cmd_connector_more: '查看更多子命令',
@@ -1785,3 +1785,20 @@ Object.assign(module.exports.process_diagnostics || (module.exports.process_diag
 Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
   login_required: '未取得有效宜搭登入狀態，請先執行 openyida login。',
 });
+module.exports.connector_test = {
+  usage: '用法: openyida connector test --connector-id <id> --action <actionId> [--params <json>] [--path-json <json>] [--query-json <json>] [--header-json <json>] [--body-json <json>] [--account-id <id>] [--json]',
+  invalid_json: '{0} 不是合法 JSON: {1}',
+  json_object_required: '{0} 必須是 JSON 物件',
+  unknown_flat_param: '參數 {0} 不在動作 Schema 中；請改用對應的結構化 JSON 參數',
+  ambiguous_flat_param: '參數 {0} 在動作 Schema 中屬於多個位置；請改用結構化 JSON 參數',
+  auth_account_required: '此連接器已設定認證，必須以 --account-id 指定所屬帳戶',
+  auth_account_not_owned: '帳戶 {0} 不屬於目前連接器',
+  arguments_required: '必須提供 --connector-id 和 --action',
+  connector_not_found: '找不到連接器 ID: {0}',
+  operations_invalid: '連接器動作設定不是合法 JSON',
+  action_not_found: '找不到執行動作: {0}',
+  success: '✅ 測試成功',
+  status_label: 'HTTP 狀態:',
+  headers_label: '回應標頭:',
+  content_label: '回應內容:',
+};

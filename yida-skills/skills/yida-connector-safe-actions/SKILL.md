@@ -60,10 +60,10 @@ openyida connector list-actions <connector-id>
 
 从 workspace 根执行命令时传 `project/.cache/openyida/<项目名或任务名>/connector-actions/<业务名>-actions.json`；从 project 工作目录内执行时传 `.cache/openyida/<项目名或任务名>/connector-actions/<业务名>-actions.json`。
 
-动作 ID 建议使用顺序编号：
+动作 ID 使用可重复生成的稳定格式，不使用时间戳或顺序漂移：
 
 ```json
-"id": "operation-1"
+"id": "operation-getUserDtuSns"
 ```
 
 动作调用名使用前端函数名或后端 Action 名：
@@ -102,6 +102,18 @@ CLI 测试时 `--action` 使用 `operationId`，不是顺序编号 `operation-1`
 openyida connector test --connector-id <connector-id> --action <operationId>
 ```
 
+参数必须按动作 Schema 的位置传入；推荐使用结构化参数，避免 flat 参数误入 query/body：
+
+```bash
+openyida connector test --connector-id <connector-id> --action <operationId> \
+  --path-json '{"id":"42"}' \
+  --query-json '{"date":"2026-08-27"}' \
+  --header-json '{}' \
+  --body-json '{}'
+```
+
+连接器配置了 `securitySchemes` 时，必须先从 `list-connections` 取得属于该连接器的账号，再传 `--account-id`；0 个账号、未指定账号或账号不属于目标连接器都必须停止。测试只接受 `{statusLine,responseHeaders,content}` canonical 响应，非 2xx 或未知 envelope 都算失败。
+
 测试后再次查询动作列表，确认动作没有被清空：
 
 ```bash
@@ -114,7 +126,7 @@ openyida connector list-actions <connector-id>
 
 ```json
 {
-  "id": "operation-1",
+  "id": "operation-getAccessToken",
   "operationId": "getAccessToken",
   "summary": "获取三色灯 Token",
   "description": "获取三色灯 Token",
@@ -143,7 +155,7 @@ openyida connector list-actions <connector-id>
 
 ```json
 {
-  "id": "operation-2",
+  "id": "operation-getDtuSnData",
   "operationId": "getDtuSnData",
   "summary": "获取单设备三色灯数据",
   "description": "根据 dtuSn 和日期获取三色灯数据",
@@ -224,7 +236,7 @@ openyida connector list-actions <connector-id>
 
 | 字段 | 推荐写法 |
 | --- | --- |
-| `id` | 使用 `operation-1`、`operation-2` 等顺序编号 |
+| `id` | 使用稳定的 `operation-<operationId>`，重复生成保持一致 |
 | `operationId` | 使用前端函数名或后端 Action 名，例如 `getDtuSnData` |
 | `summary` | 中文短名称，用于宜搭界面展示 |
 | `description` | 一句话说明动作用途 |
@@ -245,6 +257,8 @@ openyida connector list-actions <connector-id>
 - `inputs` 与 `parameters` 中的 query 参数不一致
 - 中文 JSON 未按 UTF-8 读取或保存
 - 只追加部分动作，遗漏原有 Token/Test 动作，导致重建后动作列表不完整
+- 同一批 JSON 出现重复 `operationId`；CLI 会 fail-closed，不会静默覆盖
+- 把 Authorization、Cookie、token、API Key 示例值写入动作；敏感 Header 默认值必须为空，由鉴权账号运行时注入
 
 当用户反馈“点击测试后操作都不见了”，优先按修复流程处理，不要继续追加同一份风险 JSON。
 

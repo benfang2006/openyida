@@ -169,7 +169,11 @@ describe('connector frontend API contract', () => {
   });
 
   test('test action uses the frontend JSON testOperation request exactly once', async () => {
-    utils.httpPostJson.mockResolvedValue({ statusLine: 'HTTP/1.1 200 OK', content: '{"ok":true}' });
+    utils.httpPostJson.mockResolvedValue({
+      statusLine: 'HTTP/1.1 200 OK',
+      responseHeaders: { 'content-type': 'application/json' },
+      content: '{"ok":true}',
+    });
 
     const result = await testConnector({
       connector: buildConnectorParams(),
@@ -202,7 +206,11 @@ describe('connector frontend API contract', () => {
   });
 
   test('test action omits connection for a no-auth connector like the frontend', async () => {
-    utils.httpPostJson.mockResolvedValue({ statusLine: 'HTTP/1.1 200 OK', content: '{"ok":true}' });
+    utils.httpPostJson.mockResolvedValue({
+      statusLine: 'HTTP/1.1 200 OK',
+      responseHeaders: {},
+      content: '{"ok":true}',
+    });
 
     await testConnector({
       connector: buildConnectorParams(),
@@ -216,6 +224,44 @@ describe('connector frontend API contract', () => {
 
     expect(utils.httpPostJson.mock.calls[0][2]).not.toHaveProperty('connection');
     expect(utils.httpPostJson.mock.calls[0][2].connectorMode).toBe(5);
+  });
+
+  test('test action unwraps only a proven success envelope', async () => {
+    utils.httpPostJson.mockResolvedValue({
+      success: true,
+      content: {
+        statusLine: 'HTTP/1.1 200 OK',
+        responseHeaders: { 'x-e2e': 'owned' },
+        content: '{"ok":true}',
+      },
+    });
+
+    await expect(testConnector({
+      connector: buildConnectorParams(),
+      operation: { method: 'get', url: 'v1/ping' },
+    }, authRef)).resolves.toEqual({
+      statusLine: 'HTTP/1.1 200 OK',
+      responseHeaders: { 'x-e2e': 'owned' },
+      content: '{"ok":true}',
+    });
+  });
+
+  test('test action fails closed for raw legacy shapes and non-2xx canonical status', async () => {
+    utils.httpPostJson.mockResolvedValueOnce({ statusCode: 200, headers: {}, body: '{"ok":true}' });
+    await expect(testConnector({
+      connector: buildConnectorParams(),
+      operation: { method: 'get', url: 'v1/ping' },
+    }, authRef)).rejects.toMatchObject({ code: 'CONNECTOR_TEST_RESPONSE_INVALID' });
+
+    utils.httpPostJson.mockResolvedValueOnce({
+      statusLine: 'HTTP/1.1 500 Internal Server Error',
+      responseHeaders: {},
+      content: '{"ok":false}',
+    });
+    await expect(testConnector({
+      connector: buildConnectorParams(),
+      operation: { method: 'get', url: 'v1/ping' },
+    }, authRef)).rejects.toMatchObject({ code: 'CONNECTOR_TEST_HTTP_FAILED' });
   });
 
   test('connector metadata and auth definitions do not persist raw identity or credentials', () => {

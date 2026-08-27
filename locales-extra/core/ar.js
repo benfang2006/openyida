@@ -81,7 +81,7 @@ module.exports = {
     cmd_connector_test: 'Test an action',
     cmd_connector_list_connections: 'List auth connections',
     cmd_connector_create_connection: 'Create an auth connection',
-    cmd_connector_smart: 'إنشاء ذكي (من cURL)',
+    cmd_connector_smart: 'Generate a redacted action draft from cURL (no remote create)',
     cmd_connector_parse_api: 'Parse API information',
     cmd_connector_gen_template: 'Generate API document template',
     cmd_connector_more: 'عرض المزيد من الأوامر الفرعية',
@@ -1910,3 +1910,13 @@ Object.assign(module.exports.process_diagnostics || (module.exports.process_diag
 Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
   login_required: 'لم يتم العثور على جلسة Yida صالحة. شغّل openyida login أولاً.',
 });
+module.exports.connector_test = {
+  usage: 'Usage: openyida connector test --connector-id <id> --action <actionId> [structured JSON options] [--account-id <id>] [--json]',
+  invalid_json: '{0} is not valid JSON: {1}', json_object_required: '{0} must be a JSON object',
+  unknown_flat_param: 'Parameter {0} is not in the action schema; use structured JSON options',
+  ambiguous_flat_param: 'Parameter {0} belongs to multiple locations; use structured JSON options',
+  auth_account_required: 'This connector requires an owned auth account passed with --account-id',
+  auth_account_not_owned: 'Account {0} does not belong to this connector', arguments_required: '--connector-id and --action are required',
+  connector_not_found: 'Connector ID not found: {0}', operations_invalid: 'Connector operations are not valid JSON', action_not_found: 'Action not found: {0}',
+  success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
+};

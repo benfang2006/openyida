@@ -471,12 +471,22 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida connector add-action --operations <file> --connector-id <id>` | Add an action |
 | `openyida connector list-actions <id>` | List actions |
 | `openyida connector delete-action <id> <operation-id>` | Delete an action |
-| `openyida connector test --connector-id <id> --action <actionId>` | Test an action |
+| `openyida connector test --connector-id <id> --action <actionId> [--path-json JSON] [--query-json JSON] [--header-json JSON] [--body-json JSON] [--account-id <id>]` | Test an action with location-specific parameters and an owned auth account |
 | `openyida connector list-connections <id>` | List auth connections |
 | `openyida connector create-connection <id> <name>` | Create an auth connection |
-| `openyida connector smart-create --curl "..."` | Smart create connector (from cURL) |
+| `openyida connector smart-create --curl "..."` | Generate a redacted connector action draft from cURL (does not create remote resources) |
 | `openyida connector parse-api [options]` | Parse API information |
 | `openyida connector gen-template [output]` | Generate API document template |
+
+`connector test` keeps the legacy flat `--params` option, but dispatches each key only to the location proven by the action schema. Unknown or ambiguous keys fail closed. Authenticated connectors require `--account-id`, and that account must belong to the selected connector. The test response follows the frontend canonical contract `{statusLine,responseHeaders,content}`; unknown envelopes and non-2xx status lines are failures.
+
+The opt-in connector E2E is intentionally separate from the shared full runner:
+
+```bash
+OPENYIDA_E2E=1 OPENYIDA_E2E_CONNECTOR=1 node scripts/e2e-real/connector/runner.js
+```
+
+It creates a uniquely owned Basic-auth echo fixture, verifies that testing does not change the persisted action, records only redacted command arguments, and reports remote connector/account cleanup as blocked because the CLI has no proven delete API.
 
 ### Integration & DingTalk
 
