@@ -12,6 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- npm 全局安装新增 Homebrew 风格自动更新：普通命令执行前至多每 24 小时检查一次 npm `latest`，发现新版本后安装精确版本并重跑原命令；提供缓存、非阻塞锁、完整 SemVer 比较和关闭开关。托管云端 Agent 在缓存、registry 与 npm 调用前直接跳过。
+
+### Removed
+
+- 移除已退役的悟空 Agent 和 Aone Copilot 专属兼容，包括 `AGENT_WORK_ROOT` / `.real` 工作区、`.aone_copilot` 环境识别与技能安装、悟空自带 Node/npm、技能上传 zip 构建及 GitHub Release 附件；`DingTalkWuKong.app` 的钉钉客户端识别继续保留。
+
 ### Fixed
 
 - 新增新 Qoder 桌面应用的跨平台环境识别，并将原 Qoder 正确标识为 Qoder IDE；三者不再因模糊匹配 `qoder` Bundle ID 而误归为 QoderWork，skills 目录与 `builderAiSource` 也会落到对应产品契约。

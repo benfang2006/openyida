@@ -20,78 +20,6 @@ const command = process.argv[2];
 const args = process.argv.slice(3);
 const rawArgs = process.argv.slice(3);
 
-function isAgentEnvironment(env) {
-  return !!(
-    env.CODEX_SHELL ||
-    env.CODEX_CI ||
-    env.CODEX_THREAD_ID ||
-    env.CODEX_HOME ||
-    env.CLAUDE_CODE ||
-    env.CLAUDE_CODE_ENTRYPOINT ||
-    env.MULERUN_CHAT_ID ||
-    env.MULE_DATA_DIR ||
-    env.MULE_WORKSPACE_DIR ||
-    env.OPENCODE ||
-    env.OPENCODE_CLIENT ||
-    env.QODER_IDE ||
-    env.QODER_AGENT ||
-    env.QODER_PRODUCT_ID ||
-    env.QODERCLI_INTEGRATION_MODE ||
-    env.QODER_WORK_INTEGRATION_PRODUCT ||
-    env.QWENWORK_INTEGRATION_MODE ||
-    env.QWENWORKCN_INTEGRATION_MODE ||
-    env.QWENWORK ||
-    env.QWENWORK_CLIENT ||
-    env.QWENWORK_WORKSPACE_DIR ||
-    env.QWENWORK_SANDBOX_ID ||
-    env.QWENWORK_PREVIEW_URL ||
-    env.QWENWORK_VNC_URL ||
-    (env.AGENT_PLATFORM || '').toLowerCase().includes('qwenwork') ||
-    env.CURSOR_TRACE_ID ||
-    env.AGENT_WORK_ROOT ||
-    env.OPENYIDA_AGENT_MODE ||
-    (env.__CFBundleIdentifier || '').toLowerCase().includes('codex') ||
-    (env.__CFBundleIdentifier || '').toLowerCase().includes('qoder') ||
-    (env.__CFBundleIdentifier || '').toLowerCase().includes('qwenwork') ||
-    (env.__CFBundleIdentifier || '').toLowerCase().includes('qwen-work')
-  );
-}
-
-function shouldRunUpdateCheck() {
-  if (process.env.OPENYIDA_SKIP_UPDATE_CHECK || process.env.NO_UPDATE_NOTIFIER) {
-    return false;
-  }
-  if (process.env.CI || isAgentEnvironment(process.env)) {
-    return false;
-  }
-  if (!process.stderr.isTTY) {
-    return false;
-  }
-  if (!command || command === '--help' || command === '-h' || command === '--version' || command === '-v') {
-    return false;
-  }
-  if (args.includes('--help') || args.includes('-h')) {
-    return false;
-  }
-  if (command === 'commands' || command === 'agent-capabilities' || command === 'mcp') {
-    return false;
-  }
-  if (args.includes('--json') || args.includes('--check-only')) {
-    return false;
-  }
-  return true;
-}
-
-function maybeCheckForUpdate() {
-  if (!shouldRunUpdateCheck()) {
-    return;
-  }
-  const { checkUpdate } = require('../lib/core/check-update');
-  checkUpdate(currentVersion).catch(() => {});
-}
-
-maybeCheckForUpdate();
-
 function shouldUseEnvManagement(argsList) {
   const subCommand = argsList[0];
   return !!subCommand && subCommand !== '--json';
@@ -370,7 +298,6 @@ const UNSUPPORTED_LEGACY_LOGIN_FLAGS = new Set([
   '--browser',
   '--codex',
   '--qoder',
-  '--wukong',
 ]);
 
 function findUnsupportedLegacyLoginFlag(...argLists) {
@@ -598,6 +525,18 @@ function assertNoUnsupportedLegacyLoginFlags(...argLists) {
 async function main() {
   applyQuietFlag();
   applyGlobalEnvironmentFlags();
+
+  const { maybeAutoUpdate } = require('../lib/core/update');
+  const updateResult = await maybeAutoUpdate({
+    currentVersion,
+    command,
+    args,
+    argv: process.argv,
+  });
+  if (updateResult.reexecuted) {
+    process.exitCode = updateResult.exitCode;
+    return;
+  }
 
   if (!command || command === '--help' || command === '-h') {
     handleFirstRunGuide();

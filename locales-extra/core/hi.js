@@ -322,7 +322,7 @@ module.exports = {
     first_run_tip1: '  1. Run {0}openyida env{1}   to detect environment and login status',
     first_run_tip2: '  2. Run {0}openyida login{1} to log in to Yida',
     first_run_tip3: '  3. Chat with your AI tool and describe the app you want 🚀',
-    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Aone Copilot / Cursor / OpenCode',
+    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Cursor / OpenCode',
     first_run_footer2: '  📚 Docs: https://github.com/openyida/openyida',
     first_run_footer3: '  (This guide only shows on first run. Use openyida --help to see all commands)',
     auth_usage: 'Usage: openyida auth <status|login|refresh|logout|profiles|profile switch>',
@@ -1037,11 +1037,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: '\n❌ कोई सक्रिय AI टूल वातावरण नहीं मिला',
-    supported_tools: '   समर्थित टूल: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   समर्थित टूल: Codex, OpenCode, Claude Code, Cursor, Qoder',
     current_result: '\n   वर्तमान पहचान परिणाम:',
     force_hint: '\n   वर्तमान निर्देशिका में जबरदस्ती कॉपी करने के लिए:\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1062,9 +1062,6 @@ module.exports = {
     symlinks_created: '   बनाए गए सिम्बॉलिक लिंक: {0}',
     result_symlink: '   {0} → {1} (सिम्बॉलिक लिंक)',
     result_copy: '   {0} → {1} ({2} फ़ाइलें)',
-    wukong_skills_cleanup: '\n🗑️  Wukong वातावरण: yida-skills/ सिम्बॉलिक लिंक साफ हो रहा है...',
-    wukong_skills_cleaned: 'साफ हुआ',
-    wukong_skills_not_found: '    ℹ️  yida-skills/ सिम्बॉलिक लिंक या निर्देशिका नहीं मिली: {0}',
     remove_failed: '    ❌ हटाना विफल: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows सिम्बॉलिक लिंक बनाना विफल (व्यवस्थापक अधिकार आवश्यक), निर्देशिका कॉपी का उपयोग: {0}',
     symlink_failed: '    ❌ सिम्बॉलिक लिंक बनाना विफल: {0} ({1})'
@@ -1290,7 +1287,7 @@ module.exports = {
     install_success: '  ✅ स्थापना पूर्ण! {0} Yida AI विकास टूल तैयार है।',
     update_success: '  ✅ अपडेट पूर्ण! {0} OpenYida नवीनतम संस्करण में अपग्रेड हुआ।',
     ai_mode_title: '  🚀 AI वार्तालाप मोड',
-    ai_mode_desc: '  Codex / Claude Code / Aone Copilot / Cursor में सीधे बात करें:',
+    ai_mode_desc: '  Codex / Claude Code / Cursor में सीधे बात करें:',
     prompt1: '  📋  "Yida से मेरे लिए उपस्थिति प्रबंधन प्रणाली बनाएं"',
     prompt2: '  💰  "व्यक्तिगत वेतन कैलकुलेटर ऐप बनाएं"',
     prompt3: '  🏢  "CRM ग्राहक प्रबंधन प्रणाली बनाएं"',
@@ -1685,7 +1682,7 @@ module.exports = {
   },
   codex_login: {
     title: '  openyida login {0} - {1} Login Mode',
-    not_codex: 'Current environment is not detected as Codex / Qoder / Wukong; returning an in-app browser login handoff only.',
+    not_codex: 'Current environment is not detected as Codex / Qoder; returning an in-app browser login handoff only.',
     no_playwright: '{0} mode does not require Playwright or a separate Chromium install.',
     using_browser: '{0} in-app Browser is only suitable for unauthenticated page previews; use openyida login for CLI auth.',
     browser_handoff_hint: '{0} in-app Browser is not used for CLI auth. Use openyida login.',
