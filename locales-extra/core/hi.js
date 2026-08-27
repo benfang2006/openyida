@@ -1839,3 +1839,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: 'निर्माण अनुरोध के दौरान प्रमाणीकरण बदल गया; परिणाम अज्ञात है। पुनः प्रयास करने से पहले लक्ष्य की स्थिति जाँचें।',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'असमर्थित आर्ग्युमेंट: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: 'अनुमति समूहों की क्वेरी विफल रही',
+  query_success: '  ✅ अनुमति क्वेरी सफल: {0} समूह',
+  query_success_message: 'अनुमति क्वेरी सफल',
+  invalid_structure: 'अनुमति समूह क्वेरी ने अपरिचित सूची संरचना लौटाई',
+  duplicate_uuid: 'अनुमति समूह पेजिनेशन में packageUuid={0} दोहराया गया',
+  pagination_limit: 'अनुमति समूह क्वेरी सुरक्षित पेज सीमा ({0} पेज) तक पहुँच गई; परिणाम की पूर्णता सिद्ध नहीं की जा सकती',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ लेखन अनुरोध सफल; सटीक पुनर्पठन शुरू किया जा रहा है',
+  saved_message: 'अनुमति कॉन्फ़िगरेशन सहेजा गया',
+});

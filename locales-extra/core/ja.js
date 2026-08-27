@@ -1766,3 +1766,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: '作成リクエスト中に認証状態が変化したため、作成結果を確認できません。再試行する前に対象の状態を確認してください。',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'サポートされていない引数: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: '権限グループの照会に失敗しました',
+  query_success: '  ✅ 権限設定の照会に成功しました：{0} グループ',
+  query_success_message: '権限設定の照会に成功しました',
+  invalid_structure: '権限グループの照会で認識できないリスト構造が返されました',
+  duplicate_uuid: '権限グループのページング結果で packageUuid={0} が重複しました',
+  pagination_limit: '権限グループの照会が安全なページ上限（{0} ページ）に達したため、結果の完全性を証明できません',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ 書き込み要求が成功しました。正確な再読み取りを開始します',
+  saved_message: '権限設定を保存しました',
+});

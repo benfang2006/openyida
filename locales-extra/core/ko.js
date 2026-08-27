@@ -1840,3 +1840,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: '생성 요청 중 인증 상태가 변경되어 생성 결과를 확인할 수 없습니다. 다시 시도하기 전에 대상 상태를 확인하세요.',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: '지원되지 않는 인수: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: '권한 그룹 조회에 실패했습니다',
+  query_success: '  ✅ 권한 설정 조회 성공: {0}개 그룹',
+  query_success_message: '권한 설정 조회 성공',
+  invalid_structure: '권한 그룹 조회가 인식할 수 없는 목록 구조를 반환했습니다',
+  duplicate_uuid: '권한 그룹 페이지 결과에 packageUuid={0}가 중복되었습니다',
+  pagination_limit: '권한 그룹 조회가 안전한 페이지 제한({0}페이지)에 도달하여 결과의 완전성을 증명할 수 없습니다',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ 쓰기 요청이 성공했습니다. 정확한 재조회를 시작합니다',
+  saved_message: '권한 설정이 저장되었습니다',
+});

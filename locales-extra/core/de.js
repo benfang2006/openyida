@@ -1839,3 +1839,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: 'Die Authentifizierung hat sich während der Erstellungsanfrage geändert; das Ergebnis ist unbekannt. Prüfen Sie den Zielstatus, bevor Sie es erneut versuchen.',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'Nicht unterstütztes Argument: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: 'Abfrage der Berechtigungsgruppen fehlgeschlagen',
+  query_success: '  ✅ Berechtigungsabfrage erfolgreich: {0} Gruppen',
+  query_success_message: 'Berechtigungsabfrage erfolgreich',
+  invalid_structure: 'Die Abfrage der Berechtigungsgruppen lieferte eine unbekannte Listenstruktur',
+  duplicate_uuid: 'Die Seitennavigation der Berechtigungsgruppen wiederholte packageUuid={0}',
+  pagination_limit: 'Die Abfrage der Berechtigungsgruppen hat die sichere Seitengrenze ({0} Seiten) erreicht; Vollständigkeit kann nicht nachgewiesen werden',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ Schreibanforderung angenommen; exakter Rücklesevorgang wird gestartet',
+  saved_message: 'Berechtigungskonfiguration gespeichert',
+});

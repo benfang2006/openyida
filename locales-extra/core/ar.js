@@ -1839,3 +1839,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: 'تغيّرت المصادقة أثناء طلب الإنشاء؛ النتيجة غير معروفة. تحقّق من حالة الهدف قبل إعادة المحاولة.',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'وسيطة غير مدعومة: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: 'فشل الاستعلام عن مجموعات الأذونات',
+  query_success: '  ✅ نجح استعلام الأذونات: {0} مجموعات',
+  query_success_message: 'نجح استعلام الأذونات',
+  invalid_structure: 'أعاد استعلام مجموعات الأذونات بنية قائمة غير معروفة',
+  duplicate_uuid: 'كرر ترقيم صفحات مجموعات الأذونات packageUuid={0}',
+  pagination_limit: 'بلغ استعلام مجموعات الأذونات حد الصفحات الآمن ({0} صفحات)؛ لا يمكن إثبات اكتمال النتائج',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ تم قبول الكتابة؛ بدء إعادة القراءة الدقيقة',
+  saved_message: 'تم حفظ إعدادات الأذونات',
+});

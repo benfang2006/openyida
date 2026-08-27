@@ -1841,3 +1841,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: 'La autenticación cambió durante la solicitud de creación; se desconoce el resultado. Verifica el estado del destino antes de volver a intentarlo.',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'Argumento no compatible: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: 'No se pudieron consultar los grupos de permisos',
+  query_success: '  ✅ Consulta de permisos correcta: {0} grupos',
+  query_success_message: 'Consulta de permisos correcta',
+  invalid_structure: 'La consulta de grupos de permisos devolvió una estructura de lista no reconocida',
+  duplicate_uuid: 'La paginación de grupos de permisos repitió packageUuid={0}',
+  pagination_limit: 'La consulta de grupos de permisos alcanzó el límite seguro de paginación ({0} páginas); no se puede demostrar que el resultado esté completo',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ Escritura aceptada; iniciando relectura exacta',
+  saved_message: 'Configuración de permisos guardada',
+});

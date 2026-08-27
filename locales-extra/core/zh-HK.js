@@ -1714,3 +1714,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: '建立請求期間的身份驗證發生變化；建立結果未知。請先檢查目標狀態，再決定是否重試。',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: '不支援的參數：{0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: '權限群組查詢失敗',
+  query_success: '  ✅ 權限設定查詢成功！共 {0} 個權限群組',
+  query_success_message: '權限設定查詢成功',
+  invalid_structure: '權限群組查詢傳回無法識別的清單結構',
+  duplicate_uuid: '權限群組分頁結果重複出現 packageUuid={0}',
+  pagination_limit: '權限群組查詢達到安全分頁上限（{0} 頁），無法證明結果完整',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ 寫入請求成功，開始精確回讀',
+  saved_message: '權限設定已儲存',
+});

@@ -1839,3 +1839,21 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
 Object.assign(module.exports.common || (module.exports.common = {}), {
   non_idempotent_result_unknown: 'Xác thực đã thay đổi trong lúc gửi yêu cầu tạo; chưa xác định được kết quả. Hãy kiểm tra trạng thái đích trước khi thử lại.',
 });
+
+Object.assign(module.exports.permission_common || (module.exports.permission_common = {}), {
+  unsupported_argument: 'Tham số không được hỗ trợ: {0}',
+});
+
+Object.assign(module.exports.permission_list || (module.exports.permission_list = {}), {
+  query_failed: 'Không thể truy vấn nhóm quyền',
+  query_success: '  ✅ Truy vấn quyền thành công: {0} nhóm',
+  query_success_message: 'Truy vấn quyền thành công',
+  invalid_structure: 'Truy vấn nhóm quyền trả về cấu trúc danh sách không nhận dạng được',
+  duplicate_uuid: 'Kết quả phân trang nhóm quyền lặp lại packageUuid={0}',
+  pagination_limit: 'Truy vấn nhóm quyền đã đạt giới hạn phân trang an toàn ({0} trang); không thể chứng minh kết quả đầy đủ',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  write_accepted_readback: '    ✅ Yêu cầu ghi đã thành công; bắt đầu đọc lại chính xác',
+  saved_message: 'Đã lưu cấu hình quyền',
+});

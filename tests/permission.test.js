@@ -86,7 +86,7 @@ describe('get-permission command regression', () => {
         returned: 1,
         mayHaveMore: false,
       },
-      message: '权限配置查询成功',
+      message: 'permission_list.query_success_message',
     });
     expect(output.permissions[0]).toMatchObject({
       packageUuid: 'pkg-1',
