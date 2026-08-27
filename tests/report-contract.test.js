@@ -75,18 +75,24 @@ describe('report frontend contract', () => {
     const actual = { ...expected, gmtModified: 101 };
 
     expect(assertReportSchemaReadback(expected, actual)).toMatchObject({
-      pages: expected.pages,
+      verificationLevel: 'strict-schema-content',
+      omitted: [
+        { path: '$.gmtModified', reason: 'server-owned revision' },
+        { path: '$.i18nData', reason: 'server-owned localization materialization' },
+        { path: '$.status', reason: 'server-owned publication status' },
+      ],
+      projection: { pages: expected.pages },
     });
   });
 
-  test('readback accepts deterministic platform normalization without weakening chart semantics', () => {
+  test('readback accepts only explicit top-level platform normalization without weakening runtime fields', () => {
     const expected = prepareReportSchemaForSave(buildSchema({
       pages: [{
-        css: '',
-        utils: [],
+        css: 'body { color: red; }',
+        utils: [{ name: 'runtimeUtil' }],
         componentsTree: [{
           componentName: 'Page',
-          lifeCycles: { componentDidMount: '' },
+          lifeCycles: { componentDidMount: 'mount-v1' },
           props: { height: null, visible: true },
           children: [{
             componentName: 'Chart',
@@ -97,15 +103,17 @@ describe('report frontend contract', () => {
     }));
     const actual = {
       ...expected,
-      id: undefined,
       status: 'PUBLISHED',
       gmtModified: 101,
       i18nData: [{ key: 'server-owned' }],
       config: JSON.stringify(expected.config),
       pages: [{
+        css: 'body { color: red; }',
+        utils: [{ name: 'runtimeUtil' }],
         componentsTree: [{
           componentName: 'Page',
-          props: { visible: true },
+          lifeCycles: { componentDidMount: 'mount-v1' },
+          props: { height: null, visible: true },
           children: [{
             componentName: 'Chart',
             data: { cubeCode: 'FORM_1', fieldCode: 'numberField_1', aggregateType: 'SUM' },
@@ -115,6 +123,11 @@ describe('report frontend contract', () => {
     };
 
     expect(() => assertReportSchemaReadback(expected, actual)).not.toThrow();
+    actual.pages[0].css = 'body { color: blue; }';
+    expect(() => assertReportSchemaReadback(expected, actual)).toThrow(expect.objectContaining({
+      code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+    }));
+    actual.pages[0].css = 'body { color: red; }';
     actual.pages[0].componentsTree[0].children[0].data.aggregateType = 'COUNT';
     expect(() => assertReportSchemaReadback(expected, actual)).toThrow(expect.objectContaining({
       code: 'REPORT_SCHEMA_READBACK_MISMATCH',

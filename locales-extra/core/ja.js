@@ -69,6 +69,7 @@ module.exports = {
     group_report: 'レポート',
     cmd_create_report: '宜搭レポートを作成',
     cmd_append_chart: '既存レポートにチャートを追加',
+    cmd_report_inspect: 'レポートのランタイムバインドを読み取り専用で検査',
     group_connector: 'コネクタ',
     cmd_connector_list: 'HTTP コネクタ一覧',
     cmd_connector_create: 'コネクタを作成',

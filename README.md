@@ -458,6 +458,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 |---------|-------------|
 | `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | Create a Yida report |
 | `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | Append chart to existing report |
+| `openyida report inspect <appType> <reportId> --json` | Inspect report runtime bindings (read-only) |
 
 ### Connectors
 

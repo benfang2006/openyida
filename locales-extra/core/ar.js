@@ -69,6 +69,7 @@ module.exports = {
     group_report: 'التقارير',
     cmd_create_report: 'إنشاء تقرير Yida',
     cmd_append_chart: 'إضافة رسم بياني إلى تقرير موجود',
+    cmd_report_inspect: 'فحص ارتباطات تشغيل التقرير للقراءة فقط',
     group_connector: 'الموصلات',
     cmd_connector_list: 'عرض موصلات HTTP',
     cmd_connector_create: 'إنشاء موصل',

@@ -20,6 +20,7 @@ const utils = require('../lib/core/utils');
 const { createBlankReport, saveReportSchema } = require('../lib/report/http');
 const createReport = require('../lib/report/index');
 const appendReport = require('../lib/report/append');
+const { STALE_SCHEMA_MESSAGE } = require('../lib/core/server-revision');
 
 const authRef = {
   baseUrl: 'https://demo.aliwork.com',
@@ -65,6 +66,8 @@ describe('report command helpers', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    utils.httpGet.mockReset();
+    utils.httpPost.mockReset();
     utils.loadAuthData.mockReturnValue({
       base_url: authRef.baseUrl,
       auth_mode: 'token',
@@ -147,6 +150,8 @@ describe('report command helpers', () => {
       appType: 'APP_XXX',
       chartCount: 1,
       readbackVerified: true,
+      verificationLevel: 'strict-schema-content',
+      omitted: expect.any(Array),
       url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
     });
     const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
@@ -173,6 +178,16 @@ describe('report command helpers', () => {
       JSON.stringify(chartConfig),
     ])).rejects.toMatchObject({
       code: 'CREATE_REPORT_IDENTITY_MISSING',
+      details: {
+        partial: true,
+        residual: {
+          type: 'report',
+          appType: 'APP_XXX',
+          reportId: null,
+          owned: 'unknown',
+          deleteAttempted: false,
+        },
+      },
     });
 
     expect(utils.httpPost).toHaveBeenCalledTimes(1);
@@ -203,6 +218,78 @@ describe('report command helpers', () => {
     expect(utils.httpGet).not.toHaveBeenCalled();
   });
 
+  test.each([
+    { ...chartConfig[0], type: 'radar' },
+    { ...chartConfig[0], type: undefined },
+    { ...chartConfig[0], type: 'combo', xField: undefined, yField: undefined, leftYFields: chartConfig[0].yField },
+  ])('create-report fails closed on unsupported or incomplete capability before remote writes', async (invalidChart) => {
+    await expect(createReport.run([
+      'APP_XXX',
+      '无效报表',
+      JSON.stringify([invalidChart]),
+    ])).rejects.toMatchObject({
+      code: 'CREATE_REPORT_CHART_CONFIG_INVALID',
+    });
+
+    expect(utils.httpPost).not.toHaveBeenCalled();
+    expect(utils.httpGet).not.toHaveBeenCalled();
+  });
+
+  test('create-report validates explicit filter link/cube/field consistency before remote writes', async () => {
+    const invalidConfig = {
+      charts: chartConfig,
+      filters: [{
+        title: '状态',
+        cubeCode: 'FORM_OTHER',
+        valueField: { fieldCode: 'selectField_status' },
+        filterFieldCode: 'selectField_other',
+        linkTo: ['missing chart'],
+      }],
+    };
+
+    await expect(createReport.run([
+      'APP_XXX',
+      '无效筛选报表',
+      JSON.stringify(invalidConfig),
+    ])).rejects.toMatchObject({
+      code: 'CREATE_REPORT_CHART_CONFIG_INVALID',
+      details: {
+        issues: expect.arrayContaining([
+          expect.objectContaining({ code: 'REPORT_FILTER_LINK_TARGET_INVALID' }),
+          expect.objectContaining({ code: 'REPORT_FILTER_FIELD_MISMATCH' }),
+        ]),
+      },
+    });
+
+    expect(utils.httpPost).not.toHaveBeenCalled();
+    expect(utils.httpGet).not.toHaveBeenCalled();
+  });
+
+  test('create-report exposes a structured owned residual when post-create save fails', async () => {
+    utils.httpPost
+      .mockResolvedValueOnce({ success: true, content: { formUuid: 'REPORT_PARTIAL' } })
+      .mockResolvedValueOnce({ success: false, errorCode: 'SAVE_FAILED', errorMsg: 'save failed' });
+    utils.httpGet.mockResolvedValueOnce({ success: true, content: { gmtModified: 100 } });
+
+    await expect(createReport.run([
+      'APP_XXX',
+      '部分创建报表',
+      JSON.stringify(chartConfig),
+    ])).rejects.toMatchObject({
+      code: 'CREATE_REPORT_SAVE_FAILED',
+      details: {
+        partial: true,
+        residual: {
+          type: 'report',
+          appType: 'APP_XXX',
+          reportId: 'REPORT_PARTIAL',
+          owned: true,
+          deleteAttempted: false,
+        },
+      },
+    });
+  });
+
   test('append-chart run fetches existing schema and saves appended chart', async () => {
     utils.httpGet.mockResolvedValueOnce({
       success: true,
@@ -225,6 +312,8 @@ describe('report command helpers', () => {
       appType: 'APP_XXX',
       appendedChartCount: 1,
       readbackVerified: true,
+      verificationLevel: 'strict-schema-content',
+      omitted: expect.any(Array),
       url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
     });
     expect(utils.httpGet.mock.calls[0][1]).toBe('/alibaba/web/APP_XXX/_view/query/formdesign/getFormSchema.json');
@@ -258,6 +347,58 @@ describe('report command helpers', () => {
 
     expect(utils.httpPost).toHaveBeenCalledTimes(1);
     expect(utils.httpGet).toHaveBeenCalledTimes(2);
+  });
+
+  test('append-chart retries a proven revision conflict once using the latest revision and the owned mutation only', async () => {
+    utils.httpGet
+      .mockResolvedValueOnce({ success: true, content: makeReportSchema() })
+      .mockResolvedValueOnce({ success: true, content: { ...makeReportSchema(), gmtModified: 101 } })
+      .mockImplementationOnce(async () => {
+        const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
+        return {
+          success: true,
+          content: { ...JSON.parse(saveBody.content), gmtModified: 102 },
+        };
+      });
+    utils.httpPost
+      .mockResolvedValueOnce({ success: false, errorCode: '500', errorMsg: STALE_SCHEMA_MESSAGE })
+      .mockResolvedValueOnce({ success: true });
+
+    const result = await appendReport.run(['APP_XXX', 'REPORT_1', JSON.stringify(chartConfig)]);
+
+    expect(result).toMatchObject({
+      success: true,
+      recovery: {
+        attempted: true,
+        reason: 'revision_conflict',
+        ownedMutationReapplied: true,
+        latestRevision: 101,
+      },
+    });
+    expect(utils.httpPost).toHaveBeenCalledTimes(2);
+    expect(querystring.parse(utils.httpPost.mock.calls[1][2]).gmtModified).toBe('101');
+  });
+
+  test('append-chart does not replay an ordinary or unknown save failure', async () => {
+    utils.httpGet.mockResolvedValueOnce({ success: true, content: makeReportSchema() });
+    utils.httpPost.mockResolvedValueOnce({ success: false, errorCode: 'FAILED', errorMsg: 'unknown state' });
+
+    await expect(appendReport.run([
+      'APP_XXX',
+      'REPORT_1',
+      JSON.stringify(chartConfig),
+    ])).rejects.toMatchObject({
+      code: 'APPEND_CHART_SAVE_FAILED',
+      details: {
+        recovery: {
+          attempted: false,
+          reason: 'save_state_not_proven_safe_to_replay',
+        },
+      },
+    });
+
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
+    expect(utils.httpGet).toHaveBeenCalledTimes(1);
   });
 
   test('usage errors reject as CliError instead of exiting', async () => {

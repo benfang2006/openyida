@@ -999,6 +999,16 @@ async function main() {
       break;
     }
 
+    case 'report': {
+      const subCommand = args[0];
+      if (subCommand !== 'inspect') {
+        throwCliUsage('用法: openyida report inspect <appType> <reportId> --json');
+      }
+      const { run } = require('../lib/report/inspect');
+      await run(args.slice(1));
+      break;
+    }
+
     case 'cdn-config': {
       const { run: runCdnConfig } = require('../lib/cdn/cdn-config-cmd');
       await runCdnConfig(args);

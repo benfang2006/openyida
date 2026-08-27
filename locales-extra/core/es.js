@@ -69,6 +69,7 @@ module.exports = {
     group_report: 'Informes',
     cmd_create_report: 'Crear informe Yida',
     cmd_append_chart: 'Agregar gráfico a informe existente',
+    cmd_report_inspect: 'Inspeccionar enlaces de ejecución del informe en modo lectura',
     group_connector: 'Conectores',
     cmd_connector_list: 'Listar conectores HTTP',
     cmd_connector_create: 'Crear conector',

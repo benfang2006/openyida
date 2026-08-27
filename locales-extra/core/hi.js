@@ -69,6 +69,7 @@ module.exports = {
     group_report: 'रिपोर्ट',
     cmd_create_report: 'Yida रिपोर्ट बनाएं',
     cmd_append_chart: 'मौजूदा रिपोर्ट में चार्ट जोड़ें',
+    cmd_report_inspect: 'रिपोर्ट रनटाइम बाइंडिंग का केवल-पढ़ने योग्य निरीक्षण करें',
     group_connector: 'कनेक्टर',
     cmd_connector_list: 'HTTP कनेक्टर सूचीबद्ध करें',
     cmd_connector_create: 'कनेक्टर बनाएं',

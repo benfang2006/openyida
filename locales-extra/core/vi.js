@@ -69,6 +69,7 @@ module.exports = {
     group_report: 'Báo cáo',
     cmd_create_report: 'Tạo báo cáo Yida',
     cmd_append_chart: 'Thêm biểu đồ vào báo cáo hiện có',
+    cmd_report_inspect: 'Kiểm tra liên kết thời gian chạy của báo cáo ở chế độ chỉ đọc',
     group_connector: 'Trình kết nối',
     cmd_connector_list: 'Liệt kê trình kết nối HTTP',
     cmd_connector_create: 'Tạo trình kết nối',

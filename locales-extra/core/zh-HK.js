@@ -69,6 +69,7 @@ module.exports = {
     group_report: '報表',
     cmd_create_report: '建立宜搭報表',
     cmd_append_chart: '向已有報表追加圖表',
+    cmd_report_inspect: '唯讀檢查報表執行階段綁定摘要',
     group_connector: '連接器',
     cmd_connector_list: '列出 HTTP 連接器',
     cmd_connector_create: '建立連接器',

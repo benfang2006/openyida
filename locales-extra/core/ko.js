@@ -69,6 +69,7 @@ module.exports = {
     group_report: '보고서',
     cmd_create_report: 'Yida 보고서 생성',
     cmd_append_chart: '기존 보고서에 차트 추가',
+    cmd_report_inspect: '보고서 런타임 바인딩을 읽기 전용으로 검사',
     group_connector: '커넥터',
     cmd_connector_list: 'HTTP 커넥터 목록',
     cmd_connector_create: '커넥터 생성',
