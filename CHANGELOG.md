@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- npm 全局安装新增 Homebrew 风格自动更新：普通命令执行前至多每 24 小时检查一次 npm `latest`，发现新版本后安装精确版本并重跑原命令；提供缓存、非阻塞锁、完整 SemVer 比较和关闭开关。托管云端 Agent 在缓存、registry 与 npm 调用前直接跳过。
+
 ## [2026.8.27-1] - 2026-08-27
 
 ### Fixed
