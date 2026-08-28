@@ -203,6 +203,10 @@ openyida configure-process APP_XXX FORM_XXX .cache/openyida/process/process.json
 openyida process preview APP_XXX PROC_INST_XXX --output .cache/openyida/process/process.html
 ```
 
+`configure-process` 在发现已有已发布流程或已保存草稿时要求显式传入 `--replace`；如果无法证明目标流程属于指定表单，则不会执行任何写入。草稿创建、保存和发布均按 one-shot 执行，认证或网络异常导致结果未知时不会自动重试。
+
+发布成功后，CLI 会精确回读 `PUBLISHED` 版本及 `getProcessById` 的平台可见视图，校验节点、组件、名称、顺序和审批模式。只有完整通过才返回 `PLATFORM_VIEW_VERIFIED`；无法完整验证时返回 `PUBLISHED_UNVERIFIED`，不得把本地 `processJson` 当作平台已验证结果。
+
 ### 数据管理
 
 ```bash
@@ -235,6 +239,10 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 ```
 
 连接器鉴权信息通过宜搭连接器配置管理，不写入页面源码。`--operations`、`--action`、`--spec` 等 JSON 文件放到 `.cache/openyida/<项目名或任务名>/` 下。
+
+已有动作的 Query 默认值必须通过窄命令安全更新：`openyida connector update-action --connector-id <id> --action <operationId> --query-json '{"currentPage":"1"}' --confirm`。命令先完整回读连接器和全部动作，只修改 `inputs` / `parameters` 中唯一且已声明的同名 Query 默认值，再一次性提交完整动作集合；回读必须证明连接器 fingerprint、动作数量、非目标动作和稳定 ID 均未变化。参数缺失、空值、未知参数、重复 ID、平台详情不完整或写入结果未知都会 fail-closed，且不会自动重试。`add-action` 不再覆盖既有动作 ID。
+
+真实回归入口为 `OPENYIDA_E2E=1 OPENYIDA_E2E_CONNECTOR_ACTION_UPDATE=1 node scripts/e2e-real/connector/action-update-runner.js`。它只创建一个 owned、NONE-auth 测试连接器（含目标动作和 preservation sentinel），逐项验证 `currentPage`、`pageSize`、`userLanguage`、`searchFieldJson`、动态 `_stamp` 并恢复 baseline；证据仅记录响应结构、数量和 SHA-256，不保存真实响应行值、Cookie/token/profile/corpId。由于没有已证明的删除 API，连接器保留为 `cleanup_blocked` residual。
 
 `integration create --process-code` 是整图替换，必须显式传 `--replace`，不能当作安全更新。`integration update` 当前只做 capability 检测：由于平台完整 `processJson` + `viewJson` readback 契约尚未证明，它只写入脱敏的本地 probe artifact，并在认证、读取 spec 或远端写入之前返回 `PLATFORM_PROBE_REQUIRED`。当前不会编辑逻辑流，禁止猜测接口或降级成整图替换。
 
@@ -318,8 +326,8 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida configure-process <appType> ...` | 配置并发布流程规则 |
-| `openyida create-process <appType> ...` | 创建流程表单（一体化） |
+| `openyida configure-process <appType> <formUuid> <definition> [processCode] [--replace]` | 配置并发布流程规则 |
+| `openyida create-process <appType> ... [--replace]` | 创建流程表单（一体化） |
 | `openyida ai-form-setting <get\|fields\|models\|enable\|disable\|save> <appType> ...` | 管理流程表单 AI 审批提示 |
 | `openyida process preview <appType> ...` | 预览流程实例（可视化流程图） |
 
@@ -338,6 +346,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 |------|------|
 | `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | 创建宜搭报表 |
 | `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | 向已有报表追加图表 |
+| `openyida report inspect <appType> <reportId> --json` | 只读检查报表运行时绑定摘要 |
 
 ### 连接器
 
@@ -348,12 +357,13 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida connector detail <id>` | 查看连接器详情 |
 | `openyida connector delete <id> [--force]` | 显示平台手工删除指引（CLI 不执行删除） |
 | `openyida connector add-action --operations <file> --connector-id <id>` | 添加执行动作 |
+| `openyida connector update-action --connector-id <id> --action <operationId> --query-json JSON --confirm` | 安全更新动作 Query 默认值 |
 | `openyida connector list-actions <id>` | 列出执行动作 |
 | `openyida connector delete-action <id> <operation-id>` | 删除执行动作 |
-| `openyida connector test --connector-id <id> --action <actionId>` | 测试执行动作 |
+| `openyida connector test --connector-id <id> --action <actionId> [--path-json JSON] [--query-json JSON] [--header-json JSON] [--body-json JSON] [--account-id <id>]` | 测试执行动作 |
 | `openyida connector list-connections <id>` | 列出鉴权账号 |
 | `openyida connector create-connection <id> <name>` | 创建鉴权账号 |
-| `openyida connector smart-create --curl "..."` | 智能创建连接器（从 cURL） |
+| `openyida connector smart-create --curl "..."` | 从 cURL 生成脱敏动作草稿（不创建远端资源） |
 | `openyida connector parse-api [options]` | 解析接口信息 |
 | `openyida connector gen-template [output]` | 生成接口文档模板 |
 
