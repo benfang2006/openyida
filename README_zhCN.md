@@ -238,10 +238,15 @@ openyida append-chart APP_XXX REPORT_XXX .cache/openyida/reports/chart.json
 openyida connector smart-create --curl "curl https://api.example.com/users"
 openyida connector list
 openyida integration create APP_XXX FORM_XXX "同步客户数据"
+# 仅检测 capability；当前在认证、读取 spec 和远端写入前 fail-closed
+openyida integration update APP_XXX FORM_XXX LPROC_XXX \
+  --spec .cache/openyida/integration/desired-spec.json
 openyida integration enable APP_XXX FORM_XXX PROC_CODE
 ```
 
 连接器鉴权信息通过宜搭连接器配置管理，不写入页面源码。`--operations`、`--action`、`--spec` 等 JSON 文件放到 `.cache/openyida/<项目名或任务名>/` 下。
+
+`integration create --process-code` 是整图替换，必须显式传 `--replace`，不能当作安全更新。`integration update` 当前只做 capability 检测：由于平台完整 `processJson` + `viewJson` readback 契约尚未证明，它只写入脱敏的本地 probe artifact，并在认证、读取 spec 或远端写入之前返回 `PLATFORM_PROBE_REQUIRED`。当前不会编辑逻辑流，禁止猜测接口或降级成整图替换。
 
 ## CLI 命令参考
 
@@ -351,7 +356,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida connector list` | 列出 HTTP 连接器 |
 | `openyida connector create "name" "domain" ...` | 创建连接器 |
 | `openyida connector detail <id>` | 查看连接器详情 |
-| `openyida connector delete <id>` | 删除连接器 |
+| `openyida connector delete <id> [--force]` | 显示平台手工删除指引（CLI 不执行删除） |
 | `openyida connector add-action --operations <file> --connector-id <id>` | 添加执行动作 |
 | `openyida connector list-actions <id>` | 列出执行动作 |
 | `openyida connector delete-action <id> <operation-id>` | 删除执行动作 |
@@ -367,6 +372,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | 命令 | 说明 |
 |------|------|
 | `openyida integration create <appType> ... [--spec file.json]` | 创建集成自动化逻辑流 |
+| `openyida integration update <appType> <formUuid> <processCode> --spec <desired-spec.json> [--publish]` | 检测集成自动化安全更新能力（完整 readback 未证明，当前阻断） |
 | `openyida integration list <appType> [--form-uuid <uuid>] [--status y\|n] [--json]` | 列出集成自动化逻辑流 |
 | `openyida integration enable <appType> <formUuid> <processCode>` | 启用集成自动化逻辑流 |
 | `openyida integration disable <appType> <formUuid> <processCode>` | 停用集成自动化逻辑流 |

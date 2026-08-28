@@ -73,7 +73,7 @@ module.exports = {
     cmd_connector_list: 'HTTP コネクタ一覧',
     cmd_connector_create: 'コネクタを作成',
     cmd_connector_detail: 'コネクタ詳細を表示',
-    cmd_connector_delete: 'コネクタを削除',
+    cmd_connector_delete: '手動削除の案内を表示（CLI は削除しません）',
     cmd_connector_add_action: 'アクションを追加',
     cmd_connector_list_actions: 'アクション一覧を表示',
     cmd_connector_delete_action: 'アクションを削除',
@@ -86,6 +86,7 @@ module.exports = {
     cmd_connector_more: 'その他のサブコマンドを表示',
     group_integration: '統合 & DingTalk',
     cmd_integration: '統合自動化フローを作成',
+    cmd_integration_update: 'Probe integration update capability (currently blocked without full readback)',
     cmd_integration_list: '統合自動化フローを一覧表示',
     cmd_integration_enable: '統合自動化フローを有効化',
     cmd_integration_disable: '統合自動化フローを無効化',
@@ -168,7 +169,7 @@ module.exports = {
       '  connector list [オプション]                                  HTTP コネクター一覧\n' +
       '  connector create "名前" "ドメイン" --operations <file> [オプション]  コネクター作成\n' +
       '  connector detail <connector-id>                              コネクター詳細を表示\n' +
-      '  connector delete <connector-id> [--force]                    コネクターを削除\n' +
+      '  connector delete <connector-id> [--force]                    手動削除の案内を表示（CLI は削除しません）\n' +
       '  connector add-action --operations <file> --connector-id <id> アクションを追加\n' +
       '  connector list-actions <connector-id>                        アクション一覧\n' +
       '  connector delete-action <connector-id> <operation-id>        アクションを削除\n' +
@@ -179,6 +180,7 @@ module.exports = {
       '  connector parse-api [オプション]                             API 情報を解析\n' +
       '  connector gen-template [出力パス]                            API ドキュメントテンプレートを生成\n' +
       '  integration create <appType> <formUuid> <flowName> [オプション]  インテグレーション&自動化フローを作成\n' +
+      '  integration update <appType> <formUuid> <processCode> --spec <file>  Probe blocked update capability\n' +
       '  create-report <appType> "<レポート名>" <チャートJSON|ファイル>  Yida レポートを作成\n' +
       '  append-chart <appType> <reportId> <チャートJSON|ファイル>    既存レポートにチャートを追加\n' +
       '  dws <command> [args]                                         DingTalk CLI（連絡先/カレンダー/タスク/承認等）\n' +
@@ -233,7 +235,7 @@ module.exports = {
     forbidden_alias_get_schema_form_uuid_option: '`{0}` は formUuid を 2 番目の位置引数として受け取ります。`{1}` は使用しません。',
     nearest_command_suggestion: '不明な OpenYida コマンドルート「{0}」。もしかして「{1}」ですか？',
     run_help: 'openyida --help を実行してヘルプを確認してください',
-    integration_help: '使用方法: openyida integration <create|list|enable|disable> ...',
+    integration_help: 'Usage: openyida integration <create|update|list|enable|disable|check|diagnose> ...',
     integration_unknown: '不明な integration サブコマンド: {0}',
     integration_help_hint: '利用可能なサブコマンドは openyida integration --help で確認してください',
     integration_list_usage: '使用方法: openyida integration list <appType> [--form-uuid <uuid>] [--status y|n] [--key <kw>] [--page <n>] [--size <n>] [--json]',
@@ -358,7 +360,8 @@ module.exports = {
     create_arg_form_uuid: '  formUuid             Trigger form UUID, such as FORM-XXX',
     create_arg_flow_name: '  flowName             Integration automation name',
     create_options_title: 'Options:',
-    create_opt_process_code: '  --process-code <code>       Update an existing logic flow processCode',
+    create_opt_process_code: '  --process-code <code>       Select an existing flow for full replacement',
+    create_opt_replace: '  --replace                     Confirm --process-code is a full replacement, not a safe update',
     create_opt_receivers: '  --receivers <ids>            DingTalk notification receiver userIds, comma-separated',
     create_opt_title: '  --title <text>                Notification title, supports #{fieldId-ComponentType}#',
     create_opt_content: '  --content <text>              Notification content, supports #{fieldId-ComponentType}#',
@@ -382,6 +385,7 @@ module.exports = {
     create_example1: '  openyida integration create APP_XXX FORM-XXX "New record notice" --receivers user123 --publish',
     create_example2: '  openyida integration create APP_XXX FORM-XXX "Get self then notify" --get-self --publish',
     create_missing_args: 'Missing required arguments.',
+    create_replace_required: 'Using --process-code fully replaces the existing flow. Pass --replace explicitly. Safe editing is not currently available; integration update only reports capability status.',
     create_flow_name_too_long: 'Logic-flow names cannot exceed {0} characters (received {1}).',
     create_invalid_events: 'No valid trigger event was recognized.',
     create_no_receivers: 'No notification receiver or user field specified; no message node will be generated.',
@@ -389,7 +393,7 @@ module.exports = {
     create_app_type: 'App ID: {0}',
     create_form_uuid: 'Trigger form: {0}',
     create_flow_name: 'Flow name: {0}',
-    create_mode_update: 'Mode: update existing logic flow',
+    create_mode_update: 'Mode: full replacement of existing logic flow (not a safe update)',
     create_mode_new: 'Mode: create new logic flow',
     create_process_code: 'Logic flow ID: {0}',
     create_events: 'Trigger events: {0}',
@@ -421,7 +425,10 @@ module.exports = {
     create_published_ok: 'Logic flow published',
     create_done_published: 'Integration automation created and published',
     create_done_draft: 'Integration automation draft saved',
-    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.'
+    create_draft_hint: 'You can confirm the config in Yida designer and publish manually.',
+    update_usage: 'Usage: openyida integration update <appType> <formUuid> <processCode> --spec <desired-spec.json> [--publish]',
+    update_missing_args: 'Missing required arguments: appType, formUuid, processCode, and --spec are required.',
+    update_capability_blocked: 'Safe integration update is unavailable: full platform processJson + viewJson readback is not proven. No authentication or remote write was attempted.',
   },
   env: {
     title: '  openyida env - 環境検出',
@@ -641,8 +648,6 @@ module.exports = {
     version_label: '  現在のバージョン: {0}',
     save_schema_failed: '\n❌ Schema の保存に失敗しました: {0}',
     save_failed: '\n❌ Schema の保存に失敗しました: {0}',
-    step_update_config: '\n⚙️  Step {0}: フォーム設定を更新',
-    sending_config: '  updateFormConfig リクエストを送信中...',
     step_get_schema: '\n📄 Step {0}: 現在のフォーム Schema を取得',
     sending_get_schema: '  getFormSchema リクエストを送信中...',
     sending_get: '  getFormSchema リクエストを送信中...',
@@ -666,12 +671,7 @@ module.exports = {
     update_success: '  ✅ フォームが正常に更新されました！',
     form_uuid_label: '  formUuid: {0}',
     url_label: '  URL: {0}',
-    config_updated_0: '  設定を更新しました: MINI_RESOURCE = 0',
-    config_updated: '  設定を更新しました: MINI_RESOURCE = 0',
     changes_applied: '  適用した変更: {0} 件',
-    config_failed: '  ⚠️  設定の更新に失敗しました: {0}',
-    schema_ok_config_failed: '  Schema は保存されましたが、設定の更新に失敗しました',
-    schema_saved_config_failed: '  Schema は保存されましたが、設定の更新に失敗しました',
     create_post_failure_retry_advice: 'create をそのまま繰り返さないでください。まず openyida list-forms {0} --keyword "{1}" で同名フォームを確認してください。この実行ですでに空/既存フォームが作成された場合は、create-form update または将来の --resume-form-uuid フローを優先してください。',
     error: '\n❌ エラー: {0}',
     usage_create: '使用方法: openyida create-form create <appType> <formTitle> <fieldsJsonFile>',
@@ -1158,6 +1158,8 @@ module.exports = {
     canvas_compiling: '  🎨 カスタムページソースをローカルでコンパイル中...',
     canvas_compile_done: '  ✅ カスタムページのコンパイルが完了しました！',
     canvas_compile_failed: '  ❌ カスタムページのコンパイルに失敗しました：{0}',
+    canvas_unbound_identifiers: 'Code Canvas ソースに未宣言の識別子があります：{0}。同じファイルに import、関数、Ref、state、またはローカル変数の宣言を追加し、すべての参照で同じ名前を使用してください。非標準ランタイムが提供する識別子は window.<name> または parentWindow.<name> から明示的に参照し、先に存在を確認してください。',
+    canvas_instance_api_unavailable: 'Code Canvas コンポーネントでは、次のプラットフォーム JSX インスタンス API を使用できません：{0}。React Hooks、props、または window.__OPENYIDA_YIDA_API__ データブリッジを使用してください。',
     step_login: '\n🔑 Step 2: ログイン情報を読み込む',
     step_publish: '\n📤 Step 3: Schema を公開\n',
     resend_save_csrf: '  🔄 saveFormSchema リクエストを再送信中（csrf_token を更新済み）...',
@@ -1169,18 +1171,8 @@ module.exports = {
     schema_success: '  ✅ Schema の公開に成功しました！',
     form_uuid_label: '  formUuid: {0}',
     version_label: '  version:  {0}',
-    step_config: '\n⚙️  Step 4: フォーム設定を更新\n',
-    sending_config: '  updateFormConfig リクエストを送信中...',
-    resend_config_csrf: '  🔄 updateFormConfig リクエストを再送信中（csrf_token を更新済み）...',
-    resend_config: '  🔄 再ログイン後に updateFormConfig リクエストを再送信中...',
-    config_csrf_retry: '  🔄 updateFormConfig リクエストを再送信中（csrf_token を更新済み）...',
-    config_relogin_retry: '  🔄 再ログイン後に updateFormConfig リクエストを再送信中...',
     success: '  ✅ 公開に成功しました！',
     publish_success: '  ✅ 公開に成功しました！',
-    config_updated: '  設定を更新しました: MINI_RESOURCE = 8',
-    config_failed: '  ⚠️  設定の更新に失敗しました: {0}',
-    schema_ok_config_failed: '  Schema は公開されましたが、設定の更新に失敗しました',
-    schema_published_config_failed: '  Schema は公開されましたが、設定の更新に失敗しました',
     step_health_check: '\n🩺 Step 5: Publish readback check\n',
     health_check_ok: '  ✅ Publish readback check passed: {0}',
     health_check_failed: '  ⚠️  Publish readback check failed: {0} {1}',
@@ -1675,8 +1667,6 @@ module.exports = {
     schema_empty_msg: 'Schema が空です',
     save_schema_failed: '    ❌ Schema の保存に失敗しました: {0}',
     schema_saved: '    ✅ Schema を保存しました',
-    config_failed: '    ⚠️  設定の更新に失敗しました（Schema は保存済み）: {0}',
-    config_updated: '    ✅ フォーム設定を更新しました',
     step_write_report: '\n📄 Step 5: 移行レポートを書き込む',
     report_written: '  ✅ 移行レポートを書き込みました: {0}',
     done: '  ✅ 移行完了！',
@@ -1693,3 +1683,81 @@ module.exports = {
     create_form_error: 'フォームの作成に失敗しました'
   }
 };
+
+// Safety-critical verification and publish lint messages.
+Object.assign(module.exports.app_permission || (module.exports.app_permission = {}), {
+  verify_failed: 'アプリ管理者の保存検証に失敗しました',
+});
+
+Object.assign(module.exports.corp_manager || (module.exports.corp_manager = {}), {
+  address_book_verify_failed: 'アドレス帳権限の保存検証に失敗しました：期待値={0}, 実際値={1}',
+  admin_verify_failed: '管理者の保存検証に失敗しました：{0} が {1} リストに見つかりませんでした',
+  sub_admin_scope_verify_failed: 'サブ管理者スコープの保存検証に失敗しました：期待値={0}, 実際値={1}',
+  admin_remove_verify_failed: '管理者削除の検証に失敗しました：{0} はまだ {1} リストに含まれています',
+});
+
+Object.assign(module.exports.save_permission || (module.exports.save_permission = {}), {
+  confirm_member_replace_usage: '複合メンバーを置換する場合も --confirm-member-replace を指定する必要があります',
+  data_object_required: 'データ権限は JSON オブジェクトである必要があります',
+  data_rule_required: 'データ権限ルールが空でないこと',
+  data_rule_type_required: 'すべてのデータ権限ルールの項目に type が含まれている必要があります',
+  data_rule_value_invalid: 'データ権限ルールの {0} の値は y/n または boolean でなければなりません',
+  data_enabled_required: 'データ権限で少なくとも 1 つのデータ範囲を有効にする必要があります',
+  custom_department_ids_required: 'CUSTOM_DEPARTMENT では customDepartmentData.departmentIds が空でないこと',
+  formula_data_required: 'FORMULA では formulaData が空でないこと',
+  data_range_required: 'データ権限では dataRange または rule のいずれかが空でないこと',
+  action_enabled_required: 'アクション権限に true に設定された少なくとも 1 つの操作セットを含める必要があります',
+  action_value_boolean: 'アクション権限 {0} は boolean でなければなりません',
+  field_range_invalid: 'フィールド権限の fieldRange は FORM または CUSTOM のみサポートしています',
+  field_status_required: 'CUSTOM フィールド権限では非空の fieldStatus 配列が必要です',
+  field_status_item_required: 'すべての fieldStatus 項目に label, fieldName, componentName, value が含まれている必要があります',
+  field_status_value_invalid: '無効なフィールド権限値：{0}; 有効な値：{1}',
+  json_object_required: '{0} は JSON オブジェクトである必要があります',
+  parse_failed: '{0} の解析に失敗しました: {1}',
+  role_conflict: '権限引数は不一致のロールを指定しています：{0}',
+  matrix_role_only: '--matrix は role=MATRIX 許可グループのみ更新できます',
+  all_members_role_only: '--all-members は role=DEFAULT 許可グループのみ更新できます',
+  target_role_invalid: '無効なロール：{0}; 有効な値：{1}',
+  unnamed_package: '名前なし',
+  missing_package_uuid: 'UUID なし',
+  target_no_match: 'role={0} に一致する許可グループがありません。意図しない更新を防ぐためにゼロの書き込みで中止しました。現在の許可グループ:\n{2}',
+  target_ambiguous: 'role={0} は {1} 個の許可グループに一致しています。意図しない更新を防ぐためにゼロの書き込みで中止しました。\n{2}',
+  unknown_operate_keys: '現在の許可グループには CLI が認識していない操作キーが含まれているため、action-permission を変更できません：{0}. 他の次元は引き続き変更でき、無効なキーはそのまま保持されます。',
+  matrix_role_value_required: 'MATRIX roleData.roleValue は空でない配列である必要があります',
+  matrix_data_required: 'メンバーが MATRIX を使用する場合、データ権限ルールには MATRIX を含める必要があります',
+  data_matrix_member_required: 'データ権限に MATRIX が含まれている場合、メンバーは有効な許可マトリックスを選択する必要があります',
+  members_all_conflict: '--members と --all-members は互いに排他的です',
+  invalid_arguments: '引数検証に失敗しました：{0}',
+  query_limit: '許可グループのクエリが現在の 20 アイテム制限に達し、グローバルなロール一意性が証明できません。ゼロの書き込みで中止。\n{0}',
+  unique_target: '  ✅ ユニークターゲット: {0}',
+  member_before: '  メンバー前：{0}',
+  member_after: '  メンバー後：  {0}',
+  member_removed: '  削除するメンバーロール：{0}',
+  member_replace_confirm: 'メンバー置換は既存の複合ロールを削除します。前後を確認し、--confirm-member-replace を追加してください。失われるエントリ：{0}',
+});
+
+Object.assign(module.exports.save_share_config || (module.exports.save_share_config = {}), {
+  err_page_url_prefix: 'openUrl は /o/ または /s/ で始まる必要があります。現在の値: {0}',
+  verify_failed: '保存後の検証に失敗しました：{0}',
+  current_state_incomplete: '保存中止：現在の公開アクセス設定が openPageAuthConfig を持たないため、安全な保持の証明できません',
+});
+
+Object.assign(module.exports.publish || (module.exports.publish = {}), {
+  lint_jsx_text_identifier: 'JSX コピーは {{0}} として書けません。変数とみなされ {0} is not defined が発生します。代わりに平文 {0} またはクォートされた文字列 {\'{0}\'} を使用してください。',
+  lint_form_open_container: 'カスタムページから Yida フォーム送信/詳細ページを開く場合、FormOpenContainer（デスクトップでは 50vw ドローア iframe、モバイルではフル画面/新規ページのみ）を使用する必要があります。ボタンハンドラーは openForm({ type: "submission" | "detail", ... }) を呼び出すべきです。',
+  lint_form_detail_link: 'Yida フォーム詳細ページには実際の formInstId を使用する必要があります：row.formInstId を読み取り、formInstId が欠落している場合はフォーム詳細リンクで空の formInstId を開く代わりに無効化または警告を表示してください。',
+  lint_searchformdata_http_path: '直接 searchFormDatas.json の呼び出しは /dingtalk/web/<appType>/v1/form/searchFormDatas.json を使用する必要があります。/query/form/searchFormDatas.json は有効なフォームデータエンドポイントではありません',
+  lint_searchformdata_http_query_params: '直接的な searchFormDatas.json URL クエリには必須パラメータ {0} が不足しています。URLSearchParams で appType, formUuid, currentPage, pageSize, searchFieldJson を使用してください',
+  lint_searchformdata_http_csrf: '直接の searchFormDatas.json 呼び出しでは、_csrf_token URL クエリと global_csrf_token リクエストヘッダーに両方にランタイム CSRF トークンを設定する必要があります',
+  lint_searchformdata_http_credentials: '直接的な searchFormDatas.json 呼び出しでは credentials: "include" を設定し、ブラウザが同一オリジンのログインクッキーを送信する必要があるためです',
+  lint_canvas_yida_api_bridge_missing: 'YidaCodeCanvas フォームデータの読み取りにはまず window.__OPENYIDA_YIDA_API__ を消費する必要があります（publish レイヤーは outer didMount から this.utils.yida ブリッジを注入します）。手書きの内部 searchFormDatas 取得にデフォルトを使用しないでください',
+});
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  form_mode_unverified: 'フォーム {0} の種類を検証できませんでした。データを書き込まずに作成を停止しました。',
+  resource_required: 'data query にリソース種別 form がありません。推奨コマンド: {0}',
+});
+
+Object.assign(module.exports.common || (module.exports.common = {}), {
+  non_idempotent_result_unknown: '作成リクエスト中に認証状態が変化したため、作成結果を確認できません。再試行する前に対象の状態を確認してください。',
+});
