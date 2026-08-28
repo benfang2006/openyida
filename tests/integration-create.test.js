@@ -145,7 +145,7 @@ describe('integration create command', () => {
       ],
     });
     fetchFormPageList.mockResolvedValue([
-        { formUuid: 'FORM-B', formName: 'B普通表单', formType: 'receipt' },
+      { formUuid: 'FORM-B', formName: 'B普通表单', formType: 'receipt' },
     ]);
     integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
     integrationApi.saveProcess.mockResolvedValue({ success: true });
