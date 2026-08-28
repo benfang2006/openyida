@@ -322,7 +322,7 @@ module.exports = {
     first_run_tip1: '  1. Run {0}openyida env{1}   to detect environment and login status',
     first_run_tip2: '  2. Run {0}openyida login{1} to log in to Yida',
     first_run_tip3: '  3. Chat with your AI tool and describe the app you want 🚀',
-    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Aone Copilot / Cursor / OpenCode',
+    first_run_footer1: '  Supported AI tools: Codex / Claude Code / Cursor / OpenCode',
     first_run_footer2: '  📚 Docs: https://github.com/openyida/openyida',
     first_run_footer3: '  (This guide only shows on first run. Use openyida --help to see all commands)',
     auth_usage: 'Usage: openyida auth <status|login|refresh|logout|profiles|profile switch>',
@@ -493,6 +493,13 @@ module.exports = {
     playwright_install1: '   npm install -g playwright',
     playwright_install2: '   npx playwright install chromium',
     browser_opening: '\n🔐 Opening browser for OAuth login...',
+    oauth_success_title: 'Connexion réussie',
+    oauth_success_message: 'La connexion est terminée. Revenez à la fenêtre précédente pour continuer.',
+    oauth_closing: 'Fermeture automatique de cette fenêtre…',
+    oauth_manual_close: 'Cette fenêtre n’a pas pu se fermer automatiquement. Fermez-la manuellement, puis revenez à la fenêtre précédente pour continuer.',
+    oauth_failure_title: 'Connexion non terminée',
+    oauth_invalid_state: 'La demande de connexion n’a pas pu être vérifiée. Retournez au terminal et réessayez.',
+    oauth_missing_code: 'Aucune information d’autorisation n’a été reçue. Retournez au terminal et réessayez.',
     login_url_label: '  Login URL: {0}',
     waiting_login: '  Waiting for login (up to 10 minutes)...',
     login_timeout: '  ⏰ Login timed out (10 minutes). Please try again.',
@@ -1039,11 +1046,11 @@ module.exports = {
     no_package_hint2: '   npm install -g openyida',
     no_ai_tool: '\n' +
       '❌ No active AI tool environment detected\n' +
-      '   Supported tools: Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder\n' +
+      '   Supported tools: Codex, OpenCode, Claude Code, Cursor, Qoder\n' +
       '\n' +
       '   Current detection results:',
     no_active_tool: "\n❌ Aucun environnement d'outil IA actif détecté",
-    supported_tools: '   Outils supportés : Wukong, Codex, OpenCode, Claude Code, Aone Copilot, Cursor, Qoder',
+    supported_tools: '   Outils supportés : Codex, OpenCode, Claude Code, Cursor, Qoder',
     current_result: '\n   Résultats de détection actuels :',
     force_hint: '\n   Pour forcer la copie dans le répertoire actuel :\n   openyida copy --force',
     force_cmd: '   openyida copy --force',
@@ -1064,9 +1071,6 @@ module.exports = {
     symlinks_created: '   Liens symboliques créés : {0}',
     result_symlink: '   {0} → {1} (lien symbolique)',
     result_copy: '   {0} → {1} ({2} fichiers)',
-    wukong_skills_cleanup: '\n🗑️  Env Wukong : Nettoyage du lien symbolique yida-skills/...',
-    wukong_skills_cleaned: 'nettoyé',
-    wukong_skills_not_found: '    ℹ️  Lien symbolique ou répertoire yida-skills/ introuvable : {0}',
     remove_failed: '    ❌ Échec de la suppression : {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Création du lien symbolique Windows échouée (droits admin requis), copie de répertoire utilisée : {0}',
     symlink_failed: '    ❌ Échec de la création du lien symbolique : {0} ({1})'
@@ -1292,7 +1296,7 @@ module.exports = {
     install_success: "  ✅ Installation terminée ! {0} L'outil de développement IA Yida est prêt.",
     update_success: '  ✅ Mise à jour terminée ! {0} OpenYida a été mis à jour vers la dernière version.',
     ai_mode_title: '  🚀 Mode conversation IA',
-    ai_mode_desc: '  Dans Codex / Claude Code / Aone Copilot / Cursor, discutez directement :',
+    ai_mode_desc: '  Dans Codex / Claude Code / Cursor, discutez directement :',
     prompt1: '  📋  « Crée-moi un système de gestion des présences avec Yida »',
     prompt2: '  💰  « Construis une application de calcul de salaire »',
     prompt3: '  🏢  « Crée un système CRM de gestion client »',
@@ -1687,7 +1691,7 @@ module.exports = {
   },
   codex_login: {
     title: '  openyida login {0} - {1} Login Mode',
-    not_codex: 'Current environment is not detected as Codex / Qoder / Wukong; returning an in-app browser login handoff only.',
+    not_codex: 'Current environment is not detected as Codex / Qoder; returning an in-app browser login handoff only.',
     no_playwright: '{0} mode does not require Playwright or a separate Chromium install.',
     using_browser: '{0} in-app Browser is only suitable for unauthenticated page previews; use openyida login for CLI auth.',
     browser_handoff_hint: '{0} in-app Browser is not used for CLI auth. Use openyida login.',
