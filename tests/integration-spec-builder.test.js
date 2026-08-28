@@ -3,6 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { getLanguage, setLanguage } = require('../lib/core/i18n');
 
 jest.mock('../lib/integration/integration-node-ids', () => {
   let counter = 0;
@@ -636,39 +637,45 @@ describe('integration spec builder', () => {
   });
 
   test('builds a configured initiateApproval node using the authenticated current user without persisting an id in spec', () => {
-    const built = buildSpecProcessAndViewJson({
-      spec: {
-        events: ['insert'],
-        nodes: [{
-          id: 'approval',
-          type: 'initiateApproval',
-          formUuid: 'FORM-PROCESS',
-          initiator: { type: 'current_user' },
-          assignments: [{ column: 'textField_title', valueType: 'literal', value: '重大变更审批' }],
-        }],
-      },
-      processCode: 'LPROC-SPEC',
-      appType: 'APP-SPEC',
-      formUuid: 'FORM-A',
-      flowName: 'Spec Flow',
-      currentUserId: 'user-current',
-      formNamesByUuid: new Map([['FORM-PROCESS', '重大变更审批流程']]),
-      formSchemasByUuid: new Map([['FORM-PROCESS', [
-        { componentName: 'TextField', props: { fieldId: 'textField_title', label: '审批标题' } },
-      ]]]),
-    });
-    const processNode = built.processJson.nodes.find((node) => node.type === 'initiateApproval');
-    const viewNode = built.viewJson.schema.children.find((node) => node.componentName === 'InitiateApprovalNode');
+    const originalLanguage = getLanguage();
+    setLanguage('zh');
+    try {
+      const built = buildSpecProcessAndViewJson({
+        spec: {
+          events: ['insert'],
+          nodes: [{
+            id: 'approval',
+            type: 'initiateApproval',
+            formUuid: 'FORM-PROCESS',
+            initiator: { type: 'current_user' },
+            assignments: [{ column: 'textField_title', valueType: 'literal', value: '重大变更审批' }],
+          }],
+        },
+        processCode: 'LPROC-SPEC',
+        appType: 'APP-SPEC',
+        formUuid: 'FORM-A',
+        flowName: 'Spec Flow',
+        currentUserId: 'user-current',
+        formNamesByUuid: new Map([['FORM-PROCESS', '重大变更审批流程']]),
+        formSchemasByUuid: new Map([['FORM-PROCESS', [
+          { componentName: 'TextField', props: { fieldId: 'textField_title', label: '审批标题' } },
+        ]]]),
+      });
+      const processNode = built.processJson.nodes.find((node) => node.type === 'initiateApproval');
+      const viewNode = built.viewJson.schema.children.find((node) => node.componentName === 'InitiateApprovalNode');
 
-    expect(processNode.description).toBe('在[重大变更审批流程]中发起审批并写入1个字段');
-    expect(processNode.props.initiator).toEqual({
-      type: 'select_user',
-      value: JSON.stringify({ id: 'user-current', label: '', type: 'employee' }),
-    });
-    expect(viewNode.props.description).toBe(processNode.description);
-    expect(viewNode.props.initiateApprovalRules.assignments).toEqual([
-      { column: 'textField_title', valueType: 'literal', value: '重大变更审批', required: false },
-    ]);
+      expect(processNode.description).toBe('在[重大变更审批流程]中发起审批并写入1个字段');
+      expect(processNode.props.initiator).toEqual({
+        type: 'select_user',
+        value: JSON.stringify({ id: 'user-current', label: '', type: 'employee' }),
+      });
+      expect(viewNode.props.description).toBe(processNode.description);
+      expect(viewNode.props.initiateApprovalRules.assignments).toEqual([
+        { column: 'textField_title', valueType: 'literal', value: '重大变更审批', required: false },
+      ]);
+    } finally {
+      setLanguage(originalLanguage);
+    }
   });
 
   test('documents recursive form-event triggering as default false', () => {
