@@ -732,4 +732,63 @@ describe('integration create command', () => {
     expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
   });
+
+  test('rejects structural flags mixed with --spec before auth or remote writes', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [{ type: 'sendMessage', receivers: ['user-1'], content: 'done' }],
+    });
+
+    await expect(run([
+      'APP_TEST', 'FORM-A', 'mixed spec', '--spec', specPath,
+      '--initiate-approval-form-uuid', 'FORM-PROCESS',
+      '--initiate-approval-initiator-user', 'user-1',
+    ])).rejects.toMatchObject({ code: 'INTEGRATION_SPEC_MIXED_STRUCTURAL_FLAGS' });
+
+    expect(require('../lib/core/utils').loadAuthData).not.toHaveBeenCalled();
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
+  test('hydrates and patches nested spec initiateApproval nodes before the first save', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'route',
+        branches: [{
+          id: 'default',
+          default: true,
+          nodes: [{
+            id: 'approval',
+            type: 'initiateApproval',
+            formUuid: 'FORM-PROCESS',
+            initiator: { type: 'current_user' },
+            assignments: [{ column: 'textField_title', valueType: 'literal', value: '重大变更审批' }],
+          }],
+        }],
+      }],
+    });
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: '重大变更审批流程', formType: 'process' },
+    ]);
+    integrationApi.getFormSchema.mockResolvedValue([
+      { componentName: 'TextField', props: { fieldId: 'textField_title', label: '审批标题' } },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run(['APP_TEST', 'FORM-A', 'nested approval spec', '--spec', specPath]);
+
+    const saved = integrationApi.saveProcess.mock.calls[0][1];
+    const routeProcess = saved.processJson.nodes.find((node) => node.type === 'route');
+    const approvalProcess = routeProcess.childNodes[0].childNodes[0];
+    const routeView = saved.viewJson.schema.children.find((node) => node.componentName === 'ConditionContainer');
+    const approvalView = routeView.children[0].children[0];
+    expect(approvalProcess.props.processCode).toBe('LPROC-TEST');
+    expect(approvalProcess.props.formUuid).toBe('FORM-PROCESS');
+    expect(approvalView.props.initiateApprovalRules.processCode).toBe('LPROC-TEST');
+    expect(integrationApi.getFormSchema).toHaveBeenCalledWith(expect.any(Object), {
+      appType: 'APP_TEST', formUuid: 'FORM-PROCESS',
+    });
+  });
 });

@@ -561,6 +561,51 @@ describe('integration spec builder', () => {
     });
   });
 
+  test.each([
+    [{ type: 'dataRetrieve', formUuid: 'FORM-B', conditions: [] }, /conditions must be non-empty/],
+    [{ type: 'dataCreate', formUuid: 'FORM-B', assignments: [] }, /assignments must be non-empty/],
+    [{ type: 'dataUpdate', source: 'self', assignments: [] }, /assignments must be non-empty/],
+  ])('rejects semantically empty data nodes before building platform JSON', (node, errorPattern) => {
+    expect(() => validateIntegrationSpec({ events: ['insert'], nodes: [node] }))
+      .toThrow(errorPattern);
+  });
+
+  test('builds a configured initiateApproval node using the authenticated current user without persisting an id in spec', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [{
+          id: 'approval',
+          type: 'initiateApproval',
+          formUuid: 'FORM-PROCESS',
+          initiator: { type: 'current_user' },
+          assignments: [{ column: 'textField_title', valueType: 'literal', value: '重大变更审批' }],
+        }],
+      },
+      processCode: 'LPROC-SPEC',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Spec Flow',
+      currentUserId: 'user-current',
+      formNamesByUuid: new Map([['FORM-PROCESS', '重大变更审批流程']]),
+      formSchemasByUuid: new Map([['FORM-PROCESS', [
+        { componentName: 'TextField', props: { fieldId: 'textField_title', label: '审批标题' } },
+      ]]]),
+    });
+    const processNode = built.processJson.nodes.find((node) => node.type === 'initiateApproval');
+    const viewNode = built.viewJson.schema.children.find((node) => node.componentName === 'InitiateApprovalNode');
+
+    expect(processNode.description).toBe('在[重大变更审批流程]中发起审批并写入1个字段');
+    expect(processNode.props.initiator).toEqual({
+      type: 'select_user',
+      value: JSON.stringify({ id: 'user-current', label: '', type: 'employee' }),
+    });
+    expect(viewNode.props.description).toBe(processNode.description);
+    expect(viewNode.props.initiateApprovalRules.assignments).toEqual([
+      { column: 'textField_title', valueType: 'literal', value: '重大变更审批', required: false },
+    ]);
+  });
+
   test('documents recursive form-event triggering as default false', () => {
     const doc = fs.readFileSync(path.join(
       __dirname,

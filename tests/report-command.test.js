@@ -15,12 +15,16 @@ jest.mock('../lib/core/utils', () => ({
 jest.mock('../lib/core/chalk', () => ({
   warn: jest.fn(),
 }));
+jest.mock('../lib/integration/integration-api', () => ({
+  getFormSchema: jest.fn(),
+}));
 
 const utils = require('../lib/core/utils');
 const { createBlankReport, saveReportSchema } = require('../lib/report/http');
 const createReport = require('../lib/report/index');
 const appendReport = require('../lib/report/append');
 const { STALE_SCHEMA_MESSAGE } = require('../lib/core/server-revision');
+const { getFormSchema } = require('../lib/integration/integration-api');
 
 const authRef = {
   baseUrl: 'https://demo.aliwork.com',
@@ -76,6 +80,12 @@ describe('report command helpers', () => {
       user_id: 'user-1',
     });
     utils.requestWithAutoLogin.mockImplementation((requestFn, ref) => requestFn(ref));
+    getFormSchema.mockResolvedValue([
+      { componentName: 'TextField', props: { fieldId: 'textField_name', label: '名称' } },
+      { componentName: 'NumberField', props: { fieldId: 'numberField_amount', label: '金额' } },
+      { componentName: 'DateField', props: { fieldId: 'dateField_hireDate', label: '入职日期' } },
+      { componentName: 'SelectField', props: { fieldId: 'selectField_status', label: '状态' } },
+    ]);
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
@@ -218,6 +228,32 @@ describe('report command helpers', () => {
 
     expect(utils.httpPost).not.toHaveBeenCalled();
     expect(utils.httpGet).not.toHaveBeenCalled();
+  });
+
+  test('create-report rejects source fields that do not exist before creating a blank report', async () => {
+    const invalidConfig = [{
+      type: 'bar',
+      title: '错误计数',
+      cubeCode: 'FORM_SALES',
+      xField: 'textField_name',
+      yField: 'count',
+    }];
+
+    await expect(createReport.run([
+      'APP_XXX',
+      '错误字段报表',
+      JSON.stringify(invalidConfig),
+    ])).rejects.toMatchObject({
+      code: 'CREATE_REPORT_SOURCE_FIELD_NOT_FOUND',
+      details: {
+        formUuid: 'FORM-SALES',
+        missingFields: ['count'],
+        remoteWrites: 0,
+      },
+    });
+
+    expect(getFormSchema).toHaveBeenCalledTimes(1);
+    expect(utils.httpPost).not.toHaveBeenCalled();
   });
 
   test.each([
