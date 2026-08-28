@@ -125,7 +125,9 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 ### 概述
 
-宜搭提供了原生报表组件库 `vc-yida-report`，包含 **16 种**开箱即用的报表组件，涵盖图表、表格、筛选器、指标卡等。Agent 应通过 `openyida create-report` 传入结构化图表配置，由 CLI 内部构建并发布 Schema，不要尝试读取或手写 `build-yida-report-schema.js`。
+宜搭原生组件库本身包含更多组件，但 OpenYida CLI 只开放已经接入并纳入确定性契约的类型。未知类型、未探测类型和缺失 `type` 均会在远端写入前失败，绝不静默回退成柱状图。Agent 应通过 `openyida create-report` 传入结构化图表配置，由 CLI 内部构建并发布 Schema，不要尝试读取或手写 `build-yida-report-schema.js`。
+
+<!-- runtime-supported-chart-types: bar, combo, funnel, gauge, indicator, line, pie, pivot, table -->
 
 - **组件库地址**：`//g.alicdn.com/code/npm/@ali/vc-yida-report/1.0.101/pc.js`
 - **全局挂载**：`window.YidaReport`
@@ -142,19 +144,14 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 | `YoushuGroupedBarChart` | 分组条形图 | `buildSchema.groupedBarChart()` | 图表 |
 | `YoushuFunnelChart` | 漏斗图 | `buildSchema.funnelChart()` | 图表 |
 | `YoushuGauge` | 仪表盘 | `buildSchema.gauge()` | 图表 |
-| `YoushuRadarChart` | 雷达图 | `buildSchema.radarChart()` | 图表 |
-| `YoushuHeatmap` | 热力图 | `buildSchema.heatmap()` | 图表 |
-| `YoushuCalendarHeatmap` | 日历热力图 | `buildSchema.calendarHeatmap()` | 图表 |
 | `YoushuComboChart` | 组合图 | `buildSchema.comboChart()` | 图表 |
-| `YoushuWordCloud` | 词云图 | `buildSchema.wordCloud()` | 图表 |
-| `YoushuMap` | 地图 | `buildSchema.map()` | 图表 |
 | `YoushuCrossPivotTable` | 交叉透视表 | `buildSchema.crossPivotTable()` | 表格 |
 | `YoushuTable` | 基础表格 | `buildSchema.table()` | 表格 |
 | `YoushuPageHeader` | 页面标题栏 | `buildSchema.pageHeader()` | 布局 |
 | `YoushuTopFilterContainer` | 顶部筛选容器 | `buildSchema.topFilterContainer()` | 筛选 |
 | `YoushuSelectFilter` | 下拉筛选器 | `buildSchema.selectFilter()` | 筛选 |
-| `YoushuTimeFilter` | 时间筛选器 | `buildSchema.timeFilter()` | 筛选 |
-| `YoushuInputFilter` | 区间筛选器 | `buildSchema.inputFilter()` | 筛选 |
+
+上表中的图表/表格类型与 runtime capability registry 一致；页面标题和 select 筛选器是 CLI 已接入的辅助组件。雷达、热力、日历热力、词云、地图、数字卡等高级 widget 即使存在于设计器组件库，也不得在未完成 platform/runtime probe 前传给 CLI。
 
 ### Schema 构建细节参考
 
@@ -222,11 +219,17 @@ cubeCode:  FORM_AB4ACB9DD12C470D82047E05CDC19166CJSU  ← 连字符替换为下�
 |---------|---------|------|
 | `indicator` | `kpi`（数组） | 每个 kpi 字段需要 `fieldCode`、`aliasName`、`aggregateType` |
 | `pie` | `xField`（单个）+ `yField`（数组） | xField 为分类维度，yField 为数值度量 |
-| `bar`/`line`/`area` | `xField`（单个）+ `yField`（数组） | 可选 `groupField` 分组 |
+| `bar`/`line`/`funnel` | `xField`（单个）+ `yField`（数组） | `bar`/`line` 可选 `groupField` 分组 |
 | `table` | `columnFields`（数组） | 每列一个字段对象 |
-| `combo` | `xField` + `leftYFields` + `rightYFields` | 柱线混合图 |
+| `combo` | `xField` + `leftYFields`/`rightYFields` 至少一组 | 柱线混合图，横轴和至少一个纵轴角色均为硬校验 |
 | `gauge` | `valueField`（单个） | 可选 `assitValueField` |
 | `pivot` | `columnList`（数组） | 交叉透视表 |
+
+### 只读检查与绑定提取
+
+创建或追加后使用 `openyida report inspect <appType> <REPORT_xxx> --json` 回读 `schemaVersion=V5`、`domainCode=tEXDRG` 的真实 Schema。输出包含 revision、组件 `cid`、`dataSetKeys`、`filterKeys`、`cubeCodes`、RGL `layout`、`prdId` 和 `pageId`；字段缺失时保持 `null`/空数组，不得猜测。运行字段（包括 `css`、`lifeCycles`、`utils`）属于严格 readback 内容，不作为“设计器字段”全局忽略。
+
+真实报表 E2E 必须使用独立 `OY_REPORT_` runId 与 marker，先只读证明 corp/app/预置数据和 owned 写入范围，并在首次写入前同步落盘脱敏 registry、acceptance manifest、完整既有 report ID/可用 identity 摘要与 baseline hash。create 响应只能登记为未拥有的 candidate；平台回读必须证明 reportId、title、marker、corp/app 精确匹配、ID 不在 baseline 且候选唯一，之后才允许登记 owned resource 和 cleanup。runtime marker 必须声明窄 `markerPath` 与精确 `markerValue`，只接受指定路径严格相等；platform、runtime、UI 三层机器断言通过后仍必须执行 exact-identity owned cleanup。无法证明安全删除时结果只能是 `cleanup_blocked` 并报告 residual，截图仅作辅助证据。
 
 ### fieldCode 后缀规则
 
