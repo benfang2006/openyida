@@ -4,7 +4,7 @@
 
 **面向 AI 编程工具的宜搭低代码 CLI。**
 
-OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder、悟空等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
+OpenYida 把 Codex、Claude Code、Cursor、QwenWork（千问办公）、Qoder 等 AI 编程助手连接到宜搭低代码平台，让开发者可以通过自然语言和命令行完成应用创建、表单建模、流程审批、自定义页面、报表、连接器和发布配置。
 
 [快速开始](#快速开始) · [帮助网站&文档](https://demo.aliwork.com/o/openyida/helpCenter) · [核心能力](#核心能力) · [完整功能列表](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=capabilities) · [案例展示](https://demo.aliwork.com/o/openyida/helpCenter?openyidaRoute=showcase) · [自定义页面开发](#自定义页面开发) · [常用命令](https://demo.aliwork.com/o/openyida/helpCenter?openyidaPath=features/skills) · [开发与校验](#开发与校验)
 
@@ -47,6 +47,10 @@ npm install -g openyida
 ```
 
 OpenYida 要求 Node.js 18 或更高版本。安装后会提供 `openyida` 和 `yida` 两个命令。
+
+如果 OpenYida 是通过 npm 全局安装的，普通命令执行前至多每 24 小时检查一次 npm registry；发现新版本后安装查询到的精确版本，再用新版本重跑原命令。本地终端、Codex、Claude Code、Qoder 启动的命令采用同一策略。托管云端 Agent 会在读取缓存、访问 registry 或调用 npm 之前直接跳过，不受这一机制影响。
+
+设置 `OPENYIDA_NO_AUTO_UPDATE=1` 可关闭自动更新；开发和测试时可用 `OPENYIDA_AUTO_UPDATE_SECS` 调整检查间隔。显式的 `openyida update` 命令仍然保留。
 
 如果本机已安装 Codex，OpenYida 会在安装后尝试导入本地 Codex 插件。重启 Codex 后，在输入框中输入 `@宜搭` 或 `@openyida` 即可挂载 OpenYida 上下文。
 
@@ -113,20 +117,6 @@ openyida login --intl
 ```
 
 Agent 会读取 `yida-skills/` 中的技能说明，调用 OpenYida CLI 创建应用、表单、页面、流程和报表，并返回最终访问链接。
-
-## 悟空安装
-
-悟空使用手动上传技能包：
-
-1. 从 GitHub Releases 下载最新 `.zip` 技能包。
-2. 打开悟空。
-3. 进入 **技能中心** > **上传技能**，选择下载的 zip。
-
-悟空终端执行 Node/npm 命令前，先设置内置 Node 路径：
-
-```bash
-export PATH="$HOME/.real/.bin/node/bin:$PATH"
-```
 
 ## 语言包
 
@@ -393,7 +383,6 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida copy [--force]` | 复制 project 工作目录 |
 | `openyida sample [--list]` | 输出代码示例/骨架 |
 | `openyida doctor [--fix]` | 环境诊断与自动修复 |
-| `openyida eval --mode <mode> [--skill <name>] [--runs N]` | 技能多维评测（文档质量、路由准确率、安全合规等） |
 | `openyida db-seq-fix [--fix]` | PostgreSQL Sequence 漂移检测与修复 |
 | `openyida formula evaluate <formula\|file> [--schema file]` | 静态检查宜搭公式语法和字段引用 |
 | `openyida update` | 检查并更新到最新版本 |
@@ -419,27 +408,15 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `yida-skills/skills/<skill-name>/SKILL.md` | 每个子技能的独立说明 |
 | `yida-skills/references/` | 跨技能共享参考文档 |
 
-构建悟空可上传技能包：
+QwenWork（千问办公）使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
 
-```bash
-npm run build:skills
-```
-
-输出：
-
-```text
-dist/skills/openyida/
-openyida-skills.zip
-```
-
-QwenWork（千问办公）与 QoderWork 一样使用用户级全局 skill 目录：`~/.qwenworkcn/skills/yida-skills/`；未检测到 `~/.qwenworkcn` 时跳过。
+新 Qoder 与 Qoder IDE 共享用户级 `~/.qoder/skills/yida-skills/` 目录；QoderWork 是独立产品，继续使用 `~/.qoderwork/skills/yida-skills/`。
 
 ## 开发与校验
 
 ```bash
 npm test
 npm run check:skills
-npm run build:skills
 npm run check:ci
 ```
 
@@ -465,7 +442,6 @@ npm run eval:dashboard
 
 ```bash
 npm run check:skills
-npm run build:skills
 ```
 
 更多说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
