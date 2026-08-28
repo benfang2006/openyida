@@ -496,7 +496,7 @@ module.exports = {
     oauth_success_title: 'Đăng nhập thành công',
     oauth_success_message: 'Đăng nhập đã hoàn tất. Hãy quay lại cửa sổ trước để tiếp tục.',
     oauth_closing: 'Đang tự động đóng cửa sổ này…',
-    oauth_manual_close: 'Cửa sổ vẫn đang mở? Hãy đóng thủ công rồi quay lại terminal.',
+    oauth_manual_close: 'Không thể tự động đóng cửa sổ này. Hãy đóng thủ công rồi quay lại cửa sổ trước để tiếp tục.',
     oauth_failure_title: 'Chưa hoàn tất đăng nhập',
     oauth_invalid_state: 'Không thể xác minh yêu cầu đăng nhập. Hãy quay lại terminal và thử lại.',
     oauth_missing_code: 'Không nhận được thông tin ủy quyền. Hãy quay lại terminal và thử lại.',

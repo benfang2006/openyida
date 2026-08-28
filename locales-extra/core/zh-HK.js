@@ -467,7 +467,7 @@ module.exports = {
     oauth_success_title: '登入成功',
     oauth_success_message: '登入已完成，請返回剛才的視窗繼續操作。',
     oauth_closing: '正在自動關閉此視窗…',
-    oauth_manual_close: '視窗沒有自動關閉？請手動關閉此視窗，然後返回終端機。',
+    oauth_manual_close: '此視窗未能自動關閉，請手動關閉後返回剛才的視窗繼續操作。',
     oauth_failure_title: '登入未完成',
     oauth_invalid_state: '登入驗證資訊無效，請返回終端機重新發起登入。',
     oauth_missing_code: '未收到登入授權資訊，請返回終端機重新發起登入。',

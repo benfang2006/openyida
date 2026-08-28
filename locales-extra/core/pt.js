@@ -496,7 +496,7 @@ module.exports = {
     oauth_success_title: 'Login efetuado',
     oauth_success_message: 'O login foi concluído. Volte à janela anterior para continuar.',
     oauth_closing: 'Fechando esta janela automaticamente…',
-    oauth_manual_close: 'A janela ainda está aberta? Feche-a manualmente e volte ao terminal.',
+    oauth_manual_close: 'Não foi possível fechar esta janela automaticamente. Feche-a manualmente e volte à janela anterior para continuar.',
     oauth_failure_title: 'Login não concluído',
     oauth_invalid_state: 'Não foi possível verificar a solicitação de login. Volte ao terminal e tente novamente.',
     oauth_missing_code: 'Nenhuma informação de autorização foi recebida. Volte ao terminal e tente novamente.',

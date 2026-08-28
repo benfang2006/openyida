@@ -73,7 +73,7 @@ describe('OAuth callback page experience', () => {
       expect(response.body).toContain('登录已完成，请返回刚才的窗口继续操作。');
       expect(response.body).toContain('正在自动关闭此窗口…');
       expect(response.body).toContain('id="manual-close"');
-      expect(response.body).toContain('窗口没有自动关闭？请手动关闭此窗口，然后返回终端。');
+      expect(response.body).toContain('此窗口未能自动关闭，请手动关闭后返回刚才的窗口继续操作。');
 
       const scriptMatch = response.body.match(/<script>([\s\S]*?)<\/script>/);
       expect(scriptMatch).not.toBeNull();
