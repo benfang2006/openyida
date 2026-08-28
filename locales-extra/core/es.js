@@ -542,7 +542,7 @@ module.exports = {
     oauth_success_title: 'Inicio de sesión correcto',
     oauth_success_message: 'El inicio de sesión ha finalizado. Vuelve a la ventana anterior para continuar.',
     oauth_closing: 'Cerrando esta ventana automáticamente…',
-    oauth_manual_close: '¿La ventana sigue abierta? Ciérrala manualmente y vuelve al terminal.',
+    oauth_manual_close: 'Esta ventana no se pudo cerrar automáticamente. Ciérrala manualmente y vuelve a la ventana anterior para continuar.',
     oauth_failure_title: 'Inicio de sesión no completado',
     oauth_invalid_state: 'No se pudo verificar la solicitud de inicio de sesión. Vuelve al terminal e inténtalo de nuevo.',
     oauth_missing_code: 'No se recibió información de autorización. Vuelve al terminal e inténtalo de nuevo.',

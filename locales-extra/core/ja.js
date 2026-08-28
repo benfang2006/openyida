@@ -521,7 +521,7 @@ module.exports = {
     oauth_success_title: 'ログインしました',
     oauth_success_message: 'ログインが完了しました。元のウィンドウに戻って操作を続けてください。',
     oauth_closing: 'このウィンドウを自動的に閉じています…',
-    oauth_manual_close: 'ウィンドウが閉じない場合は、手動で閉じてターミナルに戻ってください。',
+    oauth_manual_close: 'このウィンドウを自動で閉じることができませんでした。手動で閉じて、元のウィンドウに戻って操作を続けてください。',
     oauth_failure_title: 'ログインが完了していません',
     oauth_invalid_state: 'ログイン要求を確認できませんでした。ターミナルに戻ってもう一度お試しください。',
     oauth_missing_code: '認証情報を受信できませんでした。ターミナルに戻ってもう一度お試しください。',

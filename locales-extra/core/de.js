@@ -542,7 +542,7 @@ module.exports = {
     oauth_success_title: 'Anmeldung erfolgreich',
     oauth_success_message: 'Die Anmeldung ist abgeschlossen. Kehren Sie zum vorherigen Fenster zurück, um fortzufahren.',
     oauth_closing: 'Dieses Fenster wird automatisch geschlossen…',
-    oauth_manual_close: 'Das Fenster ist noch geöffnet? Schließen Sie es manuell und kehren Sie dann zum Terminal zurück.',
+    oauth_manual_close: 'Dieses Fenster konnte nicht automatisch geschlossen werden. Schließen Sie es manuell und kehren Sie zum vorherigen Fenster zurück, um fortzufahren.',
     oauth_failure_title: 'Anmeldung nicht abgeschlossen',
     oauth_invalid_state: 'Die Anmeldeanfrage konnte nicht überprüft werden. Kehren Sie zum Terminal zurück und versuchen Sie es erneut.',
     oauth_missing_code: 'Es wurden keine Autorisierungsinformationen empfangen. Kehren Sie zum Terminal zurück und versuchen Sie es erneut.',

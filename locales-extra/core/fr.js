@@ -542,7 +542,7 @@ module.exports = {
     oauth_success_title: 'Connexion réussie',
     oauth_success_message: 'La connexion est terminée. Revenez à la fenêtre précédente pour continuer.',
     oauth_closing: 'Fermeture automatique de cette fenêtre…',
-    oauth_manual_close: 'La fenêtre est toujours ouverte ? Fermez-la manuellement, puis retournez au terminal.',
+    oauth_manual_close: 'Cette fenêtre n’a pas pu se fermer automatiquement. Fermez-la manuellement, puis revenez à la fenêtre précédente pour continuer.',
     oauth_failure_title: 'Connexion non terminée',
     oauth_invalid_state: 'La demande de connexion n’a pas pu être vérifiée. Retournez au terminal et réessayez.',
     oauth_missing_code: 'Aucune information d’autorisation n’a été reçue. Retournez au terminal et réessayez.',
