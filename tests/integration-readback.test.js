@@ -9,7 +9,7 @@ jest.mock('../lib/integration/integration-api', () => ({
 
 const { listAllLogicflows } = require('../lib/integration/integration-check');
 const { getLogicflowDetail } = require('../lib/integration/integration-api');
-const { verifyLogicflowFinalState } = require('../lib/integration/integration-readback');
+const { projectAddDataAssignments, verifyLogicflowFinalState } = require('../lib/integration/integration-readback');
 const { setLanguage } = require('../lib/core/i18n');
 
 describe('integration control-plane readback', () => {
@@ -88,5 +88,67 @@ describe('integration control-plane readback', () => {
       message: `ロジックフロー詳細の識別情報が対象と一致しません：${field}`,
       details: expect.objectContaining({ field }),
     });
+  });
+
+  test('requires exact AddData assignment readback when the caller supplies an expected projection', async () => {
+    const expected = [{
+      nodeId: 'add-1',
+      assignments: [{ column: 'textField_name', valueType: 'literal', value: 'Ada' }],
+    }];
+    getLogicflowDetail.mockResolvedValue({
+      success: true,
+      content: {
+        schema: {
+          componentName: 'CanvasEngine',
+          children: [{
+            componentName: 'AddDataNode',
+            id: 'add-1',
+            props: { addDataRules: { assignments: [] } },
+          }],
+        },
+      },
+    });
+
+    await expect(verifyLogicflowFinalState({}, {
+      appType: 'APP-A',
+      formUuid: 'FORM-A',
+      processCode: 'LPROC-TARGET',
+      expectedStatus: 'y',
+      expectedAddDataAssignments: expected,
+    })).rejects.toMatchObject({ code: 'INTEGRATION_READBACK_ASSIGNMENTS_MISMATCH' });
+
+    getLogicflowDetail.mockResolvedValue({
+      success: true,
+      content: {
+        schema: {
+          componentName: 'CanvasEngine',
+          children: [{
+            componentName: 'AddDataNode',
+            id: 'add-1',
+            props: { addDataRules: { assignments: expected[0].assignments } },
+          }],
+        },
+      },
+    });
+    await expect(verifyLogicflowFinalState({}, {
+      appType: 'APP-A',
+      formUuid: 'FORM-A',
+      processCode: 'LPROC-TARGET',
+      expectedStatus: 'y',
+      expectedAddDataAssignments: expected,
+    })).resolves.toMatchObject({ addDataAssignmentProjection: 'EXACT' });
+  });
+
+  test('projects nested route AddData nodes by stable node id', () => {
+    expect(projectAddDataAssignments({ schema: { children: [{
+      componentName: 'ConditionContainer',
+      children: [{
+        componentName: 'AddDataNode',
+        id: 'add-2',
+        props: { addDataRules: { assignments: [{ name: 'textField_code', valueType: 'literal', value: '0012' }] } },
+      }],
+    }] } })).toEqual([{ nodeId: 'add-2', assignments: [{
+      column: 'textField_code', valueType: 'literal', value: '0012',
+    }] }]);
   });
 });

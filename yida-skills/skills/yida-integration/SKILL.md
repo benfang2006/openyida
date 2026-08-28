@@ -113,7 +113,7 @@ openyida integration check <appType...> [--json] [--output result.xlsx] [--no-pr
 | `--approval-node-ids <nodeId,...>` | 空 | 当 `--events activityTask` 时必填；审批节点 ID，多个用逗号分隔 |
 | `--trigger-condition <fieldId:fieldName:opCode:value[:componentType[:valueType]]>` | 空 | 触发器过滤条件，可多次传入；示例：`radioField_xxx:采购类型:Equal:材料采购:RadioField:literal` |
 | `--trigger-recursively` | 关闭 | 允许自动触发，对应设计器里的“允许自动触发” |
-| `--spec <file.json>` | 不启用 | 使用结构化编排文件创建复杂自动化，支持 `getSelf`、`dataRetrieve`、`dataCreate`、`dataUpdate`、`route`、`sendMessage`、`connector` |
+| `--spec <file.json>` | 不启用 | 使用结构化编排文件创建复杂自动化，支持 `getSelf`、`dataRetrieve`、`dataCreate`、`dataUpdate`、`route`、`sendMessage`、`connector`、`initiateApproval` |
 | `--get-self` | 关闭 | 自动插入“获取自身”节点：来源表单为当前触发表，过滤条件为 `pid 等于 字段 __masterdata_form_inst_id` |
 | `--get-self-field <field>` | `__masterdata_form_inst_id` | 覆盖右侧触发事件系统字段；仅在确认环境变量名不同后使用 |
 | `--get-self-query-field <field>` | `pid` | 覆盖左侧查询系统字段；仅在确认平台查询字段名不同后使用 |
@@ -273,6 +273,19 @@ openyida integration create APP_XXX FORM-XXX "获取自身后分支更新" \
 ```
 
 > `--spec` 文件先用 create_file / Write / file edit tool 创建。上方路径默认从 OpenYida project 工作目录执行；从 workspace 根执行命令时路径加 `project/` 前缀。
+
+`initiateApproval` 必须把目标流程表单、发起人和至少一个字段赋值完整写进 spec；不要再混传同名 CLI 结构参数。`select_user.value` 是员工身份 JSON 字符串，必须含非空 `id` 和固定 `type: "employee"`；使用当前登录用户时写 `current_user`，CLI 会在远端写入前解析为员工身份。
+
+```json
+{
+  "type": "initiateApproval",
+  "formUuid": "FORM-PROCESS-XXX",
+  "initiator": { "type": "current_user" },
+  "assignments": [
+    { "column": "textField_title", "valueType": "literal", "value": "自动发起审批" }
+  ]
+}
+```
 
 ## 字段变量引用格式
 

@@ -295,6 +295,35 @@ describe('report command helpers', () => {
     expect(utils.httpPost).not.toHaveBeenCalled();
   });
 
+  test('source preflight preserves the built-in pid COUNT measure without fetching schema', async () => {
+    const configured = createReport.collectConfiguredFieldCodes([{
+      type: 'indicator',
+      cubeCode: 'FORM_SALES',
+      kpi: { fieldCode: 'pid', aggregateType: 'COUNT' },
+    }], []);
+
+    expect(configured.has('FORM_SALES')).toBe(false);
+    await createReport.preflightReportSourceFields({}, 'APP_XXX', [{
+      type: 'indicator',
+      cubeCode: 'FORM_SALES',
+      kpi: { fieldCode: 'pid', aggregateType: 'COUNT' },
+    }], []);
+    expect(getFormSchema).not.toHaveBeenCalled();
+  });
+
+  test('create-report never prints an inline chart config containing organization metadata', async () => {
+    const sensitiveMarker = 'tenant-secret-marker';
+    const config = JSON.stringify({
+      charts: [],
+      filters: [{ cubeCode: 'FORM_SALES', cubeTenantId: sensitiveMarker }],
+    });
+
+    await expect(createReport.run(['APP_XXX', '安全日志报表', config])).rejects.toBeTruthy();
+
+    expect(warn.mock.calls.flat().join(' ')).not.toContain(sensitiveMarker);
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
   test.each([
     { ...chartConfig[0], type: 'radar' },
     { ...chartConfig[0], type: undefined },

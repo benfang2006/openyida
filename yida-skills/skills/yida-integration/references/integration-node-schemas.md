@@ -224,6 +224,24 @@ trigger
 
 ---
 
+### 发起审批节点（initiateApproval）
+
+结构化 `--spec` 使用以下最小合同；目标必须是流程表单，`assignments` 不能为空。`current_user` 会在首个远端写入前解析为当前认证用户。若显式使用 `select_user`，`value` 必须是包含非空 `id` 与 `type: "employee"` 的 JSON 字符串。
+
+```json
+{
+  "type": "initiateApproval",
+  "formUuid": "FORM-PROCESS-XXX",
+  "initiator": {
+    "type": "select_user",
+    "value": "{\"id\":\"user-id\",\"label\":\"发起人\",\"type\":\"employee\"}"
+  },
+  "assignments": [
+    { "column": "textField_title", "valueType": "literal", "value": "自动发起审批" }
+  ]
+}
+```
+
 ### 条件分支节点（route + condition）
 
 条件分支由一个 `route` 容器节点 + 多个 `condition` 子节点组成：

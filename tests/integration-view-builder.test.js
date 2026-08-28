@@ -237,11 +237,32 @@ describe('integration process/view builder consistency', () => {
     ]);
     const processCreate = processJson.nodes[1].props.assignments;
     const viewCreate = viewNodes[1].props.addDataRules.rules.rules;
+    const viewAssignments = viewNodes[1].props.addDataRules.assignments;
     expect(processCreate.map(({ column, valueType, value }) => ({ column, valueType, value }))).toEqual(
       viewCreate.map((rule) => ({ column: rule.name, valueType: rule.valueType, value: rule.value }))
     );
+    expect(viewAssignments.map((rule) => ({ column: rule.name, valueType: rule.valueType, value: rule.value }))).toEqual(
+      viewCreate.map((rule) => ({ column: rule.name, valueType: rule.valueType, value: rule.value }))
+    );
+    expect(viewNodes[1].props.addDataRules.description).toBe(viewNodes[1].props.description);
     expect(processCreate.map((assignment) => assignment.value)).toEqual(['0012', 12]);
     expect(processJson.nodes[2].nextId).toEqual([viewNodes[3].id]);
+  });
+
+  test('flat get-single-data keeps its empty assignment contract and does not depend on add-data scope', () => {
+    const viewJson = buildViewJson({
+      processCode: 'LPROC-GET',
+      formUuid: 'FORM-A',
+      appType: 'APP-A',
+      formEventTypes: ['insert'],
+      nodeIds: ['canvas', 'trigger', 'get', 'end'],
+      dataFormUuid: 'FORM-A',
+      dataConditions: [{ bFieldId: 'pid', bFieldName: '实例ID', aFieldId: '__masterdata_form_inst_id' }],
+      hasMessageNode: false,
+      toUsers: [],
+    });
+    const getNode = viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(getNode.props.getData.assignments).toEqual([]);
   });
 
   test('rejects add-data assignments that are absent from the verified target schema', () => {
