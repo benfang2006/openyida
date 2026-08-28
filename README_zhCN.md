@@ -240,6 +240,10 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 连接器鉴权信息通过宜搭连接器配置管理，不写入页面源码。`--operations`、`--action`、`--spec` 等 JSON 文件放到 `.cache/openyida/<项目名或任务名>/` 下。
 
+已有动作的 Query 默认值必须通过窄命令安全更新：`openyida connector update-action --connector-id <id> --action <operationId> --query-json '{"currentPage":"1"}' --confirm`。命令先完整回读连接器和全部动作，只修改 `inputs` / `parameters` 中唯一且已声明的同名 Query 默认值，再一次性提交完整动作集合；回读必须证明连接器 fingerprint、动作数量、非目标动作和稳定 ID 均未变化。参数缺失、空值、未知参数、重复 ID、平台详情不完整或写入结果未知都会 fail-closed，且不会自动重试。`add-action` 不再覆盖既有动作 ID。
+
+真实回归入口为 `OPENYIDA_E2E=1 OPENYIDA_E2E_CONNECTOR_ACTION_UPDATE=1 node scripts/e2e-real/connector/action-update-runner.js`。它只创建一个 owned、NONE-auth 测试连接器（含目标动作和 preservation sentinel），逐项验证 `currentPage`、`pageSize`、`userLanguage`、`searchFieldJson`、动态 `_stamp` 并恢复 baseline；证据仅记录响应结构、数量和 SHA-256，不保存真实响应行值、Cookie/token/profile/corpId。由于没有已证明的删除 API，连接器保留为 `cleanup_blocked` residual。
+
 `integration create --process-code` 是整图替换，必须显式传 `--replace`，不能当作安全更新。`integration update` 当前只做 capability 检测：由于平台完整 `processJson` + `viewJson` readback 契约尚未证明，它只写入脱敏的本地 probe artifact，并在认证、读取 spec 或远端写入之前返回 `PLATFORM_PROBE_REQUIRED`。当前不会编辑逻辑流，禁止猜测接口或降级成整图替换。
 
 ## CLI 命令参考
@@ -353,6 +357,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida connector detail <id>` | 查看连接器详情 |
 | `openyida connector delete <id> [--force]` | 显示平台手工删除指引（CLI 不执行删除） |
 | `openyida connector add-action --operations <file> --connector-id <id>` | 添加执行动作 |
+| `openyida connector update-action --connector-id <id> --action <operationId> --query-json JSON --confirm` | 安全更新动作 Query 默认值 |
 | `openyida connector list-actions <id>` | 列出执行动作 |
 | `openyida connector delete-action <id> <operation-id>` | 删除执行动作 |
 | `openyida connector test --connector-id <id> --action <actionId> [--path-json JSON] [--query-json JSON] [--header-json JSON] [--body-json JSON] [--account-id <id>]` | 测试执行动作 |

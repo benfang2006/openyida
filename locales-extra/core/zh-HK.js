@@ -76,6 +76,7 @@ module.exports = {
     cmd_connector_detail: '查看連接器詳情',
     cmd_connector_delete: '顯示平台手動刪除指引（CLI 不執行刪除）',
     cmd_connector_add_action: '新增執行動作',
+    cmd_connector_update_action: '安全更新動作 Query 預設值',
     cmd_connector_list_actions: '列出執行動作',
     cmd_connector_delete_action: '刪除執行動作',
     cmd_connector_test: '測試執行動作',
@@ -1819,6 +1820,42 @@ module.exports.connector_api = {
   connection_pagination_limit: '驗證帳號清單超過安全分頁上限。',
   connection_name_exists: '指定歸屬名稱的驗證帳號已存在。',
   connection_readback_mismatch: '無法透過精確歸屬回讀恢復新建的驗證帳號。',
+  save_failed: '儲存連接器失敗。',
+};
+
+module.exports.connector_action_update = {
+  preflight_incomplete: '平台連接器詳情或完整動作集合不完整；已停止且未寫入。',
+  operation_id_duplicate: '動作集合包含重複的穩定 ID：{0}。',
+  operation_id_conflict: '動作 ID 已存在：{0}；add-action 不允許覆寫，請使用 update-action。',
+  query_invalid: 'Query 更新必須是非空物件，且每個值必須為非空純量。',
+  target_not_unique: '目標 operationId 缺失、不存在或不唯一。',
+  query_schema_incomplete: '目標 Query 參數在 inputs/parameters 中不完整或不唯一。',
+  query_unknown: '目標動作未宣告 Query 參數：{0}。',
+  readback_mismatch: '動作更新回讀不一致；連接器設定、動作集合或穩定 ID 未能保持。',
+  connector_not_found: '找不到唯一的目標連接器。',
+  write_outcome_unknown: '動作更新請求後的遠端結果未知；不會自動重試，請人工核對殘留狀態。',
+};
+
+module.exports.connector_update_action = {
+  usage: '用法: openyida connector update-action --connector-id <id> --action <operationId> --query-json <JSON> --confirm [--json]',
+  invalid_arguments: '必須提供 connector-id、action、非空 query-json 和 --confirm，且不接受未知參數。',
+  query_json_invalid: '--query-json 必須是非空 JSON 物件。',
+  success: '✅ 動作 {0} 已安全更新並精確回讀；動作總數：{1}',
+};
+
+module.exports.connector_action_e2e = {
+  skip_missing: '略過連接器動作更新真實 E2E；缺少：{0}',
+  resource_plan: '連接器動作更新 E2E 資源計劃：{0}',
+  response_invalid: '受控 fixture 未傳回可證明的 2xx application/json 契約。',
+  count_mismatch: '受控 fixture 傳回的資料數量與預期不一致。',
+  cli_contract_invalid: '連接器 E2E 命令未傳回成功的 JSON 契約。',
+  action_invalid: '目標動作缺少完整且唯一的 Query/Header 契約。',
+  prewrite_missing: '首次遠端寫入前的 manifest、registry 或 artifact 證據不完整。',
+  state_incomplete: '連接器詳情、完整動作集合或 NONE-auth 帳號歸屬回讀不完整。',
+  update_unverified: '動作更新未傳回 connector fingerprint 不變的精確回讀證據。',
+  create_unverified: '測試連接器建立未傳回精確歸屬回讀證據。',
+  restore_mismatch: '最終動作集合未精確恢復到 baseline。',
+  failed: '連接器動作更新真實 E2E 失敗；已保留脫敏證據且不會自動重試。',
 };
 
 module.exports.connector_e2e = {

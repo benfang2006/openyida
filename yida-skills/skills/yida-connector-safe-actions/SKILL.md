@@ -26,6 +26,7 @@ description: 从前端 API 文件或后端 Controller 代码中提取接口定�
 - Windows PowerShell 读取中文 JSON 时必须显式使用 UTF-8。
 - 修改后必须执行“添加动作 -> 列表验证 -> CLI 测试 -> 再次列表验证”的闭环。
 - 如果一次错误配置导致动作被清空，应重建完整动作列表，而不是只追加缺失动作。
+- `add-action` 只追加新稳定 ID；既有动作的 Query 默认值使用显式 `update-action`，不得用整份新动作覆盖。
 - 动作 JSON 必须使用当前 agent 的结构化文件写入工具创建；不要用 shell heredoc、`cat`/`echo`/`printf`/`tee` 或重定向写文件。
 
 ## 推荐流程
@@ -119,6 +120,18 @@ openyida connector test --connector-id <connector-id> --action <operationId> \
 ```bash
 openyida connector list-actions <connector-id>
 ```
+
+### 安全编辑已有 Query 默认值
+
+```bash
+openyida connector update-action \
+  --connector-id <connector-id> \
+  --action <operationId> \
+  --query-json '{"currentPage":"1"}' \
+  --confirm
+```
+
+该命令是 query-only 的窄更新，不是通用 patch：写前必须获得完整连接器详情和完整动作集合，目标 `operationId` 必须唯一，Query 参数必须同时在 `inputs` 与 `parameters` 中唯一声明且值非空。平台保存是完整集合 replace-all；命令原位合并后只发送一次，并精确回读连接器非目标 fingerprint、动作数量、其他动作、method/path/header/inputs/outputs/responses 和稳定 ID。任何不完整或 unknown outcome 都停止，禁止自动重试非幂等写。
 
 ## 安全动作格式
 

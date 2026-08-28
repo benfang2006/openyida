@@ -102,6 +102,10 @@ openyida connector list-actions <connector-id>
 # 添加执行动作（智能匹配已有连接器）
 openyida connector add-action --operations <action-file> --host <域名>
 
+# 仅更新已有动作中已声明的 Query 默认值
+openyida connector update-action --connector-id <id> --action <operationId> \
+  --query-json '{"currentPage":"1"}' --confirm
+
 # 删除执行动作
 openyida connector delete-action <connector-id> <action-id>
 
@@ -114,6 +118,8 @@ openyida connector test --connector-id <id> --action <operationId> \
 ```
 
 > `--params` 仍兼容旧调用，但每个字段只会按动作 Schema 分发到 path/query/header/body；未知或位置冲突字段会停止执行。需要鉴权时必须传属于当前连接器的 `--account-id`。只有 canonical `statusLine` 为 2xx 才算测试成功；测试前后可用 `list-actions` 确认动作未被修改。
+
+`add-action` 只允许追加新稳定 ID，发现既有 `operationId` 或 `id` 冲突时停止，不覆盖。编辑已有动作时使用 `update-action`；它只接受非空 `--query-json`，要求 Query 在 `inputs` 与 `parameters` 中各自唯一且可回读，完整集合 replace-all 后必须证明连接器非目标 fingerprint、动作数量、其他动作和稳定 ID 不变。写入结果 unknown 时不自动重试。
 
 ### 鉴权账号管理
 

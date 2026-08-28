@@ -1043,6 +1043,7 @@ async function main() {
         'detail':            '../lib/connector/connector-detail',
         'delete':            '../lib/connector/connector-delete',
         'add-action':        '../lib/connector/connector-add-action',
+        'update-action':     '../lib/connector/connector-update-action',
         'list-actions':      '../lib/connector/connector-list-actions',
         'delete-action':     '../lib/connector/connector-delete-action',
         'test':              '../lib/connector/connector-test',
@@ -1063,6 +1064,7 @@ async function main() {
   detail <connector-id>                        查看连接器详情
   delete <connector-id> [--force]              删除连接器
   add-action --operations <file> --connector-id <id>  添加执行动作
+  update-action --connector-id <id> --action <id> --query-json <JSON> --confirm  安全更新动作 Query 默认值
   list-actions <connector-id>                  列出执行动作
   delete-action <connector-id> <operation-id>  删除执行动作
   test --connector-id <id> --action <actionId> [结构化 JSON 参数] 测试执行动作
