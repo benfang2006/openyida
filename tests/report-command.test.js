@@ -20,6 +20,7 @@ jest.mock('../lib/integration/integration-api', () => ({
 }));
 
 const utils = require('../lib/core/utils');
+const { warn } = require('../lib/core/chalk');
 const { createBlankReport, saveReportSchema } = require('../lib/report/http');
 const createReport = require('../lib/report/index');
 const appendReport = require('../lib/report/append');
@@ -179,6 +180,8 @@ describe('report command helpers', () => {
       domainCode: 'tEXDRG',
     });
     expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(result);
+    expect(warn.mock.calls.flat().join(' ')).toContain('敏感标识已隐藏');
+    expect(warn.mock.calls.flat().join(' ')).not.toContain('corp-1');
   });
 
   test('create-report fails closed when the single create write returns no report identity', async () => {
