@@ -174,6 +174,44 @@ describe('connector action query-only update contract', () => {
     expect(calls).toEqual(['save']);
   });
 
+  test('rejects an all-no-op patch before the non-idempotent write', async () => {
+    const sourceDetail = detail();
+    const saveConnector = jest.fn();
+    await expect(updateConnectorAction({
+      connectorId: '101', operationId: 'fixtureSearch', queryPatch: { currentPage: '2' },
+    }, {
+      getAuthRef: () => ({ baseUrl: 'https://www.aliwork.com', authMode: 'token' }),
+      findConnectorById: async () => ({ id: 101, connectorName: sourceDetail.connectorName }),
+      getConnectorDetail: async () => sourceDetail,
+      saveConnector,
+    })).rejects.toMatchObject({ code: 'CONNECTOR_ACTION_NO_CHANGES' });
+    expect(saveConnector).not.toHaveBeenCalled();
+  });
+
+  test('allows a mixed patch when at least one value changes and preserves all non-target state', async () => {
+    const sourceDetail = detail();
+    const saveConnector = jest.fn(async params => ({
+      detail: { ...sourceDetail, operations: params.operations },
+    }));
+    const result = await updateConnectorAction({
+      connectorId: '101',
+      operationId: 'fixtureSearch',
+      queryPatch: { currentPage: '2', pageSize: '2' },
+    }, {
+      getAuthRef: () => ({ baseUrl: 'https://www.aliwork.com', authMode: 'token' }),
+      findConnectorById: async () => ({ id: 101, connectorName: sourceDetail.connectorName }),
+      getConnectorDetail: async () => sourceDetail,
+      saveConnector,
+    });
+
+    expect(saveConnector).toHaveBeenCalledTimes(1);
+    const saved = JSON.parse(saveConnector.mock.calls[0][0].operations);
+    expect(saved[0].parameters.query.find(item => item.name === 'currentPage').value).toBe('2');
+    expect(saved[0].parameters.query.find(item => item.name === 'pageSize').value).toBe('2');
+    expect(saved[1]).toEqual(JSON.parse(sourceDetail.operations)[1]);
+    expect(result.changedQuery).toEqual({ currentPage: '2', pageSize: '2' });
+  });
+
   test('does not write when preflight or query validation fails', async () => {
     const saveConnector = jest.fn();
     const baseDeps = {

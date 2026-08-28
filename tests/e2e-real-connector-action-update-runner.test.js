@@ -92,13 +92,14 @@ describe('real connector action update runner contract', () => {
         },
       }),
     };
-    const summary = summarizeFixtureResponse(response, 1);
+    const summary = summarizeFixtureResponse(response, { dataLength: 1, currentPage: '2' });
     expect(summary).toMatchObject({
       statusCode: 200,
       dataLength: 1,
       topKeys: ['content', 'success'],
       contentKeys: ['currentPage', 'data', 'totalCount'],
       bodyHash: expect.stringMatching(/^sha256:/),
+      currentPage: 2,
     });
     expect(JSON.stringify(summary)).not.toContain('MUST_NOT_PERSIST');
 
@@ -110,12 +111,28 @@ describe('real connector action update runner contract', () => {
       .toThrow(expect.objectContaining({ code: 'CONNECTOR_ACTION_E2E_COUNT_MISMATCH' }));
   });
 
+  test('rejects an ignored currentPage even when the response count matches', () => {
+    const ignoredParameterResponse = {
+      statusLine: 'HTTP/1.1 200 OK',
+      responseHeaders: { 'content-type': 'application/json' },
+      content: JSON.stringify({
+        success: true,
+        content: { currentPage: 2, data: [{}] },
+      }),
+    };
+    expect(() => summarizeFixtureResponse(
+      ignoredParameterResponse,
+      { dataLength: 1, currentPage: '1' }
+    )).toThrow(expect.objectContaining({ code: 'CONNECTOR_ACTION_E2E_CURRENT_PAGE_MISMATCH' }));
+  });
+
   test('runs every isolated edit and restore with pre-write evidence and no response values persisted', async () => {
     const registryDir = fs.mkdtempSync(path.join(os.tmpdir(), 'connector-action-e2e-success-'));
     const prefix = 'OY_E2E_CONNECTOR_ACTION_TEST';
     const initialOperations = buildFixtureOperations(prefix, 1000);
     let currentOperations = JSON.parse(JSON.stringify(initialOperations));
     let updateCalls = 0;
+    let testCalls = 0;
     let createEvidenceReady = false;
     const responseSecret = 'REMOTE_RESPONSE_VALUE_MUST_NOT_PERSIST';
     const runCli = args => {
@@ -156,6 +173,7 @@ describe('real connector action update runner contract', () => {
         } };
       }
       if (command === 'connector test') {
+        testCalls += 1;
         const query = JSON.parse(args[args.indexOf('--query-json') + 1]);
         const filter = JSON.parse(query.searchFieldJson).radioField_lbarqa36;
         const dataLength = filter === 'n' ? 0 : (query.pageSize === '2' ? 2 : 1);
@@ -165,7 +183,10 @@ describe('real connector action update runner contract', () => {
           responseHeaders: { 'content-type': 'application/json;charset=UTF-8' },
           content: JSON.stringify({
             success: true,
-            content: { data: Array.from({ length: dataLength }, () => ({ value: responseSecret })) },
+            content: {
+              currentPage: Number(query.currentPage),
+              data: Array.from({ length: dataLength }, () => ({ value: responseSecret })),
+            },
           }),
         } };
       }
@@ -186,15 +207,22 @@ describe('real connector action update runner contract', () => {
 
     expect(createEvidenceReady).toBe(true);
     expect(updateCalls).toBe(10);
-    expect(result).toMatchObject({ status: 'cleanup_blocked', remoteWrites: 11 });
+    expect(testCalls).toBe(7);
+    expect(result).toMatchObject({
+      status: 'cleanup_blocked',
+      remoteWrites: 11,
+      registry: { evidenceLevel: 'mixed_explicit_contracts' },
+    });
     expect(result.registry.steps).toHaveLength(11);
-    expect(result.registry.steps.map(step => [step.label, step.response.dataLength])).toEqual([
-      ['baseline', 1],
-      ['currentPage', 1], ['currentPage:restore', 1],
-      ['pageSize', 2], ['pageSize:restore', 1],
-      ['userLanguage', 1], ['userLanguage:restore', 1],
-      ['searchFieldJson', 0], ['searchFieldJson:restore', 1],
-      ['_stamp', 1], ['_stamp:restore', 1],
+    expect(result.registry.steps.map(step => [step.label, step.evidenceLevel, step.response && step.response.dataLength])).toEqual([
+      ['baseline', 'runtime_structure_count', 1],
+      ['currentPage', 'runtime_exact_current_page', 1], ['currentPage:restore', 'runtime_exact_current_page', 1],
+      ['pageSize', 'runtime_exact_count', 2], ['pageSize:restore', 'runtime_exact_count', 1],
+      ['userLanguage', 'platform_exact_readback_restore', undefined],
+      ['userLanguage:restore', 'platform_exact_readback_restore', undefined],
+      ['searchFieldJson', 'runtime_exact_count', 0], ['searchFieldJson:restore', 'runtime_exact_count', 1],
+      ['_stamp', 'platform_exact_readback_restore', undefined],
+      ['_stamp:restore', 'platform_exact_readback_restore', undefined],
     ]);
     expect(currentOperations).toEqual(initialOperations);
     expect(result.registry.cleanup).toMatchObject({
@@ -204,6 +232,9 @@ describe('real connector action update runner contract', () => {
     });
     const serializedEvidence = [result.registryPath, result.manifestPath]
       .map(file => fs.readFileSync(file, 'utf8')).join('\n');
+    const persistedManifest = JSON.parse(fs.readFileSync(result.manifestPath, 'utf8'));
+    expect(persistedManifest).toMatchObject({ evidenceLevel: 'mixed_explicit_contracts' });
+    expect(persistedManifest.steps.every(step => typeof step.evidenceLevel === 'string')).toBe(true);
     expect(serializedEvidence).not.toContain(responseSecret);
     expect(serializedEvidence).not.toContain('DO_NOT_PERSIST');
   });
@@ -243,7 +274,7 @@ describe('real connector action update runner contract', () => {
           success: true,
           statusLine: 'HTTP/1.1 200 OK',
           responseHeaders: { 'content-type': 'application/json' },
-          content: '{"success":true,"content":{"data":[{}]}}',
+          content: '{"success":true,"content":{"currentPage":2,"data":[{}]}}',
         } };
       }
       if (command === 'connector update-action') {

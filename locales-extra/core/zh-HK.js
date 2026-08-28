@@ -1833,6 +1833,7 @@ module.exports.connector_action_update = {
   query_unknown: '目標動作未宣告 Query 參數：{0}。',
   readback_mismatch: '動作更新回讀不一致；連接器設定、動作集合或穩定 ID 未能保持。',
   connector_not_found: '找不到唯一的目標連接器。',
+  no_changes: 'Query 更新與平台目前值一致；已停止且未發起遠端寫入。',
   write_outcome_unknown: '動作更新請求後的遠端結果未知；不會自動重試，請人工核對殘留狀態。',
 };
 
@@ -1848,6 +1849,7 @@ module.exports.connector_action_e2e = {
   resource_plan: '連接器動作更新 E2E 資源計劃：{0}',
   response_invalid: '受控 fixture 未傳回可證明的 2xx application/json 契約。',
   count_mismatch: '受控 fixture 傳回的資料數量與預期不一致。',
+  current_page_mismatch: '受控 fixture 未精確回顯預期的 currentPage。',
   cli_contract_invalid: '連接器 E2E 命令未傳回成功的 JSON 契約。',
   action_invalid: '目標動作缺少完整且唯一的 Query/Header 契約。',
   prewrite_missing: '首次遠端寫入前的 manifest、registry 或 artifact 證據不完整。',

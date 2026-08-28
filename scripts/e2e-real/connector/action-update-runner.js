@@ -142,7 +142,10 @@ function parseObject(value) {
   }
 }
 
-function summarizeFixtureResponse(response, expectedCount) {
+function summarizeFixtureResponse(response, expectation) {
+  const expected = typeof expectation === 'number'
+    ? { dataLength: expectation }
+    : expectation;
   const statusMatch = String(response && response.statusLine || '')
     .match(/^HTTP\/\d(?:\.\d)?\s+(\d{3})(?:\s|$)/i);
   const headers = parseObject(response && response.responseHeaders);
@@ -165,10 +168,18 @@ function summarizeFixtureResponse(response, expectedCount) {
       'connector_action_e2e.response_invalid'
     );
   }
-  if (data.length !== expectedCount) {
+  if (!expected || !Number.isInteger(expected.dataLength) || data.length !== expected.dataLength) {
     throw e2eError(
       'CONNECTOR_ACTION_E2E_COUNT_MISMATCH',
       'connector_action_e2e.count_mismatch'
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(expected, 'currentPage') &&
+      (!Object.prototype.hasOwnProperty.call(content, 'currentPage') ||
+       String(content.currentPage) !== String(expected.currentPage))) {
+    throw e2eError(
+      'CONNECTOR_ACTION_E2E_CURRENT_PAGE_MISMATCH',
+      'connector_action_e2e.current_page_mismatch'
     );
   }
   return {
@@ -179,6 +190,9 @@ function summarizeFixtureResponse(response, expectedCount) {
     topKeys: Object.keys(body).sort(),
     contentKeys: Object.keys(content).sort(),
     dataLength: data.length,
+    ...(Object.prototype.hasOwnProperty.call(expected, 'currentPage')
+      ? { currentPage: content.currentPage }
+      : {}),
   };
 }
 
@@ -228,20 +242,45 @@ async function run(options = {}) {
   fs.writeFileSync(artifactPath, serializedOperations, 'utf8');
 
   const transitions = [
-    { label: 'currentPage', patch: { currentPage: '1' }, expectedCount: 1, restore: { currentPage: '2' } },
-    { label: 'pageSize', patch: { pageSize: '2' }, expectedCount: 2, restore: { pageSize: '1' } },
-    { label: 'userLanguage', patch: { userLanguage: 'en_US' }, expectedCount: 1, restore: { userLanguage: 'zh_CN' } },
+    {
+      label: 'currentPage',
+      patch: { currentPage: '1' },
+      evidenceLevel: 'runtime_exact_current_page',
+      runtimeExpectation: { dataLength: 1, currentPage: '1' },
+      restore: { currentPage: '2' },
+      restoreRuntimeExpectation: { dataLength: 1, currentPage: '2' },
+    },
+    {
+      label: 'pageSize',
+      patch: { pageSize: '2' },
+      evidenceLevel: 'runtime_exact_count',
+      runtimeExpectation: { dataLength: 2 },
+      restore: { pageSize: '1' },
+      restoreRuntimeExpectation: { dataLength: 1 },
+    },
+    {
+      label: 'userLanguage',
+      patch: { userLanguage: 'en_US' },
+      evidenceLevel: 'platform_exact_readback_restore',
+      runtimeExpectation: null,
+      restore: { userLanguage: 'zh_CN' },
+      restoreRuntimeExpectation: null,
+    },
     {
       label: 'searchFieldJson',
       patch: { searchFieldJson: JSON.stringify({ [FILTER_FIELD]: 'n' }) },
-      expectedCount: 0,
+      evidenceLevel: 'runtime_exact_count',
+      runtimeExpectation: { dataLength: 0 },
       restore: { searchFieldJson: JSON.stringify({ [FILTER_FIELD]: 'y' }) },
+      restoreRuntimeExpectation: { dataLength: 1 },
     },
     {
       label: '_stamp',
       patch: { _stamp: String((options.initialStamp || Date.now()) + 1) },
-      expectedCount: 1,
+      evidenceLevel: 'platform_exact_readback_restore',
+      runtimeExpectation: null,
       restore: { _stamp: operationQuery(operations[0])._stamp },
+      restoreRuntimeExpectation: null,
     },
   ];
   const registry = {
@@ -270,6 +309,7 @@ async function run(options = {}) {
     writeAttempts: [],
     resources: [],
     steps: [],
+    evidenceLevel: 'mixed_explicit_contracts',
   };
   const manifest = {
     runId: registry.runId,
@@ -277,6 +317,7 @@ async function run(options = {}) {
     resourcePlan: registry.resourcePlan,
     provenance: registry.provenance,
     artifact: registry.artifact,
+    evidenceLevel: registry.evidenceLevel,
   };
   let revision = 0;
   let connectorId = null;
@@ -357,31 +398,40 @@ async function run(options = {}) {
     return { snapshot, connectionCount: 0 };
   }
 
-  function testCurrentAction(snapshot, expectedCount, label) {
+  function testCurrentAction(snapshot, runtimeExpectation, label, evidenceLevel) {
     const target = snapshot.operations.find(operation => operation.operationId === TARGET_OPERATION_ID);
     if (!target) {
       throw e2eError('CONNECTOR_ACTION_E2E_ACTION_INVALID', 'connector_action_e2e.action_invalid');
     }
-    const response = execute([
-      'connector', 'test', '--connector-id', String(connectorId), '--action', TARGET_OPERATION_ID,
-      '--path-json', '{}', '--query-json', JSON.stringify(operationQuery(target)),
-      '--header-json', JSON.stringify(operationHeaders(target)), '--body-json', '{}', '--json',
-    ]);
-    const summary = summarizeFixtureResponse(response, expectedCount);
-    registry.steps.push({
+    let summary;
+    if (runtimeExpectation) {
+      const response = execute([
+        'connector', 'test', '--connector-id', String(connectorId), '--action', TARGET_OPERATION_ID,
+        '--path-json', '{}', '--query-json', JSON.stringify(operationQuery(target)),
+        '--header-json', JSON.stringify(operationHeaders(target)), '--body-json', '{}', '--json',
+      ]);
+      summary = summarizeFixtureResponse(response, runtimeExpectation);
+    }
+    const step = {
       label,
-      expectedCount,
+      evidenceLevel,
+      platformExactReadbackVerified: true,
+      runtimeVerified: Boolean(runtimeExpectation),
       queryHash: sha256(JSON.stringify(operationQuery(target))),
-      response: summary,
       actionCount: snapshot.operations.length,
       connectorFingerprint: snapshot.connectorFingerprint,
       connectionCount: 0,
-    });
+    };
+    if (summary) {
+      step.runtimeExpectation = { ...runtimeExpectation };
+      step.response = summary;
+    }
+    registry.steps.push(step);
     persist();
     return summary;
   }
 
-  function updateAndVerify(state, label, patch, expectedCount) {
+  function updateAndVerify(state, label, patch, runtimeExpectation, evidenceLevel) {
     const expected = patchActionQuery(state.snapshot, TARGET_OPERATION_ID, patch);
     const attempt = beginWrite(`update:${label}`, {
       type: 'connector-action-state',
@@ -411,7 +461,7 @@ async function run(options = {}) {
         actionCount: after.snapshot.operations.length,
         stableIdsHash: sha256(JSON.stringify(after.snapshot.stableIds)),
       });
-      testCurrentAction(after.snapshot, expectedCount, label);
+      testCurrentAction(after.snapshot, runtimeExpectation, label, evidenceLevel);
       return after;
     } catch (error) {
       unknownWrite(attempt);
@@ -486,11 +536,23 @@ async function run(options = {}) {
       );
     }
     const baselineFingerprint = state.snapshot.connectorFingerprint;
-    testCurrentAction(state.snapshot, 1, 'baseline');
+    testCurrentAction(state.snapshot, { dataLength: 1 }, 'baseline', 'runtime_structure_count');
 
     for (const transition of transitions) {
-      state = updateAndVerify(state, transition.label, transition.patch, transition.expectedCount);
-      state = updateAndVerify(state, `${transition.label}:restore`, transition.restore, 1);
+      state = updateAndVerify(
+        state,
+        transition.label,
+        transition.patch,
+        transition.runtimeExpectation,
+        transition.evidenceLevel
+      );
+      state = updateAndVerify(
+        state,
+        `${transition.label}:restore`,
+        transition.restore,
+        transition.restoreRuntimeExpectation,
+        transition.evidenceLevel
+      );
       if (state.snapshot.connectorFingerprint !== baselineFingerprint) {
         throw e2eError(
           'CONNECTOR_ACTION_E2E_STATE_INCOMPLETE',
