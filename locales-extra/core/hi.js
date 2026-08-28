@@ -494,7 +494,7 @@ module.exports = {
     playwright_install2: '   npx playwright install chromium',
     browser_opening: '\n🔐 Opening browser for OAuth login...',
     oauth_success_title: 'साइन इन सफल हुआ',
-    oauth_success_message: 'प्रमाणीकरण पूरा हो गया है। आप टर्मिनल पर लौटकर OpenYida का उपयोग जारी रख सकते हैं।',
+    oauth_success_message: 'साइन इन पूरा हो गया है। जारी रखने के लिए पिछली विंडो पर लौटें।',
     oauth_closing: 'यह विंडो अपने आप बंद हो रही है…',
     oauth_manual_close: 'विंडो अभी भी खुली है? इसे मैन्युअल रूप से बंद करें, फिर टर्मिनल पर लौटें।',
     oauth_failure_title: 'साइन इन पूरा नहीं हुआ',

@@ -70,7 +70,7 @@ describe('OAuth callback page experience', () => {
       expect(response.body).toContain('<html lang="zh" dir="ltr">');
       expect(response.body).toContain('<meta name="viewport"');
       expect(response.body).toContain('<h1 id="page-title">登录成功</h1>');
-      expect(response.body).toContain('身份验证已完成，你可以返回终端继续使用 OpenYida。');
+      expect(response.body).toContain('登录已完成，请返回刚才的窗口继续操作。');
       expect(response.body).toContain('正在自动关闭此窗口…');
       expect(response.body).toContain('id="manual-close"');
       expect(response.body).toContain('窗口没有自动关闭？请手动关闭此窗口，然后返回终端。');

@@ -494,7 +494,7 @@ module.exports = {
     playwright_install2: '   npx playwright install chromium',
     browser_opening: '\n🔐 Opening browser for OAuth login...',
     oauth_success_title: 'Inicio de sesión correcto',
-    oauth_success_message: 'La autenticación ha finalizado. Puedes volver al terminal y seguir usando OpenYida.',
+    oauth_success_message: 'El inicio de sesión ha finalizado. Vuelve a la ventana anterior para continuar.',
     oauth_closing: 'Cerrando esta ventana automáticamente…',
     oauth_manual_close: '¿La ventana sigue abierta? Ciérrala manualmente y vuelve al terminal.',
     oauth_failure_title: 'Inicio de sesión no completado',
