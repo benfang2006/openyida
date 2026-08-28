@@ -125,7 +125,12 @@ describe('integration create command', () => {
     const specPath = writeTempSpec({
       events: ['insert'],
       nodes: [
-        { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+        {
+          id: 'lookup',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-B',
+          conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+        },
         {
           id: 'update',
           type: 'dataUpdate',
@@ -140,7 +145,7 @@ describe('integration create command', () => {
       ],
     });
     fetchFormPageList.mockResolvedValue([
-      { formUuid: 'FORM-B', formName: 'B普通表单', formType: 'receipt' },
+        { formUuid: 'FORM-B', formName: 'B普通表单', formType: 'receipt' },
     ]);
     integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
     integrationApi.saveProcess.mockResolvedValue({ success: true });

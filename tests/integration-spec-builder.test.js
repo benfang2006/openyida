@@ -439,7 +439,12 @@ describe('integration spec builder', () => {
       spec: {
         events: ['insert'],
         nodes: [
-          { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'lookup',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+          },
           {
             id: 'update',
             type: 'dataUpdate',
@@ -476,7 +481,13 @@ describe('integration spec builder', () => {
       spec: {
         events: ['insert'],
         nodes: [
-          { id: 'lookup', nodeId: 'node-fixed', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'lookup',
+            nodeId: 'node-fixed',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+          },
           {
             id: 'update',
             nodeId: 'node-update',
@@ -509,7 +520,12 @@ describe('integration spec builder', () => {
       spec: {
         events: ['insert'],
         nodes: [
-          { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'lookup',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+          },
           {
             id: 'update',
             type: 'dataUpdate',
