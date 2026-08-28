@@ -18,6 +18,7 @@ jest.mock('../lib/integration/integration-node-ids', () => {
 const {
   buildSpecProcessAndViewJson,
   collectAddDataFormUuids,
+  collectDataSourceFormDescriptors,
   readIntegrationSpec,
   validateIntegrationSpec,
   _private,
@@ -164,6 +165,32 @@ describe('integration spec builder', () => {
         },
       ],
     }).sort()).toEqual(['FORM-A', 'FORM-B']);
+  });
+
+  test('rejects conflicting source form type declarations for one form UUID', () => {
+    expect(() => collectDataSourceFormDescriptors({
+      nodes: [
+        { type: 'dataRetrieve', formUuid: 'FORM-B', formType: 'process' },
+        { type: 'dataRetrieve', formUuid: 'FORM-B', formType: 'receipt' },
+      ],
+    }, 'FORM-A')).toThrow(/Conflicting source form types for FORM-B/);
+  });
+
+  test('rejects unsupported source form type declarations', () => {
+    expect(() => collectDataSourceFormDescriptors({
+      nodes: [{ type: 'dataRetrieve', formUuid: 'FORM-B', formType: 'display' }],
+    }, 'FORM-A')).toThrow(/Unsupported source form type: display/);
+  });
+
+  test('rejects conflicting source form metadata fields on one node', () => {
+    expect(() => collectDataSourceFormDescriptors({
+      nodes: [{
+        type: 'dataRetrieve',
+        formUuid: 'FORM-B',
+        formType: 'process',
+        originalType: 'form',
+      }],
+    }, 'FORM-A')).toThrow(/Conflicting source form types on node/);
   });
 
   test('validates spec shape before remote calls are needed', () => {

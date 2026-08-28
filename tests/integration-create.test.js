@@ -789,6 +789,87 @@ describe('integration create command', () => {
     });
   });
 
+  test('rejects conflicting source form type declarations before any remote write', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [
+        { id: 'processLookup', type: 'dataRetrieve', formUuid: 'FORM-B', formType: 'process' },
+        { id: 'receiptLookup', type: 'dataRetrieve', formUuid: 'FORM-B', formType: 'receipt' },
+      ],
+    });
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-B', formName: 'B普通表单', formType: 'receipt' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-A',
+      'conflicting source types',
+      '--spec',
+      specPath,
+    ])).rejects.toThrow(/Conflicting source form types for FORM-B/);
+
+    expect(fetchFormPageList).not.toHaveBeenCalled();
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
+  test('rejects a known non-form navigation target even with an explicit source type', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [{
+        id: 'pageLookup',
+        type: 'dataRetrieve',
+        formUuid: 'PAGE-B',
+        formType: 'receipt',
+      }],
+    });
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'PAGE-B', formName: 'B看板', formType: 'display' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-A',
+      'non-form source target',
+      '--spec',
+      specPath,
+    ])).rejects.toThrow(/不是可取数表单/);
+
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
+  test('rejects a missing navigation target even with an explicit source type', async () => {
+    const specPath = writeTempSpec({
+      events: ['insert'],
+      nodes: [{
+        id: 'missingLookup',
+        type: 'dataRetrieve',
+        formUuid: 'FORM-MISSING',
+        formType: 'receipt',
+      }],
+    });
+    fetchFormPageList.mockResolvedValue([]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-SHOULD-NOT-EXIST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-A',
+      'missing source target',
+      '--spec',
+      specPath,
+    ])).rejects.toThrow(/导航中未找到表单 FORM-MISSING/);
+
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
   test('uses source form metadata for structured process getSelf on insert/update events', async () => {
     const specPath = writeTempSpec({
       events: ['insert', 'update'],
