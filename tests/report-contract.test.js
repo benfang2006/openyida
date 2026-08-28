@@ -59,6 +59,20 @@ describe('report frontend contract', () => {
     expect(original).toHaveProperty('i18nData');
   });
 
+  test('prepareReportSchemaForSave strips client-only filter metadata recursively', () => {
+    const original = buildSchema();
+    original.pages[0].componentsTree[0].children[0].children[0].__filterMeta__ = {
+      filterKey: 'client-only-filter-key',
+    };
+
+    const prepared = prepareReportSchemaForSave(original);
+
+    expect(prepared.pages[0].componentsTree[0].children[0].children[0])
+      .not.toHaveProperty('__filterMeta__');
+    expect(original.pages[0].componentsTree[0].children[0].children[0])
+      .toHaveProperty('__filterMeta__');
+  });
+
   test('normalizes string and response-wrapped schema content', () => {
     const schema = buildSchema();
     expect(normalizeReportSchemaContent({ content: JSON.stringify(schema) })).toEqual(schema);

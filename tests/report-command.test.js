@@ -184,6 +184,42 @@ describe('report command helpers', () => {
     expect(warn.mock.calls.flat().join(' ')).not.toContain('corp-1');
   });
 
+  test('create-report accepts readback after platform strips client-only filter metadata', async () => {
+    const config = {
+      charts: chartConfig,
+      filters: [{
+        title: '状态',
+        cubeCode: 'FORM_SALES',
+        valueField: { fieldCode: 'selectField_status', aliasName: '状态', dataType: 'STRING' },
+        labelField: { fieldCode: 'selectField_status', aliasName: '状态', dataType: 'STRING' },
+        filterFieldCode: 'selectField_status',
+        linkTo: [0],
+      }],
+    };
+    utils.httpPost
+      .mockResolvedValueOnce({ success: true, content: { formUuid: 'REPORT_FILTER' } })
+      .mockResolvedValueOnce({ success: true });
+    utils.httpGet
+      .mockResolvedValueOnce({ success: true, content: { gmtModified: 100 } })
+      .mockImplementationOnce(async () => {
+        const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
+        const { id, ...persisted } = JSON.parse(saveBody.content);
+        expect(id).toBe('REPORT_FILTER');
+        expect(JSON.stringify(persisted)).not.toContain('__filterMeta__');
+        return { success: true, content: { ...persisted, gmtModified: 101 } };
+      });
+
+    await expect(createReport.run([
+      'APP_XXX',
+      '筛选器报表',
+      JSON.stringify(config),
+    ])).resolves.toMatchObject({
+      success: true,
+      reportId: 'REPORT_FILTER',
+      readbackVerified: true,
+    });
+  });
+
   test('create-report fails closed when the single create write returns no report identity', async () => {
     utils.httpPost.mockResolvedValueOnce({ success: true, content: {} });
 
