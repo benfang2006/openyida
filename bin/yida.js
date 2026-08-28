@@ -999,6 +999,16 @@ async function main() {
       break;
     }
 
+    case 'report': {
+      const subCommand = args[0];
+      if (subCommand !== 'inspect') {
+        throwCliUsage('用法: openyida report inspect <appType> <reportId> --json');
+      }
+      const { run } = require('../lib/report/inspect');
+      await run(args.slice(1));
+      break;
+    }
+
     case 'cdn-config': {
       const { run: runCdnConfig } = require('../lib/cdn/cdn-config-cmd');
       await runCdnConfig(args);
@@ -1033,6 +1043,7 @@ async function main() {
         'detail':            '../lib/connector/connector-detail',
         'delete':            '../lib/connector/connector-delete',
         'add-action':        '../lib/connector/connector-add-action',
+        'update-action':     '../lib/connector/connector-update-action',
         'list-actions':      '../lib/connector/connector-list-actions',
         'delete-action':     '../lib/connector/connector-delete-action',
         'test':              '../lib/connector/connector-test',
@@ -1053,12 +1064,13 @@ async function main() {
   detail <connector-id>                        查看连接器详情
   delete <connector-id> [--force]              删除连接器
   add-action --operations <file> --connector-id <id>  添加执行动作
+  update-action --connector-id <id> --action <id> --query-json <JSON> --confirm  安全更新动作 Query 默认值
   list-actions <connector-id>                  列出执行动作
   delete-action <connector-id> <operation-id>  删除执行动作
-  test --connector-id <id> --action <actionId> 测试执行动作
+  test --connector-id <id> --action <actionId> [结构化 JSON 参数] 测试执行动作
   list-connections <connector-id>              列出鉴权账号
   create-connection <connector-id> <name>      创建鉴权账号
-  smart-create --curl "curl命令"               智能创建连接器
+  smart-create --curl "curl命令"               生成脱敏连接器动作草稿（不创建远端资源）
   parse-api [选项]                             解析接口信息
   gen-template [输出路径]                       生成接口文档模板
 

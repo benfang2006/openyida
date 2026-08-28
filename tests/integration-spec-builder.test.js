@@ -3,6 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { getLanguage, setLanguage } = require('../lib/core/i18n');
 
 jest.mock('../lib/integration/integration-node-ids', () => {
   let counter = 0;
@@ -530,7 +531,13 @@ describe('integration spec builder', () => {
     const built = buildSpecProcessAndViewJson({
       spec: {
         events: ['insert'],
-        nodes: [{ id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B', formName: '过期名称' }],
+        nodes: [{
+          id: 'lookup',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-B',
+          formName: '过期名称',
+          conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+        }],
       },
       processCode: 'LPROC-FORM-NAME',
       appType: 'APP-SPEC',
@@ -569,7 +576,13 @@ describe('integration spec builder', () => {
       spec: {
         events: ['insert'],
         nodes: [
-          { id: 'lookup', nodeId: 'node-fixed', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'lookup',
+            nodeId: 'node-fixed',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+          },
           {
             id: 'update',
             nodeId: 'node-update',
@@ -598,7 +611,12 @@ describe('integration spec builder', () => {
       spec: {
         events: ['insert'],
         nodes: [
-          { id: 'lookup', type: 'dataRetrieve', formUuid: 'FORM-B' },
+          {
+            id: 'lookup',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_marker', fieldName: '标记', value: 'x', valueType: 'literal' }],
+          },
           {
             id: 'update',
             type: 'dataUpdate',
@@ -680,6 +698,21 @@ describe('integration spec builder', () => {
       events: ['insert'],
       nodes: [{ type: 'route', branches: [{ id: 'a', default: true }, { id: 'b', default: true }] }],
     })).toThrow(/at most one default branch/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{ type: 'route', branches: [] }],
+    })).toThrow(/branches/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'initiateApproval',
+        formUuid: 'FORM-PROCESS',
+        initiator: { type: 'select_user', value: 'not-json' },
+        assignments: [{ column: 'textField_title', valueType: 'literal', value: 'x' }],
+      }],
+    })).toThrow(/身份 JSON|employee identity JSON/);
   });
 
   test('preserves primitive literal types exactly in spec JSON', () => {
@@ -711,9 +744,59 @@ describe('integration spec builder', () => {
       .props.assignments.map((item) => item.value);
     const viewValues = built.viewJson.schema.children.find((node) => node.componentName === 'AddDataNode')
       .props.addDataRules.rules.rules.map((item) => item.value);
+    const viewAssignments = built.viewJson.schema.children.find((node) => node.componentName === 'AddDataNode')
+      .props.addDataRules.assignments.map((item) => item.value);
 
     expect(processValues).toEqual(['00123', 123, false]);
     expect(viewValues).toEqual(processValues);
+    expect(viewAssignments).toEqual(processValues);
+  });
+
+  test('hydrates visible form names and configured summaries for getSelf, dataCreate and message nodes', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          { type: 'getSelf', id: 'self', name: '读取当前申请' },
+          {
+            type: 'dataCreate',
+            id: 'create',
+            name: '登记回执',
+            formUuid: 'FORM-B',
+            assignments: [{ fieldId: 'textField_code', valueType: 'literal', value: 'R-1' }],
+          },
+          {
+            type: 'sendMessage',
+            name: '发送通知',
+            userFields: ['form_inst_creator'],
+            title: '已登记',
+            content: '完成',
+          },
+        ],
+      },
+      processCode: 'LPROC-SPEC',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Spec Flow',
+      formNamesByUuid: new Map([
+        ['FORM-A', '变更申请'],
+        ['FORM-B', '执行回执'],
+      ]),
+      formSchemasByUuid: new Map([['FORM-B', [
+        { componentName: 'TextField', props: { fieldId: 'textField_code', label: { zh_CN: '回执编号' } } },
+      ]]]),
+    });
+    const viewNodes = built.viewJson.schema.children;
+    const getSelf = viewNodes.find((node) => node.componentName === 'GetSingleDataNode');
+    const create = viewNodes.find((node) => node.componentName === 'AddDataNode');
+    const message = viewNodes.find((node) => node.componentName === 'SendMessageNode');
+
+    expect(getSelf.props.description).toContain('变更申请');
+    expect(getSelf.props.getData.targetItem.formItem.title).toBe('变更申请');
+    expect(create.props.description).toContain('执行回执');
+    expect(create.props.addDataRules.assignments).toHaveLength(1);
+    expect(create.props.addDataRules.description).toBe(create.props.description);
+    expect(message.props.description).toContain('已配置通知');
   });
 
   test('serializes activityTask trigger semantics consistently in process and view JSON', () => {
@@ -745,6 +828,57 @@ describe('integration spec builder', () => {
       examineApproveActiveList: ['agree'],
       examineApproveActiveTask: [{ activityId: ['activity-1'], activityAction: ['agree'] }],
     });
+  });
+
+  test.each([
+    [{ type: 'dataRetrieve', formUuid: 'FORM-B', conditions: [] }, /conditions/],
+    [{ type: 'dataCreate', formUuid: 'FORM-B', assignments: [] }, /assignments/],
+    [{ type: 'dataUpdate', source: 'self', assignments: [] }, /assignments/],
+  ])('rejects semantically empty data nodes before building platform JSON', (node, errorPattern) => {
+    expect(() => validateIntegrationSpec({ events: ['insert'], nodes: [node] }))
+      .toThrow(errorPattern);
+  });
+
+  test('builds a configured initiateApproval node using the authenticated current user without persisting an id in spec', () => {
+    const originalLanguage = getLanguage();
+    setLanguage('zh');
+    try {
+      const built = buildSpecProcessAndViewJson({
+        spec: {
+          events: ['insert'],
+          nodes: [{
+            id: 'approval',
+            type: 'initiateApproval',
+            formUuid: 'FORM-PROCESS',
+            initiator: { type: 'current_user' },
+            assignments: [{ column: 'textField_title', valueType: 'literal', value: '重大变更审批' }],
+          }],
+        },
+        processCode: 'LPROC-SPEC',
+        appType: 'APP-SPEC',
+        formUuid: 'FORM-A',
+        flowName: 'Spec Flow',
+        currentUserId: 'user-current',
+        formNamesByUuid: new Map([['FORM-PROCESS', '重大变更审批流程']]),
+        formSchemasByUuid: new Map([['FORM-PROCESS', [
+          { componentName: 'TextField', props: { fieldId: 'textField_title', label: '审批标题' } },
+        ]]]),
+      });
+      const processNode = built.processJson.nodes.find((node) => node.type === 'initiateApproval');
+      const viewNode = built.viewJson.schema.children.find((node) => node.componentName === 'InitiateApprovalNode');
+
+      expect(processNode.description).toBe('在[重大变更审批流程]中发起审批并写入1个字段');
+      expect(processNode.props.initiator).toEqual({
+        type: 'select_user',
+        value: JSON.stringify({ id: 'user-current', label: '', type: 'employee' }),
+      });
+      expect(viewNode.props.description).toBe(processNode.description);
+      expect(viewNode.props.initiateApprovalRules.assignments).toEqual([
+        { column: 'textField_title', valueType: 'literal', value: '重大变更审批', required: false },
+      ]);
+    } finally {
+      setLanguage(originalLanguage);
+    }
   });
 
   test('documents recursive form-event triggering as default false', () => {
