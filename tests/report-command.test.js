@@ -135,9 +135,11 @@ describe('report command helpers', () => {
       .mockResolvedValueOnce({ success: true, content: { gmtModified: 100 } })
       .mockImplementationOnce(async () => {
         const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
+        const { id: serverOwnedId, ...persisted } = JSON.parse(saveBody.content);
+        expect(serverOwnedId).toBe('REPORT_1');
         return {
           success: true,
-          content: { ...JSON.parse(saveBody.content), gmtModified: 101 },
+          content: { ...persisted, gmtModified: 101 },
         };
       });
 
@@ -284,7 +286,55 @@ describe('report command helpers', () => {
           appType: 'APP_XXX',
           reportId: 'REPORT_PARTIAL',
           owned: true,
+          ownershipStatus: 'owned_created_by_current_invocation',
+          provenance: {
+            operation: 'create-report',
+            source: 'create_response',
+            identityConfirmed: true,
+          },
           deleteAttempted: false,
+        },
+      },
+    });
+  });
+
+  test('create-report readback mismatch exposes the created report provenance', async () => {
+    utils.httpPost
+      .mockResolvedValueOnce({ success: true, content: { formUuid: 'REPORT_PARTIAL' } })
+      .mockResolvedValueOnce({ success: true });
+    utils.httpGet
+      .mockResolvedValueOnce({ success: true, content: { gmtModified: 100 } })
+      .mockImplementationOnce(async () => {
+        const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
+        const { id, ...persisted } = JSON.parse(saveBody.content);
+        expect(id).toBe('REPORT_PARTIAL');
+        persisted.pages[0].componentsTree[0].componentName = 'ChangedByServer';
+        return { success: true, content: { ...persisted, gmtModified: 101 } };
+      });
+
+    await expect(createReport.run([
+      'APP_XXX',
+      '部分创建报表',
+      JSON.stringify(chartConfig),
+    ])).rejects.toMatchObject({
+      code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+      details: {
+        partial: true,
+        residual: {
+          type: 'report',
+          appType: 'APP_XXX',
+          reportId: 'REPORT_PARTIAL',
+          owned: true,
+          ownershipStatus: 'owned_created_by_current_invocation',
+          provenance: {
+            operation: 'create-report',
+            source: 'create_response',
+            identityConfirmed: true,
+          },
+        },
+        mismatch: {
+          path: '$.pages[0].componentsTree[0].componentName',
+          kind: 'value_mismatch',
         },
       },
     });

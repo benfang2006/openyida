@@ -4,6 +4,7 @@ const {
   REPORT_DOMAIN_CODE,
   assertReportSchemaReadback,
   collectReportI18nKeys,
+  findReportSchemaMismatch,
   normalizeReportSchemaContent,
   normalizeReportConfig,
   prepareReportSchemaForSave,
@@ -72,16 +73,32 @@ describe('report frontend contract', () => {
 
   test('readback ignores the server revision but requires exact saved content', () => {
     const expected = prepareReportSchemaForSave(buildSchema());
-    const actual = { ...expected, gmtModified: 101 };
+    const { id: serverOwnedId, ...persisted } = expected;
+    const actual = { ...persisted, gmtModified: 101 };
+
+    expect(serverOwnedId).toBe('REPORT_1');
 
     expect(assertReportSchemaReadback(expected, actual)).toMatchObject({
       verificationLevel: 'strict-schema-content',
       omitted: [
         { path: '$.gmtModified', reason: 'server-owned revision' },
+        { path: '$.id', reason: 'server-owned resource identity returned out-of-band' },
         { path: '$.i18nData', reason: 'server-owned localization materialization' },
         { path: '$.status', reason: 'server-owned publication status' },
       ],
       projection: { pages: expected.pages },
+    });
+  });
+
+  test('sanitized platform fixture identifies the raw normalization as a missing top-level id', () => {
+    expect(findReportSchemaMismatch(
+      { id: 'REPORT_FIXTURE', pages: [] },
+      { pages: [] }
+    )).toEqual({
+      path: '$.id',
+      kind: 'missing_key',
+      expectedFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+      actualFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
     });
   });
 
@@ -144,6 +161,100 @@ describe('report frontend contract', () => {
 
     expect(() => assertReportSchemaReadback(expected, actual)).toThrow(expect.objectContaining({
       code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+    }));
+  });
+
+  test.each([
+    ['added', (children) => [...children, { componentName: 'Unexpected' }], 'array_length_mismatch'],
+    ['deleted', (children) => children.slice(0, 1), 'array_length_mismatch'],
+    ['reordered', (children) => [...children].reverse(), 'value_mismatch'],
+  ])('readback fails closed when components are %s', (label, mutate, expectedKind) => {
+    const expected = prepareReportSchemaForSave(buildSchema({
+      pages: [{
+        componentsTree: [{
+          componentName: 'Page',
+          children: [
+            { componentName: 'ChartA', data: { aggregateType: 'SUM' } },
+            { componentName: 'ChartB', data: { aggregateType: 'COUNT' } },
+          ],
+        }],
+      }],
+    }));
+    const actual = JSON.parse(JSON.stringify(expected));
+    actual.pages[0].componentsTree[0].children = mutate(actual.pages[0].componentsTree[0].children);
+
+    let caught;
+    try {
+      assertReportSchemaReadback(expected, actual);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(label).toBeTruthy();
+    expect(caught).toMatchObject({
+      code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+      details: {
+        mismatch: {
+          kind: expectedKind,
+          path: expect.stringMatching(/^\$\.pages\[0\]\.componentsTree\[0\]\.children/),
+          expectedFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+          actualFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        },
+      },
+    });
+  });
+
+  test('readback mismatch diagnostics fingerprint business values without exposing them', () => {
+    const secretBusinessValue = 'SENSITIVE-BUSINESS-VALUE-9f8f6b';
+    const secretDynamicKey = 'zzPrivateFieldKey_4a765d';
+    const expected = prepareReportSchemaForSave(buildSchema());
+    const actual = JSON.parse(JSON.stringify(expected));
+    actual.pages[0].componentsTree[0].children[0].data.aggregateType = secretBusinessValue;
+
+    let caught;
+    try {
+      assertReportSchemaReadback(expected, actual);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught.details.mismatch).toMatchObject({
+      path: '$.pages[0].componentsTree[0].children[0].data.aggregateType',
+      kind: 'unexpected_key',
+      expectedFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+      actualFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+    });
+    expect(JSON.stringify(caught.details)).not.toContain(secretBusinessValue);
+
+    const dynamicKeyActual = JSON.parse(JSON.stringify(expected));
+    dynamicKeyActual.pages[0].componentsTree[0].data[secretDynamicKey] = 'private-value';
+    try {
+      assertReportSchemaReadback(expected, dynamicKeyActual);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught.details.mismatch).toMatchObject({
+      path: expect.stringMatching(/\[key:sha256:[a-f0-9]{12}\]$/),
+      kind: 'unexpected_key',
+    });
+    expect(JSON.stringify(caught.details)).not.toContain(secretDynamicKey);
+    expect(JSON.stringify(caught.details)).not.toContain('private-value');
+  });
+
+  test('readback only tolerates an omitted server id and rejects a conflicting returned id', () => {
+    const expected = prepareReportSchemaForSave(buildSchema());
+    const actual = { ...expected, id: 'REPORT_DIFFERENT' };
+
+    expect(() => assertReportSchemaReadback(expected, actual)).toThrow(expect.objectContaining({
+      code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+      details: expect.objectContaining({
+        mismatch: expect.objectContaining({
+          path: '$.id',
+          kind: 'value_mismatch',
+          expectedFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+          actualFingerprint: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        }),
+      }),
     }));
   });
 });
