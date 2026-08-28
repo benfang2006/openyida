@@ -28,7 +28,7 @@
 | A-INTEGRATION-001 | 集成节点/赋值/审批/连接器错误会先污染远端且发布失败可能误报 | 首次远端写早于整图校验，草稿与发布不清 | 完整本地构建/白名单校验后才写；失败显式 `INTEGRATION_PUBLISH_FAILED` | `ad1c86c`；`lib/integration/`；integration contract | Codex 最终应用重新 replace+publish 后，Get/Add/Message 的 detail、卡片摘要、配置面板一致；控制面通过，runtime 唯一副作用仍需独立触发证据 |
 | A-PERMISSION-001 | 权限同名/分页可能误选，成员更新可能压扁复合成员 | 只看保存响应且可能丢部门/角色/动态成员 | 唯一目标、PERSONS 保留式修改、写后逐字段回读、owned restore | `ad1c86c`；`lib/permission/`、`lib/app-permission/` | 2 个权限包只读 exact readback + UI；未做 mutation/restore，`PLATFORM_PROBE_REQUIRED` |
 | B-AGGREGATE-001 | 聚合表保存/发布缺 revision、ownership 与恢复证据 | 响应码成功可能掩盖空配置、unknown outcome 或并发覆盖 | contract → one-shot → stash/live revision readback → guarded restore | `11d0a5a` `720d519` `a7807b7` `f39e0bb` | Codex 最终应用 `isStashConfig=n`、`status=ENABLE/SUCCESS`，2 数据源、1 关联、2 指标，预览与管理运行态均 3 行，`PLATFORM_PUBLISH_PREVIEW_RUNTIME_VERIFIED` |
-| B-REPORT-001 | 报表保存成功不证明组件、字段、布局和数据模型可运行 | 缺 canonical inspect 与安全 cleanup | capability registry、preflight、canonical inspect、ownership cleanup | `11d0a5a` `f28a869` `3af7801` `ade0aec` `334e065` | inspect 有 revision/4 组件/1 图表绑定；真实页数据查询异常，`BLOCKED_REPORT_RUNTIME_QUERY_ERROR` |
+| B-REPORT-001 | 报表保存成功不证明组件、字段、布局和数据模型可运行 | 旧报表运行页“数据查询异常”，且数据量只有 2 条 | capability registry、preflight、canonical inspect、ownership cleanup；补充 12 条 owned 测试数据并重建 6 图表报表 | `11d0a5a` `f28a869` `3af7801` `ade0aec` `334e065`；`REPORT-CPE66VB1H8P823X5PRWZQBOG8K782E610ICTM1` | 新报表 KPI=14，趋势、柱状、饼图、漏斗及明细表均在真实运行页加载；旧错误图保留为 Before。仅严格 schema readback mismatch 仍记 residual，`PLATFORM_UI_RUNTIME_VERIFIED_WITH_READBACK_RESIDUAL` |
 | B-CONNECTOR-001 | 连接器分页、契约和共享删除边界不安全 | 第一页误判、readback 不足、共享资源删除无 ownership 证明 | 有界分页、contract/readback，删除降级为只读指引 | `11d0a5a` `d825a5a` `f605520` `8764700` | 无团队受控 HTTPS fixture，`BLOCKED_CONTROLLED_FIXTURE`；没有用公共回显站点凑通过 |
 | B-CANVAS-COMPILE-001 | 未声明标识符/实例 API 要到发布后才报错 | 本地编译放过不可用 runtime 能力 | 编译阶段静态拦截并指导 hooks/props/window bridge | `91fa6ad`；`tests/canvas-compile.test.js` | 本地 contract 通过；真实页仍只有 marker，`PASS_LOCAL_CONTRACT_PLATFORM_RUNTIME_BLOCKED` |
 | B-DATA-INTEGRATION-SAFETY-001 | 数据创建参数和集成整图替换授权含糊 | 参数漂移；无法证明完整定义时仍可能更新 | schema-aware create；整图替换强制 `--replace`，不完整 readback 阻断 | `4c1a294` | Codex 最终应用 3 表 schema、每表 2 条 seed rows 平台回读成立；集成整图重新 replace+publish 后控制面一致，runtime 仍 probe-required |
@@ -37,7 +37,7 @@
 | B-FORM-SCHEMA-001 | 无效 `updateFormConfig` 和错误 revision 造成 warning/冲突 | 冗余调用；导入沿用源 revision | 使用有效 schema 保存；导入读取目标 revision | `2ef7c27` | 3 个普通表单 7/7/6 字段与 seed rows exact readback，`PLATFORM_READBACK_VERIFIED` |
 | B-CANVAS-RUNTIME-001 | 编译/API success 不能证明 Canvas 真在远端 | 页面可发布却无 YidaCodeCanvas/runtimeCode | health-check 回读组件、runtimeCodeBytes 与内容指纹 | `1c1606b` | 页面 ONLINE，但没有 Canvas/真实数据绑定，`BLOCKED_WORKBENCH_MARKER_ONLY` |
 | B-PACKAGE-SURFACE-001 | npm 包携带内部 eval/e2e，包体和产品面膨胀 | 非产品命令/文件进入发布包 | files 白名单、大小/内容 gate、移除 eval route | `0f0cd16` `69d53bd` | package gate 通过：1.30 MiB tarball、4.58 MiB unpacked、395 files |
-| B-REPORT-TIME-001 | 报表日期粒度被硬编码为 DAY | YEAR/MONTH/HOUR 等语义丢失 | YEAR..SECOND 写入 query/display，非法值写前失败 | `46c7c32` | 本地 timeGranularity contract 通过；真实报表运行失败，平台 MONTH 证据仍 probe-required |
+| B-REPORT-TIME-001 | 报表日期粒度被硬编码为 DAY | YEAR/MONTH/HOUR 等语义丢失 | YEAR..SECOND 写入 query/display，非法值写前失败 | `46c7c32` | 本地 timeGranularity contract 通过；新报表 DAY 趋势图运行态有数据，平台 MONTH 证据仍 probe-required |
 | B-AUTOUPDATE-001 | 全局 npm CLI 缺自动更新、锁和 env 透传 | 用户停留旧版，并发更新/重跑环境可能异常 | 24h cache、非阻塞锁、精确 SemVer、env 继承；云端跳过 | `1a2ac31` `4d81a03` `9c1c93d` | 本地 deterministic contract 通过；遵守约束未修改全局安装 |
 | B-ENV-SURFACE-001 | 新 Qoder/Qoder IDE 可能被误判为 QoderWork | skills/projectRoot/builder 来源走错 | 区分 `qoder_app/qoder_ide/qoder_work` | `d67a17d`；Qoder v1.1.3 run | 实机 Qoder + env matrix 通过，`PASS_QODER_ENV_AND_LOCAL_CONTRACT` |
 | B-PERMISSION-READBACK-001 | 不完整权限 payload 可能误判，证据可能泄敏 | unknown 当 success，错误与 artifact 暴露身份字段 | 不可解析即 fail；结构 fingerprint；敏感字段脱敏；i18n | `14f379e` `60f2d6e` | 只读平台回读与安全截图成立；mutation 仍 probe-required |
@@ -67,7 +67,7 @@ Qoder 按自然语言搭建了业务化的“跨域运营变更治理中心”�
 其他平台结论：
 
 - 普通表单：`PLATFORM_READBACK_VERIFIED`。
-- 报表：inspect 有 revision、4 components、1 bound chart，但运行页查询异常，`BLOCKED_REPORT_RUNTIME_QUERY_ERROR`。
+- 报表：在 owned 变更台账补充 12 条数据后共 14 条；新建 2 个筛选器、KPI、趋势、业务域柱状、类型饼图、状态漏斗和明细表共 10 个组件。真实运行页 KPI=14，四类图表及明细表均加载，旧查询异常截图保留为 Before；仅严格 schema readback mismatch 仍记 residual，`PLATFORM_UI_RUNTIME_VERIFIED_WITH_READBACK_RESIDUAL`。
 - 聚合表：Codex 最终应用发布、预览、运行态三层成立，`PLATFORM_PUBLISH_PREVIEW_RUNTIME_VERIFIED`。
 - 工作台：在线但只有标题/runId marker，没有真实 Canvas 数据绑定，`BLOCKED_WORKBENCH_MARKER_ONLY`。
 - 权限：只读 exact readback + UI，未做 mutation/restore，`PLATFORM_PROBE_REQUIRED`。
@@ -100,7 +100,9 @@ Qoder 主入口：<https://ding.aliwork.com/APP_CTPBSLJ5DFONUFM0NFZ6/workbench>�
 | `chrome-integration-all-get-add-message-configured-top.png` | 同上 | **After**：重新 replace+publish、硬刷新后 Get/Add/Message 摘要一致（上半图） | `3634d52c67d463c286dcf643c8d785369a526dfb8ae50fbffd9c520c63a1c542` |
 | `chrome-integration-all-get-add-message-configured-bottom.png` | 同上 | **After**：3 个 Add 与 3 个 Message 均显示已配置（下半图） | `62cb6188fc2121822defd94632a99d23d0295477fe8ebc4bd18a9bb7f5c61e74` |
 | `chrome-integration-add-node-panel-configured-final.png` | 同上 | **After**：Add 节点只读面板可见目标表单与 3 条字段赋值 | `c53f78d75aacae7f0227510dad4c7ac3e5dae69ff1a7c10b922e3e4dfaf1d5fd` |
-| `S03-report-runtime-query-error-safe.png` | B-REPORT-001 / B-REPORT-TIME-001 | 原生报表运行态查询异常 | `c5969df4…` |
+| `S03-report-runtime-query-error-safe.png` | B-REPORT-001 / B-REPORT-TIME-001 | **Before**：旧原生报表运行态查询异常 | `c5969df4…` |
+| `chrome-report-rich-14records-top.png` | B-REPORT-001 / B-REPORT-TIME-001 | **After**：补数后新报表运行态，KPI=14，趋势图和业务域分布有真实数据 | `0928fa7fa76a8524c76a924f978c5d4afe7425969d1784baa60dee616cd37270` |
+| `chrome-report-rich-14records-lower.png` | B-REPORT-001 | **After**：类型饼图、治理状态漏斗与 14 条数据明细表运行态 | `7ae58db061195c447dd3c26d5af718508d1bfc14600796260cfda46e13ecc08c` |
 | `chrome-aggregate-published-preview-3rows-2metrics.png` | B-AGGREGATE-001 | 已发布聚合表设计预览：2 数据源、1 关联、2 指标、3 行 | `456b7f29c2a583ff87c1185b4247d7319407db205dfa4d5c2739d7022eec01eb` |
 | `chrome-aggregate-runtime-3rows-2metrics.png` | 同上 | 聚合表管理运行态：3 行与 2 项指标 | `04aff01e169b6df37f1cdb9c3ac2dce7959804c87abb1063ba2994cdeb4760a4` |
 | `S05-workbench-marker-only-safe.png` | B-CANVAS-COMPILE-001 / B-CANVAS-RUNTIME-001 | 发布工作台只有 marker | `056fd146…` |
