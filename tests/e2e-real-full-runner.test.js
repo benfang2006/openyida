@@ -339,6 +339,63 @@ describe('full real E2E runner', () => {
     });
   });
 
+  test('keeps an auth/app/form stage selection closed and records exact owned identities', async () => {
+    const calls = [];
+    const registry = { resources: [], commands: [] };
+    const config = {
+      enabled: true,
+      prefix: 'OY_E2E_MINIMAL',
+      appName: 'OY_E2E_MINIMAL_App',
+      formName: 'OY_E2E_MINIMAL_Form',
+      pageName: 'OY_E2E_MINIMAL_Page',
+      updateAppName: 'OY_E2E_MINIMAL_App_Renamed',
+      resultAppName: 'OY_E2E_MINIMAL_PASSED',
+      importAppName: 'OY_E2E_MINIMAL_Imported',
+      fieldsFile: path.join(__dirname, '..', 'scripts', 'e2e-real', 'fixtures', 'form-fields.json'),
+      pageSource: path.join(__dirname, '..', 'project', 'pages', 'src', 'demo-compat-smoke.oyd.jsx'),
+      registryDir: '/tmp/openyida-e2e-minimal-test',
+      stages: ['auth', 'app', 'form'],
+    };
+
+    await run({
+      env: { OPENYIDA_E2E: '1' },
+      config,
+      createRegistry: () => ({ registry, registryPath: '/tmp/openyida-e2e-minimal-test/OY_E2E_MINIMAL.json' }),
+      writeRegistry: () => {},
+      addResource: (currentRegistry, registryPath, resource) => {
+        currentRegistry.resources.push(resource);
+      },
+      writeJson: (filePath) => filePath,
+      writeText: (filePath) => filePath,
+      runCli: (args) => {
+        calls.push(args);
+        if (args[0] === 'create-app') {
+          return { json: { success: true, appType: 'APP-MINIMAL' } };
+        }
+        if (args[0] === 'create-form' && args[1] === 'create') {
+          return { json: { success: true, formUuid: 'FORM-MINIMAL' } };
+        }
+        if (args[0] === 'get-schema') {
+          return { json: { success: true, content: { pages: [] } } };
+        }
+        return { json: { success: true, status: 'ok' } };
+      },
+    });
+
+    expect(calls.some((args) => args[0] === 'create-page')).toBe(false);
+    expect(calls).not.toContainEqual([
+      'update-app', 'APP-MINIMAL', '--name', 'OY_E2E_MINIMAL_PASSED', '--quiet',
+    ]);
+    expect(registry.resources).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        runId: 'OY_E2E_MINIMAL', owned: true, type: 'app', exactId: 'APP-MINIMAL',
+      }),
+      expect.objectContaining({
+        runId: 'OY_E2E_MINIMAL', owned: true, type: 'form', exactId: 'FORM-MINIMAL',
+      }),
+    ]));
+  });
+
   test('runs the opt-in process stage with mocked CLI calls', async () => {
     const registry = { resources: [], commands: [] };
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-full-process-'));
