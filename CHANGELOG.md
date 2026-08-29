@@ -12,6 +12,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.29] - 2026-08-29
+
+### Added
+
+- CRM Pro 评测新增确定性证据链：命令轨迹独立采集（临时 PATH shim + 敏感参数脱敏）、证据断言引擎、平台只读回读、schema-diff 稳定快照、只读重放（`eval:replay`）与浏览器运行时验收。
+- `get-schema` 新增 `--analysis-json` 表单 Schema 语义分析（字段角色、关联与能力诊断）。
+- 报表新增 `map`、`calendarHeatmap` 图表类型，覆盖能力注册、图表构建与数据模型校验。
+
+### Changed
+
+- `openyida integration list` 默认查询范围从仅 `flowType=1` 扩展为全部已知类型 `1,2,3,5,6`。依赖旧口径做数量断言的脚本应显式传入 `--flow-types 1`。
+- 报表保存契约规范化平台省略的 `null` 默认键，修复回读误判；schema 结果校验收紧为要求 `pages` 为数组。
+- CLI `--help` 改为命令清单驱动的按命令帮助，usage 与 examples 与 manifest 保持一致。
+- 同步 yida-get-schema / yida-report / yida-integration 等子技能文档与 README 双语命令表。
+
 ## [2026.8.28] - 2026-08-28
 
 ### Added
