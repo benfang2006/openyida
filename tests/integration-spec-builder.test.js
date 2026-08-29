@@ -808,6 +808,7 @@ describe('integration spec builder', () => {
     });
 
     const schoolId = built.nodeIdMap.school;
+    const schoolView = built.viewJson.schema.children.find((node) => node.id === schoolId);
     const retrieve = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.lookupRow);
     const retrieveView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookupRow);
     const create = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.appendRow);
@@ -830,6 +831,17 @@ describe('integration spec builder', () => {
       relativeItem: { value: 'tableField_history', label: '经销商履历' },
     });
     expect(retrieveView.props.getData.targetItem.formItem).toBeUndefined();
+    expect(schoolView.props.getData.targetItem.formItem).toMatchObject({
+      formUuid: 'FORM-SCHOOL',
+      hasTableField: true,
+    });
+    expect(schoolView.props.getData.targetItem.formItem.fields).toEqual([
+      expect.objectContaining({
+        fieldId: 'tableField_history',
+        label: '经销商履历',
+        componentName: 'TableField',
+      }),
+    ]);
     expect(create.props).toMatchObject({
       formUuid: schoolId,
       insertType: 'sub_table',
