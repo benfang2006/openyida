@@ -841,7 +841,10 @@ describe('integration spec builder', () => {
       insertType: 'sub_table',
       subFormUuid: 'tableField_history',
       sourceId: '',
+      targetItem: { value: schoolId, label: '定位履历学校' },
+      relativeItem: { value: 'tableField_history', label: '经销商履历' },
     });
+    expect(createView.props.addDataRules.targetItem.formItem).toBeUndefined();
     expect(createView.props.description).toBe('在 [定位履历学校] 中新增数据');
     expect(childFieldIds).toEqual([
       'textField_dealer_code',
@@ -852,6 +855,10 @@ describe('integration spec builder', () => {
       { text: '在网', value: '在网' },
       { text: '离网', value: '离网' },
     ]));
+    expect(radioChild.props.dataSource).toEqual([
+      { text: '在网', value: '在网' },
+      { text: '离网', value: '离网' },
+    ]);
     expect(associationChild).toMatchObject({
       assoFormUuid: 'FORM-DEALER',
       formType: 'receipt',
