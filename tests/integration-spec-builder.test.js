@@ -856,6 +856,15 @@ describe('integration spec builder', () => {
       targetItem: { value: schoolId, label: '定位履历学校' },
       relativeItem: { value: 'tableField_history', label: '经销商履历' },
     });
+    expect(createView.props.addDataRules.crossForm).toMatchObject({
+      value: schoolId,
+      label: '定位履历学校',
+      formItem: {
+        formUuid: 'FORM-SCHOOL',
+        hasTableField: true,
+      },
+    });
+    expect(createView.props.addDataRules.crossForm.formItem.formUuid).not.toBe(schoolId);
     expect(createView.props.addDataRules.targetItem.formItem).toMatchObject({
       formUuid: 'FORM-SCHOOL',
       hasTableField: true,
