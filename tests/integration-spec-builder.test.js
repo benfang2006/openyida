@@ -852,7 +852,7 @@ describe('integration spec builder', () => {
       formUuid: schoolId,
       insertType: 'sub_table',
       subFormUuid: 'tableField_history',
-      sourceId: 'FORM-SCHOOL',
+      sourceId: '',
       targetItem: { value: schoolId, label: '定位履历学校' },
       relativeItem: { value: 'tableField_history', label: '经销商履历' },
     });
@@ -865,7 +865,6 @@ describe('integration spec builder', () => {
         fields: null,
       },
     });
-    expect(createView.props.addDataRules.sourceId).toBe('FORM-SCHOOL');
     expect(createView.props.addDataRules.crossForm.formItem.formUuid).not.toBe(schoolId);
     expect(createView.props.addDataRules.targetItem.formItem).toMatchObject({
       formUuid: 'FORM-SCHOOL',
@@ -893,6 +892,18 @@ describe('integration spec builder', () => {
       'radioField_status',
       'associationFormField_dealer',
     ]);
+    expect(createView.props.addDataRules.rules.childList.map((item) => item.fieldId)).toEqual([
+      'textField_dealer_code',
+      'radioField_status',
+      'associationFormField_dealer',
+    ]);
+    expect(createView.props.addDataRules.rules.rules).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        name: 'textField_dealer_code',
+        label: '经销商编号',
+        valueLabel: '经销商编号',
+      }),
+    ]));
     expect(radioChild.componentOption).toBe(JSON.stringify([
       { text: '在网', value: '在网' },
       { text: '离网', value: '离网' },
