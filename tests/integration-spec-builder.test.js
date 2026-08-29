@@ -856,9 +856,27 @@ describe('integration spec builder', () => {
       targetItem: { value: schoolId, label: '定位履历学校' },
       relativeItem: { value: 'tableField_history', label: '经销商履历' },
     });
-    expect(createView.props.addDataRules.targetItem.formItem).toBeUndefined();
+    expect(createView.props.addDataRules.targetItem.formItem).toMatchObject({
+      formUuid: 'FORM-SCHOOL',
+      hasTableField: true,
+    });
+    expect(createView.props.addDataRules.targetItem.formItem.formUuid).not.toBe(schoolId);
+    expect(createView.props.addDataRules.relativeList).toEqual([
+      expect.objectContaining({ value: 'tableField_history', label: '经销商履历' }),
+    ]);
     expect(createView.props.description).toBe('在 [定位履历学校] 中新增数据');
     expect(childFieldIds).toEqual([
+      'tableField_history',
+      'textField_dealer_code',
+      'radioField_status',
+      'associationFormField_dealer',
+    ]);
+    expect(createView.props.addDataRules.inputs.childList[0]).toMatchObject({
+      fieldId: 'tableField_history',
+      componentName: 'TableField',
+      label: '经销商履历',
+    });
+    expect(createView.props.addDataRules.inputs.childList[0].children.map((item) => item.fieldId)).toEqual([
       'textField_dealer_code',
       'radioField_status',
       'associationFormField_dealer',
@@ -978,7 +996,10 @@ describe('integration spec builder', () => {
       ]]]),
     });
     expect(built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.appendRow)
-      .props.addDataRules.inputs.childList.map((item) => item.fieldId)).toEqual(['textField_dealer_code']);
+      .props.addDataRules.inputs.childList.map((item) => item.fieldId)).toEqual([
+      'tableField_history',
+      'textField_dealer_code',
+    ]);
   });
 
   test('keeps ordinary formUuid retrieve/create targeting a form', () => {
