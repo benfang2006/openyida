@@ -167,6 +167,26 @@ describe('integration spec builder', () => {
     }).sort()).toEqual(['FORM-A', 'FORM-B']);
   });
 
+  test('collectAddDataFormUuids infers the parent form for sub_table inserts', () => {
+    expect(collectAddDataFormUuids({
+      nodes: [
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-SCHOOL',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          type: 'dataCreate',
+          insertType: 'sub_table',
+          source: 'school',
+          subFormUuid: 'tableField_history',
+          assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+        },
+      ],
+    })).toEqual(['FORM-SCHOOL']);
+  });
+
   test('validates spec shape before remote calls are needed', () => {
     expect(() => validateIntegrationSpec({ nodes: [{ type: 'getSelf' }] }, ['insert'])).not.toThrow();
     expect(() => validateIntegrationSpec({ events: ['insert'], nodes: [] })).toThrow(/non-empty nodes array/);
@@ -696,5 +716,324 @@ describe('integration spec builder', () => {
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  test('binds sub_table retrieve/create to the upstream node instead of a form UUID', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          {
+            id: 'school',
+            type: 'dataRetrieve',
+            name: '定位履历学校',
+            formUuid: 'FORM-SCHOOL',
+            conditions: [{
+              bFieldId: 'serialNumberField_code',
+              bFieldName: '学校编码',
+              aFieldId: 'textField_selected_school_code',
+              componentType: 'TextField',
+              opCode: 'Equal',
+              valueType: 'processVar',
+            }],
+          },
+          {
+            id: 'lookupRow',
+            type: 'dataRetrieve',
+            originalType: 'sub_table',
+            source: 'school',
+            subSourceId: 'tableField_history',
+            subSourceLabel: '经销商履历',
+            conditions: [{
+              bFieldId: 'textField_dealer_code',
+              bFieldName: '经销商编号',
+              aFieldId: 'textField_selected_dealer_code',
+              componentType: 'TextField',
+              opCode: 'Equal',
+              valueType: 'processVar',
+            }],
+          },
+          {
+            id: 'appendRow',
+            type: 'dataCreate',
+            insertType: 'sub_table',
+            source: 'school',
+            subFormUuid: 'tableField_history',
+            assignments: [
+              { column: 'textField_dealer_code', valueType: 'processVar', value: 'textField_selected_dealer_code' },
+              { column: 'radioField_status', valueType: 'literal', value: '在网' },
+            ],
+          },
+        ],
+      },
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Sub table flow',
+      formSchemasByUuid: new Map([['FORM-SCHOOL', [
+        { componentName: 'TextField', props: { fieldId: 'serialNumberField_code', label: { zh_CN: '学校编码' } } },
+        { componentName: 'TableField', props: { fieldId: 'tableField_history', label: { zh_CN: '经销商履历' } } },
+        {
+          componentName: 'TextField',
+          props: {
+            fieldId: 'textField_dealer_code',
+            label: { zh_CN: '经销商编号' },
+            parentId: 'tableField_history',
+          },
+        },
+        {
+          componentName: 'RadioField',
+          props: {
+            fieldId: 'radioField_status',
+            label: { zh_CN: '状态' },
+            parentId: 'tableField_history',
+            dataSource: [
+              { text: '在网', value: '在网' },
+              { text: '离网', value: '离网' },
+            ],
+          },
+        },
+        {
+          componentName: 'AssociationFormField',
+          props: {
+            fieldId: 'associationFormField_dealer',
+            label: { zh_CN: '经销商' },
+            parentId: 'tableField_history',
+            assoFormUuid: 'FORM-DEALER',
+            formType: 'receipt',
+            mainFieldId: 'textField_name',
+          },
+        },
+      ]]]),
+    });
+
+    const schoolId = built.nodeIdMap.school;
+    const retrieve = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.lookupRow);
+    const retrieveView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookupRow);
+    const create = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.appendRow);
+    const createView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.appendRow);
+    const childFieldIds = createView.props.addDataRules.inputs.childList.map((item) => item.fieldId);
+    const radioChild = createView.props.addDataRules.inputs.childList
+      .find((item) => item.fieldId === 'radioField_status');
+    const associationChild = createView.props.addDataRules.inputs.childList
+      .find((item) => item.fieldId === 'associationFormField_dealer');
+
+    expect(retrieve.props).toMatchObject({
+      sourceId: schoolId,
+      originalType: 'sub_table',
+      subSourceId: 'tableField_history',
+    });
+    expect(retrieveView.props.getData).toMatchObject({
+      sourceId: schoolId,
+      originalType: 'sub_table',
+      targetItem: { value: schoolId, label: '定位履历学校' },
+      relativeItem: { value: 'tableField_history', label: '经销商履历' },
+    });
+    expect(retrieveView.props.getData.targetItem.formItem).toBeUndefined();
+    expect(create.props).toMatchObject({
+      formUuid: schoolId,
+      insertType: 'sub_table',
+      subFormUuid: 'tableField_history',
+      sourceId: '',
+    });
+    expect(createView.props.addDataRules).toMatchObject({
+      formUuid: schoolId,
+      insertType: 'sub_table',
+      subFormUuid: 'tableField_history',
+      sourceId: '',
+    });
+    expect(createView.props.description).toBe('在 [定位履历学校] 中新增数据');
+    expect(childFieldIds).toEqual([
+      'textField_dealer_code',
+      'radioField_status',
+      'associationFormField_dealer',
+    ]);
+    expect(radioChild.componentOption).toBe(JSON.stringify([
+      { text: '在网', value: '在网' },
+      { text: '离网', value: '离网' },
+    ]));
+    expect(associationChild).toMatchObject({
+      assoFormUuid: 'FORM-DEALER',
+      formType: 'receipt',
+      mainFieldId: 'textField_name',
+    });
+  });
+
+  test('rejects main-form assignments on sub_table create and accepts sub-table fields', () => {
+    const base = {
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Sub table flow',
+      formSchemasByUuid: new Map([['FORM-SCHOOL', [
+        { componentName: 'TextField', props: { fieldId: 'serialNumberField_code', label: { zh_CN: '学校编码' } } },
+        {
+          componentName: 'TextField',
+          props: {
+            fieldId: 'textField_dealer_code',
+            label: { zh_CN: '经销商编号' },
+            parentId: 'tableField_history',
+          },
+        },
+      ]]]),
+    };
+    const schoolRetrieve = () => ({
+      id: 'school',
+      type: 'dataRetrieve',
+      formUuid: 'FORM-SCHOOL',
+      conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+    });
+
+    expect(() => buildSpecProcessAndViewJson({
+      ...base,
+      spec: {
+        events: ['insert'],
+        nodes: [
+          schoolRetrieve(),
+          {
+            type: 'dataCreate',
+            insertType: 'sub_table',
+            source: 'school',
+            subFormUuid: 'tableField_history',
+            assignments: [{ column: 'serialNumberField_code', valueType: 'literal', value: 'S-1' }],
+          },
+        ],
+      },
+    })).toThrow(/serialNumberField_code/);
+
+    const built = buildSpecProcessAndViewJson({
+      ...base,
+      spec: {
+        events: ['insert'],
+        nodes: [
+          schoolRetrieve(),
+          {
+            id: 'appendRow',
+            type: 'dataCreate',
+            insertType: 'sub_table',
+            source: 'school',
+            subFormUuid: 'tableField_history',
+            assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+          },
+        ],
+      },
+    });
+    expect(built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.appendRow)
+      .props.assignments[0].column).toBe('textField_dealer_code');
+  });
+
+  test('reads nested TableField children when parentId is absent', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          {
+            id: 'school',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-SCHOOL',
+            conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+          },
+          {
+            id: 'appendRow',
+            type: 'dataCreate',
+            insertType: 'sub_table',
+            source: 'school',
+            subFormUuid: 'tableField_history',
+            assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+          },
+        ],
+      },
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Sub table flow',
+      formSchemasByUuid: new Map([['FORM-SCHOOL', [
+        { componentName: 'TextField', props: { fieldId: 'serialNumberField_code' } },
+        {
+          componentName: 'TableField',
+          props: { fieldId: 'tableField_history', label: { zh_CN: '经销商履历' } },
+          children: [
+            { componentName: 'TextField', props: { fieldId: 'textField_dealer_code', label: { zh_CN: '经销商编号' } } },
+          ],
+        },
+      ]]]),
+    });
+    expect(built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.appendRow)
+      .props.addDataRules.inputs.childList.map((item) => item.fieldId)).toEqual(['textField_dealer_code']);
+  });
+
+  test('keeps ordinary formUuid retrieve/create targeting a form', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          {
+            id: 'lookup',
+            type: 'dataRetrieve',
+            formUuid: 'FORM-B',
+            conditions: [{ fieldId: 'textField_b', value: 'x', valueType: 'literal' }],
+          },
+          {
+            id: 'create',
+            type: 'dataCreate',
+            formUuid: 'FORM-C',
+            assignments: [{ column: 'textField_name', valueType: 'literal', value: 'n' }],
+          },
+        ],
+      },
+      processCode: 'LPROC-FORM',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Form flow',
+      formSchemasByUuid: new Map([['FORM-C', [
+        { componentName: 'TextField', props: { fieldId: 'textField_name', label: { zh_CN: '名称' } } },
+      ]]]),
+    });
+    const retrieve = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.lookup);
+    const retrieveView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookup);
+    const create = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.create);
+    const createView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.create);
+
+    expect(retrieve.props).toMatchObject({ sourceId: 'FORM-B', originalType: 'form' });
+    expect(retrieveView.props.getData.targetItem.formItem.formUuid).toBe('FORM-B');
+    expect(retrieveView.props.getData.relativeItem).toEqual({});
+    expect(create.props).toMatchObject({ formUuid: 'FORM-C', insertType: 'form' });
+    expect(createView.props.addDataRules).toMatchObject({
+      formUuid: 'FORM-C',
+      insertType: 'form',
+    });
+  });
+
+  test('validates sub_table retrieve/create require source and sub-table ids', () => {
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'dataRetrieve',
+        originalType: 'sub_table',
+        subSourceId: 'tableField_history',
+        conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+      }],
+    })).toThrow(/source and subSourceId/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'dataCreate',
+        insertType: 'sub_table',
+        subFormUuid: 'tableField_history',
+        assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+      }],
+    })).toThrow(/source and subFormUuid/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'dataRetrieve',
+        originalType: 'sub_table',
+        source: 'school',
+        subSourceId: 'tableField_history',
+        conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+      }],
+    })).not.toThrow();
   });
 });
