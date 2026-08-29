@@ -106,7 +106,7 @@ description: 宜搭数据管理。表单实例/子表/流程实例/任务中心�
 ### 表单实例
 
 ```bash
-openyida data query form <appType> <formUuid> [--page 1 --size 20] [--search-json '<json>'|--search-file .cache/openyida/<项目名或任务名>/data-import/search.json] [--resolve-aliases]
+openyida data query form <appType> <formUuid> [--page 1 --size 20] [--search-json '<json>'|--search-file .cache/openyida/<项目名或任务名>/data-import/search.json] [--dynamic-order '{"fieldId":"+"}'] [--resolve-aliases]
 openyida data get form <appType> --inst-id <formInstId>
 openyida data create form <appType> <formUuid> --data-json '<json>' [--resolve-aliases]
 openyida data create form <appType> <formUuid> --data-file .cache/openyida/<项目名或任务名>/data-import/record.json [--resolve-aliases]
@@ -258,6 +258,7 @@ openyida data create form APP_xxx FORM-商机表 --data-json '{
 
 - `pageSize` 最大 100，QPS 限制约 40 次/秒
 - `searchFieldJson` 和 `dynamicOrder` 必须传字符串
+- 需要稳定顺序的分页、比对或配对必须显式传 `--dynamic-order '{"fieldId":"+"}'`（升序）或 `--dynamic-order '{"fieldId":"-"}'`（降序）；未传时不得依赖默认返回顺序
 - 字段 ID 通过 `openyida get-schema` 获取，不要手写猜测
 - 批量脚本可以用 Python `subprocess` 调用 `openyida data ...`，也可以用 JS 复用 Node 工具；脚本必须由结构化文件写入工具创建到 `<projectRoot>/.cache/openyida/<项目名或任务名>/scripts/`，导入数据放在 `<projectRoot>/.cache/openyida/<项目名或任务名>/data-import/`
 
