@@ -199,6 +199,7 @@ openyida create-process APP_XXX "Purchase Request" .cache/openyida/process/field
 openyida configure-process APP_XXX FORM_XXX .cache/openyida/process/process.json
 openyida process preview APP_XXX PROC_INST_XXX --output .cache/openyida/process/process.html
 openyida data query form APP_XXX FORM_XXX --page 1 --size 20
+openyida data query form APP_XXX FORM_XXX --dynamic-order '{"dateField_xxx":"-"}'
 openyida data create form APP_XXX FORM_XXX --data-file .cache/openyida/data-import/record.json
 openyida get-permission APP_XXX FORM_XXX
 ```
@@ -226,6 +227,7 @@ openyida get-permission APP_XXX FORM_XXX
 发布成功还必须精确回读同一 PUBLISHED `processId/processVersion` 的 `getProcessById` 平台视图，并验证可见节点的组件、名称、顺序和审批模式。只有输出 `verificationLevel: "PLATFORM_VIEW_VERIFIED"` 才表示平台 view 已验证；`PUBLISHED_UNVERIFIED` 表示发布可能已生效但回读不完整，不能宣称 `processJson` 已验证，也不能直接重放写请求。
 
 When creating or updating test data with `openyida data`, Yida date fields must use 13-digit millisecond timestamps, for example `"dateField_xxx": 1719705600000`. Do not submit `YYYY-MM-DD` strings for `DateField` or `CascadeDateField` values.
+For deterministic query order, pass `--dynamic-order '{"fieldId":"+"}'` for ascending order or `--dynamic-order '{"fieldId":"-"}'` for descending order. Without `--dynamic-order`, `searchFormDatas` does not guarantee a stable result order; pagination, comparison, and pairing logic must not depend on the default order.
 Temporary JSON, CSV, and one-off import scripts should live under `.cache/openyida/` so generated run artifacts do not clutter the repository root.
 
 ### Real Environment E2E
