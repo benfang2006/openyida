@@ -547,6 +547,37 @@ describe('integration spec builder', () => {
     expect(viewNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id', 'textField_code']);
   });
 
+  test('normalizes process dataRetrieve pid condition names in process and designer json', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [{
+          id: 'lookup',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-PROCESS',
+          conditions: [
+            { fieldId: 'pid', fieldName: '旧字段名称', value: 'A-1', opCode: 'Equal' },
+          ],
+        }],
+      },
+      processCode: 'LPROC-PROCESS-DATA-NAME',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Process data retrieve field name flow',
+      dataSourceFormsByUuid: new Map([
+        ['FORM-PROCESS', { formUuid: 'FORM-PROCESS', formName: '流程来源表单', formType: 'process' }],
+      ]),
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.lookup);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookup);
+    expect(processNode.props.condition.rules).toMatchObject([
+      { id: 'pid', name: '流程实例ID' },
+    ]);
+    expect(viewNode.props.getData.condition.rules).toMatchObject([
+      { id: 'proc_inst_id', name: '流程实例ID' },
+    ]);
+  });
+
   test('uses verified source form name over a stale spec formName', () => {
     const built = buildSpecProcessAndViewJson({
       spec: {

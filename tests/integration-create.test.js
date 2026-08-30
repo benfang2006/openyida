@@ -1007,8 +1007,12 @@ describe('integration create command', () => {
     const saveParams = integrationApi.saveProcess.mock.calls[0][1];
     const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
     const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
-    expect(processDataNode.props.condition.rules.map((rule) => rule.id)).toEqual(['pid']);
-    expect(viewDataNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id']);
+    expect(processDataNode.props.condition.rules).toMatchObject([
+      { id: 'pid', name: '流程实例ID' },
+    ]);
+    expect(viewDataNode.props.getData.condition.rules).toMatchObject([
+      { id: 'proc_inst_id', name: '流程实例ID' },
+    ]);
   });
 
   test('keeps an explicit get-self business query field on both process and view json', async () => {
