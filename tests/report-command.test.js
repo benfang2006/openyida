@@ -435,6 +435,7 @@ describe('report command helpers', () => {
             source: 'create_response',
             identityConfirmed: true,
           },
+          state: 'created_partial',
         },
         mismatch: {
           path: '$.pages[0].componentsTree[0].componentName',
@@ -455,6 +456,12 @@ describe('report command helpers', () => {
         },
       },
     });
+
+    const createCalls = utils.httpPost.mock.calls.filter((call) => (
+      call[1] === '/dingtalk/web/APP_XXX/query/formdesign/saveFormSchemaInfo.json'
+    ));
+    expect(createCalls).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith('报表创建成功，ID: REPORT_PARTIAL');
   });
 
   test('append-chart run fetches existing schema and saves appended chart', async () => {
@@ -490,6 +497,8 @@ describe('report command helpers', () => {
     const rootContent = savedSchema.pages[0].componentsTree[0].children[0];
     expect(rootContent.children).toHaveLength(1);
     expect(rootContent.props.layout).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith('报表 ID: REPORT_1');
+    expect(warn).toHaveBeenCalledWith('追加图表数: 1');
   });
 
   test('append-chart fails closed when the report schema readback differs', async () => {

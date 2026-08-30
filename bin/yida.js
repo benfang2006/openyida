@@ -13,7 +13,12 @@
 const { version: currentVersion } = require('../package.json');
 const { t } = require('../lib/core/i18n');
 const { warn } = require('../lib/core/chalk');
-const { CliError, isCliError, toErrorPayload } = require('../lib/core/cli-error');
+const {
+  CliError,
+  isCliError,
+  shouldUseStructuredErrorOutput,
+  toErrorPayload,
+} = require('../lib/core/cli-error');
 const { COMMAND_GROUPS, buildCommandManifest, findCommandSuggestion } = require('../lib/core/command-manifest');
 
 const command = process.argv[2];
@@ -1263,7 +1268,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    if (isCliError(err) && args.includes('--json')) {
+    if (shouldUseStructuredErrorOutput(err, args)) {
       console.error(JSON.stringify(toErrorPayload(err), null, 2));
     } else if (isCliError(err)) {
       warn(t('cli.exec_failed', err.message));

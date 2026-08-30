@@ -1769,6 +1769,14 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: '不支援的資料命令：{0} {1}。請執行 openyida commands --json 查詢實際能力。',
+  delete_confirmation_required: '刪除表單實例前，必須先查詢並向使用者展示目標摘要；只有取得明確確認後才可加入 --confirm。未執行刪除。',
+  delete_preflight_failed: '無法讀取表單實例 {0} 完成刪除前檢查，未執行刪除。',
+  delete_process_unsupported: '目前版本不支援刪除流程實例。請停止並回報能力缺口，不要嘗試腳本或私有 API。',
+  delete_readback_mismatch: '刪除請求已被接受，但回讀仍能找到表單實例 {0}。結果尚未驗證，禁止自動重試刪除。',
+  delete_result_unknown: '表單實例 {0} 的刪除結果未知。請只讀回查目標，不要自動重試刪除。',
+  delete_target_mismatch: '表單實例 {0} 不屬於目標表單 {1}，已停止且未執行刪除。',
+  delete_target_unverified: '無法驗證表單實例 {0} 的身分和歸屬，已停止且未執行刪除。',
   form_mode_unverified: '無法驗證表單 {0} 的類型，已停止建立；未執行任何資料寫入。',
   resource_required: 'data query 缺少資源類型 form。建議：{0}',
 });

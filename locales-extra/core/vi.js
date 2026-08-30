@@ -1893,6 +1893,14 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: 'Lệnh dữ liệu không được hỗ trợ: {0} {1}. Chạy openyida commands --json để xem năng lực thực tế.',
+  delete_confirmation_required: 'Trước khi xóa bản ghi biểu mẫu, hãy đọc mục tiêu, hiển thị tóm tắt cho người dùng và chỉ thêm --confirm sau khi được xác nhận rõ ràng. Chưa thực hiện xóa.',
+  delete_preflight_failed: 'Không thể đọc bản ghi biểu mẫu {0} để kiểm tra trước khi xóa. Chưa thực hiện xóa.',
+  delete_process_unsupported: 'Phiên bản này chưa hỗ trợ xóa phiên bản quy trình. Hãy dừng và báo cáo thiếu hụt năng lực; không dùng script hoặc API riêng.',
+  delete_readback_mismatch: 'Yêu cầu xóa đã được chấp nhận nhưng bản ghi {0} vẫn tồn tại khi đọc lại. Kết quả chưa được xác minh; không tự động thử xóa lại.',
+  delete_result_unknown: 'Không xác định được kết quả xóa bản ghi {0}. Chỉ kiểm tra bằng thao tác đọc và không tự động thử xóa lại.',
+  delete_target_mismatch: 'Bản ghi biểu mẫu {0} không thuộc biểu mẫu đích {1}. Thao tác đã dừng trước khi xóa.',
+  delete_target_unverified: 'Không thể xác minh danh tính và biểu mẫu sở hữu của bản ghi {0}. Thao tác đã dừng trước khi xóa.',
   form_mode_unverified: 'Không thể xác minh loại của biểu mẫu {0}. Việc tạo đã dừng trước khi ghi dữ liệu.',
   resource_required: 'data query thiếu loại tài nguyên form. Lệnh đề xuất: {0}',
 });

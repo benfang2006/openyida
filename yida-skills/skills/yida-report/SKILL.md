@@ -174,7 +174,28 @@ openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --jso
 
 **⚠️ 第二个参数是报表名称，必须使用业务含义的中文名称**（如"任务管理数据报表"），不要传 formUuid。
 
-若命令返回 `REPORT_SCHEMA_READBACK_MISMATCH` 且 `sideEffectState` 表示远端可能已写入，禁止重复执行 create/append 猜测修复。只执行一次 `details.nextAction` 指定的 `report inspect` 回读，保留 `mismatchType`、安全字段路径和 readback 证据，再决定 patch 或停止。
+对 `REPORT_SCHEMA_READBACK_MISMATCH` 等 post-create failure，同时读取顶层 `sideEffectState`、`residual`、`retrySafe`、`nextStep` 以及兼容字段 `details.nextAction`。若返回 `partial=true`、`residual.owned=true`，立即把 `residual.appType + residual.reportId` 锁定为本 task/run 唯一报表目标。即使更换配置文件、标题、prompt 或进入恢复轮次，也禁止再次执行 `create-report`，禁止按名称猜资源，禁止自动删除、隐藏或创建同名 display 页面掩盖残留。
+
+先且只先执行一次 `openyida report inspect <residual.appType> <residual.reportId> --json`。只有 inspect 证明原报表身份正确、已有组件集合明确，并且能够确定性算出尚未写入的 owned 图表时，才允许用 `append-chart` 修复同一个 `residual.reportId` 并再次 readback；不能证明安全增量或当前 CLI 没有对应 update/repair 能力时，必须停止并交付完整 residual、mismatch 和 nextStep，不能重新创建。
+
+<!-- owned-residual-contract:start -->
+```json
+{
+  "when": "partial=true && residual.type=report && residual.owned=true",
+  "createReportAllowed": false,
+  "inspect": {
+    "commandId": "report.inspect",
+    "appTypeSource": "residual.appType",
+    "reportIdSource": "residual.reportId",
+    "maxAttempts": 1
+  },
+  "allowedRepairCommands": ["append-chart"],
+  "repairReportIdSource": "residual.reportId",
+  "deleteAllowed": false,
+  "unsafeRepairFallback": "stop_and_report_residual"
+}
+```
+<!-- owned-residual-contract:end -->
 
 ### cubeCode 格式规则
 
