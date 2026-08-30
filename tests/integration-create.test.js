@@ -121,6 +121,69 @@ describe('integration create command', () => {
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
   });
 
+  test.each([
+    ['sendMessage', {
+      events: ['insert'],
+      nodes: [
+        { id: 'notify', type: 'sendMessage', receivers: ['user-1'], content: 'done' },
+        {
+          id: 'lookupRow',
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'notify',
+          subSourceId: 'tableField_history',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
+    }, /getSelf or dataRetrieve/],
+    ['a downstream node', {
+      events: ['insert'],
+      nodes: [
+        {
+          id: 'lookupRow',
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'school',
+          subSourceId: 'tableField_history',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-SCHOOL',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
+    }, /upstream node/],
+    ['an unknown alias', {
+      events: ['insert'],
+      nodes: [{
+        id: 'lookupRow',
+        type: 'dataRetrieve',
+        originalType: 'sub_table',
+        source: 'missing',
+        subSourceId: 'tableField_history',
+        conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+      }],
+    }, /Unknown integration spec node alias/],
+  ])('rejects sub_table source %s before any remote write', async (_label, spec, message) => {
+    const specPath = writeTempSpec(spec);
+
+    await expect(run([
+      'APP_TEST',
+      'FORM-A',
+      'invalid sub table source',
+      '--spec',
+      specPath,
+    ])).rejects.toThrow(message);
+
+    expect(require('../lib/core/utils').loadAuthData).not.toHaveBeenCalled();
+    expect(fetchFormPageList).not.toHaveBeenCalled();
+    expect(integrationApi.getFormSchema).not.toHaveBeenCalled();
+    expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
+    expect(integrationApi.saveProcess).not.toHaveBeenCalled();
+  });
+
   test('requires --replace for process-code full replacement before auth or remote writes', async () => {
     const coreUtils = require('../lib/core/utils');
 

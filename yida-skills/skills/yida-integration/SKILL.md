@@ -291,8 +291,8 @@ openyida integration create APP_XXX FORM-XXX "获取自身后分支更新" \
 
 从上游节点的子表取一行或新增一行，只用于 `--spec` 新建草稿，不要用来改现网自动化，也不要调用 `integration update`。
 
-- `dataRetrieve`：`originalType: "sub_table"`，`source` 为上游节点别名，`subSourceId` 为子表 fieldId；不要再填目标表 `formUuid`
-- `dataCreate`：`insertType: "sub_table"`，`source` 为同一上游节点，`subFormUuid` 为子表 fieldId；赋值字段必须落在该子表下。`parentFormUuid` 可选，CLI 会优先从上游节点的 `formUuid` 推断
+- `dataRetrieve`：`originalType: "sub_table"`，`source` 必须是拓扑上游的 `getSelf` 或 `dataRetrieve` 别名，`subSourceId` 为子表 fieldId；不要再填目标表 `formUuid`
+- `dataCreate`：`insertType: "sub_table"`，`source` 为同一类上游节点，`subFormUuid` 为子表 fieldId；赋值字段必须落在该子表下。`parentFormUuid` 可选；来源是 `getSelf` 时回退到触发表单 UUID，否则从上游节点的 `formUuid` 推断
 
 ```json
 {

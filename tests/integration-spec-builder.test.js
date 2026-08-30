@@ -187,6 +187,21 @@ describe('integration spec builder', () => {
     })).toEqual(['FORM-SCHOOL']);
   });
 
+  test('collectAddDataFormUuids falls back to the trigger form for getSelf sub_table inserts', () => {
+    expect(collectAddDataFormUuids({
+      nodes: [
+        { id: 'self', type: 'getSelf' },
+        {
+          type: 'dataCreate',
+          insertType: 'sub_table',
+          source: 'self',
+          subFormUuid: 'tableField_history',
+          assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+        },
+      ],
+    }, 'FORM-A')).toEqual(['FORM-A']);
+  });
+
   test('validates spec shape before remote calls are needed', () => {
     expect(() => validateIntegrationSpec({ nodes: [{ type: 'getSelf' }] }, ['insert'])).not.toThrow();
     expect(() => validateIntegrationSpec({ events: ['insert'], nodes: [] })).toThrow(/non-empty nodes array/);
@@ -1090,13 +1105,123 @@ describe('integration spec builder', () => {
 
     expect(() => validateIntegrationSpec({
       events: ['insert'],
-      nodes: [{
-        type: 'dataRetrieve',
-        originalType: 'sub_table',
-        source: 'school',
-        subSourceId: 'tableField_history',
-        conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
-      }],
+      nodes: [
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-SCHOOL',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'school',
+          subSourceId: 'tableField_history',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
     })).not.toThrow();
+  });
+
+  test('rejects sub_table retrieve sourced from sendMessage, a downstream node, or an unknown alias', () => {
+    const subTableRetrieve = (source) => ({
+      id: 'lookupRow',
+      type: 'dataRetrieve',
+      originalType: 'sub_table',
+      source,
+      subSourceId: 'tableField_history',
+      conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+    });
+    const schoolRetrieve = {
+      id: 'school',
+      type: 'dataRetrieve',
+      formUuid: 'FORM-SCHOOL',
+      conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+    };
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        { id: 'notify', type: 'sendMessage', receivers: ['user-1'], content: 'done' },
+        subTableRetrieve('notify'),
+      ],
+    })).toThrow(/getSelf or dataRetrieve/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        subTableRetrieve('school'),
+        schoolRetrieve,
+      ],
+    })).toThrow(/upstream node/);
+
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [subTableRetrieve('missing')],
+    })).toThrow(/Unknown integration spec node alias: missing/);
+
+    expect(() => buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          { id: 'notify', type: 'sendMessage', receivers: ['user-1'], content: 'done' },
+          subTableRetrieve('notify'),
+        ],
+      },
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Invalid source',
+    })).toThrow(/getSelf or dataRetrieve/);
+  });
+
+  test('resolves getSelf as the sub_table retrieve parent form for Chinese table names', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [
+          { id: 'self', type: 'getSelf' },
+          {
+            id: 'lookupRow',
+            type: 'dataRetrieve',
+            originalType: 'sub_table',
+            source: 'self',
+            subSourceId: 'tableField_history',
+            conditions: [{
+              fieldId: 'textField_dealer_code',
+              value: 'x',
+              valueType: 'literal',
+            }],
+          },
+        ],
+      },
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'GetSelf sub table',
+      formNamesByUuid: new Map([['FORM-A', '变更申请']]),
+      formSchemasByUuid: new Map([['FORM-A', [
+        {
+          componentName: 'TableField',
+          props: { fieldId: 'tableField_history', label: { zh_CN: '经销商履历' } },
+        },
+        {
+          componentName: 'TextField',
+          props: {
+            fieldId: 'textField_dealer_code',
+            label: { zh_CN: '经销商编号' },
+            parentId: 'tableField_history',
+          },
+        },
+      ]]]),
+    });
+
+    const retrieveView = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookupRow);
+    expect(retrieveView.props.getData).toMatchObject({
+      sourceId: built.nodeIdMap.self,
+      originalType: 'sub_table',
+      relativeItem: { value: 'tableField_history', label: '经销商履历' },
+    });
+    expect(retrieveView.props.getData.relativeItem.label).not.toBe('tableField_history');
   });
 });
