@@ -1133,7 +1133,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2} arquivos)',
     remove_failed: '    ❌ Falha ao remover: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Criação de link simbólico Windows falhou (requer permissões de admin), usando cópia de diretório: {0}',
-    symlink_failed: '    ❌ Falha ao criar link simbólico: {0} ({1})'
+    symlink_failed: '    ❌ Falha ao criar link simbólico: {0} ({1})',
+    source_destination_overlap: 'Cópia interrompida porque os diretórios de origem e destino se sobrepõem. Origem: {0}; destino: {1}'
   },
   check_update: {
     new_version: '\n🎉 Nova versão disponível: {0} → {1}',

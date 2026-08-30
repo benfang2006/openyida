@@ -1081,7 +1081,8 @@ module.exports = {
     result_copy: '   {0} → {1}（{2} ファイル）',
     remove_failed: '    ❌ 削除失敗: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows でシンボリックリンク作成失敗（管理者権限が必要）、ディレクトリコピーにフォールバック: {0}',
-    symlink_failed: '    ❌ シンボリックリンク作成失敗: {0} ({1})'
+    symlink_failed: '    ❌ シンボリックリンク作成失敗: {0} ({1})',
+    source_destination_overlap: 'コピー元とコピー先のディレクトリが重複しているため、コピーを停止しました。コピー元: {0}、コピー先: {1}'
   },
   check_update: {
     new_version: '\n' +

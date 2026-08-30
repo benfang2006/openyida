@@ -1131,7 +1131,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2} Dateien)',
     remove_failed: '    ❌ Entfernen fehlgeschlagen: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows-Symlink-Erstellung fehlgeschlagen (Admin-Rechte erforderlich), Verzeichniskopie wird verwendet: {0}',
-    symlink_failed: '    ❌ Symlink-Erstellung fehlgeschlagen: {0} ({1})'
+    symlink_failed: '    ❌ Symlink-Erstellung fehlgeschlagen: {0} ({1})',
+    source_destination_overlap: 'Kopiervorgang abgebrochen, da sich Quell- und Zielverzeichnis überschneiden. Quelle: {0}; Ziel: {1}'
   },
   check_update: {
     new_version: '\n🎉 Neue Version verfügbar: {0} → {1}',

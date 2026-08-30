@@ -256,6 +256,13 @@ describe('report frontend contract', () => {
     expect(caught).toMatchObject({
       code: 'REPORT_SCHEMA_READBACK_MISMATCH',
       details: {
+        mismatchType: expectedKind,
+        mismatchPath: expect.stringMatching(/^\$\.pages\[0\]\.componentsTree\[0\]\.children/),
+        retryable: false,
+        retrySafe: false,
+        sideEffectState: 'unknown',
+        readbackAllowed: true,
+        recommendedRecovery: 'inspect_then_stop',
         mismatch: {
           kind: expectedKind,
           path: expect.stringMatching(/^\$\.pages\[0\]\.componentsTree\[0\]\.children/),

@@ -103,6 +103,28 @@ describe('OpenYida skill contracts', () => {
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
+  test('form skills use TextField plus custom validation for phone numbers', () => {
+    const createFormSkill = readSkill('yida-skills/skills/yida-create-form-page/SKILL.md');
+    const appFormStep = readSkill('yida-skills/skills/yida-app/workflow/step-4-forms-processes.md');
+
+    expect(createFormSkill).toContain('电话号码使用 `TextField`');
+    expect(createFormSkill).toContain('不要创建或 patch `PhoneField`');
+    expect(appFormStep).toContain('"type": "TextField"');
+    expect(appFormStep).toContain('"type": "regex"');
+    expect(appFormStep).toContain('"pattern": "^1[3-9]\\\\d{9}$"');
+    expect(appFormStep).not.toContain('"type": "PhoneField"');
+  });
+
+  test('report skill preserves structured mismatch recovery contract', () => {
+    const skill = readSkill('yida-skills/skills/yida-report/SKILL.md');
+
+    expect(skill).toContain('REPORT_SCHEMA_READBACK_MISMATCH');
+    expect(skill).toContain('sideEffectState');
+    expect(skill).toContain('details.nextAction');
+    expect(skill).toContain('report inspect');
+    expect(skill).toContain('--json');
+  });
+
   test('login skill assigns browser ownership and waits for the original command', () => {
     const skill = readSkill('yida-skills/skills/yida-login/SKILL.md');
 

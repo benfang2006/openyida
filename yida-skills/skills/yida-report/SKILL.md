@@ -131,7 +131,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 - **组件库地址**：`//g.alicdn.com/code/npm/@ali/vc-yida-report/1.0.101/pc.js`
 - **全局挂载**：`window.YidaReport`
-- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`
+- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`
 - **字段配置参考**：[`report-field-config-guide.md`](../../references/report-field-config-guide.md)
 
 ### 组件总览
@@ -157,7 +157,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 ### Schema 构建细节参考
 
-普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`，由 CLI 内部构建并发布 Schema。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
+普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`，由 CLI 内部构建并发布 Schema。机器调用必须保留 `--json`，以便在远端已经写入但回读不一致时读取安全的恢复信息。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
 
 ---
 
@@ -166,13 +166,15 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 ### 命令调用格式
 
 ```bash
-openyida create-report <appType> "<报表名称>" <配置JSON文件路径>
+openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json
 # 配置文件路径示例：.cache/openyida/<项目名或任务名>/<报表名>-report.json
 ```
 
 > 配置 JSON 先用 create_file / Write / file edit tool 创建。上方路径默认从 OpenYida project 工作目录执行；从 workspace 根执行命令时传 `project/.cache/openyida/<项目名或任务名>/<报表名>-report.json`。
 
 **⚠️ 第二个参数是报表名称，必须使用业务含义的中文名称**（如"任务管理数据报表"），不要传 formUuid。
+
+若命令返回 `REPORT_SCHEMA_READBACK_MISMATCH` 且 `sideEffectState` 表示远端可能已写入，禁止重复执行 create/append 猜测修复。只执行一次 `details.nextAction` 指定的 `report inspect` 回读，保留 `mismatchType`、安全字段路径和 readback 证据，再决定 patch 或停止。
 
 ### cubeCode 格式规则
 

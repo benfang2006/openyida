@@ -1072,7 +1072,8 @@ module.exports = {
     result_copy: '   {0} → {1}（{2} 個檔案）',
     remove_failed: '    ❌ 刪除失敗：{0}（{1}）',
     symlink_fallback_copy: '    ⚠️  Windows 符號連結建立失敗（需要管理員權限），降級為目錄複製：{0}',
-    symlink_failed: '    ❌ 符號連結建立失敗：{0}（{1}）'
+    symlink_failed: '    ❌ 符號連結建立失敗：{0}（{1}）',
+    source_destination_overlap: '已停止複製：來源目錄與目標目錄重疊。來源：{0}；目標：{1}'
   },
   check_update: {
     new_version: '\n💡 發現新版本 {0}（目前 {1}）\n   執行以下指令更新：\n   npm install -g openyida@latest\n'

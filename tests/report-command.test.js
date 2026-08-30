@@ -440,6 +440,19 @@ describe('report command helpers', () => {
           path: '$.pages[0].componentsTree[0].componentName',
           kind: 'value_mismatch',
         },
+        retryable: false,
+        retrySafe: false,
+        sideEffectState: 'partial',
+        readbackAllowed: true,
+        recommendedRecovery: 'inspect_then_stop',
+        nextAction: {
+          type: 'report.inspect',
+          commandId: 'report.inspect',
+          args: {
+            appType: 'APP_XXX',
+            reportId: 'REPORT_PARTIAL',
+          },
+        },
       },
     });
   });
@@ -497,6 +510,18 @@ describe('report command helpers', () => {
       JSON.stringify(chartConfig),
     ])).rejects.toMatchObject({
       code: 'REPORT_SCHEMA_READBACK_MISMATCH',
+      details: {
+        retryable: false,
+        retrySafe: false,
+        sideEffectState: 'partial',
+        readbackAllowed: true,
+        recommendedRecovery: 'inspect_then_stop',
+        nextAction: {
+          type: 'report.inspect',
+          commandId: 'report.inspect',
+          args: { appType: 'APP_XXX', reportId: 'REPORT_1' },
+        },
+      },
     });
 
     expect(utils.httpPost).toHaveBeenCalledTimes(1);

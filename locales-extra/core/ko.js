@@ -1132,7 +1132,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2}개 파일)',
     remove_failed: '    ❌ 제거 실패: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows 심볼릭 링크 생성 실패(관리자 권한 필요), 디렉토리 복사로 대체: {0}',
-    symlink_failed: '    ❌ 심볼릭 링크 생성 실패: {0} ({1})'
+    symlink_failed: '    ❌ 심볼릭 링크 생성 실패: {0} ({1})',
+    source_destination_overlap: '원본과 대상 디렉터리가 겹쳐 복사를 중지했습니다. 원본: {0}; 대상: {1}'
   },
   check_update: {
     new_version: '\n🎉 새 버전 사용 가능: {0} → {1}',

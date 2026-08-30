@@ -264,6 +264,8 @@ describe('CLI offline smoke', () => {
       { args: ['app-offline', '--help'], text: 'openyida app-offline' },
       { args: ['sample', '--help'], text: 'Code Templates' },
       { args: ['publish', '--help'], text: 'openyida publish' },
+      { args: ['copy', '--help'], text: 'openyida copy' },
+      { args: ['copy', '-h'], text: 'openyida copy' },
     ];
 
     for (const item of cases) {
@@ -272,6 +274,19 @@ describe('CLI offline smoke', () => {
       expect(result.output).toContain(item.text);
       expect(result.output).not.toContain('读取登录态');
     }
+  });
+
+  test('agent capability auth profile recommendations are accepted by the CLI parser', () => {
+    const profiles = runAny(['auth', 'profiles']);
+    expect(profiles.status).toBe(0);
+    expect(() => JSON.parse(profiles.stdout)).not.toThrow();
+
+    const switchResult = runAny(['auth', 'profile', 'switch', '__missing_profile__', '--json']);
+    expect(switchResult.status).toBe(1);
+    expect(JSON.parse(switchResult.stderr)).toMatchObject({
+      success: false,
+      errorCode: 'AUTH_PROFILE_NOT_FOUND',
+    });
   });
 
   test('CRM Pro command help probes exit successfully without requiring login', () => {
@@ -284,6 +299,8 @@ describe('CLI offline smoke', () => {
       { args: ['report', '--help'], text: 'openyida report inspect' },
       { args: ['create-process', '--help'], text: 'openyida create-process' },
       { args: ['create-report', '--help'], text: 'openyida create-report' },
+      { args: ['append-chart', '--help'], text: 'openyida append-chart' },
+      { args: ['append-chart', '-h'], text: 'openyida append-chart' },
       { args: ['save-share-config', '--help'], text: 'openyida save-share-config' },
       { args: ['verify-short-url', '--help'], text: 'openyida verify-short-url' },
       { args: ['integration-create', '--help'], text: 'openyida integration create' },

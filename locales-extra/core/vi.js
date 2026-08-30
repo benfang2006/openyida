@@ -1131,7 +1131,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2} tệp)',
     remove_failed: '    ❌ Xóa thất bại: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Tạo liên kết tượng trưng Windows thất bại (cần quyền admin), sử dụng sao chép thư mục: {0}',
-    symlink_failed: '    ❌ Tạo liên kết tượng trưng thất bại: {0} ({1})'
+    symlink_failed: '    ❌ Tạo liên kết tượng trưng thất bại: {0} ({1})',
+    source_destination_overlap: 'Đã dừng sao chép vì thư mục nguồn và đích chồng lấn. Nguồn: {0}; đích: {1}'
   },
   check_update: {
     new_version: '\n🎉 Phiên bản mới có sẵn: {0} → {1}',

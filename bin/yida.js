@@ -492,11 +492,13 @@ const MANIFEST_HELP_PATHS = Object.freeze({
   report: ['report'],
   'create-process': ['create-process'],
   'create-report': ['create-report'],
+  'append-chart': ['append-chart'],
   'save-share-config': ['save-share-config'],
   'verify-short-url': ['verify-short-url'],
   'integration-create': ['integration', 'create'],
   'save-permission': ['save-permission'],
   'get-permission': ['get-permission'],
+  copy: ['copy'],
 });
 
 function printManifestCommandHelp(commandName) {
