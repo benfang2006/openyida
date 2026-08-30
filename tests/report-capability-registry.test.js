@@ -8,8 +8,8 @@ const {
   getReportChartCapability,
   listReportChartTypes,
 } = require('../lib/report/capability-registry');
-const { validateChartConfig } = require('../lib/report/chart-builder');
-const { buildReportSchema } = require('../lib/report/chart-builder');
+const chartBuilder = require('../lib/report/chart-builder');
+const { validateChartConfig, buildReportSchema } = chartBuilder;
 const { buildDataSetModelMap } = require('../lib/report/data-model');
 
 const SUPPORTED_TYPES = [
@@ -43,7 +43,7 @@ describe('report capability registry', () => {
     expect(Object.keys(REPORT_CHART_CAPABILITIES).sort()).toEqual(SUPPORTED_TYPES);
   });
 
-  test.each(['radar', 'heatmap', 'wordcloud', 'number', 'unknown'])('%s fails closed', (type) => {
+  test.each(['scatter', 'area', 'radar', 'heatmap', 'wordcloud', 'number', 'unknown'])('%s fails closed', (type) => {
     expect(getReportChartCapability(type)).toBeNull();
     expect(validateChartConfig({
       type,
@@ -51,6 +51,13 @@ describe('report capability registry', () => {
       xField: { fieldCode: 'textField_1' },
       yField: [{ fieldCode: 'numberField_1' }],
     }, 0)).toBe(false);
+  });
+
+  test('does not export builders for unsupported legacy chart types', () => {
+    expect(chartBuilder).not.toHaveProperty('buildScatterChartSettings');
+    expect(chartBuilder).not.toHaveProperty('buildAreaChartSettings');
+    expect(chartBuilder).not.toHaveProperty('buildRadarChartSettings');
+    expect(chartBuilder).not.toHaveProperty('buildNumberChartSettings');
   });
 
   test('map and calendar heatmap build platform-shaped datasets', () => {
