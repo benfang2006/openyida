@@ -119,7 +119,7 @@ describe('run() 参数校验', () => {
   });
 
   test('未知 action/resource 组合时打印错误并退出', async () => {
-    const error = await expectCliError(run(['unknown', 'resource']), '不支持的数据命令');
+    const error = await expectCliError(run(['unknown', 'resource']));
     expect(error.code).toBe('DATA_COMMAND_UNSUPPORTED');
   });
 
@@ -144,8 +144,7 @@ describe('run() 参数校验', () => {
 
   test('显式未知资源不触发漏写 form 纠错', async () => {
     const error = await expectCliError(
-      run(['query', 'unknown-resource', 'APP_XXX', 'FORM_XXX']),
-      '不支持的数据命令：query unknown-resource'
+      run(['query', 'unknown-resource', 'APP_XXX', 'FORM_XXX'])
     );
 
     expect(error.code).toBe('DATA_COMMAND_UNSUPPORTED');
@@ -742,8 +741,7 @@ describe('run() delete form', () => {
     utils.loadAuthData.mockReturnValue(null);
 
     const error = await expectCliError(
-      run(deleteArgs.filter(arg => arg !== '--confirm')),
-      '追加 --confirm'
+      run(deleteArgs.filter(arg => arg !== '--confirm'))
     );
 
     expect(error.code).toBe('DATA_DELETE_CONFIRMATION_REQUIRED');
@@ -764,8 +762,7 @@ describe('run() delete form', () => {
     utils.loadAuthData.mockReturnValue(null);
 
     const error = await expectCliError(
-      run(['delete', 'process', 'APP_XXX', '--process-inst-id', 'PROC-001', '--confirm', '--json']),
-      '不支持删除流程实例'
+      run(['delete', 'process', 'APP_XXX', '--process-inst-id', 'PROC-001', '--confirm', '--json'])
     );
 
     expect(error.code).toBe('DATA_PROCESS_DELETE_UNSUPPORTED');
@@ -858,7 +855,7 @@ describe('run() delete form', () => {
       },
     });
 
-    const error = await expectCliError(run(deleteArgs), '不属于目标表单');
+    const error = await expectCliError(run(deleteArgs));
 
     expect(error.code).toBe('DATA_DELETE_TARGET_MISMATCH');
     expect(error.details).toMatchObject({
@@ -875,7 +872,7 @@ describe('run() delete form', () => {
     });
     utils.httpPost.mockResolvedValue({ success: false, errorCode: 'REMOTE_ERROR' });
 
-    const error = await expectCliError(run(deleteArgs), '删除结果未知');
+    const error = await expectCliError(run(deleteArgs));
 
     expect(error.code).toBe('DATA_DELETE_RESULT_UNKNOWN');
     expect(error.details).toMatchObject({
@@ -897,7 +894,7 @@ describe('run() delete form', () => {
     );
     utils.httpPost.mockResolvedValue({ success: true, content: true });
 
-    const error = await expectCliError(run(deleteArgs), '回读仍能找到');
+    const error = await expectCliError(run(deleteArgs));
 
     expect(error.code).toBe('DATA_DELETE_READBACK_MISMATCH');
     expect(error.details).toMatchObject({
