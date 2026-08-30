@@ -984,6 +984,60 @@ describe('integration create command', () => {
     });
   });
 
+  test('converts explicit process get-self pid override to designer proc_inst_id', async () => {
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: 'process form', formType: 'process' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'explicit pid get-self',
+      '--events',
+      'processFinish',
+      '--approval-actions',
+      'agree',
+      '--get-self',
+      '--get-self-query-field',
+      'pid',
+    ]);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processDataNode.props.condition.rules.map((rule) => rule.id)).toEqual(['pid']);
+    expect(viewDataNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id']);
+  });
+
+  test('keeps an explicit get-self business query field on both process and view json', async () => {
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: 'process form', formType: 'process' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'explicit business get-self',
+      '--events',
+      'processFinish',
+      '--approval-actions',
+      'agree',
+      '--get-self',
+      '--get-self-query-field',
+      'textField_code',
+    ]);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processDataNode.props.condition.rules.map((rule) => rule.id)).toEqual(['textField_code']);
+    expect(viewDataNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['textField_code']);
+  });
+
   test('converts process dataRetrieve pid conditions for simple parameters', async () => {
     fetchFormPageList.mockResolvedValue([
       { formUuid: 'FORM-PROCESS', formName: 'B流程表单', formType: 'process' },
@@ -1020,7 +1074,7 @@ describe('integration create command', () => {
       'FORM-PROCESS',
       'unverified source',
       '--get-self',
-    ])).rejects.toThrow(/取数来源表单信息/);
+    ])).rejects.toThrow(/navigation unavailable/);
 
     expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
@@ -1119,7 +1173,7 @@ describe('integration create command', () => {
       'non-form source target',
       '--spec',
       specPath,
-    ])).rejects.toThrow(/不是可取数表单/);
+    ])).rejects.toThrow(/display/);
 
     expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();
@@ -1146,7 +1200,7 @@ describe('integration create command', () => {
       'missing source target',
       '--spec',
       specPath,
-    ])).rejects.toThrow(/导航中未找到表单 FORM-MISSING/);
+    ])).rejects.toThrow(/FORM-MISSING/);
 
     expect(integrationApi.createLogicflow).not.toHaveBeenCalled();
     expect(integrationApi.saveProcess).not.toHaveBeenCalled();

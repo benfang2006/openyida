@@ -472,6 +472,26 @@ describe('integration spec builder', () => {
     expect(viewNode.props.getData.targetItem.formItem.title).toBe(`${name} source form`);
   });
 
+  test('converts explicit getSelf queryField pid to designer proc_inst_id', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['processFinish'],
+        approvalActions: ['agree'],
+        nodes: [{ id: 'self', type: 'getSelf', queryField: 'pid' }],
+      },
+      processCode: 'LPROC-PROCESS-QUERY',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-PROCESS',
+      flowName: 'explicit pid getSelf',
+      dataFormType: 'process',
+      dataFormName: '流程来源表单',
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.self);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.self);
+    expect(processNode.props.condition.rules.map((rule) => rule.id)).toEqual(['pid']);
+    expect(viewNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id']);
+  });
+
   test('does not infer a process source from insert/update events', () => {
     const built = buildSpecProcessAndViewJson({
       spec: {
