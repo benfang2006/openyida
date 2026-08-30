@@ -113,7 +113,9 @@ describe('run() 参数校验', () => {
   });
 
   test('参数为空数组时打印错误并以 exit code 1 退出', async () => {
-    await expectCliError(run([]), '缺少必填参数');
+    const error = await expectCliError(run([]), '缺少必填参数');
+    expect(error.usage).toContain('--dynamic-order');
+    expect(error.usage).toContain('does not guarantee a stable result order');
   });
 
   test('未知 action/resource 组合时打印错误并退出', async () => {

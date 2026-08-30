@@ -12,6 +12,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.30] - 2026-08-30
+
+### Fixed
+
+- 集成逻辑流数据赋值的设计器来源引用 `#{节点别名//字段ID}` 现在会解析为节点 ID 后再写入，修复公式来源字段别名未转换导致的保存失败。
+- 集成逻辑流构建时拒绝悬空（未知）的设计器来源节点别名引用，提前给出明确错误而非产出无效 spec。
+
+### Changed
+
+- `httpGet` 查询串拼接修复：路径已含查询串时改用 `&` 追加，避免产生双 `?` 的非法 URL；`--dynamic-order` 等参数透传更稳。
+- `openyida data query form` 补齐 `--dynamic-order` 文档：`{"fieldId":"+"}` 升序 / `{"fieldId":"-"}` 降序，未指定时不保证结果顺序。
+- 清理报表不支持的图表类型（radar/scatter/area/number）死代码，`getChartSettings` 保持 fail-closed 拒绝。
+- 同步 README、yida-api、yida-data-management、yida-integration 等文档。
+
+## [2026.8.29] - 2026-08-29
+
+### Added
+
+- CRM Pro 评测新增确定性证据链：命令轨迹独立采集（临时 PATH shim + 敏感参数脱敏）、证据断言引擎、平台只读回读、schema-diff 稳定快照、只读重放（`eval:replay`）与浏览器运行时验收。
+- `get-schema` 新增 `--analysis-json` 表单 Schema 语义分析（字段角色、关联与能力诊断）。
+- 报表新增 `map`、`calendarHeatmap` 图表类型，覆盖能力注册、图表构建与数据模型校验。
+
+### Changed
+
+- `openyida integration list` 默认查询范围从仅 `flowType=1` 扩展为全部已知类型 `1,2,3,5,6`。依赖旧口径做数量断言的脚本应显式传入 `--flow-types 1`。
+- 报表保存契约规范化平台省略的 `null` 默认键，修复回读误判；schema 结果校验收紧为要求 `pages` 为数组。
+- CLI `--help` 改为命令清单驱动的按命令帮助，usage 与 examples 与 manifest 保持一致。
+- 同步 yida-get-schema / yida-report / yida-integration 等子技能文档与 README 双语命令表。
+
 ## [2026.8.28] - 2026-08-28
 
 ### Added
