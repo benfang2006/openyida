@@ -12,6 +12,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.30] - 2026-08-30
+
+### Fixed
+
+- 集成逻辑流数据赋值的设计器来源引用 `#{节点别名//字段ID}` 现在会解析为节点 ID 后再写入，修复公式来源字段别名未转换导致的保存失败。
+- 集成逻辑流构建时拒绝悬空（未知）的设计器来源节点别名引用，提前给出明确错误而非产出无效 spec。
+
+### Changed
+
+- `httpGet` 查询串拼接修复：路径已含查询串时改用 `&` 追加，避免产生双 `?` 的非法 URL；`--dynamic-order` 等参数透传更稳。
+- `openyida data query form` 补齐 `--dynamic-order` 文档：`{"fieldId":"+"}` 升序 / `{"fieldId":"-"}` 降序，未指定时不保证结果顺序。
+- 清理报表不支持的图表类型（radar/scatter/area/number）死代码，`getChartSettings` 保持 fail-closed 拒绝。
+- 同步 README、yida-api、yida-data-management、yida-integration 等文档。
+
 ## [2026.8.29] - 2026-08-29
 
 ### Added
