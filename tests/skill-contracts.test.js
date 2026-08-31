@@ -115,6 +115,42 @@ describe('OpenYida skill contracts', () => {
     expect(appFormStep).not.toContain('"type": "PhoneField"');
   });
 
+  test('form action guidance requires atomic binding and exact readback', () => {
+    const createFormSkill = readSkill('yida-skills/skills/yida-create-form-page/SKILL.md');
+    const advancedModes = readSkill('yida-skills/skills/yida-create-form-page/references/advanced-form-modes.md');
+    const appFormStep = readSkill('yida-skills/skills/yida-app/workflow/step-4-forms-processes.md');
+
+    expect(createFormSkill).toContain('字段事件动作使用原子 `field-action`');
+    expect(createFormSkill).toContain('`designerBindingFound: true`');
+    expect(createFormSkill).toContain('`readbackVerified: true`');
+    expect(advancedModes).toContain('字段事件动作不得只写 `actions-module`');
+    expect(advancedModes).toContain('"action": "field-action"');
+    expect(advancedModes).toContain('入口动作必须是顶层 `export function`');
+    expect(advancedModes).toContain('export function handleStatusChange(value)');
+    expect(advancedModes).toContain('var actionValue = value && value.value !== undefined ? value.value : value');
+    expect(advancedModes).toContain('actionValue && actionValue.value !== undefined ? actionValue.value : actionValue');
+    expect(advancedModes).not.toContain('export function handleStatusChange(event)');
+    expect(advancedModes).not.toContain('下拉单选 `onChange` 直接接收选中值');
+    expect(advancedModes).toContain('不同组件不能统一 `String(value)`');
+    expect(advancedModes).toContain('AttachmentField / ImageField');
+    expect(advancedModes).toContain('EmployeeField');
+    expect(advancedModes).toContain('运行时发生联动但设计器仍显示“新建动作”属于失败');
+    expect(advancedModes).toContain('replaceExisting: true');
+    expect(appFormStep).toContain('字段事件动作使用 `yida-create-form-page` 的原子 `field-action`');
+  });
+
+  test('shared Yida API guidance uses the SelectField value callback contract', () => {
+    const apiReference = readSkill('yida-skills/references/yida-api.md');
+
+    expect(apiReference).toContain('下拉单选 `onChange` 直接传入动作参数 `value`');
+    expect(apiReference).toContain('value && value.value !== undefined ? value.value : value');
+    expect(apiReference).toContain('再以相同方式取得选项明细值');
+    expect(apiReference).toContain('不要从 `event` 取值');
+    expect(apiReference).toContain('宜搭动作面板不支持空值合并运算符');
+    expect(apiReference).toContain('不同组件不能统一 `String(value)`');
+    expect(apiReference).toContain('日期区间是 `{ start, end }`');
+  });
+
   test('report skill preserves structured mismatch recovery contract', () => {
     const skill = readSkill('yida-skills/skills/yida-report/SKILL.md');
     const contractMatch = skill.match(
