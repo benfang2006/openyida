@@ -2,7 +2,12 @@
 
 const createForm = require('../lib/app/create-form');
 const formCompiler = require('../lib/app/services/form-compiler');
-const { inspectActionBindings } = require('../lib/app/form-action-binding');
+const {
+  extractExportedActionFunctionNames,
+  findFieldById,
+  inspectActionBindings,
+  syncDesignerActionCatalog,
+} = require('../lib/app/form-action-binding');
 
 function createSelectSchema() {
   return formCompiler.compileFormDefinition({
@@ -70,6 +75,50 @@ function findFieldByLabel(value, label) {
 }
 
 describe('form action binding integrity', () => {
+  test('action function extraction excludes exported business constants', () => {
+    const source = [
+      'export const TAX_RATE = 0.06;',
+      'export const calculateArrow = () => TAX_RATE;',
+      'export async function loadTax() {}',
+      'export function calculateTax() {}',
+    ].join('\n');
+
+    expect(extractExportedActionFunctionNames(source)).toEqual(['calculateTax', 'loadTax']);
+  });
+
+  test('designer action catalog merges functions without deleting existing metadata', () => {
+    const actions = {
+      module: {
+        source: 'export const TAX_RATE = 0.06;\nexport function calculateTax() {}',
+      },
+      list: [{
+        id: 'platform-entry-id',
+        name: 'platformAction',
+        type: 'componentEvent',
+        relatedEventId: 'node:onChange',
+      }],
+    };
+
+    syncDesignerActionCatalog(actions);
+
+    expect(actions.list).toEqual([
+      expect.objectContaining({
+        id: 'platform-entry-id',
+        name: 'platformAction',
+        type: 'componentEvent',
+        relatedEventId: 'node:onChange',
+      }),
+      { id: 'calculateTax', title: 'calculateTax' },
+    ]);
+    expect(actions.list.some(item => item.id === 'TAX_RATE')).toBe(false);
+  });
+
+  test('readback field lookup accepts top-level fieldId', () => {
+    const field = { fieldId: 'textField_top_level', props: {} };
+
+    expect(findFieldById({ pages: [{ children: [field] }] }, 'textField_top_level')).toBe(field);
+  });
+
   test('field-action atomically writes source, registry entry, and field binding', () => {
     const schema = createSelectSchema();
     const operations = createForm._private.applySchemaPatchOperations(schema, [{
@@ -141,6 +190,17 @@ describe('form action binding integrity', () => {
     }])).toThrow(expect.objectContaining({ code: 'FORM_ACTION_FUNCTION_MISSING' }));
   });
 
+  test('field-action rejects an exported constant with the requested action name', () => {
+    const schema = createSelectSchema();
+
+    expect(() => createForm._private.applySchemaPatchOperations(schema, [{
+      action: 'field-action',
+      field: '状态',
+      name: 'TAX_RATE',
+      source: 'export const TAX_RATE = 0.06;',
+    }])).toThrow(expect.objectContaining({ code: 'FORM_ACTION_FUNCTION_MISSING' }));
+  });
+
   test('existing field action is not silently overwritten', () => {
     const schema = createSelectSchema();
     createForm._private.applySchemaPatchOperations(schema, [{
@@ -177,6 +237,28 @@ describe('form action binding integrity', () => {
         actionFunctionFound: true,
         mismatches: ['ACTION_ENTRY_MISSING'],
       }],
+    });
+  });
+
+  test('readback accepts a catalog entry whose action name is stored in name', () => {
+    const schema = createSelectSchema();
+    const operations = createForm._private.applySchemaPatchOperations(schema, [{
+      action: 'field-action',
+      field: '状态',
+      name: 'handleStatusChange',
+      source: 'export function handleStatusChange() {}',
+    }]);
+    const expectations = createForm._private.actionBindingExpectationsFromOperations(operations);
+    schema.actions.list = [{
+      id: 'platform-entry-id',
+      name: 'handleStatusChange',
+      type: 'componentEvent',
+      relatedEventId: expectations[0].relatedEventId,
+    }];
+
+    expect(inspectActionBindings(schema, expectations)).toMatchObject({
+      verified: true,
+      bindings: [{ actionEntryFound: true, actionFunctionFound: true, verified: true }],
     });
   });
 
@@ -256,5 +338,40 @@ describe('form action binding integrity', () => {
 
     expect(schema.actions.module.source).toContain('this.existingStatusAction(event)');
     expect(schema.actions.list).toContainEqual({ id: 'existingStatusAction', title: 'existingStatusAction' });
+  });
+
+  test('rule catalog sync preserves lifecycle metadata and unknown platform actions', () => {
+    const schema = createRuleMatrixSchema();
+    schema.actions.list.push({
+      id: 'platform-entry-id',
+      name: 'platformAction',
+      type: 'componentEvent',
+      relatedEventId: 'platform:onChange',
+    });
+
+    createForm._private.applyFormRules(schema, [{
+      type: 'set-value',
+      on: '状态',
+      target: '结果',
+      value: '已处理',
+    }]);
+
+    expect(schema.actions.list).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'openyidaRulesDidMount',
+        type: 'lifeCycleEvent',
+        relatedEventId: 'lifecycle:didMount',
+      }),
+      expect.objectContaining({
+        id: 'openyidaApplyRules',
+        type: 'componentEvent',
+        relatedEventId: expect.stringContaining(':afterFormDataInit'),
+      }),
+      expect.objectContaining({
+        id: 'platform-entry-id',
+        name: 'platformAction',
+        relatedEventId: 'platform:onChange',
+      }),
+    ]));
   });
 });
