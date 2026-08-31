@@ -31,12 +31,12 @@ openyida create-form patch <appType> <formUuid> <patchJsonOrFile>
     "field": "状态",
     "event": "onChange",
     "name": "handleStatusChange",
-    "source": "export function handleStatusChange(value) {\n  if (value === 'A') {\n    this.$('textField_result').setValue('已执行');\n  }\n}"
+    "source": "export function handleStatusChange(value) {\n  var selectedValue = value && value.value !== undefined ? value.value : value;\n  if (selectedValue === 'A') {\n    this.$('textField_result').setValue('已执行');\n  }\n}"
   }
 ]
 ```
 
-入口动作必须是顶层 `export function`，否则不会出现在宜搭动作面板。导出动作之间通过 `this.xxx()` 调用；未导出的纯 helper 可直接调用，但不能使用宜搭页面上下文。事件参数以组件 API 为准，例如下拉单选 `onChange` 直接接收选中值。
+入口动作必须是顶层 `export function`，否则不会出现在宜搭动作面板。导出动作之间通过 `this.xxx()` 调用；未导出的纯 helper 可直接调用，但不能使用宜搭页面上下文。下拉单选 `onChange` 会把选中值作为 `value` 参数传入；`useDetailValue=true` 时该参数为 `{ label, value }`。兼容两种形态时使用 `value && value.value !== undefined ? value.value : value`，不要从 `event` 取值。宜搭动作面板不支持空值合并运算符。
 
 如果目标事件已有其他动作，命令默认停止，避免静默覆盖；只有确认替换时才设置 `replaceExisting: true`。`actions-module` + `bind-field-action` 仅保留给低阶迁移场景，仍会执行设计器原生绑定校验和保存后回读。运行时发生联动但设计器仍显示“新建动作”属于失败，不能作为验收通过。
 

@@ -126,9 +126,22 @@ describe('OpenYida skill contracts', () => {
     expect(advancedModes).toContain('字段事件动作不得只写 `actions-module`');
     expect(advancedModes).toContain('"action": "field-action"');
     expect(advancedModes).toContain('入口动作必须是顶层 `export function`');
+    expect(advancedModes).toContain('export function handleStatusChange(value)');
+    expect(advancedModes).toContain('value && value.value !== undefined ? value.value : value');
+    expect(advancedModes).not.toContain('export function handleStatusChange(event)');
+    expect(advancedModes).not.toContain('下拉单选 `onChange` 直接接收选中值');
     expect(advancedModes).toContain('运行时发生联动但设计器仍显示“新建动作”属于失败');
     expect(advancedModes).toContain('replaceExisting: true');
     expect(appFormStep).toContain('字段事件动作使用 `yida-create-form-page` 的原子 `field-action`');
+  });
+
+  test('shared Yida API guidance uses the SelectField value callback contract', () => {
+    const apiReference = readSkill('yida-skills/references/yida-api.md');
+
+    expect(apiReference).toContain('下拉单选 `onChange` 直接传入 `value`');
+    expect(apiReference).toContain('value && value.value !== undefined ? value.value : value');
+    expect(apiReference).toContain('不要从 `event` 取值');
+    expect(apiReference).toContain('宜搭动作面板不支持空值合并运算符');
   });
 
   test('report skill preserves structured mismatch recovery contract', () => {
