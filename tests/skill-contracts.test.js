@@ -1183,6 +1183,20 @@ describe('OpenYida skill contracts', () => {
     expect(pageDesign).toContain('themeDecision');
   });
 
+  test('full app design defaults to form data management pages and requires an explicit custom-list request', () => {
+    const design = readSkill('yida-skills/skills/yida-design/SKILL.md');
+    const informationArchitecture = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const outputPrd = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
+    const app = readSkill('yida-skills/skills/yida-app/SKILL.md');
+
+    expect([design, informationArchitecture, outputPrd, app].join('\n')).not.toContain('customPageReason');
+    expect(design).toContain('普通表单的数据管理页默认作为列表');
+    expect(informationArchitecture).toContain('宜搭表单数据管理页（默认）');
+    expect(informationArchitecture).toContain('用户明确要求时才增加自定义列表页');
+    expect(outputPrd).toContain('默认不创建自定义列表页');
+    expect(app).toContain('默认使用普通表单的数据管理页');
+  });
+
   test('custom page form entries use responsive FormOpenContainer guidance', () => {
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const canvas = readSkill('yida-skills/skills/yida-canvas-custom-page/SKILL.md');
