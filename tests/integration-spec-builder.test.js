@@ -1287,6 +1287,142 @@ describe('integration spec builder', () => {
     })).toThrow(/getSelf or dataRetrieve/);
   });
 
+  test('rejects a route-branch retrieve as a stable upstream for later sub_table nodes', () => {
+    const spec = {
+      events: ['insert'],
+      nodes: [
+        {
+          type: 'route',
+          branches: [
+            {
+              conditions: [{ fieldId: 'textField_a', opCode: 'ExistValue' }],
+              nodes: [{
+                id: 'school',
+                type: 'dataRetrieve',
+                formUuid: 'FORM-SCHOOL',
+                conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+              }],
+            },
+            {
+              default: true,
+              nodes: [{ type: 'sendMessage', receivers: ['user-1'], content: 'other' }],
+            },
+          ],
+        },
+        {
+          id: 'lookupRow',
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'school',
+          subSourceId: 'tableField_history',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
+    };
+
+    expect(() => validateIntegrationSpec(spec)).toThrow(/upstream node/);
+    expect(() => buildSpecProcessAndViewJson({
+      spec,
+      processCode: 'LPROC-SUB-TABLE',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Conditional branch source',
+    })).toThrow(/upstream node/);
+  });
+
+  test('allows a stable pre-route retrieve as the sub_table source after the route', () => {
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-SCHOOL',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          type: 'route',
+          branches: [
+            {
+              conditions: [{ fieldId: 'textField_a', opCode: 'ExistValue' }],
+              nodes: [{ type: 'sendMessage', receivers: ['user-1'], content: 'matched' }],
+            },
+            { default: true, nodes: [{ type: 'sendMessage', receivers: ['user-1'], content: 'other' }] },
+          ],
+        },
+        {
+          id: 'lookupRow',
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'school',
+          subSourceId: 'tableField_history',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
+    })).not.toThrow();
+  });
+
+  test('rejects an explicit parentFormUuid that does not match the source form', () => {
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-A',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          type: 'dataCreate',
+          insertType: 'sub_table',
+          source: 'school',
+          subFormUuid: 'tableField_history',
+          parentFormUuid: 'FORM-B',
+          assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+        },
+      ],
+    })).toThrow(/parentFormUuid must match the source form/);
+  });
+
+  test('accepts an explicit parentFormUuid that matches the inferred source form', () => {
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        {
+          id: 'school',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-SCHOOL',
+          conditions: [{ fieldId: 'serialNumberField_code', value: 'x', valueType: 'literal' }],
+        },
+        {
+          type: 'dataCreate',
+          insertType: 'sub_table',
+          source: 'school',
+          subFormUuid: 'tableField_history',
+          parentFormUuid: 'FORM-SCHOOL',
+          assignments: [{ column: 'textField_dealer_code', valueType: 'literal', value: 'D-1' }],
+        },
+      ],
+    })).not.toThrow();
+  });
+
+  test('rejects getSelf parentFormUuid that does not match the trigger form', () => {
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [
+        { id: 'self', type: 'getSelf' },
+        {
+          type: 'dataRetrieve',
+          originalType: 'sub_table',
+          source: 'self',
+          subSourceId: 'tableField_history',
+          parentFormUuid: 'FORM-B',
+          conditions: [{ fieldId: 'textField_dealer_code', value: 'x', valueType: 'literal' }],
+        },
+      ],
+    }, ['insert'], { formUuid: 'FORM-A' })).toThrow(/parentFormUuid must match the source form/);
+  });
+
   test('resolves getSelf as the sub_table retrieve parent form for Chinese table names', () => {
     const built = buildSpecProcessAndViewJson({
       spec: {
