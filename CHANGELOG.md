@@ -12,6 +12,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.31] - 2026-08-31
+
+### Added
+
+- 新增 `openyida data delete form <appType> <formUuid> --inst-id <id> --confirm`：单条表单数据精确删除，强制 `--confirm` 确认、删除前目标校验与删除后回读确认；流程实例删除仍不支持，会以 `DATA_PROCESS_DELETE_UNSUPPORTED` 明确拒绝。
+
+### Fixed
+
+- 报表创建/追加图表失败时的恢复路径收敛：区分副作用已发生与未发生，避免在不确定状态下直接重试导致重复写入。
+- `project` 工作目录初始化新增目标路径安全校验，拒绝拷贝到源目录自身或其子目录。
+- 自定义页面构建/检查/发布链路与页面兼容层的异常语义对齐，预检失败不再产出歧义提示。
+
+### Changed
+
+- CLI 错误契约扩展结构化字段（`partial`/`residual`/`retrySafe`/`sideEffectState`/`readbackAllowed`/`recommendedRecovery`/`nextAction` 等），供 agent 判断副作用状态与重试安全性。
+- `create-report` / `append-chart` 补齐 `--json` 输出；README 双语命令表同步。
+- 同步 yida-data-management / yida-report / yida-create-form-page / yida-app 等子技能文档与命令清单。
+
 ## [2026.8.30] - 2026-08-30
 
 ### Fixed
