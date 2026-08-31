@@ -4,6 +4,15 @@
 
 所有接口返回 Promise，统一使用 `.then()` 和 `.catch()` 处理结果和异常。
 
+## 页面 JS 与动作面板基础契约
+
+- 只有顶层 `export function actionName(...) {}` 会出现在动作面板，供组件事件和生命周期绑定。
+- 一个导出动作调用另一个导出动作时使用 `this.actionName(...)`；未导出的纯 helper 可直接调用，但不能依赖宜搭注入的 `this`。
+- 表单字段通过 `this.$('fieldId')` 访问，读值用 `getValue()`，赋值用 `setValue(value, options)`；需要触发目标字段 `onChange` 时显式设置 `options.triggerChange`。
+- 组件事件参数以对应组件 API 为准，例如下拉单选 `onChange` 接收当前选中值。仅写函数源码不算完成，必须在设计器中绑定事件；OpenYida 写入后也必须回读确认绑定仍存在。
+
+官方参考：[动作面板](https://alidocs.dingtalk.com/i/nodes/1zknDm0WRz0NZeXQux7OKZXmWBQEx5rG)、[`this` 调用语义](https://alidocs.dingtalk.com/i/nodes/Exel2BLV5gOAdXr1umO9QPNr8gk9rpMq)、[生命周期](https://alidocs.dingtalk.com/i/nodes/pGBa2Lm8aeP35vxdtEKBlz4D8gN7R35y)、[宜搭 JS API](https://developers.aliwork.com/docs/api/yidaAPI)。
+
 ---
 
 ## 目录

@@ -176,6 +176,53 @@ describe('buildSemanticAnalysis', () => {
     expect(JSON.stringify(output)).not.toContain('compiled-secret');
     expect(output.resource.schemaHash).toMatch(/^sha256:[a-f0-9]{64}$/);
   });
+
+  test('correlates a field event binding with its action function and registry entry', () => {
+    const schema = {
+      content: {
+        actions: {
+          module: {
+            source: 'export function handleStatusChange() {}',
+            compiled: 'compiled',
+          },
+          list: [{ id: 'handleStatusChange', title: 'handleStatusChange' }],
+        },
+        pages: [{
+          componentsTree: [{
+            componentName: 'FormContainer',
+            children: [{
+              componentName: 'SelectField',
+              props: {
+                fieldId: 'selectField_status',
+                label: { zh_CN: '状态' },
+                onChange: {
+                  type: 'JSExpression',
+                  value: 'this.utils.legaoBuiltin.execEventFlow.bind(this, [this.handleStatusChange])',
+                  events: [{
+                    type: 'actionRef',
+                    id: 'handleStatusChange',
+                    name: 'handleStatusChange',
+                    params: {},
+                    uuid: '123_0',
+                  }],
+                },
+              },
+            }],
+          }],
+        }],
+      },
+    };
+
+    const output = buildSemanticAnalysis('APP_X', 'FORM_X', schema, []);
+    expect(output.semantics.actions.bindings).toContainEqual(expect.objectContaining({
+      fieldId: 'selectField_status',
+      event: 'onChange',
+      actionName: 'handleStatusChange',
+      actionFunctionFound: true,
+      actionEntryFound: true,
+      verified: true,
+    }));
+  });
 });
 
 describe('extractFieldSummary', () => {

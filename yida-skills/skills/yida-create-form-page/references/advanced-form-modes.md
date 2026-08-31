@@ -19,7 +19,26 @@ openyida create-form patch <appType> <formUuid> <patchJsonOrFile>
 | `merge` | 对指定 JSON Pointer 路径做对象深合并 |
 | `actions-module` | 写入页面动作模块 `source` / `compiled`，`source` 会自动编译 |
 | `bind-field-action` | 给字段事件（如 `onChange`）绑定动作引用 |
+| `field-action` | 原子写入动作函数、注册动作并绑定字段事件；字段自定义事件默认使用此操作 |
 | `bind-datasource` | 给选项类字段绑定远程搜索数据源（高阶入口优先用 bind-datasource 模式） |
+
+字段事件动作不得只写 `actions-module`。默认使用 `field-action`，并以返回的 `designerBindingFound: true` 和 `readbackVerified: true` 为完成条件：
+
+```json
+[
+  {
+    "action": "field-action",
+    "field": "状态",
+    "event": "onChange",
+    "name": "handleStatusChange",
+    "source": "export function handleStatusChange(value) {\n  if (value === 'A') {\n    this.$('textField_result').setValue('已执行');\n  }\n}"
+  }
+]
+```
+
+入口动作必须是顶层 `export function`，否则不会出现在宜搭动作面板。导出动作之间通过 `this.xxx()` 调用；未导出的纯 helper 可直接调用，但不能使用宜搭页面上下文。事件参数以组件 API 为准，例如下拉单选 `onChange` 直接接收选中值。
+
+如果目标事件已有其他动作，命令默认停止，避免静默覆盖；只有确认替换时才设置 `replaceExisting: true`。`actions-module` + `bind-field-action` 仅保留给低阶迁移场景，仍会执行设计器原生绑定校验和保存后回读。运行时发生联动但设计器仍显示“新建动作”属于失败，不能作为验收通过。
 
 隐藏但仍提交字段：
 
@@ -66,7 +85,7 @@ openyida create-form patch <appType> <formUuid> <patchJsonOrFile>
 - 函数返回 `true` 表示校验通过，`false` 表示校验失败
 - 子表内字段通过 `this.item.values` 获取同行其他字段的值
 
-如必须桥接 JS 面板函数，先用 `actions-module` 写入函数，再在字段自定义函数里通过 `this.xxx()` 调用。
+如必须桥接 JS 面板函数，使用 `field-action` 原子写入并绑定入口函数，再在字段自定义函数里通过 `this.xxx()` 调用。
 
 ## rule 模式（字段联动与自动赋值）
 
@@ -122,7 +141,7 @@ JS 表达式计算目标值，表达式可使用 `value`（触发字段值）和
 ]
 ```
 
-rule 模式会自动生成宜搭动作代码，绑定触发字段的 `onChange`，并在页面加载/表单数据初始化后执行一次规则。若字段已有 `onChange` 动作，OpenYida 会先调用原动作，再执行生成的规则。
+rule 模式会自动生成宜搭动作代码，绑定触发字段的 `onChange`，并在页面加载/表单数据初始化后执行一次规则。每次调用传入的规则数组视为当前 OpenYida 联动规则全集；重写时会清理不再使用的生成绑定。若字段已有 `onChange` 动作，OpenYida 会保留并先调用原动作，再执行生成的规则。
 
 ## bind-datasource 模式（选项字段远程搜索数据源）
 
