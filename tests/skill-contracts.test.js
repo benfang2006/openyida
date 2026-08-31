@@ -162,6 +162,8 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('details.nextAction');
     expect(skill).toContain('report inspect');
     expect(skill).toContain('--json');
+    expect(skill).toContain('create/inspect 返回的 `workbenchUrl`');
+    expect(skill).toContain('禁止自行拼接 `/{appType}/report/{reportId}`');
     expect(contractMatch).not.toBeNull();
 
     const contract = JSON.parse(contractMatch[1]);
@@ -178,6 +180,12 @@ describe('OpenYida skill contracts', () => {
     expect(contract.deleteAllowed).toBe(false);
     expect(contract.unsafeRepairFallback).toBe('stop_and_report_residual');
     expect(residual.reportId).toBe('REPORT_1');
+
+    const finishStep = readSkill('yida-skills/skills/yida-app/workflow/step-9-output-finish.md');
+    expect(finishStep).toContain('原生报表（仅单独交付该报表时）');
+    expect(finishStep).toContain('`{base_url}/{appType}/workbench/{reportId}`');
+    expect(finishStep).toContain('禁止拼接 `/{appType}/report/{reportId}`');
+    expect(finishStep).toContain('最终唯一主入口仍是应用首页');
   });
 
   test('data management skill exposes only the verified form delete contract', () => {

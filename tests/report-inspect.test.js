@@ -69,11 +69,14 @@ describe('report inspect', () => {
     expect(summarizeReportSchema(schemaFixture(), {
       appType: 'APP_1',
       reportId: 'REPORT_1',
+      baseUrl: 'https://demo.aliwork.com/',
     })).toEqual({
       success: true,
       operation: 'report.inspect',
       appType: 'APP_1',
       reportId: 'REPORT_1',
+      url: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
       schemaVersion: 'V5',
       domainCode: 'tEXDRG',
       revision: 42,
@@ -97,7 +100,12 @@ describe('report inspect', () => {
 
     const result = await run(['APP_1', 'REPORT_1', '--json']);
 
-    expect(result).toMatchObject({ operation: 'report.inspect', revision: 42 });
+    expect(result).toMatchObject({
+      operation: 'report.inspect',
+      revision: 42,
+      url: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+    });
     expect(utils.httpGet).toHaveBeenCalledTimes(1);
     expect(utils.httpGet.mock.calls[0][2]).toMatchObject({
       formUuid: 'REPORT_1',

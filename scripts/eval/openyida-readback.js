@@ -91,6 +91,9 @@ function normalizePlatformResourceId(value) {
 function reportInspectMetadata(inspect = {}, knownFormIds = []) {
   const components = Array.isArray(inspect.components) ? inspect.components : [];
   const layout = Array.isArray(inspect.layout) ? inspect.layout : [];
+  const componentNames = components
+    .map((component) => String(component && component.componentName || ''))
+    .filter(Boolean);
   const cubeCodes = [...new Set(components.flatMap((component) => (
     Array.isArray(component && component.cubeCodes) ? component.cubeCodes : []
   )).filter(Boolean).map(String))];
@@ -102,6 +105,7 @@ function reportInspectMetadata(inspect = {}, knownFormIds = []) {
     chartCount: components.filter((component) => /Chart|Funnel|Calendar|Indicator|Metric/i.test(
       String(component && component.componentName || ''),
     )).length || layout.length,
+    componentNames,
     layoutCount: layout.length,
     cubeCodes,
     unknownCubeCodes,
