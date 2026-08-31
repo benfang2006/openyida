@@ -31,12 +31,26 @@ openyida create-form patch <appType> <formUuid> <patchJsonOrFile>
     "field": "状态",
     "event": "onChange",
     "name": "handleStatusChange",
-    "source": "export function handleStatusChange(value) {\n  var selectedValue = value && value.value !== undefined ? value.value : value;\n  if (selectedValue === 'A') {\n    this.$('textField_result').setValue('已执行');\n  }\n}"
+    "source": "export function handleStatusChange(value) {\n  var actionValue = value && value.value !== undefined ? value.value : value;\n  var selectedValue = actionValue && actionValue.value !== undefined ? actionValue.value : actionValue;\n  if (selectedValue === 'A') {\n    this.$('textField_result').setValue('已执行');\n  }\n}"
   }
 ]
 ```
 
-入口动作必须是顶层 `export function`，否则不会出现在宜搭动作面板。导出动作之间通过 `this.xxx()` 调用；未导出的纯 helper 可直接调用，但不能使用宜搭页面上下文。下拉单选 `onChange` 会把选中值作为 `value` 参数传入；`useDetailValue=true` 时该参数为 `{ label, value }`。兼容两种形态时使用 `value && value.value !== undefined ? value.value : value`，不要从 `event` 取值。宜搭动作面板不支持空值合并运算符。
+入口动作必须是顶层 `export function`，否则不会出现在宜搭动作面板。导出动作之间通过 `this.xxx()` 调用；未导出的纯 helper 可直接调用，但不能使用宜搭页面上下文。下拉单选 `onChange` 会把动作参数作为 `value` 传入，不要从 `event` 取值。该参数可能是原始值、`{ value, actionType }`，开启 `useDetailValue=true` 后也可能是 `{ value: { label, value }, actionType }`；先取动作值，再取选项明细值即可兼容三种形态。宜搭动作面板不支持空值合并运算符，使用 `?:`。
+
+不同组件不能统一 `String(value)`。先用 `value && value.value !== undefined ? value.value : value` 去掉动作参数外层，再按组件处理：
+
+| 组件 | 实际动作值 |
+|------|------------|
+| TextField / NumberField / RateField / RadioField | 字符串或数字 |
+| DateField | 毫秒时间戳 |
+| MultiSelectField / CheckboxField | 选中值数组 |
+| DepartmentSelectField / CountrySelectField | `{ text, value }` 数组 |
+| AttachmentField / ImageField | 文件对象数组 |
+| CascadeDateField | `{ start, end }` |
+| EmployeeField | 单选交互可能是成员对象，初始化可能是成员数组，先归一化为数组 |
+
+`SelectField` 开启 `useDetailValue` 后再取一次 `.value`；其他对象或数组必须保留结构，不能盲目取第二层。
 
 如果目标事件已有其他动作，命令默认停止，避免静默覆盖；只有确认替换时才设置 `replaceExisting: true`。`actions-module` + `bind-field-action` 仅保留给低阶迁移场景，仍会执行设计器原生绑定校验和保存后回读。运行时发生联动但设计器仍显示“新建动作”属于失败，不能作为验收通过。
 
