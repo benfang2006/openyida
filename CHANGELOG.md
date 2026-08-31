@@ -12,6 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.8.31-1] - 2026-08-31
+
+### Changed
+
+- 完整应用的列表页策略默认改为普通表单的数据管理页（`native-list`），不再默认创建自定义列表页；只有用户明确要求自定义列表时才规划并实现 `display-page / list`。
+- 同步更新 `yida-design` 信息架构、PRD 输出模板与 `yida-app` 编排约束：资源蓝图、页面实现顺序、导航分组与验收清单均以表单数据管理页为默认数据查看入口。
+- 新增技能契约测试锁定上述默认行为，防止回退到「默认自定义列表页」。
+
 ## [2026.8.31] - 2026-08-31
 
 ### Added
