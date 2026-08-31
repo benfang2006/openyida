@@ -183,6 +183,29 @@ describe('integration spec builder', () => {
     }, 'FORM-A')).toThrow(/Unsupported source form type: display/);
   });
 
+  test('does not treat sub_table originalType as a source form type', () => {
+    expect(collectDataSourceFormDescriptors({
+      nodes: [{
+        type: 'dataRetrieve',
+        formUuid: 'FORM-PROCESS',
+        formType: 'process',
+        originalType: 'sub_table',
+      }],
+    }, 'FORM-A')).toEqual([
+      { formUuid: 'FORM-PROCESS', formType: 'process' },
+    ]);
+    expect(() => validateIntegrationSpec({
+      events: ['insert'],
+      nodes: [{
+        type: 'dataRetrieve',
+        formUuid: 'FORM-PROCESS',
+        formType: 'process',
+        originalType: 'sub_table',
+        conditions: [{ fieldId: 'pid', value: 'x', valueType: 'literal' }],
+      }],
+    })).not.toThrow();
+  });
+
   test('rejects conflicting source form metadata fields on one node', () => {
     expect(() => collectDataSourceFormDescriptors({
       nodes: [{
@@ -492,6 +515,30 @@ describe('integration spec builder', () => {
     expect(viewNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id']);
   });
 
+  test('converts explicit getSelf queryField proc_inst_id to runtime pid', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['processFinish'],
+        approvalActions: ['agree'],
+        nodes: [{ id: 'self', type: 'getSelf', queryField: 'proc_inst_id' }],
+      },
+      processCode: 'LPROC-PROCESS-QUERY-DESIGNER',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-PROCESS',
+      flowName: 'explicit proc_inst_id getSelf',
+      dataFormType: 'process',
+      dataFormName: '流程来源表单',
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.self);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.self);
+    expect(processNode.props.condition.rules).toMatchObject([
+      { id: 'pid', name: '流程实例ID' },
+    ]);
+    expect(viewNode.props.getData.condition.rules).toMatchObject([
+      { id: 'proc_inst_id', name: '流程实例ID' },
+    ]);
+  });
+
   test('does not infer a process source from insert/update events', () => {
     const built = buildSpecProcessAndViewJson({
       spec: {
@@ -537,6 +584,34 @@ describe('integration spec builder', () => {
       appType: 'APP-SPEC',
       formUuid: 'FORM-A',
       flowName: 'Process data retrieve flow',
+      dataSourceFormsByUuid: new Map([
+        ['FORM-PROCESS', { formUuid: 'FORM-PROCESS', formName: '流程来源表单', formType: 'process' }],
+      ]),
+    });
+    const processNode = built.processJson.nodes.find((node) => node.nodeId === built.nodeIdMap.lookup);
+    const viewNode = built.viewJson.schema.children.find((node) => node.id === built.nodeIdMap.lookup);
+    expect(processNode.props.condition.rules.map((rule) => rule.id)).toEqual(['pid', 'textField_code']);
+    expect(viewNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id', 'textField_code']);
+  });
+
+  test('converts process dataRetrieve proc_inst_id conditions to runtime pid', () => {
+    const built = buildSpecProcessAndViewJson({
+      spec: {
+        events: ['insert'],
+        nodes: [{
+          id: 'lookup',
+          type: 'dataRetrieve',
+          formUuid: 'FORM-PROCESS',
+          conditions: [
+            { fieldId: 'proc_inst_id', fieldName: '流程实例ID', value: 'A-1', opCode: 'Equal' },
+            { fieldId: 'textField_code', fieldName: '业务编码', value: 'B-1', valueType: 'literal', opCode: 'Equal' },
+          ],
+        }],
+      },
+      processCode: 'LPROC-PROCESS-DATA-DESIGNER',
+      appType: 'APP-SPEC',
+      formUuid: 'FORM-A',
+      flowName: 'Process data retrieve designer field flow',
       dataSourceFormsByUuid: new Map([
         ['FORM-PROCESS', { formUuid: 'FORM-PROCESS', formName: '流程来源表单', formType: 'process' }],
       ]),

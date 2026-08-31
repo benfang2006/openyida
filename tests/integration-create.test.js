@@ -984,6 +984,37 @@ describe('integration create command', () => {
     });
   });
 
+  test('converts explicit process get-self proc_inst_id override to runtime pid', async () => {
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: 'process form', formType: 'process' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-TEST');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-PROCESS',
+      'explicit proc_inst_id get-self',
+      '--events',
+      'processFinish',
+      '--approval-actions',
+      'agree',
+      '--get-self',
+      '--get-self-query-field',
+      'proc_inst_id',
+    ]);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processDataNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewDataNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processDataNode.props.condition.rules).toMatchObject([
+      { id: 'pid', name: '流程实例ID' },
+    ]);
+    expect(viewDataNode.props.getData.condition.rules).toMatchObject([
+      { id: 'proc_inst_id', name: '流程实例ID' },
+    ]);
+  });
+
   test('converts explicit process get-self pid override to designer proc_inst_id', async () => {
     fetchFormPageList.mockResolvedValue([
       { formUuid: 'FORM-PROCESS', formName: 'process form', formType: 'process' },
@@ -1057,6 +1088,32 @@ describe('integration create command', () => {
       'FORM-PROCESS',
       '--data-condition',
       'pid:流程实例ID:__masterdata_form_inst_id:TextField:Equal:processVar',
+      '--data-condition',
+      'textField_code:业务编码:A-1:TextField:Equal:literal',
+    ]);
+
+    const saveParams = integrationApi.saveProcess.mock.calls[0][1];
+    const processNode = saveParams.processJson.nodes.find((node) => node.type === 'dataRetrieve');
+    const viewNode = saveParams.viewJson.schema.children.find((node) => node.componentName === 'GetSingleDataNode');
+    expect(processNode.props.condition.rules.map((rule) => rule.id)).toEqual(['pid', 'textField_code']);
+    expect(viewNode.props.getData.condition.rules.map((rule) => rule.id)).toEqual(['proc_inst_id', 'textField_code']);
+  });
+
+  test('converts process dataRetrieve proc_inst_id conditions for simple parameters', async () => {
+    fetchFormPageList.mockResolvedValue([
+      { formUuid: 'FORM-PROCESS', formName: 'B流程表单', formType: 'process' },
+    ]);
+    integrationApi.createLogicflow.mockResolvedValue('LPROC-PROCESS-DATA');
+    integrationApi.saveProcess.mockResolvedValue({ success: true });
+
+    await run([
+      'APP_TEST',
+      'FORM-A',
+      'process retrieve designer',
+      '--data-form-uuid',
+      'FORM-PROCESS',
+      '--data-condition',
+      'proc_inst_id:流程实例ID:__masterdata_form_inst_id:TextField:Equal:processVar',
       '--data-condition',
       'textField_code:业务编码:A-1:TextField:Equal:literal',
     ]);
