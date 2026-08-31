@@ -131,7 +131,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 - **组件库地址**：`//g.alicdn.com/code/npm/@ali/vc-yida-report/1.0.101/pc.js`
 - **全局挂载**：`window.YidaReport`
-- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`
+- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`
 - **字段配置参考**：[`report-field-config-guide.md`](../../references/report-field-config-guide.md)
 
 ### 组件总览
@@ -157,7 +157,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 ### Schema 构建细节参考
 
-普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`，由 CLI 内部构建并发布 Schema。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
+普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`，由 CLI 内部构建并发布 Schema。机器调用必须保留 `--json`，以便在远端已经写入但回读不一致时读取安全的恢复信息。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
 
 ---
 
@@ -166,13 +166,36 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 ### 命令调用格式
 
 ```bash
-openyida create-report <appType> "<报表名称>" <配置JSON文件路径>
+openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json
 # 配置文件路径示例：.cache/openyida/<项目名或任务名>/<报表名>-report.json
 ```
 
 > 配置 JSON 先用 create_file / Write / file edit tool 创建。上方路径默认从 OpenYida project 工作目录执行；从 workspace 根执行命令时传 `project/.cache/openyida/<项目名或任务名>/<报表名>-report.json`。
 
 **⚠️ 第二个参数是报表名称，必须使用业务含义的中文名称**（如"任务管理数据报表"），不要传 formUuid。
+
+对 `REPORT_SCHEMA_READBACK_MISMATCH` 等 post-create failure，同时读取顶层 `sideEffectState`、`residual`、`retrySafe`、`nextStep` 以及兼容字段 `details.nextAction`。若返回 `partial=true`、`residual.owned=true`，立即把 `residual.appType + residual.reportId` 锁定为本 task/run 唯一报表目标。即使更换配置文件、标题、prompt 或进入恢复轮次，也禁止再次执行 `create-report`，禁止按名称猜资源，禁止自动删除、隐藏或创建同名 display 页面掩盖残留。
+
+先且只先执行一次 `openyida report inspect <residual.appType> <residual.reportId> --json`。只有 inspect 证明原报表身份正确、已有组件集合明确，并且能够确定性算出尚未写入的 owned 图表时，才允许用 `append-chart` 修复同一个 `residual.reportId` 并再次 readback；不能证明安全增量或当前 CLI 没有对应 update/repair 能力时，必须停止并交付完整 residual、mismatch 和 nextStep，不能重新创建。
+
+<!-- owned-residual-contract:start -->
+```json
+{
+  "when": "partial=true && residual.type=report && residual.owned=true",
+  "createReportAllowed": false,
+  "inspect": {
+    "commandId": "report.inspect",
+    "appTypeSource": "residual.appType",
+    "reportIdSource": "residual.reportId",
+    "maxAttempts": 1
+  },
+  "allowedRepairCommands": ["append-chart"],
+  "repairReportIdSource": "residual.reportId",
+  "deleteAllowed": false,
+  "unsafeRepairFallback": "stop_and_report_residual"
+}
+```
+<!-- owned-residual-contract:end -->
 
 ### cubeCode 格式规则
 

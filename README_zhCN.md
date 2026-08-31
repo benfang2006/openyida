@@ -312,7 +312,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida data <query\|get\|create\|update\|delete> <form\|process\|subform\|tasks\|operation-records\|task> [args]` | 统一数据管理（表单/流程/任务/子表单） |
+| `openyida data <query\|get\|create\|update> <resource> ... \| delete form <appType> <formUuid> --inst-id <id> --confirm [--json]` | 统一数据管理（表单/流程/任务/子表单） |
 | `openyida task-center <type> [options]` | 全局任务中心（待办/已处理/抄送等） |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | 查询组织基本信息、容量、额度和域名设置 |
 | `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | 获取钉钉文档的 Markdown 内容 |
@@ -344,8 +344,8 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | 创建宜搭报表 |
-| `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | 向已有报表追加图表 |
+| `openyida create-report <appType> "<name>" ... [--json] [--open\|--no-open]` | 创建宜搭报表 |
+| `openyida append-chart <appType> <reportId> ... [--json] [--open\|--no-open]` | 向已有报表追加图表 |
 | `openyida report inspect <appType> <reportId> --json` | 只读检查报表运行时绑定摘要 |
 
 ### 连接器

@@ -430,7 +430,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida data <query\|get\|create\|update\|delete> <form\|process\|subform\|tasks\|operation-records\|task> [args]` | Unified data management (form/process/task/subform) |
+| `openyida data <query\|get\|create\|update> <resource> ... \| delete form <appType> <formUuid> --inst-id <id> --confirm [--json]` | Unified data management (form/process/task/subform) |
 | `openyida task-center <type> [options]` | Global task center (todo/processed/cc etc.) |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | Query organization basic info, capacity, quotas, and domain settings |
 | `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | Fetch Markdown content from a DingTalk document |
@@ -462,8 +462,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | Create a Yida report |
-| `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | Append chart to existing report |
+| `openyida create-report <appType> "<name>" ... [--json] [--open\|--no-open]` | Create a Yida report |
+| `openyida append-chart <appType> <reportId> ... [--json] [--open\|--no-open]` | Append chart to existing report |
 | `openyida report inspect <appType> <reportId> --json` | Inspect report runtime bindings (read-only) |
 
 ### Connectors

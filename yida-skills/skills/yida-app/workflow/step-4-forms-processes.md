@@ -31,11 +31,23 @@
 ```json
 [
   { "type": "TextField", "label": "访客姓名", "required": true },
-  { "type": "PhoneField", "label": "联系电话" },
+  {
+    "type": "TextField",
+    "label": "联系电话",
+    "validation": [
+      {
+        "type": "regex",
+        "pattern": "^1[3-9]\\d{9}$",
+        "message": "请输入正确的 11 位手机号码"
+      }
+    ]
+  },
   { "type": "DateField", "label": "到访时间" },
   { "type": "SelectField", "label": "访问状态", "options": ["预约中", "已到访", "已离开"] }
 ]
 ```
+
+电话字段统一使用 `TextField` 加 `regex` 自定义校验。不要创建或 patch `PhoneField`；CLI 会把上述正则规则编译为设计器 `customValidate`，字段值仍按文本持久化和回读。
 
 创建后把返回 ID 汇总到 `.cache/<项目名>-schema.json`：
 

@@ -13,7 +13,12 @@
 const { version: currentVersion } = require('../package.json');
 const { t } = require('../lib/core/i18n');
 const { warn } = require('../lib/core/chalk');
-const { CliError, isCliError, toErrorPayload } = require('../lib/core/cli-error');
+const {
+  CliError,
+  isCliError,
+  shouldUseStructuredErrorOutput,
+  toErrorPayload,
+} = require('../lib/core/cli-error');
 const { COMMAND_GROUPS, buildCommandManifest, findCommandSuggestion } = require('../lib/core/command-manifest');
 
 const command = process.argv[2];
@@ -492,11 +497,13 @@ const MANIFEST_HELP_PATHS = Object.freeze({
   report: ['report'],
   'create-process': ['create-process'],
   'create-report': ['create-report'],
+  'append-chart': ['append-chart'],
   'save-share-config': ['save-share-config'],
   'verify-short-url': ['verify-short-url'],
   'integration-create': ['integration', 'create'],
   'save-permission': ['save-permission'],
   'get-permission': ['get-permission'],
+  copy: ['copy'],
 });
 
 function printManifestCommandHelp(commandName) {
@@ -1261,7 +1268,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    if (isCliError(err) && args.includes('--json')) {
+    if (shouldUseStructuredErrorOutput(err, args)) {
       console.error(JSON.stringify(toErrorPayload(err), null, 2));
     } else if (isCliError(err)) {
       warn(t('cli.exec_failed', err.message));

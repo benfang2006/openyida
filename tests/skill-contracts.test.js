@@ -103,6 +103,72 @@ describe('OpenYida skill contracts', () => {
     expect(skill).not.toContain('优先跑一次 `openyida agent-capabilities --json`');
   });
 
+  test('form skills use TextField plus custom validation for phone numbers', () => {
+    const createFormSkill = readSkill('yida-skills/skills/yida-create-form-page/SKILL.md');
+    const appFormStep = readSkill('yida-skills/skills/yida-app/workflow/step-4-forms-processes.md');
+
+    expect(createFormSkill).toContain('电话号码使用 `TextField`');
+    expect(createFormSkill).toContain('不要创建或 patch `PhoneField`');
+    expect(appFormStep).toContain('"type": "TextField"');
+    expect(appFormStep).toContain('"type": "regex"');
+    expect(appFormStep).toContain('"pattern": "^1[3-9]\\\\d{9}$"');
+    expect(appFormStep).not.toContain('"type": "PhoneField"');
+  });
+
+  test('report skill preserves structured mismatch recovery contract', () => {
+    const skill = readSkill('yida-skills/skills/yida-report/SKILL.md');
+    const contractMatch = skill.match(
+      /<!-- owned-residual-contract:start -->\s*```json\s*([\s\S]*?)\s*```\s*<!-- owned-residual-contract:end -->/
+    );
+
+    expect(skill).toContain('REPORT_SCHEMA_READBACK_MISMATCH');
+    expect(skill).toContain('sideEffectState');
+    expect(skill).toContain('details.nextAction');
+    expect(skill).toContain('report inspect');
+    expect(skill).toContain('--json');
+    expect(contractMatch).not.toBeNull();
+
+    const contract = JSON.parse(contractMatch[1]);
+    const residual = { type: 'report', appType: 'APP_1', reportId: 'REPORT_1', owned: true };
+    expect(contract.createReportAllowed).toBe(false);
+    expect(contract.inspect).toMatchObject({
+      commandId: 'report.inspect',
+      appTypeSource: 'residual.appType',
+      reportIdSource: 'residual.reportId',
+      maxAttempts: 1,
+    });
+    expect(contract.allowedRepairCommands).toEqual(['append-chart']);
+    expect(contract.repairReportIdSource).toBe('residual.reportId');
+    expect(contract.deleteAllowed).toBe(false);
+    expect(contract.unsafeRepairFallback).toBe('stop_and_report_residual');
+    expect(residual.reportId).toBe('REPORT_1');
+  });
+
+  test('data management skill exposes only the verified form delete contract', () => {
+    const skill = readSkill('yida-skills/skills/yida-data-management/SKILL.md');
+    const contractMatch = skill.match(
+      /<!-- data-delete-contract:start -->\s*```json\s*([\s\S]*?)\s*```\s*<!-- data-delete-contract:end -->/
+    );
+
+    expect(contractMatch).not.toBeNull();
+    expect(skill).toContain('openyida data delete form <appType> <formUuid> --inst-id <formInstId> --confirm --json');
+    expect(skill).toContain('禁止生成 `openyida data delete process`');
+    expect(skill).toContain('禁止在 CLI 报不支持后探索一次性脚本、浏览器私有请求或底层 API');
+
+    const contract = JSON.parse(contractMatch[1]);
+    expect(contract).toMatchObject({
+      supportedDeleteCommand: 'data delete form',
+      requiredTarget: ['appType', 'formUuid', 'formInstId'],
+      preflightCommand: 'data get form',
+      businessConfirmationRequired: true,
+      executionFlag: '--confirm',
+      successCondition: 'deleted=true && readbackVerified=true',
+      repeatResult: 'alreadyAbsent=true && mutationPerformed=false',
+      processDeleteSupported: false,
+      privateApiFallbackAllowed: false,
+    });
+  });
+
   test('login skill assigns browser ownership and waits for the original command', () => {
     const skill = readSkill('yida-skills/skills/yida-login/SKILL.md');
 
