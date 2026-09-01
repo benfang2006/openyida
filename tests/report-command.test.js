@@ -185,6 +185,7 @@ describe('report command helpers', () => {
       verificationLevel: 'strict-schema-content',
       omitted: expect.any(Array),
       url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
     });
     const saveBody = querystring.parse(utils.httpPost.mock.calls[1][2]);
     expect(JSON.parse(saveBody.content)).toMatchObject({
@@ -510,6 +511,8 @@ describe('report command helpers', () => {
           type: 'report',
           appType: 'APP_XXX',
           reportId: 'REPORT_PARTIAL',
+          url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
+          workbenchUrl: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
           owned: true,
           ownershipStatus: 'owned_created_by_current_invocation',
           provenance: {
@@ -549,6 +552,8 @@ describe('report command helpers', () => {
           type: 'report',
           appType: 'APP_XXX',
           reportId: 'REPORT_PARTIAL',
+          url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
+          workbenchUrl: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
           owned: true,
           ownershipStatus: 'owned_created_by_current_invocation',
           provenance: {
@@ -567,6 +572,8 @@ describe('report command helpers', () => {
         sideEffectState: 'partial',
         readbackAllowed: true,
         recommendedRecovery: 'inspect_then_stop',
+        url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
+        workbenchUrl: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_PARTIAL',
         nextAction: {
           type: 'report.inspect',
           commandId: 'report.inspect',
@@ -610,6 +617,7 @@ describe('report command helpers', () => {
       verificationLevel: 'strict-schema-content',
       omitted: expect.any(Array),
       url: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_XXX/workbench/REPORT_1',
     });
     expect(utils.httpGet.mock.calls[0][1]).toBe('/alibaba/web/APP_XXX/_view/query/formdesign/getFormSchema.json');
     const saveBody = querystring.parse(utils.httpPost.mock.calls[0][2]);

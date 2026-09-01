@@ -26,6 +26,7 @@ describe('eval OpenYida platform readback', () => {
       layout: [{ i: 'a' }, { i: 'b' }],
     }, ['FORM-A'])).toEqual({
       schemaVersion: 'V5', componentCount: 3, chartCount: 2, layoutCount: 2,
+      componentNames: ['YoushuGroupedBarChart', 'YoushuPieChart', 'YoushuSelectFilter'],
       cubeCodes: ['FORM_A', 'FORM_EXTERNAL'],
       unknownCubeCodes: ['FORM_EXTERNAL'], unknownCubeCount: 1,
       runtimeQueryVerified: true, failedQueryProbeCount: 0,
@@ -102,7 +103,8 @@ describe('eval OpenYida platform readback', () => {
       expect.objectContaining({ type: 'portal', id: 'FORM_D' }),
       expect.objectContaining({
         type: 'report', id: 'REPORT_R', schemaVersion: 'V5', componentCount: 2,
-        chartCount: 1, unknownCubeCount: 0, runtimeQueryVerified: true, failedQueryProbeCount: 0,
+        chartCount: 1, componentNames: ['YoushuPieChart'], unknownCubeCount: 0,
+        runtimeQueryVerified: true, failedQueryProbeCount: 0,
       }),
       expect.objectContaining({ type: 'integration', id: 'LPROC_X' }),
       expect.objectContaining({ type: 'nav', id: 'NAV_X' }),

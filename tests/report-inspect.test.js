@@ -69,11 +69,14 @@ describe('report inspect', () => {
     expect(summarizeReportSchema(schemaFixture(), {
       appType: 'APP_1',
       reportId: 'REPORT_1',
+      baseUrl: 'https://demo.aliwork.com/',
     })).toEqual({
       success: true,
       operation: 'report.inspect',
       appType: 'APP_1',
       reportId: 'REPORT_1',
+      url: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
       schemaVersion: 'V5',
       domainCode: 'tEXDRG',
       revision: 42,
@@ -102,6 +105,8 @@ describe('report inspect', () => {
     expect(result).toMatchObject({
       operation: 'report.inspect',
       revision: 42,
+      url: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+      workbenchUrl: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
       runtimeQueryVerified: true,
       components: [expect.objectContaining({
         cid: 'cid_1',
