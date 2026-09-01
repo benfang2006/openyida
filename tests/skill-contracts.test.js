@@ -187,14 +187,14 @@ describe('OpenYida skill contracts', () => {
     );
 
     expect(contractMatch).not.toBeNull();
-    expect(skill).toContain('openyida data delete form <appType> <formUuid> --inst-id <formInstId> --confirm --json');
+    expect(skill).toContain('openyida data delete form <appType> <formUuid> --inst-id <formInstId> --expect-form-name <name> --expect-form-type receipt --confirm --json');
     expect(skill).toContain('禁止生成 `openyida data delete process`');
     expect(skill).toContain('禁止在 CLI 报不支持后探索一次性脚本、浏览器私有请求或底层 API');
 
     const contract = JSON.parse(contractMatch[1]);
     expect(contract).toMatchObject({
       supportedDeleteCommand: 'data delete form',
-      requiredTarget: ['appType', 'formUuid', 'formInstId'],
+      requiredTarget: ['appType', 'formUuid', 'formInstId', 'formName', 'formType'],
       preflightCommand: 'data get form',
       businessConfirmationRequired: true,
       executionFlag: '--confirm',

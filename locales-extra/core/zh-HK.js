@@ -1828,6 +1828,13 @@ Object.assign(module.exports.process_diagnostics || (module.exports.process_diag
 Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
   login_required: '未取得有效宜搭登入狀態，請先執行 openyida login。',
 });
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  instance_target_mismatch: '實例 {0} 不屬於預期業務資源 {1}，已在寫入前停止。',
+  instance_target_unverified: '無法核驗實例 {0} 的業務資源歸屬，已在寫入前停止。',
+  target_expectation_invalid: '--expect-form-type 必須為 {0}，已在寫入前停止。',
+  target_identity_mismatch: '目標資源 {0} 與預期名稱或類型不一致，已在寫入前停止。',
+  target_identity_unverified: '無法回讀目標資源 {0} 的名稱和類型，已在寫入前停止。',
+});
 module.exports.connector_test = {
   usage: '用法: openyida connector test --connector-id <id> --action <actionId> [--params <json>] [--path-json <json>] [--query-json <json>] [--header-json <json>] [--body-json <json>] [--account-id <id>] [--json]',
   invalid_json: '{0} 不是合法 JSON: {1}',
