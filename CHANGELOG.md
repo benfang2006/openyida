@@ -10,7 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
-## [Unreleased]
+## [2026.9.1-1] - 2026-09-01
+
+### Fixed
+
+- 报表链接返回规范化的工作台地址：`create-report` / `append` / `inspect` 及 owned residual 分支统一由 `lib/report/url.js` 单点构造，同时返回 `url` 与 `workbenchUrl`，不再出现无法打开的拼接链接。
+- 数据看板与报表新增语义护栏：`query-data` / `get-schema` / 报表契约在配置缺失或字段语义不成立时给出结构化失败，避免生成空看板或错绑字段。
+- 登录态缓存按沙箱绑定隔离：`token-store` 以沙箱绑定信息作为 token 缓存的围栏，防止不同沙箱环境间复用同一份 token session。
 
 ## [2026.9.1] - 2026-09-01
 
