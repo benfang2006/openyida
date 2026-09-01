@@ -970,6 +970,9 @@ describe('form presentation components', () => {
       'NumberField',
     ]));
     expect(componentsMapNames).not.toContain('Html');
+    schema.pages[0].componentsMap.forEach((entry) => {
+      expect(entry).not.toHaveProperty('version');
+    });
     const pageSection = findDirectChildByComponentName(formContainer, 'PageSection');
     expect(formContainer.children.map((child) => child.componentName)).not.toContain('Html');
     expect(pageSection).toMatchObject({
@@ -1014,7 +1017,7 @@ describe('form presentation components', () => {
     expect(divider.props.title.zh_CN).toBe('联系方式');
   });
 
-  test('buildFormSchema injects default formDetail CSS through the form action', () => {
+  test('buildFormSchema does not inject form theme or formDetail CSS', () => {
     const schema = createForm._private.buildFormSchema(
       '默认详情样式',
       [{ type: 'TextField', label: '姓名' }],
@@ -1029,10 +1032,10 @@ describe('form presentation components', () => {
     const formContainer = findFormContainer(root);
 
     expect(formContainer.children.map((child) => child.componentName)).not.toContain('Html');
-    expect(schema.actions.module.source).toContain('openyida:theme:start');
-    expect(schema.actions.module.source).toContain('openyidaThemeDidMount');
-    expect(schema.actions.module.source).toContain('yida-form-detail detail page style');
-    expect(schema.actions.module.source).toContain('openyidaThemeIsFormDetail');
+    expect(root.lifeCycles.componentDidMount).toMatchObject({ name: 'didMount', type: 'actionRef' });
+    expect(schema.actions.module.source).not.toContain('openyida:theme:start');
+    expect(schema.actions.module.source).not.toContain('yida-global-theme');
+    expect(schema.actions.module.source).not.toContain('yida-form-detail-style');
     expect(schema.pages[0].componentsMap.map((item) => item.componentName)).not.toContain('Html');
   });
 
@@ -1472,7 +1475,7 @@ describe('form presentation components', () => {
     expect(dividers[2].props.type).toBe('bold-with-thin');
   });
 
-  test('all forms inject yida global theme style into the current form document and same-origin parents', () => {
+  test('forms keep the ordinary lifecycle without theme injection', () => {
     const schema = createForm._private.buildFormSchema(
       '全局主题测试',
       [{ type: 'TextField', label: '姓名' }],
@@ -1485,28 +1488,16 @@ describe('form presentation components', () => {
     );
     const root = schema.pages[0].componentsTree[0];
 
-    expect(root.lifeCycles.componentDidMount).toMatchObject({
-      name: 'openyidaThemeDidMount',
-      type: 'actionRef',
-    });
-    expect(schema.actions.list).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: 'openyidaThemeDidMount',
-        relatedEventId: 'lifecycle:didMount',
-      }),
+    expect(root.lifeCycles.componentDidMount).toMatchObject({ name: 'didMount', type: 'actionRef' });
+    expect(schema.actions.list).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'openyidaThemeDidMount' }),
     ]));
-    expect(schema.actions.module.source).toContain('openyida:theme:start');
-    expect(schema.actions.module.source).toContain('yida-global-theme');
-    expect(schema.actions.module.source).toContain('cursor.parent');
-    expect(schema.actions.module.source).toContain('docs.indexOf(cursor.document)');
-    expect(schema.actions.module.source).toContain('--color-brand1-9');
-    expect(schema.actions.module.source).toContain("deepBlue: '#3954E4'");
-    expect(schema.actions.module.source).toContain('openyidaThemeIsFormDetail');
-    expect(schema.actions.module.source).toContain('yida-form-detail-style');
-    expect(schema.actions.module.compiled).toContain('openyidaThemeDidMount');
+    expect(schema.actions.module.source).not.toContain('openyida:theme:start');
+    expect(schema.actions.module.source).not.toContain('yida-global-theme');
+    expect(schema.actions.module.source).not.toContain('yida-form-detail-style');
   });
 
-  test('forms without Divider still inject yida global theme action', () => {
+  test('forms without Divider also avoid theme actions', () => {
     const schema = createForm._private.buildFormSchema(
       '普通字段测试',
       [{ type: 'TextField', label: '姓名' }],
@@ -1518,49 +1509,9 @@ describe('form presentation components', () => {
       'top'
     );
 
-    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('openyidaThemeDidMount');
-    expect(schema.actions.module.source).toContain('openyida:theme:start');
-    expect(schema.actions.module.source).toContain('yida-global-theme');
-  });
-
-  test('yida global theme action rewrites existing unified theme schema contract', () => {
-    const schema = createForm._private.buildFormSchema(
-      '统一主题块重写测试',
-      [{ type: 'TextField', label: '姓名' }],
-      'FORM_TEST',
-      'CORP_TEST',
-      'APP_TEST',
-      'single',
-      'default',
-      'top'
-    );
-    schema.actions.module.source = [
-      'export function didMount() {}',
-      '/* openyida:theme:start */',
-      'export function openyidaThemeDidMount() {}',
-      '/* openyida:theme:end */',
-    ].join('\n');
-    schema.actions.list.push({
-      id: 'openyidaThemeDidMount',
-      name: 'openyidaThemeDidMount',
-      relatedEventId: 'lifecycle:didMount',
-      type: 'lifeCycleEvent',
-      params: {},
-    });
-
-    createForm._private.ensureYidaGlobalThemeAction(schema);
-
-    expect((schema.actions.module.source.match(/openyida:theme:start/g) || [])).toHaveLength(1);
-    expect(schema.actions.module.source).toContain('openyida:theme:start');
-    expect(schema.actions.module.source).toContain('openyidaThemeDidMount');
-    expect(schema.actions.module.source).toContain('openyidaInjectTheme');
-    const themeActionItems = schema.actions.list.filter(function (item) {
-      return item.id === 'openyidaThemeDidMount';
-    });
-    expect(themeActionItems).toHaveLength(1);
-    expect(themeActionItems[0]).toEqual(expect.objectContaining({
-      relatedEventId: 'lifecycle:didMount',
-    }));
+    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('didMount');
+    expect(schema.actions.module.source).not.toContain('openyida:theme:start');
+    expect(schema.actions.module.source).not.toContain('yida-global-theme');
   });
 
   test('update add can insert presentation components inside nested containers', () => {
@@ -1597,9 +1548,33 @@ describe('form presentation components', () => {
     expect(firstColumnChildren.map((child) => child.componentName)).toEqual(['TextField', 'Divider']);
     expect(firstColumnChildren[1].props.title.zh_CN).toBe('联系方式');
     expect(schema.pages[0].componentsMap.map((item) => item.componentName)).toContain('Divider');
+    expect(schema.pages[0].componentsMap.find((item) => item.componentName === 'Divider')).not.toHaveProperty('version');
   });
 
-  test('update schemas keep yida global theme action after adding Divider', () => {
+  test('form schema generators leave vc-deep-yida version selection to the runtime', () => {
+    const compiled = formCompiler.compileFormDefinition({
+      formTitle: '运行时版本测试',
+      fields: [{ type: 'TextField', label: '姓名' }],
+    }, {
+      appType: 'APP_TEST',
+      formUuid: 'FORM_RUNTIME_VERSION',
+    });
+    const emptySchema = formCompiler.buildEmptyFormSchema();
+
+    [compiled.schema, emptySchema].forEach((schema) => {
+      const entries = schema.pages[0].componentsMap.filter(
+        (entry) => entry.package === '@ali/vc-deep-yida'
+      );
+      expect(entries.length).toBeGreaterThan(0);
+      entries.forEach((entry) => {
+        expect(entry).not.toHaveProperty('version');
+      });
+    });
+    expect(sourceCode).not.toMatch(/package:\s*'@ali\/vc-deep-yida',\s*version:/);
+    expect(compilerSourceCode).not.toMatch(/package:\s*'@ali\/vc-deep-yida',\s*version:/);
+  });
+
+  test('update schemas do not add theme actions after adding Divider', () => {
     const schema = createForm._private.buildFormSchema(
       '后续新增分割线',
       [{ type: 'TextField', label: '姓名' }],
@@ -1614,12 +1589,9 @@ describe('form presentation components', () => {
       { action: 'add', field: { type: 'Divider', title: '联系方式' }, after: '姓名' },
     ]);
 
-    const applied = createForm._private.ensureYidaGlobalThemeAction(schema);
-
-    expect(applied).toBe(true);
-    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('openyidaThemeDidMount');
-    expect(schema.actions.module.source).toContain('openyida:theme:start');
-    expect(schema.actions.module.source).toContain('openyidaInjectTheme');
+    expect(schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('didMount');
+    expect(schema.actions.module.source).not.toContain('openyida:theme:start');
+    expect(schema.actions.module.source).not.toContain('yida-global-theme');
   });
 });
 
@@ -2555,6 +2527,20 @@ describe('create-form definition readers', () => {
 });
 
 describe('form compiler field bindings', () => {
+  test('compileFormDefinition does not inject theme actions for process form schemas', () => {
+    const compiled = formCompiler.compileFormDefinition({
+      formTitle: '流程表单主题测试',
+      appType: 'APP_XXX',
+      formUuid: 'FORM_XXX',
+      fields: [{ key: 'name', type: 'TextField', label: '姓名' }],
+    });
+
+    expect(compiled.schema.pages[0].componentsTree[0].lifeCycles.componentDidMount.name).toBe('didMount');
+    expect(compiled.schema.actions.module.source).not.toContain('openyida:theme:start');
+    expect(compiled.schema.actions.module.source).not.toContain('yida-global-theme');
+    expect(compiled.schema.actions.module.source).not.toContain('yida-form-detail-style');
+  });
+
   test('compileFormDefinition reuses existing field bindings by semantic path', () => {
     const compiled = formCompiler.compileFormDefinition({
       formTitle: '访客登记',

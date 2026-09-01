@@ -157,7 +157,7 @@ function YidaComp(props) {
         }
       `}</style>
 
-      <div className="rechart-page" data-theme-scope="page">
+      <div className="rechart-page">
         <div className="rechart-shell">
           <div className="rechart-header">
             <div>

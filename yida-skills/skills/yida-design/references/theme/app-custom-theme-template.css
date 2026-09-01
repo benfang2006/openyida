@@ -1,0 +1,218 @@
+@charset "UTF-8";
+
+/*
+ * OpenYida 新版应用主题模板
+ *
+ * 使用方式：
+ * 1. AI 根据 design.md 替换品牌色阶、页面表面和导航变量。
+ *    --color-brand1-1 至 --color-brand1-10 是新版主题必需 token，必须完整保留并按主色重新生成。
+ * 2. 保留变量名和 nav/light/dark 选择器结构，运行容器会在各页面上下文加载本文件。
+ * 3. 新建使用：openyida create-app --name "应用名" --theme-file ./app-theme.css --nav-theme light --logo-source appIcon --layout l_shape
+ * 4. 已有应用使用：openyida update-app <appType> --theme-file ./app-theme.css --nav-theme light --logo-source appIcon --layout side
+ */
+
+:root {
+  /* 必需品牌色阶：1-10 必须完整声明；--color-brand1-6 必须是字面量颜色，CLI 会自动以它保存应用 themeColor。 */
+  --color-brand1-1: #e6f0ff;
+  --color-brand1-2: #f2f7ff;
+  --color-brand1-3: #d6e6ff;
+  --color-brand1-4: #adcfff;
+  --color-brand1-5: #3d8cff;
+  --color-brand1-6: #0066ff;
+  --color-brand1-7: #005ce6;
+  --color-brand1-8: #0052cc;
+  --color-brand1-9: #0047b3;
+  --color-brand1-10: rgba(0, 102, 255, 0.3);
+  --color-brand-1: rgba(0, 102, 255, 0.3);
+  --color-brand-2: #3d8cff;
+  --color-brand-3: #0066ff;
+  --color-brand-4: #0047b3;
+  --color-group: #0066ff, #00a532, #ff8a00, #8a5cfd, #ef4444, #00b8d9;
+
+  /* 基础尺寸与材质。 */
+  --pod-xs-border-radius: 4px;
+  --pod-sm-border-radius: 8px;
+  --pod-md-border-radius: 12px;
+  --pod-lg-border-radius: 16px;
+  --pod-xl-border-radius: 20px;
+  --pod-full-raduis: 999px;
+  --pod-xs-gap-pad-margin: 4px;
+  --pod-sm-gap-pad-margin: 8px;
+  --pod-md-gap-pad-margin: 12px;
+  --pod-lg-gap-pad-margin: 16px;
+  --pod-mxl-gap-pad-margin: 20px;
+  --pod-xxl-gap-pad-margin: 24px;
+  --pod-common-bg-color: #f0f2f5;
+  --pod-common-level1-base-color: #181c1f;
+  --pod-common-level2-base-color: rgba(24, 28, 31, 0.6);
+  --pod-common-level3-base-color: rgba(24, 28, 31, 0.4);
+  --pod-common-level4-base-color: rgba(24, 28, 31, 0.24);
+  --pod-overlay-color: rgba(83, 88, 97, 0.1);
+  --pod-overlay-color-hover: rgba(83, 88, 97, 0.16);
+  --pod-overlay-color-active: rgba(83, 88, 97, 0.24);
+  --pod-danger-color: #f2510c;
+
+  /* Shell 与页面表面。 */
+  --pod-shell-bg-color-light: var(--color-brand1-2, #f2f7ff);
+  --pod-shell-bg-color-white: #fff;
+  --pod-shell-bg-color-gray: var(--pod-common-bg-color, #f0f2f5);
+  --pod-shell-bg-color-dark: var(--color-brand1-5, #3d8cff);
+  --pod-shell-padding: 4px;
+  --pod-shell-lshape-border-radius: 16px;
+  --pod-page-surface-padding: 0;
+  --pod-page-surface-margin: 0;
+  --pod-page-surface-border: none;
+  --pod-page-surface-bg-color: transparent;
+  --pod-page-surface-border-radius: 12px;
+  --pod-page-surface-shadow: none;
+  --pod-page-border: 1px solid var(--color-line1-1, rgba(24, 28, 31, 0.08));
+  --pod-page-bg-color: #fff;
+  --pod-page-border-radius: var(--pod-xl-border-radius, 20px);
+  --pod-page-padding: 20px;
+  --pod-page-mobile-margin: 12px;
+  --pod-page-mobile-padding: 12px;
+  --pod-page-inner-group-spacing: 12px;
+  --pod-page-title-height: 24px;
+  --pod-page-title-font-size: 16px;
+  --pod-page-title-font-weight: 500;
+  --pod-page-content-max-width: 1180px;
+  --pod-card-padding: 20px;
+  --pod-card-border-radius: var(--pod-xl-border-radius, 20px);
+  --pod-card-border: none;
+  --pod-card-bg-color: var(--color-white, #fff);
+  --pod-page-footer-bg-color: var(--pod-card-bg-color, #fff);
+  --pod-page-footer-border-radius: var(--pod-full-raduis, 999px);
+
+  /* 运行容器在表单提交页与详情页加载本文件，保持主题变量一致。 */
+  --pod-detail-container-padding: 8px;
+  --pod-detail-container-margin: 0;
+  --pod-detail-shell-padding: var(--pod-detail-container-padding, 8px);
+  --pod-field-preview-min-height: 32px;
+  --pod-field-preview-padding: 0 8px;
+  --pod-field-preview-gap: 4px;
+  --pod-field-preview-bg-color: rgba(24, 28, 31, 0.04);
+  --pod-field-preview-border-radius: var(--pod-sm-border-radius, 8px);
+  --pod-field-preview-indicator-color: #e1e3e7;
+  --pod-field-preview-shadow: inset 2px 0 0 0 var(--pod-field-preview-indicator-color, #e1e3e7);
+  --pod-field-preview-text-color: var(--pod-common-level1-base-color, #181c1f);
+  --pod-field-preview-line-height: 20px;
+
+  /* 数据管理与表格。 */
+  --table-cell-border: var(--color-line1-1, rgba(24, 28, 31, 0.08));
+  --table-border: var(--color-line1-2, rgba(131, 137, 143, 0.24));
+  --table-header-bg: var(--color-fill1-1, #f2f3f4);
+  --table-cell-bg: var(--color-white, #fff);
+  --pod-table-cell-color: var(--color-white, #fff);
+  --page-bg: var(--color-white, #fff);
+  --card-bg: var(--color-white, #fff);
+  --popup-bg: var(--color-white, #fff);
+
+  /* 新版导航。navTheme 负责选择 light/dark/white/gray，变量负责细节。 */
+  --pod-nav-logo-bg: var(--color-brand1-6, #0066ff);
+  --pod-nav-logo-border: none;
+  --pod-nav-logo-icon: var(--color-text1-5, #fff);
+  --pod-nav-logo-text: var(--color-text1-4, #181c1f);
+  --pod-nav-logo-border-radius: 6px;
+  --pod-nav-logo-gap: 8px;
+  --pod-nav-logo-padding: 4px 8px;
+  --pod-nav-item-text-color: var(--color-text1-4, #181c1f);
+  --pod-nav-item-text-hover-color: var(--color-text1-4, #181c1f);
+  --pod-nav-item-text-disabled-color: rgba(24, 28, 31, 0.24);
+  --pod-nav-item-text-selected-color: var(--color-brand1-6, #0066ff);
+  --pod-nav-menu-bg-hover-color: rgba(24, 28, 31, 0.05);
+  --pod-nav-menu-bg-selected-color: var(--color-brand1-3, #d6e6ff);
+  --pod-nav-popup-bg-color: var(--popup-bg, #fff);
+  --pod-nav-popup-border-radius: 12px;
+  --pod-nav-popup-shadow: 0 8px 24px rgba(31, 35, 41, 0.12);
+  --pod-nav-search-bg-color: rgba(24, 28, 31, 0.06);
+  --pod-nav-search-bg-hover-color: rgba(24, 28, 31, 0.06);
+  --pod-nav-search-bg-active-color: rgba(83, 88, 97, 0.24);
+  --pod-nav-search-placeholder-color: rgba(24, 28, 31, 0.24);
+  --pod-nav-search-text-color: var(--color-text1-4, #181c1f);
+  --pod-nav-search-border-hover-color: var(--color-brand1-6, #0066ff);
+  --pod-nav-search-border-active-color: var(--color-brand1-6, #0066ff);
+  --pod-nav-action-icon-color: rgba(24, 28, 31, 0.4);
+  --pod-nav-action-border-color: rgba(24, 28, 31, 0.12);
+  --pod-nav-action-bg-hover-color: rgba(83, 88, 97, 0.16);
+  --pod-nav-action-bg-active-color: rgba(83, 88, 97, 0.24);
+  --pod-theme-text-color: var(--color-text1-4, #181c1f);
+  --pod-page-header-text-color: var(--pod-theme-text-color, #181c1f);
+}
+
+/* 白色导航与白色卡片相邻时保留层级。 */
+.pod-premium.nav-white,
+.pod-premium.nav-theme-white {
+  --pod-card-border: 1px solid var(--color-line1-1, rgba(24, 28, 31, 0.08));
+}
+
+.pod-premium.nav-light {
+  --pod-shell-theme-bg-color: var(--pod-shell-bg-color-light, var(--color-brand1-2, #f2f7ff));
+  --pod-page-header-bg-color: var(--pod-shell-theme-bg-color, #fff);
+}
+
+.pod-premium.nav-dark {
+  --pod-shell-theme-bg-color: var(--pod-shell-bg-color-dark, var(--color-brand1-5, #3d8cff));
+  --pod-page-header-bg-color: var(--pod-shell-theme-bg-color, #fff);
+}
+
+.pod-premium.nav-white {
+  --pod-shell-theme-bg-color: var(--pod-shell-bg-color-white, #fff);
+  --pod-page-header-bg-color: var(--pod-shell-theme-bg-color, #fff);
+}
+
+.pod-premium.nav-gray {
+  --pod-shell-theme-bg-color: var(--pod-shell-bg-color-gray, #f0f2f5);
+  --pod-page-header-bg-color: var(--pod-shell-theme-bg-color, #fff);
+}
+
+.pod-premium.is-light {
+  --pod-theme-text-color: var(--color-text1-4, #181c1f);
+  --pod-nav-logo-bg: var(--color-brand1-6, #0066ff);
+  --pod-nav-item-text-selected-color: var(--color-brand1-6, #0066ff);
+  --pod-nav-menu-bg-selected-color: var(--color-brand1-3, #d6e6ff);
+}
+
+.pod-premium.is-dark {
+  --pod-theme-text-color: var(--color-text1-5, #fff);
+  --pod-page-header-text-color: var(--color-text1-5, #fff);
+  --pod-nav-logo-bg: transparent;
+  --pod-nav-logo-border: 1px solid rgba(255, 246, 246, 0.15);
+  --pod-nav-logo-text: var(--color-text1-5, #fff);
+  --pod-nav-item-text-color: var(--color-text1-5, #fff);
+  --pod-nav-item-text-hover-color: var(--color-text1-5, #fff);
+  --pod-nav-item-text-selected-color: var(--color-text1-5, #fff);
+  --pod-nav-menu-bg-hover-color: rgba(255, 255, 255, 0.12);
+  --pod-nav-menu-bg-selected-color: rgba(255, 255, 255, 0.24);
+  --pod-nav-popup-bg-color: var(--pod-shell-bg-color-dark, var(--color-brand1-5, #3d8cff));
+  --pod-nav-search-bg-color: rgba(255, 255, 255, 0.12);
+  --pod-nav-search-bg-hover-color: rgba(255, 255, 255, 0.16);
+  --pod-nav-search-bg-active-color: rgba(255, 255, 255, 0.16);
+  --pod-nav-search-placeholder-color: rgba(255, 255, 255, 0.24);
+  --pod-nav-search-text-color: var(--color-text1-5, #fff);
+  --pod-nav-action-icon-color: rgba(255, 255, 255, 0.6);
+  --pod-nav-action-border-color: rgba(255, 255, 255, 0.2);
+  --pod-nav-action-bg-hover-color: rgba(255, 255, 255, 0.12);
+  --pod-nav-action-bg-active-color: rgba(255, 255, 255, 0.16);
+}
+
+/* 移动端保留滚动能力，仅隐藏滚动条。 */
+.mobile .pod-premium,
+.mobile .pod-premium *,
+.pod-premium.is-phone,
+.pod-premium.is-phone *,
+.pod-premium .is-phone,
+.pod-premium .is-phone * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.mobile .pod-premium::-webkit-scrollbar,
+.mobile .pod-premium *::-webkit-scrollbar,
+.pod-premium.is-phone::-webkit-scrollbar,
+.pod-premium.is-phone *::-webkit-scrollbar,
+.pod-premium .is-phone::-webkit-scrollbar,
+.pod-premium .is-phone *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}

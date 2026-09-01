@@ -727,28 +727,9 @@ describe('CLI offline smoke', () => {
       mutates_yida: false,
       mutates_local: false,
     });
-    expect(commandById['form-detail-style.check']).toMatchObject({
-      path: ['form-detail-style', 'check'],
-      side_effect: {
-        kind: 'remote_read',
-        mutates_yida: false,
-        mutates_local: false,
-      },
-      permission: {
-        mode: 'allow',
-        effect: 'read',
-      },
-    });
-    expect(commandById['form-detail-style.apply'].side_effect).toMatchObject({
-      kind: 'remote_write',
-      mutates_yida: true,
-      mutates_local: false,
-    });
-    expect(commandById['form-detail-style.remove'].side_effect).toMatchObject({
-      kind: 'remote_write',
-      mutates_yida: true,
-      mutates_local: false,
-    });
+    expect(commandById['form-detail-style.check']).toBeUndefined();
+    expect(commandById['form-detail-style.apply']).toBeUndefined();
+    expect(commandById['form-detail-style.remove']).toBeUndefined();
     expect(commandById['create-form.validate']).toBeUndefined();
     expect(commandById['create-form.validate-fields'].requires_login).toBe(false);
     expect(commandById['create-form.validate-fields'].side_effect).toMatchObject({
@@ -1732,7 +1713,10 @@ describe('CLI offline smoke', () => {
     expect(output).toContain('Code Templates');
     expect(output).toContain('yida-chart');
     expect(output).toContain('yida-canvas-table-form');
+    expect(output).toContain('openyida-scaffold');
     expect(output).toContain('table-form-batch-submit');
+    expect(output).toContain('canvas-form-drawer');
+    expect(output).toContain('form-fields');
     expect(output).not.toContain('yida-custom-page');
     expect(output).not.toContain('yida-canvas-custom-page');
     expect(output).not.toContain('product-homepage');
