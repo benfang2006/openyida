@@ -2,9 +2,11 @@
 
 const {
   ROOT_NAV_UUID,
+  applyNavigationOrder,
   autoOrderRootNodes,
   buildNavigationTree,
   flattenTreeIds,
+  flattenTreeNodes,
   getNavigationPriority,
   moveNodeInTree,
   parseArgs,
@@ -120,5 +122,173 @@ describe('nav-group helpers', () => {
   test('moveNodeInTree rejects moving a system node', () => {
     expect(() => moveNodeInTree(fixture, 'NAV-SYSTEM-RUNNING-UUID', ROOT_NAV_UUID))
       .toThrow('System navigation nodes cannot be moved');
+  });
+});
+
+describe('navigation order mutation contract', () => {
+  const mixed = [
+    { id: 1, navUuid: 'NAV-SYSTEM-RUNNING-UUID', parentNavUuid: ROOT_NAV_UUID, navType: 'SYSTEM', title: { zh_CN: '待我处理' }, listOrder: 0 },
+    { id: 2, navUuid: 'FORM-RECEIPT', formUuid: 'FORM-RECEIPT', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'receipt', title: { zh_CN: '访客登记表' }, listOrder: 1 },
+    { id: 3, navUuid: 'PAGE-DASHBOARD', formUuid: 'PAGE-DASHBOARD', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'display', title: { zh_CN: '数据看板' }, listOrder: 2 },
+    { id: 4, navUuid: 'FORM-PROCESS', formUuid: 'FORM-PROCESS', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'process', title: { zh_CN: '访客审批表' }, listOrder: 3 },
+    { id: 5, navUuid: 'PAGE-PORTAL', formUuid: 'PAGE-PORTAL', parentNavUuid: ROOT_NAV_UUID, navType: 'PAGE', formType: 'display', title: { zh_CN: '访客管理首页' }, listOrder: 4 },
+  ];
+
+  function expectedAutoOrder() {
+    const ordered = autoOrderRootNodes(mixed);
+    return {
+      ordered,
+      list: flattenTreeNodes(ordered.roots, []),
+    };
+  }
+
+  test('skips POST when the complete navigation order is already applied', async () => {
+    const expected = expectedAutoOrder();
+    const orderedAgain = autoOrderRootNodes(expected.list);
+    const postNavAction = jest.fn();
+    const fetchNavigationList = jest.fn();
+
+    const result = await applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      expected.list,
+      orderedAgain,
+      {},
+      { postNavAction, fetchNavigationList }
+    );
+
+    expect(postNavAction).not.toHaveBeenCalled();
+    expect(fetchNavigationList).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      success: true,
+      changed: false,
+      alreadyApplied: true,
+      mutationPerformed: false,
+      readbackVerified: true,
+      sideEffectState: 'none',
+    });
+  });
+
+  test('writes once and verifies the complete readback order', async () => {
+    const expected = expectedAutoOrder();
+    const postNavAction = jest.fn().mockResolvedValue({ success: true });
+    const fetchNavigationList = jest.fn().mockResolvedValue(expected.list);
+
+    const result = await applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      mixed,
+      expected.ordered,
+      {},
+      { postNavAction, fetchNavigationList }
+    );
+
+    expect(postNavAction).toHaveBeenCalledTimes(1);
+    expect(postNavAction).toHaveBeenCalledWith(
+      'APP_XXX',
+      'updateOrderNew',
+      expect.objectContaining({ ids: '1,5,3,4,2' }),
+      {},
+      { oneShot: true }
+    );
+    expect(fetchNavigationList).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      success: true,
+      changed: true,
+      mutationPerformed: true,
+      readbackVerified: true,
+      recoveredByReadback: false,
+      sideEffectState: 'committed',
+    });
+  });
+
+  test('recovers a lost write response when readback matches the expected order', async () => {
+    const expected = expectedAutoOrder();
+    const postNavAction = jest.fn().mockRejectedValue(new Error('timeout'));
+    const fetchNavigationList = jest.fn().mockResolvedValue(expected.list);
+
+    await expect(applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      mixed,
+      expected.ordered,
+      {},
+      { postNavAction, fetchNavigationList }
+    )).resolves.toMatchObject({
+      success: true,
+      recoveredByReadback: true,
+      sideEffectState: 'committed',
+      readbackVerified: true,
+    });
+    expect(postNavAction).toHaveBeenCalledTimes(1);
+  });
+
+  test('reports a retry-safe no-write result when readback stays at the original order', async () => {
+    const expected = expectedAutoOrder();
+    const postNavAction = jest.fn().mockRejectedValue(new Error('timeout'));
+    const fetchNavigationList = jest.fn().mockResolvedValue(mixed);
+
+    await expect(applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      mixed,
+      expected.ordered,
+      {},
+      { postNavAction, fetchNavigationList }
+    )).rejects.toMatchObject({
+      code: 'NAV_ORDER_NOT_APPLIED',
+      details: {
+        retrySafe: true,
+        sideEffectState: 'none',
+        readbackVerified: true,
+      },
+    });
+  });
+
+  test('reports a non-retryable mismatch for an intermediate navigation order', async () => {
+    const expected = expectedAutoOrder();
+    const intermediate = [mixed[0], mixed[4], mixed[1], mixed[2], mixed[3]];
+    const postNavAction = jest.fn().mockResolvedValue({ success: true });
+    const fetchNavigationList = jest.fn().mockResolvedValue(intermediate);
+
+    await expect(applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      mixed,
+      expected.ordered,
+      {},
+      { postNavAction, fetchNavigationList }
+    )).rejects.toMatchObject({
+      code: 'NAV_ORDER_READBACK_MISMATCH',
+      details: {
+        retrySafe: false,
+        sideEffectState: 'unknown',
+        readbackVerified: false,
+        status: 'SEMANTIC_FAILURE',
+      },
+    });
+  });
+
+  test('reports an unknown non-retryable result when post-write readback fails', async () => {
+    const expected = expectedAutoOrder();
+    const postNavAction = jest.fn().mockRejectedValue(new Error('timeout'));
+    const fetchNavigationList = jest.fn().mockRejectedValue(new Error('readback unavailable'));
+
+    await expect(applyNavigationOrder(
+      'APP_XXX',
+      'auto-order',
+      mixed,
+      expected.ordered,
+      {},
+      { postNavAction, fetchNavigationList }
+    )).rejects.toMatchObject({
+      code: 'NAV_ORDER_RESULT_UNKNOWN',
+      details: {
+        retrySafe: false,
+        sideEffectState: 'unknown',
+        readbackVerified: false,
+        nextStep: 'openyida nav-group list APP_XXX --flat',
+      },
+    });
   });
 });

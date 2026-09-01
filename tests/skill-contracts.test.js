@@ -413,19 +413,39 @@ describe('OpenYida skill contracts', () => {
     expect(root).toContain('默认完成即停止');
     expect(app).toContain('[Step 8：发布页面并排序导航]');
     expect(step8).toContain('发布本轮修改过的页面源码到真实 display 页面，并执行轻量导航排序');
+    expect(step8).toContain('PRD 写明页面/表单清单顺序：');
+    expect(step8).toContain('openyida publish <source> <appType> <displayPageFormUuid> --canvas --health-check\nopenyida nav-group order <appType> <页面/表单...>');
+    expect(step8).toContain('PRD 缺少明确页面清单：');
     expect(step8).toContain('openyida publish <source> <appType> <displayPageFormUuid> --canvas --health-check --auto-nav-order');
-    expect(step8).toContain('PRD 写明页面/表单清单顺序时，执行 `openyida nav-group order <appType> <页面/表单...>`');
+    expect(step8).toContain('同一搭建 Run 不得同时执行显式排序与自动排序');
+    const explicitNavBranch = step8.slice(
+      step8.indexOf('PRD 写明页面/表单清单顺序：'),
+      step8.indexOf('PRD 缺少明确页面清单：')
+    );
+    const fallbackNavBranch = step8.slice(
+      step8.indexOf('PRD 缺少明确页面清单：'),
+      step8.indexOf('4. 同一搭建 Run')
+    );
+    const explicitNavCommands = explicitNavBranch.match(/```text\n([\s\S]*?)\n```/)[1];
+    const fallbackNavCommands = fallbackNavBranch.match(/```text\n([\s\S]*?)\n```/)[1];
+    expect(explicitNavCommands).not.toContain('--auto-nav-order');
+    expect(fallbackNavCommands).not.toContain('nav-group order');
+    expect(fallbackNavCommands).not.toContain('nav-group auto-order');
+    expect(step8).toContain('不生成逐项 `move` 的 Bash/Python 循环');
     expect(step4).toContain('PRD 包含审批、流程、申请、审核、工单等流程对象时');
     expect(publish).toContain('`--auto-nav-order`');
-    expect(publish).toContain('PRD 已写明导航顺序时优先用 `openyida nav-group order <appType> <页面/表单...>`');
-    expect(publish).toContain('排序失败只警告，不回滚已发布页面');
+    expect(publish).toContain('PRD 已写明顺序时不要传本参数');
+    expect(publish).toContain('结构化 `navOrder`');
     expect(navGroup).toContain('PRD 导航优先');
     expect(navGroup).toContain('openyida nav-group order <appType> <页面/表单...>');
     expect(navGroup).toContain('openyida nav-group auto-order <appType>');
+    expect(navGroup).toContain('两种排序互斥，同一 Run 只执行一次');
+    expect(navGroup).toContain('顺序已正确时返回 `changed=false` 且不写入');
     expect(navGroup).toContain('目标分组必须通过 `--to` 传入');
     expect(manifest).toContain('default_nav_order_policy');
     expect(manifest).toContain('openyida nav-group order <appType> <items...>');
     expect(manifest).toContain('openyida publish ... --auto-nav-order');
+    expect(manifest).toContain('Explicit and automatic ordering are mutually exclusive');
     expect(manifest).toContain('product_design_policy');
     expect(manifest).toContain('Full app creation first resolves resource context, then uses yida-design for requirement analysis and product design');
     expect(manifest).toContain('final_link_policy');
