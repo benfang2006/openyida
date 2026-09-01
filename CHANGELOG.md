@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2026.9.1] - 2026-09-01
+
+### Changed
+
+- `openyida create-app` 创建应用时默认启用现代主题（注册请求带上 `createWithModernTheme=y`）；`import-app` 行为保持不变。
+
 ## [2026.8.31-2] - 2026-08-31
 
 ### Fixed
