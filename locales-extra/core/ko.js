@@ -1962,6 +1962,14 @@ module.exports.connector_test = {
   success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
 };
 
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  instance_target_mismatch: 'Instance {0} does not belong to expected business resource {1}. The operation stopped before mutation.',
+  instance_target_unverified: 'Could not verify the business resource ownership of instance {0}. The operation stopped before mutation.',
+  target_expectation_invalid: '--expect-form-type must be {0}. The operation stopped before mutation.',
+  target_identity_mismatch: 'Target resource {0} does not match the expected name or type. The operation stopped before mutation.',
+  target_identity_unverified: 'Could not read the name and type of target resource {0}. The operation stopped before mutation.',
+});
+
 const connectorSafetyMessages = require('../../lib/core/locales/en');
 module.exports.connector_contract = connectorSafetyMessages.connector_contract;
 module.exports.connector_api = connectorSafetyMessages.connector_api;

@@ -90,6 +90,7 @@ describe('report inspect', () => {
         dataSetKeys: ['chartData'],
         filterKeys: ['filter-1'],
         cubeCodes: ['FORM_1'],
+        fields: [],
       }],
       layout: [{ i: 'field_1', x: 0, y: 0, w: 3, h: 22, moved: false, static: false }],
     });
@@ -97,6 +98,7 @@ describe('report inspect', () => {
 
   test('runs a V5+tEXDRG read-only fetch and emits parseable JSON', async () => {
     utils.httpGet.mockResolvedValue({ success: true, content: schemaFixture() });
+    utils.httpPost.mockResolvedValue({ success: true, content: { data: [] } });
 
     const result = await run(['APP_1', 'REPORT_1', '--json']);
 
@@ -105,8 +107,14 @@ describe('report inspect', () => {
       revision: 42,
       url: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
       workbenchUrl: 'https://demo.aliwork.com/APP_1/workbench/REPORT_1',
+      runtimeQueryVerified: true,
+      components: [expect.objectContaining({
+        cid: 'cid_1',
+        queryProbe: { status: 'QUERY_OK', success: true, errorCode: null, errorMsg: null },
+      })],
     });
     expect(utils.httpGet).toHaveBeenCalledTimes(1);
+    expect(utils.httpPost).toHaveBeenCalledTimes(1);
     expect(utils.httpGet.mock.calls[0][2]).toMatchObject({
       formUuid: 'REPORT_1',
       schemaVersion: 'V5',

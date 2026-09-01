@@ -277,6 +277,7 @@ describe('extractFieldSummary', () => {
         fieldId: 'textField_name',
         alias: 'customerName',
         reportFieldCode: 'textField_name',
+        reportFieldCodeCandidates: ['textField_name'],
         options: [],
         optionCount: 0,
         optionsTruncated: false,
@@ -286,7 +287,8 @@ describe('extractFieldSummary', () => {
         componentName: 'SelectField',
         fieldId: 'selectField_status',
         alias: '',
-        reportFieldCode: 'selectField_status_value',
+        reportFieldCode: 'selectField_status',
+        reportFieldCodeCandidates: ['selectField_status', 'selectField_status_value'],
         options: [
           { label: '待访', value: 'pending' },
           { label: '已离开', value: 'left' },
@@ -317,7 +319,9 @@ describe('extractFieldSummary', () => {
     });
     expect(summary.map(item => item.componentName)).toEqual(advancedTypes);
     expect(summary.find(item => item.componentName === 'MultiSelectField').reportFieldCode)
-      .toBe('field_4_value');
+      .toBe('field_4');
+    expect(summary.find(item => item.componentName === 'MultiSelectField').reportFieldCodeCandidates)
+      .toEqual(['field_4', 'field_4_value']);
   });
 
   test('extracts lightweight options from static props', () => {

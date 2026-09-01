@@ -110,6 +110,10 @@ function reportInspectMetadata(inspect = {}, knownFormIds = []) {
     cubeCodes,
     unknownCubeCodes,
     unknownCubeCount: unknownCubeCodes.length,
+    runtimeQueryVerified: inspect.runtimeQueryVerified === true,
+    failedQueryProbeCount: components.filter(component => (
+      component && component.queryProbe && component.queryProbe.success === false
+    )).length,
   };
 }
 
@@ -258,7 +262,15 @@ function collectOpenYidaReadback(context = {}, options = {}) {
     for (const report of reportResources) {
       const inspect = run(['report', 'inspect', appType, report.id, '--json']);
       if (inspect && inspect.success !== false) {
-        Object.assign(report, reportInspectMetadata(inspect, knownFormIds));
+        const metadata = reportInspectMetadata(inspect, knownFormIds);
+        Object.assign(report, metadata);
+        if (metadata.runtimeQueryVerified !== true) {
+          findings.push({
+            code: 'report-runtime-query-failed',
+            detail: `${report.name}: ${metadata.failedQueryProbeCount} component query probe(s) failed`,
+            source: 'platform-readback',
+          });
+        }
       }
     }
   }
@@ -315,6 +327,7 @@ function collectOpenYidaReadback(context = {}, options = {}) {
     }
   }
 
+  const knownDataCounts = [];
   for (const name of Array.isArray(config.dataPresenceFormNames) ? config.dataPresenceFormNames : []) {
     const form = findNamedResource(name, ['form', 'process']);
     if (!form) {
@@ -328,11 +341,19 @@ function collectOpenYidaReadback(context = {}, options = {}) {
     const queryType = form.type === 'process' ? 'process' : 'form';
     const query = run(['data', 'query', queryType, appType, form.id, '--page', '1', '--size', '1']);
     if (query) {
+      const instanceCount = dataInstanceCount(query);
+      knownDataCounts.push({ name, formUuid: form.id, count: instanceCount });
       resources.push({
         type: 'sample-data', id: form.id, name,
-        instanceCount: dataInstanceCount(query),
+        instanceCount,
         source: 'platform-readback',
       });
+    }
+  }
+
+  for (const target of targets.filter(item => item.type === 'page')) {
+    if (target.runtimeExpectations && target.runtimeExpectations.requireKnownDataEvidence === true) {
+      target.runtimeExpectations.knownDataCounts = knownDataCounts.map(item => ({ ...item }));
     }
   }
 
