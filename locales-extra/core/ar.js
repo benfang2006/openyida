@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'استيراد حزمة الترحيل، إعادة بناء التطبيق',
     group_form: 'النماذج & الصفحات',
     cmd_create_form: 'إنشاء صفحة نموذج',
+    cmd_list_form_icons: 'عرض رموز تنقل النماذج المتاحة',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'تحديث صفحة نموذج',
     cmd_list_forms: 'List forms/pages in an app',

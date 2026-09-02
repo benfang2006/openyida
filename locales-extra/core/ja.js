@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '移行パッケージをインポート、アプリを再構築',
     group_form: 'フォーム & ページ',
     cmd_create_form: 'フォームページを作成',
+    cmd_list_form_icons: '利用可能なフォームナビゲーションアイコンを一覧表示',
     cmd_validate_form: 'フォームフィールド JSON をローカル検証',
     cmd_update_form: 'フォームページを更新',
     cmd_list_forms: 'アプリ内のフォーム/ページを一覧表示',

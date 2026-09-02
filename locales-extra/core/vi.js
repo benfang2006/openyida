@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'Nhập gói di chuyển, xây dựng lại ứng dụng',
     group_form: 'Biểu mẫu & Trang',
     cmd_create_form: 'Tạo trang biểu mẫu',
+    cmd_list_form_icons: 'Liệt kê biểu tượng điều hướng biểu mẫu khả dụng',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'Cập nhật trang biểu mẫu',
     cmd_list_forms: 'List forms/pages in an app',

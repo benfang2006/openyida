@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'Importar pacote de migração, reconstruir app',
     group_form: 'Formulários & Páginas',
     cmd_create_form: 'Criar página de formulário',
+    cmd_list_form_icons: 'Listar ícones de navegação de formulário disponíveis',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'Atualizar página de formulário',
     cmd_list_forms: 'Listar formulários/páginas de um app',

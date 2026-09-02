@@ -18,6 +18,8 @@ const createFormSplitSource = [
   'commands.js',
   'definition-reader.js',
   'field-normalizers.js',
+  'nav-icon.js',
+  'nav-icon-service.js',
   'rule-builder.js',
   'api-path.js',
   'schema-patch.js',
@@ -41,6 +43,69 @@ async function requestNonIdempotentOnce(requestFn, preflightFn, authRef) {
     return preflightResult;
   }
   return requestFn(authRef);
+}
+
+function createSuccessfulFormHttpMocks(formUuid, options = {}) {
+  let created = false;
+  let navigationIcon = '';
+  const navigationNode = function () {
+    return {
+      id: 101,
+      navUuid: formUuid,
+      formUuid,
+      parentNavUuid: 'NAV-SYSTEM-PARENT-UUID',
+      navType: 'PAGE',
+      formType: 'receipt',
+      title: { zh_CN: options.formTitle || '测试表单', en_US: options.formTitle || 'Test form', type: 'i18n' },
+      hidden: 'n',
+      mobileHidden: 'n',
+      icon: navigationIcon,
+      gmtModified: 1787765189000,
+      gmtCreate: 1787284627000,
+      i18nTitle: { zh_CN: options.formTitle || '测试表单' },
+      isNewReport: '',
+      isNewForm: 'y',
+      slug: '',
+      isNew: 'n',
+      parentId: 0,
+      url: '',
+      topicId: '',
+      displayType: '',
+      relateFormUuid: formUuid,
+      processCode: '',
+      listOrder: 21,
+      formStatus: 'ONLINE',
+      relateFormType: '',
+    };
+  };
+
+  return {
+    httpGet: jest.fn((baseUrl, requestPath) => {
+      if (requestPath.includes('getFormNavigationListByOrder')) {
+        return Promise.resolve({ success: true, content: created ? [navigationNode()] : [] });
+      }
+      return Promise.resolve({ success: true, content: { gmtModified: 100 } });
+    }),
+    httpPost: jest.fn((baseUrl, requestPath, postData) => {
+      if (requestPath.includes('saveFormSchemaInfo')) {
+        created = true;
+        return Promise.resolve({ success: true, content: { formUuid } });
+      }
+      if (requestPath.includes('updateFormNavigation')) {
+        if (!options.ignoreNavigationUpdate) {
+          navigationIcon = querystring.parse(postData).icon;
+        }
+        return Promise.resolve({ success: true });
+      }
+      if (requestPath.includes('updateFormConfig') && options.updateFormConfigResponse) {
+        return Promise.resolve(options.updateFormConfigResponse);
+      }
+      return Promise.resolve({ success: true });
+    }),
+    getNavigationIcon() {
+      return navigationIcon;
+    },
+  };
 }
 
 // ── Bug #1: HTTP helpers must use master token auth / auto-login plumbing ──
@@ -79,6 +144,7 @@ describe('legacy process form bridge', () => {
 
     jest.resetModules();
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_BRIDGE', { formTitle: '流程申请' });
     const mockUtils = {
       loadAuthData: jest.fn(() => ({
         corp_id: 'corp',
@@ -86,23 +152,12 @@ describe('legacy process form bridge', () => {
         auth_mode: 'token',
         auth_source: 'token',
       })),
-      httpPost: jest.fn((baseUrl, requestPath) => {
-        if (requestPath.includes('saveFormSchemaInfo')) {
-          return Promise.resolve({ success: true, content: { formUuid: 'FORM_BRIDGE' } });
-        }
-        if (requestPath.includes('/_view/query/formdesign/saveFormSchema.json')) {
-          return Promise.resolve({ success: true });
-        }
-        if (requestPath.includes('updateFormConfig')) {
-          return Promise.resolve({ success: false, errorMsg: 'config warning' });
-        }
-        return Promise.resolve({ success: true });
-      }),
+      httpPost: formHttpMocks.httpPost,
       requestWithAutoLogin: jest.fn((requestFn, authRef) => requestFn(authRef)),
       requestNonIdempotentWithAuthPreflight: jest.fn(requestNonIdempotentOnce),
       triggerLogin: jest.fn(),
       resolveBaseUrl: jest.fn(() => 'https://example.test'),
-      httpGet: jest.fn(() => Promise.resolve({ success: true, content: { gmtModified: 100 } })),
+      httpGet: formHttpMocks.httpGet,
     };
 
     jest.doMock('../lib/core/utils', () => mockUtils);
@@ -132,6 +187,7 @@ describe('legacy process form bridge', () => {
     const savedText = JSON.stringify(savedSchema);
     expect(savedText).toContain('textField_');
     expect(savedText).toContain('required');
+    expect(formHttpMocks.getNavigationIcon()).toBe('liucheng');
     expect(mockUtils.httpPost.mock.calls.filter((call) => call[1].includes('updateFormConfig'))).toHaveLength(0);
     expect(consoleSpy).not.toHaveBeenCalled();
 
@@ -1676,6 +1732,24 @@ describe('create-form module API', () => {
     });
   });
 
+  test('parseArgs supports explicit form navigation icons and local icon listing', () => {
+    expect(createForm.parseArgs([
+      'create',
+      'APP_XXX',
+      '客户登记',
+      '.cache/openyida/forms/fields.json',
+      '--icon',
+      'name-card',
+    ])).toMatchObject({
+      mode: 'create',
+      icon: 'name-card',
+    });
+    expect(createForm.parseArgs(['icons', '--json'])).toMatchObject({
+      mode: 'icons',
+      json: true,
+    });
+  });
+
   test('parseArgs keeps validate inline rule compatibility', () => {
     expect(createForm.parseArgs([
       'validate',
@@ -1953,6 +2027,46 @@ describe('create-form create recovery guardrails', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
+  test('create-form icons lists the local yida-next catalog without login or platform APIs', async () => {
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand();
+
+    await expect(isolatedCreateForm.run(['icons', '--json'])).resolves.toMatchObject({
+      success: true,
+      count: 86,
+      default: 'auto',
+    });
+
+    const payload = JSON.parse(consoleSpy.mock.calls[0][0]);
+    expect(payload.groups).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'defaultIcons', icons: expect.any(Array) }),
+      expect.objectContaining({ key: 'systemIcons', icons: expect.any(Array) }),
+    ]));
+    expect(mockUtils.httpPost).not.toHaveBeenCalled();
+    expect(mockUtils.httpGet).not.toHaveBeenCalled();
+    expect(mockUtils.requestWithAutoLogin).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  test('invalid explicit navigation icon fails before creating a blank form', async () => {
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand();
+
+    await expect(isolatedCreateForm.run([
+      'create',
+      'APP_TEST',
+      '客户登记',
+      JSON.stringify([{ type: 'TextField', label: '客户姓名' }]),
+      '--icon',
+      'not-an-icon',
+    ])).rejects.toMatchObject({
+      code: 'CREATE_FORM_NAV_ICON_INVALID',
+      details: expect.objectContaining({ availableIconCount: 86 }),
+    });
+
+    expect(mockUtils.httpPost).not.toHaveBeenCalled();
+    expect(mockUtils.httpGet).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
   test('create-form validate-fields CLI emits exactly one JSON payload for invalid input', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-validate-cli-invalid-'));
     const fieldsPath = path.join(tmpDir, 'fields.json');
@@ -2084,17 +2198,8 @@ describe('create-form create recovery guardrails', () => {
       { type: 'TextField', label: '姓名' },
     ]));
 
-    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand({
-      httpPost: jest.fn((baseUrl, requestPath) => {
-        if (requestPath.includes('saveFormSchemaInfo')) {
-          return Promise.resolve({ success: true, content: { formUuid: 'FORM_CONFIG_RETRY' } });
-        }
-        if (requestPath.includes('updateFormConfig')) {
-          throw new Error('updateFormConfig must not be called');
-        }
-        return Promise.resolve({ success: true });
-      }),
-    });
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_CONFIG_RETRY', { formTitle: '配置重试表单' });
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand(formHttpMocks);
 
     await expect(isolatedCreateForm.run([
       'create',
@@ -2115,9 +2220,84 @@ describe('create-form create recovery guardrails', () => {
       formTitle: '配置重试表单',
       formUuid: 'FORM_CONFIG_RETRY',
       fieldCount: 1,
+      icon: 'shezhi',
+      iconSource: 'auto',
     });
     expect(payload).not.toHaveProperty('configWarning');
+    expect(formHttpMocks.getNavigationIcon()).toBe('shezhi');
+    const navigationUpdateCalls = mockUtils.httpPost.mock.calls.filter((call) => call[1].includes('updateFormNavigation'));
+    expect(navigationUpdateCalls).toHaveLength(1);
+    expect(navigationUpdateCalls[0][1]).toMatch(
+      /updateFormNavigation\.json\?_api=Nav\.update&_mock=false&_stamp=\d+$/
+    );
+    expect(querystring.parse(navigationUpdateCalls[0][2])).toMatchObject({
+      _locale_time_zone_offset: '28800000',
+      gmtModified: '1787765189000',
+      parentNavUuid: 'NAV-SYSTEM-PARENT-UUID',
+      hidden: 'n',
+      mobileHidden: 'n',
+      i18nTitle: '[object Object]',
+      isNewReport: '',
+      isNewForm: 'y',
+      slug: '',
+      formType: 'receipt',
+      formUuid: 'FORM_CONFIG_RETRY',
+      navUuid: 'FORM_CONFIG_RETRY',
+      navType: 'PAGE',
+      isNew: 'n',
+      gmtCreate: '1787284627000',
+      parentId: '0',
+      url: '',
+      topicId: '',
+      displayType: '',
+      relateFormUuid: 'FORM_CONFIG_RETRY',
+      processCode: '',
+      listOrder: '21',
+      formStatus: 'ONLINE',
+      relateFormType: '',
+      icon: 'shezhi',
+    });
+    expect(querystring.parse(navigationUpdateCalls[0][2])).not.toHaveProperty('appType');
     expect(mockUtils.httpPost.mock.calls.filter((call) => call[1].includes('updateFormConfig'))).toHaveLength(0);
+
+    consoleSpy.mockRestore();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test('create mode reports a partial-create failure when navigation icon readback mismatches', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openyida-icon-readback-'));
+    const fieldsPath = path.join(tmpDir, 'fields.json');
+    fs.writeFileSync(fieldsPath, JSON.stringify([
+      { type: 'TextField', label: '客户姓名' },
+    ]));
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_ICON_MISMATCH', {
+      formTitle: '客户登记',
+      ignoreNavigationUpdate: true,
+    });
+    const { isolatedCreateForm, consoleSpy } = loadIsolatedCreateFormCommand(formHttpMocks);
+
+    await expect(isolatedCreateForm.run([
+      'create',
+      'APP_TEST',
+      '客户登记',
+      fieldsPath,
+      '--icon',
+      'name-card',
+    ])).rejects.toMatchObject({
+      code: 'CREATE_FORM_NAV_ICON_READBACK_MISMATCH',
+    });
+
+    const recoveryPayload = consoleSpy.mock.calls
+      .map((call) => call[0])
+      .filter((line) => typeof line === 'string' && line.startsWith('{'))
+      .map((line) => JSON.parse(line))
+      .find((payload) => payload && payload.formUuid === 'FORM_ICON_MISMATCH');
+    expect(recoveryPayload).toMatchObject({
+      success: false,
+      formUuid: 'FORM_ICON_MISMATCH',
+      stage: 'updateFormNavigationIcon',
+      errorCode: 'CREATE_FORM_NAV_ICON_READBACK_MISMATCH',
+    });
 
     consoleSpy.mockRestore();
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -2130,17 +2310,11 @@ describe('create-form create recovery guardrails', () => {
       { type: 'TextField', label: '姓名' },
     ]));
 
-    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand({
-      httpPost: jest.fn((baseUrl, requestPath) => {
-        if (requestPath.includes('saveFormSchemaInfo')) {
-          return Promise.resolve({ success: true, content: { formUuid: 'FORM_CONFIG_FAILED' } });
-        }
-        if (requestPath.includes('updateFormConfig')) {
-          return Promise.resolve({ success: false, errorMsg: '表单不存在', content: { shouldNotLeak: true } });
-        }
-        return Promise.resolve({ success: true });
-      }),
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_CONFIG_FAILED', {
+      formTitle: '配置失败表单',
+      updateFormConfigResponse: { success: false, errorMsg: '表单不存在', content: { shouldNotLeak: true } },
     });
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand(formHttpMocks);
 
     await expect(isolatedCreateForm.run([
       'create',
@@ -2177,17 +2351,11 @@ describe('create-form create recovery guardrails', () => {
       { type: 'TextField', label: '姓名' },
     ]));
 
-    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand({
-      httpPost: jest.fn((baseUrl, requestPath) => {
-        if (requestPath.includes('saveFormSchemaInfo')) {
-          return Promise.resolve({ success: true, content: { formUuid: 'FORM_CONFIG_PERMISSION' } });
-        }
-        if (requestPath.includes('updateFormConfig')) {
-          return Promise.resolve({ success: false, errorMsg: '权限不足', errorCode: 'PERMISSION_DENIED' });
-        }
-        return Promise.resolve({ success: true });
-      }),
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_CONFIG_PERMISSION', {
+      formTitle: '配置权限表单',
+      updateFormConfigResponse: { success: false, errorMsg: '权限不足', errorCode: 'PERMISSION_DENIED' },
     });
+    const { isolatedCreateForm, mockUtils, consoleSpy } = loadIsolatedCreateFormCommand(formHttpMocks);
 
     await expect(isolatedCreateForm.run([
       'create',
@@ -3153,6 +3321,7 @@ describe('legacy create-form compatibility', () => {
   test('create mode reads only the shell revision and does not discover semantic keys', async () => {
     jest.resetModules();
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const formHttpMocks = createSuccessfulFormHttpMocks('FORM_TEST', { formTitle: '访客登记' });
     const mockUtils = {
       loadAuthData: jest.fn(() => ({
         corp_id: 'corp',
@@ -3162,19 +3331,8 @@ describe('legacy create-form compatibility', () => {
       })),
       triggerLogin: jest.fn(),
       resolveBaseUrl: jest.fn(() => 'https://example.test'),
-      httpGet: jest.fn(() => Promise.resolve({ success: true, content: { gmtModified: 100 } })),
-      httpPost: jest.fn((baseUrl, requestPath) => {
-        if (requestPath.includes('saveFormSchemaInfo')) {
-          return Promise.resolve({ success: true, content: { formUuid: 'FORM_TEST' } });
-        }
-        if (requestPath.includes('saveFormSchema')) {
-          return Promise.resolve({ success: true });
-        }
-        if (requestPath.includes('updateFormConfig')) {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve({ success: true });
-      }),
+      httpGet: formHttpMocks.httpGet,
+      httpPost: formHttpMocks.httpPost,
       requestWithAutoLogin: jest.fn((requestFn, authRef) => requestFn(authRef)),
       requestNonIdempotentWithAuthPreflight: jest.fn(requestNonIdempotentOnce),
       detectActiveTool: jest.fn(() => null),
@@ -3204,11 +3362,13 @@ describe('legacy create-form compatibility', () => {
       JSON.stringify([{ key: 'visitorName', type: 'TextField', label: '访客姓名' }]),
     ]);
 
-    expect(mockUtils.httpGet).toHaveBeenCalledTimes(2);
+    expect(mockUtils.httpGet).toHaveBeenCalledTimes(4);
     expect(mockUtils.httpGet.mock.calls[0][1]).toContain(
       'getFormNavigationListByOrder.json'
     );
     expect(mockUtils.httpGet.mock.calls[1][1]).toContain('getFormSchema.json');
+    expect(mockUtils.httpGet.mock.calls[2][1]).toContain('getFormNavigationListByOrder.json');
+    expect(mockUtils.httpGet.mock.calls[3][1]).toContain('getFormNavigationListByOrder.json');
     expect(
       mockUtils.httpPost.mock.calls.filter((call) =>
         call[1].includes('saveFormSchemaInfo.json')
@@ -3221,6 +3381,8 @@ describe('legacy create-form compatibility', () => {
       formTitle: '访客登记',
       appType: 'APP_XXX',
       fieldCount: 1,
+      icon: 'name-card',
+      iconSource: 'auto',
       url: 'https://example.test/APP_XXX/workbench/FORM_TEST',
     });
 

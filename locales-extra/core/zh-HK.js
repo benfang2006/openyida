@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '匯入遷移包，重建應用程式',
     group_form: '表單 & 頁面',
     cmd_create_form: '建立表單頁面',
+    cmd_list_form_icons: '列出可用的表單導覽圖示',
     cmd_validate_form: '本機校驗表單欄位 JSON',
     cmd_update_form: '更新表單頁面',
     cmd_list_forms: '列出應用程式下的表單/頁面',
