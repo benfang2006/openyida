@@ -11,7 +11,7 @@
 - 组件 default/hover/active/focus/disabled/loading/selected/error 状态；
 - 各 `pageScenes` 对应的 `sceneRecipes` 和稳定 `designRefs`；
 - loading、empty、error、mobile、reduced motion、焦点与对比度；
-- CSS 变量和 Yida Global Theme Runtime Contract。
+- CSS 变量和 Yida Application Theme Delivery Contract。
 
 ## 写入前检查
 
@@ -23,6 +23,7 @@
 ## 完成条件
 
 - `prd/<项目名>/design.md` 存在且非空。
-- 主题、视觉、布局、材质、圆角、密度、呼吸感、组件、状态和响应式契约完整。
+- frontmatter 包含 version、design_id、baseDesignSource、styleDesignSelection、themeProfile、themeAdaptationResult、yidaThemeDelivery、tokens、visual_dna、scenes、density、layout、tone。
+- 主题、应用主题文件交付、视觉、布局、材质、圆角、密度、呼吸感、组件、状态和响应式契约完整。
 - 每个目标 display 页面场景都有 `sceneRecipes` 或可定位 `designRefs`。
 - 没有写入 `prd.md`、页面源码或真实资源 ID。

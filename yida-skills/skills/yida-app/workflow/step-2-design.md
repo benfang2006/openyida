@@ -39,7 +39,16 @@ join 未通过时 Step 2 未完成，不得进入资源创建。join 通过后�
 
 ## 主题 key
 
-只有 PRD 摘要和 `design.md` 都写明 `shouldPassCreateAppTheme=true`，且 `themePresetKey` 命中平台 key 时，才传给 `create-app/update-app --theme`。
+新版应用不再由设计产物选择或传递平台 `--theme` key。`design.md` 必须基于 `app-custom-theme-template.css` 给出应用 CSS、`navTheme`、`logoSource` 和新版 `layoutDirection`；CSS 完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，保留 `--color-brand-1` 至 `--color-brand-4` 和 `--color-group`，不得补造 `--color-brand1-4/7/8`。模板默认使用 coffee 咖啡色与大圆角；只有设计结论明确变化时才成套调整。主色写入 `--color-brand1-6`，创建阶段通过 `create-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存。运行容器负责让页面、表单和详情页加载同一应用主题文件。
+
+## 产出
+
+进入 Step 3 前，必须确认：
+
+- `prd.md` 和 `design.md` 路径存在；
+- PRD 写明资源创建顺序、页面实现交付顺序、导航顺序或明确兜底策略；
+- PRD 写明业务表单、流程表单、主页面和可选报表/大屏/权限等资源蓝图；
+- `design.md` 能直接指导后续页面实现，不需要页面技能再反推视觉方向。
 
 ## 下一步
 
