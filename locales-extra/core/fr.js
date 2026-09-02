@@ -1909,6 +1909,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'Le résultat de la suppression de la fiche {0} est inconnu. Effectuez uniquement une vérification en lecture et ne relancez pas automatiquement la suppression.',
   delete_target_mismatch: 'La fiche {0} n’appartient pas au formulaire cible {1}. L’opération a été arrêtée avant la suppression.',
   delete_target_unverified: 'Impossible de vérifier l’identité et l’appartenance de la fiche {0}. L’opération a été arrêtée avant la suppression.',
+  field_reference_unknown: 'La référence de champ {0} n’est ni un fieldId valide ni un alias de composant du formulaire cible. L’opération a été arrêtée avant toute écriture.',
   form_mode_unverified: 'Impossible de vérifier le type du formulaire {0}. La création a été arrêtée avant toute écriture de données.',
   resource_required: 'Le type de ressource form manque à data query. Commande suggérée : {0}',
 });

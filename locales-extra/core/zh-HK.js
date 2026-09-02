@@ -1783,6 +1783,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: '表單實例 {0} 的刪除結果未知。請只讀回查目標，不要自動重試刪除。',
   delete_target_mismatch: '表單實例 {0} 不屬於目標表單 {1}，已停止且未執行刪除。',
   delete_target_unverified: '無法驗證表單實例 {0} 的身分和歸屬，已停止且未執行刪除。',
+  field_reference_unknown: '欄位引用 {0} 不是目標表單的真實 fieldId 或元件別名，已在寫入前停止。',
   form_mode_unverified: '無法驗證表單 {0} 的類型，已停止建立；未執行任何資料寫入。',
   resource_required: 'data query 缺少資源類型 form。建議：{0}',
 });

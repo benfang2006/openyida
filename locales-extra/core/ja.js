@@ -1834,6 +1834,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'フォームレコード {0} の削除結果は不明です。読み取り専用で確認し、削除を自動再試行しないでください。',
   delete_target_mismatch: 'フォームレコード {0} は対象フォーム {1} に属していません。削除前に処理を停止しました。',
   delete_target_unverified: 'フォームレコード {0} の識別情報と所属を検証できませんでした。削除前に処理を停止しました。',
+  field_reference_unknown: 'フィールド参照 {0} は対象フォームの実際の fieldId またはコンポーネントエイリアスではありません。書き込み前に処理を停止しました。',
   form_mode_unverified: 'フォーム {0} の種類を検証できませんでした。データを書き込まずに作成を停止しました。',
   resource_required: 'data query にリソース種別 form がありません。推奨コマンド: {0}',
 });

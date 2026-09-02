@@ -1908,6 +1908,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: '폼 레코드 {0}의 삭제 결과를 알 수 없습니다. 읽기 전용으로 확인하고 삭제를 자동 재시도하지 마세요.',
   delete_target_mismatch: '폼 레코드 {0}은(는) 대상 폼 {1}에 속하지 않습니다. 삭제 전에 실행을 중단했습니다.',
   delete_target_unverified: '폼 레코드 {0}의 ID와 소속을 검증할 수 없습니다. 삭제 전에 실행을 중단했습니다.',
+  field_reference_unknown: '필드 참조 {0}은 대상 폼의 실제 fieldId 또는 컴포넌트 별칭이 아닙니다. 쓰기 전에 실행을 중단했습니다.',
   form_mode_unverified: '폼 {0}의 유형을 확인할 수 없어 데이터 쓰기 전에 생성을 중지했습니다.',
   resource_required: 'data query에 리소스 유형 form이 없습니다. 권장 명령: {0}',
 });
