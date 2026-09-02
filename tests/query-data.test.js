@@ -487,6 +487,61 @@ describe('run() get form', () => {
 // ── create form 场景 ──────────────────────────────────────────────────
 
 describe('run() create form', () => {
+  test('关联表单完整五字段按真实写入契约提交并补全空 subTitle', async () => {
+    utils.httpPost.mockResolvedValue({ success: true, content: 'FINST-NEW' });
+    const mockLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    await run([
+      'create', 'form', 'APP_XXX', 'FORM-XXX', '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP_SOURCE',
+          formUuid: 'FORM-SOURCE',
+          formType: 'receipt',
+          instanceId: 'FINST-SOURCE',
+          title: '杭州门店',
+        }],
+      }), ...FORM_EXPECTATIONS,
+    ]);
+
+    const postBody = decodeURIComponent(utils.httpPost.mock.calls[0][2]);
+    expect(postBody).toContain('formDataJson={"associationFormField_store":[{"appType":"APP_SOURCE","formUuid":"FORM-SOURCE","formType":"receipt","instanceId":"FINST-SOURCE","title":"杭州门店","subTitle":""}]}');
+    mockLog.mockRestore();
+  });
+
+  test.each([
+    ['缺少 formType', [{ appType: 'APP_SOURCE', formUuid: 'FORM-SOURCE', instanceId: 'FINST-SOURCE', title: '杭州门店' }]],
+    ['缺少 title', [{ appType: 'APP_SOURCE', formUuid: 'FORM-SOURCE', formType: 'receipt', instanceId: 'FINST-SOURCE' }]],
+    ['不是数组', { appType: 'APP_SOURCE', formUuid: 'FORM-SOURCE', formType: 'receipt', instanceId: 'FINST-SOURCE', title: '杭州门店' }],
+  ])('关联表单%s时在 POST 前 fail closed', async (_label, associationValue) => {
+    const error = await expectCliError(run([
+      'create', 'form', 'APP_XXX', 'FORM-XXX', '--data-json', JSON.stringify({
+        associationFormField_store: associationValue,
+      }), ...FORM_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
+    expect(error.details).toMatchObject({
+      fieldId: 'associationFormField_store',
+      sideEffectState: 'none',
+    });
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
+  test('查询派生的关联表单 _id 字段禁止用于写入', async () => {
+    const error = await expectCliError(run([
+      'create', 'form', 'APP_XXX', 'FORM-XXX', '--data-json', JSON.stringify({
+        associationFormField_store_id: '[{"instanceId":"FINST-SOURCE"}]',
+      }), ...FORM_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_DERIVED_FIELD_READ_ONLY');
+    expect(error.details).toMatchObject({
+      fieldId: 'associationFormField_store_id',
+      sideEffectState: 'none',
+    });
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
   test('receipt 创建成功时输出根层 formInstId 和已验证资源，同时深度保留 content', async () => {
     const content = {
       formInstId: 'INST-NEW',
@@ -838,6 +893,28 @@ describe('run() update form alias resolution', () => {
       '--form-uuid 是写前目标身份校验的必填参数'
     );
   });
+
+  test('update form 对不完整关联表单值同样在 POST 前 fail closed', async () => {
+    utils.requestWithAutoLogin.mockImplementation((fn, session) => fn(session));
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { formInstId: 'INST-001', modelUuid: 'FORM-XXX' },
+    });
+
+    const error = await expectCliError(run([
+      'update', 'form', 'APP_XXX', '--inst-id', 'INST-001', '--form-uuid', 'FORM-XXX',
+      '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP_SOURCE',
+          formUuid: 'FORM-SOURCE',
+          instanceId: 'FINST-SOURCE',
+        }],
+      }), ...FORM_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
 });
 
 describe('run() create process', () => {
@@ -875,6 +952,64 @@ describe('run() create process', () => {
     ]));
 
     expect(error.code).toBe('DATA_TARGET_IDENTITY_MISMATCH');
+    expect(error.details.sideEffectState).toBe('none');
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
+  test('关联表单值不完整时在启动流程前 fail closed', async () => {
+    formNavigation.fetchFormPageList.mockResolvedValue([{
+      formUuid: 'FORM-XXX', formName: '目标流程', formType: 'process',
+    }]);
+    formModeService.readFormMode.mockResolvedValue({ mode: 'process', processCode: 'PROC-XXX' });
+
+    const error = await expectCliError(run([
+      'create', 'process', 'APP_XXX', 'FORM-XXX', '--process-code', 'PROC-XXX',
+      '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP-SOURCE',
+          formUuid: 'FORM-SOURCE',
+          instanceId: 'FINST-SOURCE',
+        }],
+      }), ...PROCESS_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
+    expect(error.details.sideEffectState).toBe('none');
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ['update', [
+      'update', 'process', 'APP_XXX', '--process-inst-id', 'PROC-INST-1',
+      '--form-uuid', 'FORM-XXX',
+    ]],
+    ['execute', [
+      'execute', 'task', 'APP_XXX', '--task-id', 'TASK-1',
+      '--process-inst-id', 'PROC-INST-1', '--form-uuid', 'FORM-XXX',
+      '--out-result', 'AGREE', '--remark', '同意',
+    ]],
+  ])('%s 流程写入同样执行关联字段契约校验', async (_action, args) => {
+    formNavigation.fetchFormPageList.mockResolvedValue([{
+      formUuid: 'FORM-XXX', formName: '目标流程', formType: 'process',
+    }]);
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { processInstanceId: 'PROC-INST-1', formUuid: 'FORM-XXX' },
+    });
+
+    const error = await expectCliError(run([
+      ...args,
+      '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP-SOURCE',
+          formUuid: 'FORM-SOURCE',
+          instanceId: 'FINST-SOURCE',
+        }],
+      }),
+      ...PROCESS_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
     expect(error.details.sideEffectState).toBe('none');
     expect(utils.httpPost).not.toHaveBeenCalled();
   });
