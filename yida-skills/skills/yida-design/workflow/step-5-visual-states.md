@@ -1,4 +1,4 @@
-# Step 5：UI 视觉和状态设计
+# UI 视觉和状态设计
 
 > 这一步写 `design.md` 草稿。`design.md` 规定所有页面共同遵守的 UI 视觉、组件样式、状态样式和响应式规则。
 
@@ -8,10 +8,10 @@
 
 1. 读取 [design.md 生成规则](../references/style-design-selection.md)。
 2. 读取 [style-design 风格注册表](../references/style-designs/registry.md)，再读取 `_design-md-template.md`。
-3. 从 Step 1-4 产物推演 `inferredUserTask`、`inferredInformationTopology`、`interactionFocus` 和 `requiredVisualDNA`。用户通常不会主动描述视觉结构，agent 必须从业务对象、数据形态、页面区块和操作路径中推演。
+3. 从共享需求简报、主题系统和页面结构产物推演 `inferredUserTask`、`inferredInformationTopology`、`interactionFocus` 和 `requiredVisualDNA`。用户通常不会主动描述视觉结构，agent 必须从业务对象、数据形态、页面区块和操作路径中推演。
 4. 按 `业务任务匹配 30% + 信息拓扑匹配 25% + 视觉 DNA 命中 30% + 实现稳定性 10% - 风险扣分 5%` 选择唯一设计风格，并把对应 `style-designs/*.md` 记录为 `baseDesignSource`；纯表单、长文、品牌营销、移动端单任务、未要求暗色时要过滤明显不合适的风格。
 5. 读取被选中的 style-design 风格文件，抽取 `visual_dna`、`theme_adaptation`、`layout_stability`、`quality_anchors`、`components` 和 `modules`。
-6. 根据 Step 2 的主题色来源和主题色输入执行换肤：替换风格文件中的 `theme_adaptation.replace_tokens`，派生 `derive_tokens`，保留 `preserve_tokens` 和 `visual_dna.invariant`。主题色只换 hue，不换 DNA，不改结构。
+6. 根据主题系统中的主题色来源和主题色输入执行换肤：替换风格文件中的 `theme_adaptation.replace_tokens`，派生 `derive_tokens`，保留 `preserve_tokens` 和 `visual_dna.invariant`。主题色只换 hue，不换 DNA，不改结构。
 7. 需要判断详略时读取唯一示例 `generated-business-design.example.md`；只学习结构和粒度，不复制示例业务、色盘、字段、页面顺序或组件组合。
 8. 读取 [视觉脚手架配方库](../references/visual-scaffold-recipes.md)，把应用内各类页面映射到统一 `visualScaffold` 规则。
 9. 读取 [页面质量门禁](../references/page-quality-gates.md)，把质量门禁补进 `acceptanceChecks`。
@@ -28,7 +28,7 @@
 - styleReason：<为什么适合当前应用和页面组合>
 - Visual DNA：<所有页面都必须保留的 2-5 个视觉 DNA>
 - sceneRecipes：<workbench/list/detail/dashboard/landing/screen 各自如何遵守同一 design.md>
-- themeRelation：<应用主题色 / 自定义 token / 页面级独立色盘边界>
+- themeRelation：<继承当前应用主题 / 平台预置主题 / 应用自定义主题文件>
 ```
 
 ## 2. 写 UI 视觉规则
@@ -115,4 +115,4 @@
 
 ## 下一步
 
-→ [Step 5：写入 design.md](step-6-handoff.md)
+→ [写入 design.md](step-6-handoff.md)

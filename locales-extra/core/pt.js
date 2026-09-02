@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'Importar pacote de migração, reconstruir app',
     group_form: 'Formulários & Páginas',
     cmd_create_form: 'Criar página de formulário',
+    cmd_list_form_icons: 'Listar ícones de navegação de formulário disponíveis',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'Atualizar página de formulário',
     cmd_list_forms: 'Listar formulários/páginas de um app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: 'Compilar e publicar página personalizada',
     cmd_update_form_config: 'Atualizar configuração do formulário',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'Dados & Permissões',
     cmd_data: 'Gerenciamento unificado de dados (formulário/processo/tarefa/subformulário)',
     cmd_task_center: 'Centro de tarefas global (pendente/processado/CC etc.)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  Nome do app: {0}',
@@ -1909,6 +1909,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'O resultado da exclusão do registro {0} é desconhecido. Faça apenas uma verificação de leitura e não repita a exclusão automaticamente.',
   delete_target_mismatch: 'O registro de formulário {0} não pertence ao formulário de destino {1}. A operação foi interrompida antes da exclusão.',
   delete_target_unverified: 'Não foi possível verificar a identidade e a associação do registro de formulário {0}. A operação foi interrompida antes da exclusão.',
+  field_reference_unknown: 'A referência de campo {0} não é um fieldId real nem um alias de componente no formulário de destino. A operação foi interrompida antes da gravação.',
   form_mode_unverified: 'Não foi possível verificar o tipo do formulário {0}. A criação foi interrompida antes de qualquer gravação de dados.',
   resource_required: 'O tipo de recurso form está ausente em data query. Comando sugerido: {0}',
 });

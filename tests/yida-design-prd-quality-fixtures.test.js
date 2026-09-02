@@ -86,7 +86,7 @@ describe('parallel PRD and visual artifact quality fixtures', () => {
   test('visual skill owns design.md without taking PRD ownership', () => {
     const scenesDir = path.join(ROOT, 'yida-skills/skills/yida-design/references', 'scenes');
     const skill = read('yida-skills/skills/yida-design/SKILL.md');
-    const step3 = read('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const step3 = read('yida-skills/skills/yida-prd/workflow/step-2-information-architecture.md');
     const step5 = read('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
     const pageGeneration = read('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
 

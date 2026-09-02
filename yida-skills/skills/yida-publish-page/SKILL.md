@@ -1,6 +1,6 @@
 ---
 name: yida-publish-page
-description: 自定义页面编译发布技能。
+description: 自定义页面编译发布技能；发布 YidaCodeCanvas 页面时会写入 runtimeCode/importedModules，并自动注入 yida/utils window 桥。
 ---
 
 # 发布自定义页面
@@ -34,7 +34,8 @@ description: 自定义页面编译发布技能。
 
 - 发布前确认页面源码已通过对应页面开发技能编写：`.canvas.jsx` / `.canvas.tsx` 发布为 `YidaCodeCanvas` 组件；`.oyd.jsx` / `.jsx` / `.tsx` 发布为平台 `Jsx` 组件
 - 平台 `Jsx` 组件 / `oyb.jsx` / `renderJsx` 维护源码发布前优先执行 `openyida check-page <源文件路径>` 和 `openyida compile <源文件路径>`；本技能只把它们作为发布前 guard
-- 使用 `YidaCodeCanvas` 组件实现的页面执行 `openyida publish <源文件> <appType> <displayPageFormUuid> --canvas --health-check`，由发布流程校验并写入 `runtimeCode + importedModules`
+- 使用 `YidaCodeCanvas` 组件实现的页面不单独运行普通 JSX 编译命令；执行 `openyida publish <源文件> <appType> <displayPageFormUuid> --canvas --health-check`，由发布流程校验并写入 `runtimeCode + importedModules`
+- 使用 `YidaCodeCanvas` 组件实现的页面发布时，发布流程会在外层页面 `didMount` 注入 `window.__OPENYIDA_YIDA_API__` 和 `window.__OPENYIDA_UTILS__`；不要在 Canvas 源码内补写 `this.utils.yida.*` 或根级 `this.utils.*`
 - 推荐源码放在 `project/pages/src/`：使用 `YidaCodeCanvas` 组件实现的页面用 `<页面名>.canvas.jsx` / `<页面名>.canvas.tsx`；平台 `Jsx` 组件维护源码用 `<页面名>.oyd.jsx` / `<页面名>.jsx` / `<页面名>.tsx`
 - 发布前注意 CLI 会检查 `<workspace>/project/pages/src/` 与 `<workspace>/projects/<id>/artifacts/` 中同名源码是否内容不一致；出现警告时必须确认实际要发布哪一份
 - 发布前确认 `openyida env` 检测通过，登录态有效
@@ -69,7 +70,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 
 路径口径：从仓库根执行时，源文件用 `project/pages/src/...`；如果 Bash cwd 已经是 `<workspace>/project`，源文件用 `pages/src/...`，不要传 `project/pages/src/...` 导致查找 `project/project/pages/src/...`。发布失败提示源文件不存在时，先按该规则切换路径，不要自动发布另一份文件。
 
-> `openyida publish` 会按源码扩展名选择发布模式：`.canvas.jsx` / `.canvas.tsx` 写入 `YidaCodeCanvas`，`.oyd.jsx` / `.jsx` / `.tsx` 写入平台 `Jsx` 组件。
+> `openyida publish` 会按源码扩展名选择发布模式：`.canvas.jsx` / `.canvas.tsx` 写入 `YidaCodeCanvas`，并注入 yida/utils window 桥；`.oyd.jsx` / `.jsx` / `.tsx` 写入平台 `Jsx` 组件。
 > 发布前确认源码已由对应页面开发技能完成并通过相应本地检查；本技能只把真实成功的 `openyida publish` 作为远端完成证据。
 
 | 参数 | 必填 | 说明 |
@@ -80,7 +81,7 @@ openyida publish <源文件路径> <appType> <formUuid> [--compat] [--canvas] [-
 | `--compat` / `--modern` | 否 | 兼容构建开关；仅在确认源文件属于平台 JSX 组件页面且扩展名不规范时使用；`.oyd.jsx` 默认自动启用 |
 | `--canvas` | 否 | 显式写入 `YidaCodeCanvas` Schema；`.canvas.jsx` / `.canvas.tsx` 扩展名已自动启用，仅当扩展名不规范但确认为 `YidaCodeCanvas` 组件源码时需要 |
 | `--health-check` | 否 | 发布成功后用 token 读回目标页面 Schema，校验 `YidaCodeCanvas.runtimeCode` 或平台 `Jsx + actions.module.compiled` 与本次发布内容匹配；不请求页面 HTML，不依赖 Cookie |
-| `--auto-nav-order` | 否 | 发布成功后立刻执行轻量导航排序；PRD 已写明导航顺序时优先用 `openyida nav-group order <appType> <页面/表单...>`，PRD 缺少明确页面清单时才用本参数兜底；排序失败只警告，不回滚已发布页面 |
+| `--auto-nav-order` | 否 | 仅在 PRD 缺少明确导航清单时使用；PRD 已写明顺序时不要传本参数，发布后只执行一次 `openyida nav-group order <appType> <页面/表单...>`。排序失败不回滚页面，结果保留在结构化 `navOrder` 中 |
 | `--force` | 否 | 显式绕过发布目标类型保护；只有确认目标是自定义页面但导航接口暂时无法识别时才使用 |
 
 ## 确认命令

@@ -1,6 +1,6 @@
 ---
 name: yida-app
-description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；先解析资源上下文并生成共享需求简报，再并行生成 prd.md 与 design.md，join 通过后按 PRD 创建或复用应用、表单、流程和页面。
+description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做完整搭建或补齐时使用；先解析资源上下文并生成共享需求简报，再并行生成 prd.md 与 design.md，join 通过后按 PRD 创建或复用应用、表单、流程和页面；页面阶段默认使用 Canvas 发布脚手架注入 yida/utils window 桥。
 ---
 
 # yida-app
@@ -18,14 +18,14 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 | 步骤 | 名称 | 目标 | 产出 |
 | --- | --- | --- | --- |
 | 1 | [解析资源上下文](workflow/step-1-resource-context.md) | 合并本轮显式资源、绑定上下文、workspace 配置/缓存和会话历史，确认复用还是允许创建 | 目标 app/page/form/process 上下文 |
-| 2 | [产品与视觉并行设计](workflow/step-2-design.md) | 先执行 `yida-requirement-analysis` 生成共享简报，再并行执行 `yida-prd` 与 `yida-design`，由本技能 join 两份产物 | `requirement-brief.json` + `prd.md` + `design.md` |
+| 2 | [产品与视觉并行设计](workflow/step-2-design.md) | 先执行 `yida-requirement-analysis` 生成共享简报，再并行执行 `yida-prd` 与 `yida-design`，由本技能 join 两份内部产物 | 内部 `requirement-brief.json` + `prd.md` + `design.md` |
 | 3 | [创建或复用应用](workflow/step-3-create-or-reuse-app.md) | 已有 `appType` 直接复用；缺少 app 且允许创建时执行 `use_skill("yida-create-app")` | 真实目标 `appType` |
 | 4 | [创建或更新业务资源](workflow/step-4-forms-processes.md) | 执行 `use_skill("yida-form-detail")`、`use_skill("yida-create-form-page")`；按 PRD 执行 `use_skill("yida-create-process")`、`use_skill("yida-get-schema")`、`use_skill("yida-report")` 和 `use_skill("yida-integration")` | 真实 `formUuid`、`processCode`、必要 `fieldId/reportId` |
 | 5 | [写入初始表单数据](workflow/step-5-seed-records.md) | 执行 `use_skill("yida-data-management")`，为核心普通表单写入 1-3 条业务化 seed records 并 query 抽查 | 真实表单记录或明确跳过原因 |
 | 6 | [创建或复用主页面](workflow/step-6-main-page.md) | 已有 display 页面直接复用；缺少主页面且允许创建时执行 `use_skill("yida-create-page")` | 真实主页面 `formUuid` |
 | 7 | [编写或更新页面](workflow/step-7-page-code.md) | 执行 `use_skill("yida-canvas-custom-page")`；看板/工作台/驾驶舱必须再执行 `use_skill("yida-dashboard")`，读取表单数据时必须执行 `use_skill("yida-canvas-data-binding")` | 页面源码和真实 dataBinding 通过校验 |
 | 8 | [发布页面并排序导航](workflow/step-8-publish-navigation.md) | 执行 `use_skill("yida-publish-page")`，发布本轮源码到主页面并执行轻量导航排序 | 已发布主页面 URL |
-| 9 | [输出与收尾](workflow/step-9-output-finish.md) | 核对完成条件，按业务语言输出结果 | 2-3 句业务总结 + 一个主入口链接 |
+| 9 | [输出与收尾](workflow/step-9-output-finish.md) | 核对完成条件，按业务语言输出结果 | 2-3 句业务总结 + 一组应用访问入口 |
 
 ## 核心规则
 
@@ -37,6 +37,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 6. **自定义页面开发技能固定**：完整应用页面源码按 Step 7 执行。
 7. **删除必须确认**：用户要求删除应用时，先展示应用名称、应用 ID 和影响范围，等待明确“确认删除”后才能执行。
 8. **列表页选择**：默认使用普通表单的数据管理页；用户明确要求自定义列表页时才创建 display 页面。
+9. **交付物收口**：Step 2 的三个文件和 Step 9 的 build manifest 都是内部事实源，不是用户交付物。表单、流程、报表和页面只在业务总结中概述，不逐项调用宿主 artifact/交付工具；宿主支持交付工具时，final 只交付一次“应用访问入口”组。
 
 ## 关键决策树
 
@@ -49,7 +50,9 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 ## 页面数据契约
 
 - 默认页面源码不得使用 `this.dataSourceMap.*`，除非本轮已经创建并绑定对应设计器数据源。
-- 真实表单数据默认通过页面数据桥或 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)` 读取；不要用前端 seedRows 冒充真实表单数据。
+- 真实表单数据默认通过页面数据桥或 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)` 读取；流程发起、流程列表、表单保存/更新等能力也通过发布层注入的同一个 yida API 桥调用；不要用前端 seedRows 冒充真实表单数据。
+- 页面根级运行态工具通过 `window.__OPENYIDA_UTILS__` 读取，`toast/dialog/openPage/router.push/isMobile` 等工具不能在 `YidaComp` 内直接写 `this.utils.*`。
+- 表单新建/提交/详情入口统一使用 `FormOpenContainer`，详情页必须从真实行数据解析 `formInstId`；应用主题由运行容器在自定义页面和提交页/详情页 iframe 分别加载同一主题文件。
 - 用户明确要求的自定义列表、看板和详情页优先读取真实表单数据；`page-spec.json` 写 `dataBinding.mode=form`、真实 `appType/formUuid/fieldId` 和字段映射。表单数据管理页不另生成页面源码。
 - 完整应用默认先写入 1-3 条业务化 seed records 并 query 抽查；没写入成功时，页面展示空态、表单入口、刷新或登记按钮，并在 final 说明原因。
 - 若页面确实依赖 `this.dataSourceMap.*`，必须执行 `use_skill("yida-data-source-connectors")` 创建/绑定数据源，并在发布后确认页面 Schema 中存在对应数据源；发布输出出现 `No custom page data sources to preserve` 时，本次发布不能视为完成。
@@ -65,7 +68,7 @@ description: 宜搭完整应用开发编排技能。对普通 OpenYida 应用做
 | [Step 1：解析资源上下文](workflow/step-1-resource-context.md) | 只读预检、资源优先级、命令选择、路径口径 | 必读 |
 | [Step 2：产品与视觉并行设计](workflow/step-2-design.md) | 共享需求简报、PRD/视觉 artifact 生命周期、并行执行、join 与主题 key | 必读 |
 | [Step 3：创建或复用应用](workflow/step-3-create-or-reuse-app.md) | app 复用、app 创建、主题 key | 必读 |
-| [Step 4：创建或更新表单/流程](workflow/step-4-forms-processes.md) | 表单、流程、字段 ID、formDetail CSS | 必读 |
+| [Step 4：创建或更新表单/流程](workflow/step-4-forms-processes.md) | 表单、流程、字段 ID、应用主题消费与 legacy formDetail 兼容 | 必读 |
 | [Step 5：写入初始表单数据](workflow/step-5-seed-records.md) | seed records、字段类型、query 抽查、跳过条件 | 必读 |
 | [Step 6：创建或复用主页面](workflow/step-6-main-page.md) | display 页面复用、页面创建、corpId 一致性检查 | 必读 |
 | [Step 7：编写或更新页面](workflow/step-7-page-code.md) | 页面源码、page-spec、dataBinding、本地校验 | 必读 |

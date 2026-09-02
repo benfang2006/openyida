@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'माइग्रेशन पैकेज आयात करें, ऐप पुनर्निर्माण',
     group_form: 'फॉर्म & पेज',
     cmd_create_form: 'फॉर्म पेज बनाएं',
+    cmd_list_form_icons: 'उपलब्ध फ़ॉर्म नेविगेशन आइकन सूचीबद्ध करें',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'फॉर्म पेज अपडेट करें',
     cmd_list_forms: 'List forms/pages in an app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: 'कस्टम पेज कंपाइल और प्रकाशित करें',
     cmd_update_form_config: 'फॉर्म कॉन्फ़िगरेशन अपडेट करें',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'डेटा & अनुमतियां',
     cmd_data: 'एकीकृत डेटा प्रबंधन (फॉर्म/प्रक्रिया/कार्य/उप-फॉर्म)',
     cmd_task_center: 'वैश्विक कार्य केंद्र (लंबित/संसाधित/CC आदि)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  ऐप नाम: {0}',
@@ -1907,6 +1907,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'फ़ॉर्म रिकॉर्ड {0} को हटाने का परिणाम अज्ञात है। केवल पढ़ने वाली जाँच करें और हटाने को अपने आप दोबारा न चलाएँ।',
   delete_target_mismatch: 'फ़ॉर्म रिकॉर्ड {0} लक्ष्य फ़ॉर्म {1} से संबंधित नहीं है। हटाने से पहले कार्रवाई रोक दी गई।',
   delete_target_unverified: 'फ़ॉर्म रिकॉर्ड {0} की पहचान और संबंध सत्यापित नहीं हो सके। हटाने से पहले कार्रवाई रोक दी गई।',
+  field_reference_unknown: 'फ़ील्ड संदर्भ {0} लक्ष्य फ़ॉर्म का वास्तविक fieldId या कंपोनेंट उपनाम नहीं है। लिखने से पहले कार्रवाई रोक दी गई।',
   form_mode_unverified: 'फ़ॉर्म {0} का प्रकार सत्यापित नहीं हो सका। किसी भी डेटा लेखन से पहले निर्माण रोक दिया गया।',
   resource_required: 'data query में संसाधन प्रकार form नहीं है। सुझाया गया कमांड: {0}',
 });

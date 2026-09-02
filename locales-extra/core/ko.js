@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '마이그레이션 패키지 가져오기, 앱 재구축',
     group_form: '양식 & 페이지',
     cmd_create_form: '양식 페이지 생성',
+    cmd_list_form_icons: '사용 가능한 양식 탐색 아이콘 목록',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: '양식 페이지 업데이트',
     cmd_list_forms: 'List forms/pages in an app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: '사용자 정의 페이지 컴파일 및 게시',
     cmd_update_form_config: '양식 설정 업데이트',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: '데이터 & 권한',
     cmd_data: '통합 데이터 관리 (양식/프로세스/작업/하위양식)',
     cmd_task_center: '글로벌 작업 센터 (할일/처리됨/참조 등)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  앱 이름: {0}',
@@ -1908,6 +1908,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: '폼 레코드 {0}의 삭제 결과를 알 수 없습니다. 읽기 전용으로 확인하고 삭제를 자동 재시도하지 마세요.',
   delete_target_mismatch: '폼 레코드 {0}은(는) 대상 폼 {1}에 속하지 않습니다. 삭제 전에 실행을 중단했습니다.',
   delete_target_unverified: '폼 레코드 {0}의 ID와 소속을 검증할 수 없습니다. 삭제 전에 실행을 중단했습니다.',
+  field_reference_unknown: '필드 참조 {0}은 대상 폼의 실제 fieldId 또는 컴포넌트 별칭이 아닙니다. 쓰기 전에 실행을 중단했습니다.',
   form_mode_unverified: '폼 {0}의 유형을 확인할 수 없어 데이터 쓰기 전에 생성을 중지했습니다.',
   resource_required: 'data query에 리소스 유형 form이 없습니다. 권장 명령: {0}',
 });
