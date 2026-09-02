@@ -1552,7 +1552,21 @@ describe('CLI offline smoke', () => {
       mode: 'unified_build',
       completion_contract: expect.stringContaining('create or reuse app'),
     });
-    expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('Markdown table');
+    expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('one named application entry group');
+    expect(parsed.recommended.default_full_app_workflow.application_entry_policy).toEqual({
+      delivery_unit: 'single_application_entry_group',
+      workbench: { include: 'always', url: '{base_url}/{appType}/workbench' },
+      custom: {
+        include: 'when_entry_mode_standalone_and_is_render_nav_false_readback',
+        url: '{base_url}/{appType}/custom/{formUuid}',
+      },
+      admin: {
+        include: 'follow_agent_capabilities_application_entry_policy',
+        url: '{base_url}/{appType}/admin',
+      },
+      internal_artifacts: 'never_user_visible',
+      business_resources: 'summary_only',
+    });
     expect(parsed.builder_path.bound_context).toMatchObject({
       existing_app_type_policy: 'do_not_call_app_list_by_default',
       skip_app_list_when: expect.arrayContaining([
@@ -1649,7 +1663,8 @@ describe('CLI offline smoke', () => {
     expect(parsed.sideEffects.read_only_preflight).toContain('openyida agent-capabilities --summary-json');
     expect(parsed.sideEffects.read_only_preflight).not.toContain('openyida agent-capabilities --json');
     expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating or reusing the app');
-    expect(parsed.sideEffects.completion_contracts.full_app).toContain('Markdown table');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('one named application entry group');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('do not deliver one artifact or link card per resource');
     expect(parsed.sideEffects.full_app_data_contract).toContain('this.dataSourceMap');
     const commandIds = parsed.command_manifest.commands.map(entry => entry.id);
     const commandById = Object.fromEntries(parsed.command_manifest.commands.map(entry => [entry.id, entry]));

@@ -10,6 +10,8 @@
 
 文件存在、可解析且没有会改变资源范围的未决问题后，需求简报进入 ready。
 
+需求简报、PRD 和视觉设计都是应用编排的内部 artifact。artifact start/end 只表达 owner 生命周期和 join 状态，不表示要向最终用户交付文件；不得为这三个文件调用宿主的用户可见 artifact、附件或交付工具。
+
 需求简报进入 ready 后即作为本轮 artifact 的冻结输入。后续资源创建产生的 `appType`、`formUuid`、`fieldId` 等真实 ID 只写入 schema 或当前任务资源上下文，不回写简报，也不因此重跑两个 artifact owner；只有用户需求或已确认资源范围发生实质变化时，才重新生成简报和 artifact。
 
 ## 2.2 并行 artifact

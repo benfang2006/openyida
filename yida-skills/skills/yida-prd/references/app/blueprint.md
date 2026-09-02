@@ -11,7 +11,7 @@
 | `shell` | `side_nav/top_nav/l_shaped/fullbleed-screen/split-pane/single_page` |
 | `roles` | 用户角色 |
 | `navigationGroups` | 导航分组和页面列表 |
-| `pages` | 页面清单，含 `name/scene/targetRole/purpose/blocks` |
+| `pages` | 页面清单，含 `name/scene/targetRole/purpose/blocks/entryMode` |
 | `resourceBlueprint` | 页面、普通表单、流程表单、报表等资源清单 |
 
 ## 使用规则
@@ -29,6 +29,8 @@
 
 默认导航可见并优先与宜搭运行态融合；普通页面内 tab、分段筛选和快捷入口不隐藏平台导航。用户只要求页面隐藏导航、无导航或 `isRenderNav=false` 时，记录页面级隐藏配置，不自动写 `hideAppNav`。
 
+`entryMode` 只允许 `platform-shell` 或 `standalone`。页面自身具备完整导航壳，或不依赖工作台导航即可完成主要业务闭环时才使用 `standalone`；普通工作台、看板、tab 或仍依赖平台导航的页面使用 `platform-shell`。信息不足时默认 `platform-shell`。
+
 ## resourceBlueprint
 
 `resourceBlueprint` 对齐 `yida-app` 的页面与表单设计，描述“应该有什么资源”，运行后 ID 由实现阶段记录。
@@ -40,6 +42,7 @@
       "name": "经营工作台",
       "resourceType": "display-page",
       "scene": "workbench",
+      "entryMode": "platform-shell",
       "isMain": true,
       "purpose": "应用第一入口、今日概览、快捷入口"
     }

@@ -185,7 +185,7 @@ describe('OpenYida skill contracts', () => {
     expect(finishStep).toContain('原生报表（仅单独交付该报表时）');
     expect(finishStep).toContain('`{base_url}/{appType}/workbench/{reportId}`');
     expect(finishStep).toContain('禁止拼接 `/{appType}/report/{reportId}`');
-    expect(finishStep).toContain('最终唯一主入口仍是应用首页');
+    expect(finishStep).toContain('不得把模型猜测的报表路由或每张表单的管理地址作为应用交付入口');
   });
 
   test('data management skill exposes only the verified form delete contract', () => {
@@ -394,12 +394,14 @@ describe('OpenYida skill contracts', () => {
     expect(skill).toContain('页面数据桥或 `window.__OPENYIDA_YIDA_API__.searchFormDatas(params)`');
     expect(skill).toContain('发布输出出现 `No custom page data sources to preserve`');
     expect(skill).toContain('use_skill("yida-data-source-connectors")');
-    expect(step9).toContain('先写 2-3 句业务交付总结，再给一个主入口链接');
-    expect(step9).toContain('新增、修改或发布单个具体页面时，主入口是当前页面 URL');
-    expect(step9).toContain('其他完整应用、建表单、建流程、权限、主题、导航或批量资源场景，主入口是应用首页 `{base_url}/{appType}/workbench`');
-    expect(step9).toContain('不默认输出资源 ID 表格、资源清单、长列表');
+    expect(step9).toContain('先写 2-3 句业务交付总结，再给一个名为“应用访问入口”的入口组');
+    expect(step9).toContain('新增、修改或发布单个具体页面时，仍只交付当前页面');
+    expect(step9).toContain('完整应用的入口组始终包含“应用工作台” `{base_url}/{appType}/workbench`');
+    expect(step9).toContain('不把表单、流程、报表、页面、资源清单或内部文件分别登记为 artifact');
     expect(step9).toContain('已完成订单、客户和商品等核心业务表单');
-    expect(step9).toContain('主入口：`{base_url}/{appType}/workbench`');
+    expect(step9).toContain('应用工作台：`{base_url}/{appType}/workbench`');
+    expect(step9).toContain('独立业务入口：`{base_url}/{appType}/custom/{formUuid}`');
+    expect(step9).toContain('`application_entry_policy.entries.admin`');
     expect(step9).toContain('不把 `g.alicdn.com` 的 `index.css`、`index.js`、`index.html`、`locales/*.json`');
     expect(step9).toContain('顶层 `skillsUsed`');
     expect(step9).toContain('实际读取并使用');
@@ -436,10 +438,40 @@ describe('OpenYida skill contracts', () => {
     expect(manifest).toContain('yida-requirement-analysis writes one shared requirement brief');
     expect(manifest).toContain("mode: 'parallel'");
     expect(manifest).toContain('final_link_policy');
-    expect(manifest).toContain('Return exactly one primary user-facing link');
+    expect(manifest).toContain('Return exactly one user-visible application entry group');
+    expect(manifest).toContain('never one artifact or link card per form, process, report');
+    expect(manifest).toContain('when PRD entryMode=standalone');
+    expect(manifest).toContain('application_entry_policy.entries.admin=include');
     expect(manifest).toContain('{base_url}/{appType}/workbench');
     expect(byName.get('yida-app').description).toContain('表单/流程先于自定义页面');
     expect(byName.get('yida-nav-group').description).toContain('PRD 写明导航顺序时用 order');
+  });
+
+  test('full app delivery collapses resources and emits the verified application entry matrix', () => {
+    const root = readSkill('yida-skills/SKILL.md');
+    const app = readSkill('yida-skills/skills/yida-app/SKILL.md');
+    const step2 = readSkill('yida-skills/skills/yida-app/workflow/step-2-design.md');
+    const step8 = readSkill('yida-skills/skills/yida-app/workflow/step-8-publish-navigation.md');
+    const step9 = readSkill('yida-skills/skills/yida-app/workflow/step-9-output-finish.md');
+    const outputPrd = readSkill('yida-skills/skills/yida-prd/workflow/output-prd.md');
+    const blueprint = readSkill('yida-skills/skills/yida-prd/references/app/blueprint.md');
+    const pageConfig = readSkill('yida-skills/skills/yida-page-config/SKILL.md');
+    const feature = readSkill('docs/features/agent-application-entry-links.md');
+
+    expect(root).toContain('不得把需求简报、PRD、视觉设计、build manifest、资源清单');
+    expect(app).toContain('宿主支持交付工具时，final 只交付一次“应用访问入口”组');
+    expect(step2).toContain('不得为这三个文件调用宿主的用户可见 artifact、附件或交付工具');
+    expect(step9).toContain('一次完整应用搭建只产生这一组用户可见交付');
+    expect(step9).toContain('业务资源只在总结中按能力或数量概述');
+    expect(outputPrd).toContain('入口模式：<`platform-shell` / `standalone`');
+    expect(outputPrd).toContain('entryMode：<platform-shell / standalone>');
+    expect(blueprint).toContain('`entryMode` 只允许 `platform-shell` 或 `standalone`');
+    expect(step8).toContain('openyida update-form-config <appType> <displayPageFormUuid> false');
+    expect(step8).toContain('openyida get-form-config <appType> <displayPageFormUuid> --json');
+    expect(step8).toContain('只有回读明确为 `isRenderNav=false`');
+    expect(pageConfig).toContain('PRD 已把主页面明确标记为 `entryMode=standalone`');
+    expect(feature).toContain('云端 Agent，`platform-shell`');
+    expect(feature).toContain('非云端 Agent，已验证 `standalone`');
   });
 
   test('yida-app joins independent PRD and visual artifacts without losing current design contracts', () => {
