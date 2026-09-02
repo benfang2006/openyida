@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'Nhập gói di chuyển, xây dựng lại ứng dụng',
     group_form: 'Biểu mẫu & Trang',
     cmd_create_form: 'Tạo trang biểu mẫu',
+    cmd_list_form_icons: 'Liệt kê biểu tượng điều hướng biểu mẫu khả dụng',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'Cập nhật trang biểu mẫu',
     cmd_list_forms: 'List forms/pages in an app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: 'Biên dịch và xuất bản trang tùy chỉnh',
     cmd_update_form_config: 'Cập nhật cấu hình biểu mẫu',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'Dữ liệu & Quyền',
     cmd_data: 'Quản lý dữ liệu thống nhất (biểu mẫu/quy trình/tác vụ/biểu mẫu con)',
     cmd_task_center: 'Trung tâm tác vụ toàn cầu (cần làm/đã xử lý/CC v.v.)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  Tên ứng dụng: {0}',
@@ -780,6 +780,12 @@ module.exports = {
     patch_must_not_be_empty: 'Patch array must not be empty',
     patch_invalid_shape: 'Patch must be an array, {operations: []}, or a single operation object',
     patch_parse_failed: 'Failed to parse patch JSON: ',
+    action_event_conflict: 'Field "{0}" event {1} is already bound to action "{2}"; silent replacement is blocked. Set replaceExisting=true only after confirming replacement.',
+    action_source_export_missing: 'The action source does not export the requested function "{0}".',
+    action_source_missing: 'Action function "{0}" was not found. Provide source/sourceFile or define it in the action module first.',
+    action_binding_incomplete: 'The form action function, action registry entry, and field event binding are incomplete. The Schema was not saved.',
+    action_readback_failed: 'The form action save was accepted, but readback failed: {0}',
+    action_readback_mismatch: 'The form action save was accepted, but the remote function, action registry entry, or field event binding did not match.',
     rule_file_not_found: 'Rule file not found: ',
     rule_array_empty: 'Rule array must not be empty',
     rules_array_empty: 'The rules array must not be empty',
@@ -1131,7 +1137,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2} tệp)',
     remove_failed: '    ❌ Xóa thất bại: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Tạo liên kết tượng trưng Windows thất bại (cần quyền admin), sử dụng sao chép thư mục: {0}',
-    symlink_failed: '    ❌ Tạo liên kết tượng trưng thất bại: {0} ({1})'
+    symlink_failed: '    ❌ Tạo liên kết tượng trưng thất bại: {0} ({1})',
+    source_destination_overlap: 'Đã dừng sao chép vì thư mục nguồn và đích chồng lấn. Nguồn: {0}; đích: {1}'
   },
   check_update: {
     new_version: '\n🎉 Phiên bản mới có sẵn: {0} → {1}',
@@ -1892,6 +1899,15 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: 'Lệnh dữ liệu không được hỗ trợ: {0} {1}. Chạy openyida commands --json để xem năng lực thực tế.',
+  delete_confirmation_required: 'Trước khi xóa bản ghi biểu mẫu, hãy đọc mục tiêu, hiển thị tóm tắt cho người dùng và chỉ thêm --confirm sau khi được xác nhận rõ ràng. Chưa thực hiện xóa.',
+  delete_preflight_failed: 'Không thể đọc bản ghi biểu mẫu {0} để kiểm tra trước khi xóa. Chưa thực hiện xóa.',
+  delete_process_unsupported: 'Phiên bản này chưa hỗ trợ xóa phiên bản quy trình. Hãy dừng và báo cáo thiếu hụt năng lực; không dùng script hoặc API riêng.',
+  delete_readback_mismatch: 'Yêu cầu xóa đã được chấp nhận nhưng bản ghi {0} vẫn tồn tại khi đọc lại. Kết quả chưa được xác minh; không tự động thử xóa lại.',
+  delete_result_unknown: 'Không xác định được kết quả xóa bản ghi {0}. Chỉ kiểm tra bằng thao tác đọc và không tự động thử xóa lại.',
+  delete_target_mismatch: 'Bản ghi biểu mẫu {0} không thuộc biểu mẫu đích {1}. Thao tác đã dừng trước khi xóa.',
+  delete_target_unverified: 'Không thể xác minh danh tính và biểu mẫu sở hữu của bản ghi {0}. Thao tác đã dừng trước khi xóa.',
+  field_reference_unknown: 'Tham chiếu trường {0} không phải fieldId thực hoặc bí danh thành phần trong biểu mẫu đích. Thao tác đã dừng trước khi ghi.',
   form_mode_unverified: 'Không thể xác minh loại của biểu mẫu {0}. Việc tạo đã dừng trước khi ghi dữ liệu.',
   resource_required: 'data query thiếu loại tài nguyên form. Lệnh đề xuất: {0}',
 });
@@ -1945,6 +1961,16 @@ module.exports.connector_test = {
   arguments_required: '--connector-id and --action are required', connector_not_found: 'Connector ID not found: {0}', operations_invalid: 'Connector operations are not valid JSON', action_not_found: 'Action not found: {0}',
   success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
 };
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: 'Derived association-form query field {0} is read-only and cannot be saved or updated. Write the source association field without the _id suffix.',
+  association_value_invalid: 'The write value for association-form field {0} is invalid. Use an array of objects where every item includes appType, formUuid, formType, instanceId, and title.',
+  instance_target_mismatch: 'Instance {0} does not belong to expected business resource {1}. The operation stopped before mutation.',
+  instance_target_unverified: 'Could not verify the business resource ownership of instance {0}. The operation stopped before mutation.',
+  target_expectation_invalid: '--expect-form-type must be {0}. The operation stopped before mutation.',
+  target_identity_mismatch: 'Target resource {0} does not match the expected name or type. The operation stopped before mutation.',
+  target_identity_unverified: 'Could not read the name and type of target resource {0}. The operation stopped before mutation.',
+});
 
 const connectorSafetyMessages = require('../../lib/core/locales/en');
 module.exports.connector_contract = connectorSafetyMessages.connector_contract;

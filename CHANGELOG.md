@@ -10,7 +10,100 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
-## [Unreleased]
+## [2026.9.2-2] - 2026-09-02
+
+### Added
+
+- 完整应用编排新增共享需求简报与双 artifact 并行链路：`yida-requirement-analysis` 写入 `.cache/openyida/<项目名>/requirement-brief.json` 后冻结，`yida-prd` 与 `yida-design` 分别独占 `prd/<项目名>/prd.md` 和 `design.md` 并行产出，由 `yida-app` 在两者完成后 join 校验稳定引用；command manifest 与 agent capabilities 同步暴露该路由。
+- agent capabilities 新增 `application_entry_policy`：完整应用只交付一组应用访问入口，工作台恒定包含，独立业务入口需 `get-form-config` 回读确认 `isRenderNav=false`，开发后台入口在云端托管 agent 环境下省略。
+
+### Fixed
+
+- 导航排序改为幂等且可验证：写入前做差异比对，写入后按 `navUuid` / `parentNavUuid` / `siblingIndex` / `navType` 全量回读，分别返回 `NAV_ORDER_NOT_APPLIED`（可安全重试）、`NAV_ORDER_READBACK_MISMATCH` 和 `NAV_ORDER_RESULT_UNKNOWN`，错误详情只输出首个差异摘要，避免大导航结构下的输出膨胀。
+- 表单数据写入新增 `AssociationFormField` 契约校验：关联表单字段必须提供 `appType` / `formUuid` / `formType` / `instanceId` / `title`，查询派生的 `associationFormField_*_id` 字段拒绝作为写入负载，POST 前返回 `DATA_ASSOCIATION_FORM_VALUE_INVALID` 或 `DATA_ASSOCIATION_FORM_DERIVED_FIELD_READ_ONLY`，不再出现「接口成功、读回为空」。
+- `--resolve-aliases` 遇到未知字段引用时在写入前阻断：显示标签或拼错的 `fieldId` 不再原样提交，改为返回 `DATA_FIELD_REFERENCE_UNKNOWN` 并给出确定性的 `get-schema --field-map-json` 下一步；同时收窄 JSON 解析异常范围，保留业务错误码。
+
+## [2026.9.2-1] - 2026-09-02
+
+### Added
+
+- `create-form create` 新增 `--icon auto|<name>`：表单创建并保存 Schema 后，按标题与字段语义从宜搭表单导航图标集中自动选图标，也可显式指定；新增 `create-form icons --json` 查询全部可选图标。
+
+### Changed
+
+- 表单导航图标更新对齐 yida-next 的 `Nav.update` 请求契约，并在写入后回读校验；命令参数同步注册到 command manifest 与 agent capabilities，确保云端 yida-agent 可发现和调用。
+
+## [2026.9.2] - 2026-09-02
+
+### Added
+
+- `create-app` / `update-app` 新增应用级自定义主题 CSS 支持：通过 `--theme-file` 在远程写入前完成文件、安全协议与品牌色阶校验，自动从 `--color-brand1-6` 派生 `themeColor`，并与 `navTheme` / `logoSource` / `layoutDirection` 联合保存。
+- 新增 `openyida-scaffold` 预置脚手架，提供 `form-fields` 表单字段配置和 `canvas-form-drawer` Canvas 表单抽屉入口模板。
+- Canvas 发布层扩展表单、流程、表单设计与通用 yida API 桥，并新增 `window.__OPENYIDA_UTILS__` 运行时工具桥及能力枚举。
+
+### Changed
+
+- 新建应用默认使用 `l_shape` 布局；未命中行业预设时从平台图标集中选择图标，系统图标颜色与应用主色保持同步。
+- 完整应用编排改为由同一份应用级主题 CSS 统一覆盖自定义页、普通/流程表单、提交页、详情页和 `FormOpenContainer` iframe；主题模板补齐 Shell、页面、表单、表格、导航与浮层等语义 token。
+- 预置 Canvas 页面统一消费 `--pod-page-bg-color` / `--pod-card-bg-color` 等应用主题变量，移除页内独立主题作用域和固定渐变背景。
+- 安装阶段会将技能目录中的历史备份移出宿主扫描路径，同步已有 Codex 插件缓存，并在能力可用时尝试刷新当前插件安装。
+
+### Removed
+
+- 移除 `form-detail-style apply/remove/check` 命令及表单 Schema 内的主题/formDetail CSS 注入链路，表单和详情页改由运行容器加载应用级主题文件。
+
+## [2026.9.1-1] - 2026-09-01
+
+### Fixed
+
+- 报表链接返回规范化的工作台地址：`create-report` / `append` / `inspect` 及 owned residual 分支统一由 `lib/report/url.js` 单点构造，同时返回 `url` 与 `workbenchUrl`，不再出现无法打开的拼接链接。
+- 数据看板与报表新增语义护栏：`query-data` / `get-schema` / 报表契约在配置缺失或字段语义不成立时给出结构化失败，避免生成空看板或错绑字段。
+- 登录态缓存按沙箱绑定隔离：`token-store` 以沙箱绑定信息作为 token 缓存的围栏，防止不同沙箱环境间复用同一份 token session。
+
+## [2026.9.1] - 2026-09-01
+
+### Changed
+
+- `openyida create-app` 创建应用时默认启用现代主题（注册请求带上 `createWithModernTheme=y`）；`import-app` 行为保持不变。
+
+## [2026.8.31-2] - 2026-08-31
+
+### Fixed
+
+- 修复普通表单字段动作绑定「写入成功但设计器仍显示新建动作」的问题：`create-form patch` 的 `bind-field-action` 现在同时写入设计器原生事件结构（`JSExpression` + `actionRef`）与动作面板目录条目，保存后回读校验「导出函数 + 动作目录条目 + 原生事件结构」三要素齐全，任一缺失即以结构化错误失败，不再误报成功。
+- 修复动作目录同步会抹掉条目元数据的问题：`syncDesignerActionCatalog` 改为合并语义（只增不删），生命周期/组件事件条目的 `relatedEventId`、`type`、`params` 得以保留；仅清理已失效的 `openyidaRuleChange_*` 自有包装动作，用户与平台自有条目不再被静默删除。
+- 修复动作源码校验把业务常量误认作动作的问题：改用只识别顶层 `export function` 的窄提取器，`export const` 常量不再注册进动作面板。
+- 修复字段查找在写入侧与回读侧不对称的问题：回读时同时匹配 `field.fieldId` 与 `props.fieldId`，避免写入成功却回读报 `FIELD_NOT_FOUND`。
+
+### Changed
+
+- 补充下拉单选 `onChange` 取值契约文档：动作参数从 `value` 传入而非 `event`，可能是原始值、`{ value, actionType }` 或开启 `useDetailValue` 后的 `{ value: { label, value } }`；并新增各组件动作值形态对照表（标量 / 数组 / `{ start, end }` / 成员对象），说明不能统一 `String(value)`。
+
+## [2026.8.31-1] - 2026-08-31
+
+### Changed
+
+- 完整应用的列表页策略默认改为普通表单的数据管理页（`native-list`），不再默认创建自定义列表页；只有用户明确要求自定义列表时才规划并实现 `display-page / list`。
+- 同步更新 `yida-design` 信息架构、PRD 输出模板与 `yida-app` 编排约束：资源蓝图、页面实现顺序、导航分组与验收清单均以表单数据管理页为默认数据查看入口。
+- 新增技能契约测试锁定上述默认行为，防止回退到「默认自定义列表页」。
+
+## [2026.8.31] - 2026-08-31
+
+### Added
+
+- 新增 `openyida data delete form <appType> <formUuid> --inst-id <id> --confirm`：单条表单数据精确删除，强制 `--confirm` 确认、删除前目标校验与删除后回读确认；流程实例删除仍不支持，会以 `DATA_PROCESS_DELETE_UNSUPPORTED` 明确拒绝。
+
+### Fixed
+
+- 报表创建/追加图表失败时的恢复路径收敛：区分副作用已发生与未发生，避免在不确定状态下直接重试导致重复写入。
+- `project` 工作目录初始化新增目标路径安全校验，拒绝拷贝到源目录自身或其子目录。
+- 自定义页面构建/检查/发布链路与页面兼容层的异常语义对齐，预检失败不再产出歧义提示。
+
+### Changed
+
+- CLI 错误契约扩展结构化字段（`partial`/`residual`/`retrySafe`/`sideEffectState`/`readbackAllowed`/`recommendedRecovery`/`nextAction` 等），供 agent 判断副作用状态与重试安全性。
+- `create-report` / `append-chart` 补齐 `--json` 输出；README 双语命令表同步。
+- 同步 yida-data-management / yida-report / yida-create-form-page / yida-app 等子技能文档与命令清单。
 
 ## [2026.8.30] - 2026-08-30
 

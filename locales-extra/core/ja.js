@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '移行パッケージをインポート、アプリを再構築',
     group_form: 'フォーム & ページ',
     cmd_create_form: 'フォームページを作成',
+    cmd_list_form_icons: '利用可能なフォームナビゲーションアイコンを一覧表示',
     cmd_validate_form: 'フォームフィールド JSON をローカル検証',
     cmd_update_form: 'フォームページを更新',
     cmd_list_forms: 'アプリ内のフォーム/ページを一覧表示',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: 'カスタムページをコンパイル＆公開',
     cmd_update_form_config: 'フォーム設定を更新',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'データ & 権限',
     cmd_data: '統合データ管理（フォーム/プロセス/タスク/サブフォーム）',
     cmd_task_center: 'グローバルタスクセンター（未処理/処理済/CC等）',
@@ -198,7 +198,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "勤怠管理"\n' +
-      '  openyida create-app "勤怠管理" "従業員勤怠システム" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "勤怠管理" "従業員勤怠システム" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "ゲームホーム"\n' +
       '  openyida create-form create APP_XXX "従業員情報" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"備考"}}]'\n` +
@@ -592,9 +592,9 @@ module.exports = {
     available_icons: '\n利用可能なアイコン:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\n利用可能な色:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '  アプリ名:   {0}',
@@ -746,6 +746,12 @@ module.exports = {
     patch_must_not_be_empty: 'Patch array must not be empty',
     patch_invalid_shape: 'Patch must be an array, {operations: []}, or a single operation object',
     patch_parse_failed: 'Failed to parse patch JSON: ',
+    action_event_conflict: 'Field "{0}" event {1} is already bound to action "{2}"; silent replacement is blocked. Set replaceExisting=true only after confirming replacement.',
+    action_source_export_missing: 'The action source does not export the requested function "{0}".',
+    action_source_missing: 'Action function "{0}" was not found. Provide source/sourceFile or define it in the action module first.',
+    action_binding_incomplete: 'The form action function, action registry entry, and field event binding are incomplete. The Schema was not saved.',
+    action_readback_failed: 'The form action save was accepted, but readback failed: {0}',
+    action_readback_mismatch: 'The form action save was accepted, but the remote function, action registry entry, or field event binding did not match.',
     rule_file_not_found: 'Rule file not found: ',
     rule_array_empty: 'Rule array must not be empty',
     rules_array_empty: 'The rules array must not be empty',
@@ -1081,7 +1087,8 @@ module.exports = {
     result_copy: '   {0} → {1}（{2} ファイル）',
     remove_failed: '    ❌ 削除失敗: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows でシンボリックリンク作成失敗（管理者権限が必要）、ディレクトリコピーにフォールバック: {0}',
-    symlink_failed: '    ❌ シンボリックリンク作成失敗: {0} ({1})'
+    symlink_failed: '    ❌ シンボリックリンク作成失敗: {0} ({1})',
+    source_destination_overlap: 'コピー元とコピー先のディレクトリが重複しているため、コピーを停止しました。コピー元: {0}、コピー先: {1}'
   },
   check_update: {
     new_version: '\n' +
@@ -1819,6 +1826,15 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: '未対応のデータコマンドです: {0} {1}。実際の機能は openyida commands --json で確認してください。',
+  delete_confirmation_required: 'フォームレコードを削除する前に対象を読み取り、概要をユーザーに提示し、明示的な承認後にのみ --confirm を追加してください。削除は実行されていません。',
+  delete_preflight_failed: '削除前確認のためフォームレコード {0} を読み取れませんでした。削除は実行されていません。',
+  delete_process_unsupported: 'このバージョンではプロセスインスタンスの削除に対応していません。処理を停止して機能不足を報告し、スクリプトや非公開 API を使用しないでください。',
+  delete_readback_mismatch: '削除要求は受理されましたが、再読み取り時にフォームレコード {0} が残っています。結果は未検証です。削除を自動再試行しないでください。',
+  delete_result_unknown: 'フォームレコード {0} の削除結果は不明です。読み取り専用で確認し、削除を自動再試行しないでください。',
+  delete_target_mismatch: 'フォームレコード {0} は対象フォーム {1} に属していません。削除前に処理を停止しました。',
+  delete_target_unverified: 'フォームレコード {0} の識別情報と所属を検証できませんでした。削除前に処理を停止しました。',
+  field_reference_unknown: 'フィールド参照 {0} は対象フォームの実際の fieldId またはコンポーネントエイリアスではありません。書き込み前に処理を停止しました。',
   form_mode_unverified: 'フォーム {0} の種類を検証できませんでした。データを書き込まずに作成を停止しました。',
   resource_required: 'data query にリソース種別 form がありません。推奨コマンド: {0}',
 });
@@ -1872,6 +1888,16 @@ module.exports.connector_test = {
   arguments_required: '--connector-id and --action are required', connector_not_found: 'Connector ID not found: {0}', operations_invalid: 'Connector operations are not valid JSON', action_not_found: 'Action not found: {0}',
   success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
 };
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: 'Derived association-form query field {0} is read-only and cannot be saved or updated. Write the source association field without the _id suffix.',
+  association_value_invalid: 'The write value for association-form field {0} is invalid. Use an array of objects where every item includes appType, formUuid, formType, instanceId, and title.',
+  instance_target_mismatch: 'Instance {0} does not belong to expected business resource {1}. The operation stopped before mutation.',
+  instance_target_unverified: 'Could not verify the business resource ownership of instance {0}. The operation stopped before mutation.',
+  target_expectation_invalid: '--expect-form-type must be {0}. The operation stopped before mutation.',
+  target_identity_mismatch: 'Target resource {0} does not match the expected name or type. The operation stopped before mutation.',
+  target_identity_unverified: 'Could not read the name and type of target resource {0}. The operation stopped before mutation.',
+});
 
 const connectorSafetyMessages = require('../../lib/core/locales/en');
 module.exports.connector_contract = connectorSafetyMessages.connector_contract;

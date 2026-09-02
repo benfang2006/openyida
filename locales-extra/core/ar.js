@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'استيراد حزمة الترحيل، إعادة بناء التطبيق',
     group_form: 'النماذج & الصفحات',
     cmd_create_form: 'إنشاء صفحة نموذج',
+    cmd_list_form_icons: 'عرض رموز تنقل النماذج المتاحة',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'تحديث صفحة نموذج',
     cmd_list_forms: 'List forms/pages in an app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: 'تجميع ونشر صفحة مخصصة',
     cmd_update_form_config: 'تحديث إعدادات النموذج',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: 'البيانات & الأذونات',
     cmd_data: 'إدارة البيانات الموحدة (نموذج/عملية/مهمة/نموذج فرعي)',
     cmd_task_center: 'مركز المهام العالمي (معلق/معالج/نسخة إلخ)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  اسم التطبيق: {0}',
@@ -780,6 +780,12 @@ module.exports = {
     patch_must_not_be_empty: 'Patch array must not be empty',
     patch_invalid_shape: 'Patch must be an array, {operations: []}, or a single operation object',
     patch_parse_failed: 'Failed to parse patch JSON: ',
+    action_event_conflict: 'Field "{0}" event {1} is already bound to action "{2}"; silent replacement is blocked. Set replaceExisting=true only after confirming replacement.',
+    action_source_export_missing: 'The action source does not export the requested function "{0}".',
+    action_source_missing: 'Action function "{0}" was not found. Provide source/sourceFile or define it in the action module first.',
+    action_binding_incomplete: 'The form action function, action registry entry, and field event binding are incomplete. The Schema was not saved.',
+    action_readback_failed: 'The form action save was accepted, but readback failed: {0}',
+    action_readback_mismatch: 'The form action save was accepted, but the remote function, action registry entry, or field event binding did not match.',
     rule_file_not_found: 'Rule file not found: ',
     rule_array_empty: 'Rule array must not be empty',
     rules_array_empty: 'The rules array must not be empty',
@@ -1131,7 +1137,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2} ملفات)',
     remove_failed: '    ❌ فشل الحذف: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  فشل إنشاء الرابط الرمزي في Windows (يتطلب صلاحيات المسؤول)، استخدام نسخ الدليل: {0}',
-    symlink_failed: '    ❌ فشل إنشاء الرابط الرمزي: {0} ({1})'
+    symlink_failed: '    ❌ فشل إنشاء الرابط الرمزي: {0} ({1})',
+    source_destination_overlap: 'تم إيقاف النسخ لأن مجلدي المصدر والوجهة متداخلان. المصدر: {0}؛ الوجهة: {1}'
   },
   check_update: {
     new_version: '\n🎉 إصدار جديد متاح: {0} → {1}',
@@ -1892,6 +1899,15 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: 'أمر بيانات غير مدعوم: {0} {1}. شغّل openyida commands --json لعرض الإمكانات الفعلية.',
+  delete_confirmation_required: 'قبل حذف سجل نموذج، اعرض ملخص الهدف للمستخدم وأضف --confirm فقط بعد الموافقة الصريحة. لم يتم تنفيذ الحذف.',
+  delete_preflight_failed: 'تعذرت قراءة سجل النموذج {0} للتحقق قبل الحذف. لم يتم تنفيذ الحذف.',
+  delete_process_unsupported: 'حذف مثيلات سير العمل غير مدعوم في هذا الإصدار. أوقف التنفيذ وأبلغ عن نقص الإمكانية؛ لا تستخدم نصوصًا أو واجهات API خاصة.',
+  delete_readback_mismatch: 'تم قبول طلب الحذف، لكن سجل النموذج {0} ما زال موجودًا عند إعادة القراءة. النتيجة غير مؤكدة؛ لا تُعد محاولة الحذف تلقائيًا.',
+  delete_result_unknown: 'نتيجة حذف سجل النموذج {0} غير معروفة. نفّذ فحصًا للقراءة فقط ولا تُعد الحذف تلقائيًا.',
+  delete_target_mismatch: 'سجل النموذج {0} لا ينتمي إلى النموذج الهدف {1}. توقف التنفيذ قبل الحذف.',
+  delete_target_unverified: 'تعذر التحقق من هوية سجل النموذج {0} وملكيته. توقف التنفيذ قبل الحذف.',
+  field_reference_unknown: 'مرجع الحقل {0} ليس fieldId حقيقيًا أو اسمًا مستعارًا للمكوّن في النموذج الهدف. توقف التنفيذ قبل الكتابة.',
   form_mode_unverified: 'تعذر التحقق من نوع النموذج {0}. تم إيقاف الإنشاء قبل كتابة أي بيانات.',
   resource_required: 'يفتقد data query إلى نوع المورد form. الأمر المقترح: {0}',
 });
@@ -1947,6 +1963,16 @@ module.exports.connector_test = {
   connector_not_found: 'Connector ID not found: {0}', operations_invalid: 'Connector operations are not valid JSON', action_not_found: 'Action not found: {0}',
   success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
 };
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: 'Derived association-form query field {0} is read-only and cannot be saved or updated. Write the source association field without the _id suffix.',
+  association_value_invalid: 'The write value for association-form field {0} is invalid. Use an array of objects where every item includes appType, formUuid, formType, instanceId, and title.',
+  instance_target_mismatch: 'Instance {0} does not belong to expected business resource {1}. The operation stopped before mutation.',
+  instance_target_unverified: 'Could not verify the business resource ownership of instance {0}. The operation stopped before mutation.',
+  target_expectation_invalid: '--expect-form-type must be {0}. The operation stopped before mutation.',
+  target_identity_mismatch: 'Target resource {0} does not match the expected name or type. The operation stopped before mutation.',
+  target_identity_unverified: 'Could not read the name and type of target resource {0}. The operation stopped before mutation.',
+});
 
 const connectorSafetyMessages = require('../../lib/core/locales/en');
 module.exports.connector_contract = connectorSafetyMessages.connector_contract;

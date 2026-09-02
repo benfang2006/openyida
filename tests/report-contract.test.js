@@ -82,7 +82,7 @@ describe('report frontend contract', () => {
           componentName: 'Page',
           lifeCycles: { componentDidMount: null, componentWillUnmount: null },
           children: [{
-            componentName: 'YoushuCalendarHeatmap',
+            componentName: 'YoushuPieChart',
             props: {
               height: null,
               dataSetModelMap: {
@@ -94,6 +94,9 @@ describe('report frontend contract', () => {
               },
               settings: {
                 height: null,
+                legend: { cardWidth: null, showLegend: true },
+                tooltip: { contentType: null, showTooltip: true },
+                fixedLegend: { cardWidth: 320 },
                 yAxis: { min: null, max: null },
               },
               exportData: {
@@ -113,12 +116,93 @@ describe('report frontend contract', () => {
     expect(props).not.toHaveProperty('height');
     expect(props.dataSetModelMap.chartData.dataViewQueryModel.fieldDefinitionList[0])
       .toEqual({ fieldCode: 'dateField_1' });
-    expect(props.settings).toEqual({ yAxis: {} });
+    expect(props.settings).toEqual({
+      legend: { showLegend: true },
+      tooltip: { showTooltip: true },
+      fixedLegend: { cardWidth: 320 },
+      yAxis: {},
+    });
     expect(props.exportData).toEqual({ supportExport: false });
     expect(prepared.pages[0].componentsTree[0].lifeCycles).toEqual({});
     expect(prepared.pages[0]).not.toHaveProperty('utils');
     expect(prepared.pages[0]).not.toHaveProperty('css');
     expect(original.pages[0].componentsTree[0].children[0].props).toHaveProperty('height', null);
+  });
+
+  test('keeps cardWidth strict outside the proven pie legend null normalization', () => {
+    const calendar = buildSchema({
+      pages: [{
+        componentsTree: [{
+          componentName: 'Page',
+          children: [{
+            componentName: 'YoushuCalendarHeatmap',
+            props: { settings: { legend: { cardWidth: null } } },
+          }],
+        }],
+      }],
+    });
+    const pie = buildSchema({
+      pages: [{
+        componentsTree: [{
+          componentName: 'Page',
+          children: [{
+            componentName: 'YoushuPieChart',
+            props: {
+              settings: {
+                legend: { cardWidth: 320 },
+                fixedLegend: { cardWidth: null },
+              },
+            },
+          }],
+        }],
+      }],
+    });
+
+    expect(prepareReportSchemaForSave(calendar).pages[0].componentsTree[0]
+      .children[0].props.settings.legend).toHaveProperty('cardWidth', null);
+    expect(prepareReportSchemaForSave(pie).pages[0].componentsTree[0]
+      .children[0].props.settings).toEqual({
+      legend: { cardWidth: 320 },
+      fixedLegend: { cardWidth: null },
+    });
+  });
+
+  test('keeps tooltip contentType strict outside the proven pie null normalization', () => {
+    const bar = buildSchema({
+      pages: [{
+        componentsTree: [{
+          componentName: 'Page',
+          children: [{
+            componentName: 'YoushuGroupedBarChart',
+            props: { settings: { tooltip: { contentType: null } } },
+          }],
+        }],
+      }],
+    });
+    const pie = buildSchema({
+      pages: [{
+        componentsTree: [{
+          componentName: 'Page',
+          children: [{
+            componentName: 'YoushuPieChart',
+            props: {
+              settings: {
+                tooltip: { contentType: 'NAME_VALUE', showTooltip: true },
+                fixedTooltip: { contentType: null },
+              },
+            },
+          }],
+        }],
+      }],
+    });
+
+    expect(prepareReportSchemaForSave(bar).pages[0].componentsTree[0]
+      .children[0].props.settings.tooltip).toHaveProperty('contentType', null);
+    expect(prepareReportSchemaForSave(pie).pages[0].componentsTree[0]
+      .children[0].props.settings).toEqual({
+      tooltip: { contentType: 'NAME_VALUE', showTooltip: true },
+      fixedTooltip: { contentType: null },
+    });
   });
 
   test('normalizes string and response-wrapped schema content', () => {
@@ -256,6 +340,13 @@ describe('report frontend contract', () => {
     expect(caught).toMatchObject({
       code: 'REPORT_SCHEMA_READBACK_MISMATCH',
       details: {
+        mismatchType: expectedKind,
+        mismatchPath: expect.stringMatching(/^\$\.pages\[0\]\.componentsTree\[0\]\.children/),
+        retryable: false,
+        retrySafe: false,
+        sideEffectState: 'unknown',
+        readbackAllowed: true,
+        recommendedRecovery: 'inspect_then_stop',
         mismatch: {
           kind: expectedKind,
           path: expect.stringMatching(/^\$\.pages\[0\]\.componentsTree\[0\]\.children/),

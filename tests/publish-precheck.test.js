@@ -5,6 +5,7 @@ const https = require('https');
 const os = require('os');
 const path = require('path');
 const { EventEmitter } = require('events');
+const { CliError } = require('../lib/core/cli-error');
 
 jest.mock('../lib/app/form-navigation', () => ({
   fetchFormPageList: jest.fn(),
@@ -26,6 +27,7 @@ const {
   mergePageDataSource,
   verifyPublishTarget,
 } = require('../lib/app/publish');
+const publishPage = require('../lib/app/publish');
 const {
   verifyPublishedContentMatch,
 } = require('../lib/app/display-page-readback');
@@ -94,6 +96,47 @@ describe('publish prechecks', () => {
     expect(mismatches).toEqual([
       { sourcePath, duplicatePath: artifactPath },
     ]);
+  });
+
+  test('publish rejects unsupported authoring hooks with CliError before login or process exit', async () => {
+    const sourcePath = path.join(workspace, 'reducer.oyd.jsx');
+    fs.writeFileSync(sourcePath, `
+import React, { useReducer } from 'react';
+export default function Page() {
+  const [state] = useReducer((value) => value, {});
+  return <div>{state.name}</div>;
+}
+`, 'utf8');
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit should not be called');
+    });
+
+    await expect(publishPage([
+      sourcePath,
+      'APP_XXX',
+      'FORM-PAGE',
+      '--compat',
+      '--no-open',
+    ])).rejects.toMatchObject({
+      code: 'BUILD_PAGE_FAILED',
+      details: {
+        retryable: false,
+        retrySafe: true,
+        sideEffectState: 'none',
+        sourceRepairable: true,
+        primaryIssue: {
+          code: 'UNSUPPORTED_HOOK',
+          hook: 'useReducer',
+          line: 4,
+        },
+        nextAction: {
+          type: 'edit_source_then_recheck',
+          commandId: 'check-page',
+        },
+      },
+    });
+    expect(exitSpy).not.toHaveBeenCalled();
+    exitSpy.mockRestore();
   });
 
   test('suggests pages/src path when cwd is already the OpenYida project directory', () => {
@@ -447,7 +490,16 @@ describe('publish prechecks', () => {
     });
     const warnMock = jest.fn();
     const resultMock = jest.fn();
-    const autoOrderNavigationMock = jest.fn(() => Promise.reject(new Error('nav order broke')));
+    const autoOrderNavigationMock = jest.fn(() => Promise.reject(new CliError('NAV_ORDER_RESULT_UNKNOWN', {
+      code: 'NAV_ORDER_RESULT_UNKNOWN',
+      details: {
+        retryable: false,
+        retrySafe: false,
+        sideEffectState: 'unknown',
+        readbackVerified: false,
+        nextStep: 'openyida nav-group list APP_XXX --flat',
+      },
+    })));
     const requestSpy = jest.spyOn(https, 'request').mockImplementation((options, callback) => {
       const response = new EventEmitter();
       response.statusCode = 200;
@@ -536,7 +588,7 @@ describe('publish prechecks', () => {
       expect(exitSpy).not.toHaveBeenCalled();
       expect(resultMock).toHaveBeenCalledWith(true, expect.any(String), expect.any(Array));
       expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('display_component_missing'));
-      expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('nav order broke'));
+      expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('NAV_ORDER_RESULT_UNKNOWN'));
       expect(autoOrderNavigationMock).toHaveBeenCalledWith('APP_XXX', expect.any(Object));
       expect(mockUtils.httpPost).toHaveBeenCalledTimes(1);
       expect(mockUtils.httpPost.mock.calls[0][1]).toContain('/saveFormSchema.json');
@@ -555,7 +607,16 @@ describe('publish prechecks', () => {
           expectedPublishMode: 'canvas',
           reason: 'display_component_missing',
         },
-        navOrderWarning: 'nav order broke',
+        navOrder: {
+          success: false,
+          errorCode: 'NAV_ORDER_RESULT_UNKNOWN',
+          retryable: false,
+          retrySafe: false,
+          sideEffectState: 'unknown',
+          readbackVerified: false,
+          nextStep: 'openyida nav-group list APP_XXX --flat',
+        },
+        navOrderWarning: 'NAV_ORDER_RESULT_UNKNOWN',
       });
     } finally {
       requestSpy.mockRestore();

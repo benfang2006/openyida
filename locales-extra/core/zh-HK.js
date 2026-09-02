@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '匯入遷移包，重建應用程式',
     group_form: '表單 & 頁面',
     cmd_create_form: '建立表單頁面',
+    cmd_list_form_icons: '列出可用的表單導覽圖示',
     cmd_validate_form: '本機校驗表單欄位 JSON',
     cmd_update_form: '更新表單頁面',
     cmd_list_forms: '列出應用程式下的表單/頁面',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: '編譯並發布自訂頁面',
     cmd_update_form_config: '更新表單設定',
     cmd_get_form_config: '查询表单配置',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: '資料 & 權限',
     cmd_data: '統一資料管理（表單/流程/任務/子表單）',
     cmd_task_center: '全域任務中心（待辦/已處理/抄送等）',
@@ -199,7 +199,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "考勤管理"\n' +
-      '  openyida create-app "考勤管理" "員工考勤系統" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "考勤管理" "員工考勤系統" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "遊戲主頁"\n' +
       '  openyida create-form create APP_XXX "員工資料" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"備註"}}]'\n` +
@@ -585,9 +585,9 @@ module.exports = {
     available_icons: '\n可用圖示：',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\n可用顏色：',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '  應用程式名稱：{0}',
@@ -739,6 +739,12 @@ module.exports = {
     patch_must_not_be_empty: '补丁数组不能为空',
     patch_invalid_shape: '补丁必须是数组、{operations: []} 或单个操作对象',
     patch_parse_failed: '补丁 JSON 解析失败: ',
+    action_event_conflict: '欄位「{0}」的 {1} 已綁定動作「{2}」；預設禁止靜默覆蓋。確認替換時明確設定 replaceExisting=true。',
+    action_source_export_missing: '動作原始碼未匯出指定函式「{0}」。',
+    action_source_missing: '找不到動作函式「{0}」；請提供 source/sourceFile，或先在動作模組中定義該函式。',
+    action_binding_incomplete: '表單動作函式、動作註冊和欄位事件綁定不完整，Schema 未儲存。',
+    action_readback_failed: '表單動作儲存已被接受，但回讀失敗：{0}',
+    action_readback_mismatch: '表單動作儲存已被接受，但遠端回讀的函式、動作註冊或欄位事件綁定不一致。',
     rule_file_not_found: '规则文件不存在: ',
     rule_array_empty: '规则数组不能为空',
     rules_array_empty: 'rules 数组不能为空',
@@ -1072,7 +1078,8 @@ module.exports = {
     result_copy: '   {0} → {1}（{2} 個檔案）',
     remove_failed: '    ❌ 刪除失敗：{0}（{1}）',
     symlink_fallback_copy: '    ⚠️  Windows 符號連結建立失敗（需要管理員權限），降級為目錄複製：{0}',
-    symlink_failed: '    ❌ 符號連結建立失敗：{0}（{1}）'
+    symlink_failed: '    ❌ 符號連結建立失敗：{0}（{1}）',
+    source_destination_overlap: '已停止複製：來源目錄與目標目錄重疊。來源：{0}；目標：{1}'
   },
   check_update: {
     new_version: '\n💡 發現新版本 {0}（目前 {1}）\n   執行以下指令更新：\n   npm install -g openyida@latest\n'
@@ -1768,6 +1775,15 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: '不支援的資料命令：{0} {1}。請執行 openyida commands --json 查詢實際能力。',
+  delete_confirmation_required: '刪除表單實例前，必須先查詢並向使用者展示目標摘要；只有取得明確確認後才可加入 --confirm。未執行刪除。',
+  delete_preflight_failed: '無法讀取表單實例 {0} 完成刪除前檢查，未執行刪除。',
+  delete_process_unsupported: '目前版本不支援刪除流程實例。請停止並回報能力缺口，不要嘗試腳本或私有 API。',
+  delete_readback_mismatch: '刪除請求已被接受，但回讀仍能找到表單實例 {0}。結果尚未驗證，禁止自動重試刪除。',
+  delete_result_unknown: '表單實例 {0} 的刪除結果未知。請只讀回查目標，不要自動重試刪除。',
+  delete_target_mismatch: '表單實例 {0} 不屬於目標表單 {1}，已停止且未執行刪除。',
+  delete_target_unverified: '無法驗證表單實例 {0} 的身分和歸屬，已停止且未執行刪除。',
+  field_reference_unknown: '欄位引用 {0} 不是目標表單的真實 fieldId 或元件別名，已在寫入前停止。',
   form_mode_unverified: '無法驗證表單 {0} 的類型，已停止建立；未執行任何資料寫入。',
   resource_required: 'data query 缺少資源類型 form。建議：{0}',
 });
@@ -1812,6 +1828,15 @@ Object.assign(module.exports.process_diagnostics || (module.exports.process_diag
 
 Object.assign(module.exports.create_process || (module.exports.create_process = {}), {
   login_required: '未取得有效宜搭登入狀態，請先執行 openyida login。',
+});
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: '關聯表單查詢衍生欄位 {0} 是唯讀欄位，不能用於儲存或更新。請寫入不帶 _id 後綴的原始關聯表單欄位。',
+  association_value_invalid: '關聯表單欄位 {0} 的寫入值無效。必須使用物件陣列，每項完整包含 appType、formUuid、formType、instanceId 和 title。',
+  instance_target_mismatch: '實例 {0} 不屬於預期業務資源 {1}，已在寫入前停止。',
+  instance_target_unverified: '無法核驗實例 {0} 的業務資源歸屬，已在寫入前停止。',
+  target_expectation_invalid: '--expect-form-type 必須為 {0}，已在寫入前停止。',
+  target_identity_mismatch: '目標資源 {0} 與預期名稱或類型不一致，已在寫入前停止。',
+  target_identity_unverified: '無法回讀目標資源 {0} 的名稱和類型，已在寫入前停止。',
 });
 module.exports.connector_test = {
   usage: '用法: openyida connector test --connector-id <id> --action <actionId> [--params <json>] [--path-json <json>] [--query-json <json>] [--header-json <json>] [--body-json <json>] [--account-id <id>] [--json]',

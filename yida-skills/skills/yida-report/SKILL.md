@@ -131,7 +131,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 - **组件库地址**：`//g.alicdn.com/code/npm/@ali/vc-yida-report/1.0.101/pc.js`
 - **全局挂载**：`window.YidaReport`
-- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`
+- **创建入口**：`openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`
 - **字段配置参考**：[`report-field-config-guide.md`](../../references/report-field-config-guide.md)
 
 ### 组件总览
@@ -157,7 +157,7 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 
 ### Schema 构建细节参考
 
-普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径>`，由 CLI 内部构建并发布 Schema。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
+普通报表创建优先使用 `openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json`，由 CLI 内部构建并发布 Schema。机器调用必须保留 `--json`，以便在远端已经写入但回读不一致时读取安全的恢复信息。需要查看构建函数、组件示例、settings 字段或完整页面组合示例时，再读取 [references/schema-builder-details.md](references/schema-builder-details.md)。
 
 ---
 
@@ -166,13 +166,38 @@ POST /alibaba/web/{appType}/visual/visualizationDataRpc/getDataAsync.json
 ### 命令调用格式
 
 ```bash
-openyida create-report <appType> "<报表名称>" <配置JSON文件路径>
+openyida create-report <appType> "<报表名称>" <配置JSON文件路径> --json
 # 配置文件路径示例：.cache/openyida/<项目名或任务名>/<报表名>-report.json
 ```
 
 > 配置 JSON 先用 create_file / Write / file edit tool 创建。上方路径默认从 OpenYida project 工作目录执行；从 workspace 根执行命令时传 `project/.cache/openyida/<项目名或任务名>/<报表名>-report.json`。
 
 **⚠️ 第二个参数是报表名称，必须使用业务含义的中文名称**（如"任务管理数据报表"），不要传 formUuid。
+
+对 `REPORT_SCHEMA_READBACK_MISMATCH` 等 post-create failure，同时读取顶层 `sideEffectState`、`residual`、`retrySafe`、`nextStep` 以及兼容字段 `details.nextAction`。若返回 `partial=true`、`residual.owned=true`，立即把 `residual.appType + residual.reportId` 锁定为本 task/run 唯一报表目标。即使更换配置文件、标题、prompt 或进入恢复轮次，也禁止再次执行 `create-report`，禁止按名称猜资源，禁止自动删除、隐藏或创建同名 display 页面掩盖残留。
+
+先且只先执行一次 `openyida report inspect <residual.appType> <residual.reportId> --json`。只有 inspect 证明原报表身份正确、已有组件集合明确，并且能够确定性算出尚未写入的 owned 图表时，才允许用 `append-chart` 修复同一个 `residual.reportId` 并再次 readback；不能证明安全增量或当前 CLI 没有对应 update/repair 能力时，必须停止并交付完整 residual、mismatch 和 nextStep，不能重新创建。
+
+恢复和最终交付只能使用 create/inspect 返回的 `workbenchUrl`（兼容读取 `url`）；禁止自行拼接 `/{appType}/report/{reportId}`。单独交付原生报表时使用 `/{appType}/workbench/{reportId}`，完整应用仍交付应用首页 `/{appType}/workbench`。
+
+<!-- owned-residual-contract:start -->
+```json
+{
+  "when": "partial=true && residual.type=report && residual.owned=true",
+  "createReportAllowed": false,
+  "inspect": {
+    "commandId": "report.inspect",
+    "appTypeSource": "residual.appType",
+    "reportIdSource": "residual.reportId",
+    "maxAttempts": 1
+  },
+  "allowedRepairCommands": ["append-chart"],
+  "repairReportIdSource": "residual.reportId",
+  "deleteAllowed": false,
+  "unsafeRepairFallback": "stop_and_report_residual"
+}
+```
+<!-- owned-residual-contract:end -->
 
 ### cubeCode 格式规则
 
@@ -197,7 +222,7 @@ cubeCode:  FORM_AB4ACB9DD12C470D82047E05CDC19166CJSU  ← 连字符替换为下�
       "type": "pie",
       "cubeCode": "FORM_xxx",
       "xField": {
-        "fieldCode": "selectField_xxx_value",
+        "fieldCode": "selectField_xxx",
         "aliasName": "优先级",
         "dataType": "STRING",
         "aggregateType": "NONE"
@@ -231,20 +256,13 @@ cubeCode:  FORM_AB4ACB9DD12C470D82047E05CDC19166CJSU  ← 连字符替换为下�
 
 ### 只读检查与绑定提取
 
-创建或追加后使用 `openyida report inspect <appType> <REPORT_xxx> --json` 回读 `schemaVersion=V5`、`domainCode=tEXDRG` 的真实 Schema。输出包含 revision、组件 `cid`、`dataSetKeys`、`filterKeys`、`cubeCodes`、RGL `layout`、`prdId` 和 `pageId`；字段缺失时保持 `null`/空数组，不得猜测。运行字段（包括 `css`、`lifeCycles`、`utils`）属于严格 readback 内容，不作为“设计器字段”全局忽略。
+创建或追加后使用 `openyida report inspect <appType> <REPORT_xxx> --json` 回读 `schemaVersion=V5`、`domainCode=tEXDRG` 的真实 Schema。输出包含 `url`、`workbenchUrl`、revision、组件 `cid`、`dataSetKeys`、`filterKeys`、`cubeCodes`、`fields`、`queryProbe`、RGL `layout`、`prdId`、`pageId` 及顶层 `runtimeQueryVerified`。只有严格 Schema 回读和所有真实图表查询均成功，才能宣称报表完成；字段缺失时保持 `null`/空数组，不得猜测。运行字段（包括 `css`、`lifeCycles`、`utils`）属于严格 readback 内容，不作为“设计器字段”全局忽略。
 
 真实报表 E2E 必须使用独立 `OY_REPORT_` runId 与 marker，先只读证明 corp/app/预置数据和 owned 写入范围，并在首次写入前同步落盘脱敏 registry、acceptance manifest、完整既有 report ID/可用 identity 摘要与 baseline hash。create 响应只能登记为未拥有的 candidate；平台回读必须证明 reportId、title、marker、corp/app 精确匹配、ID 不在 baseline 且候选唯一，之后才允许登记 owned resource 和 cleanup。runtime marker 必须声明窄 `markerPath` 与精确 `markerValue`，只接受指定路径严格相等；platform、runtime、UI 三层机器断言通过后仍必须执行 exact-identity owned cleanup。无法证明安全删除时结果只能是 `cleanup_blocked` 并报告 residual，截图仅作辅助证据。
 
-### fieldCode 后缀规则
+### fieldCode 运行时解析
 
-| 字段组件类型 | 报表中的 fieldCode | 示例 |
-|------------|-------------------|------|
-| `SelectField` | 加 `_value` 后缀 | `selectField_xxx` → `selectField_xxx_value` |
-| `EmployeeField` | 加 `_value` 后缀 | `employeeField_xxx` → `employeeField_xxx_value` |
-| `TextField` | 原样使用 | `textField_xxx` |
-| `NumberField` | 原样使用 | `numberField_xxx` |
-| `DateField` | 原样使用 | `dateField_xxx` |
-| 内置字段 `pid` | 原样使用 | `pid`（用于 COUNT 计数） |
+`get-schema` 返回 `reportFieldCodeCandidates`，但候选不等于 cube 真实元数据。配置可先使用真实 `fieldId`；`create-report` 保存后必须逐图表调用运行时数据接口验证。若平台仅对 Select/Radio/Checkbox/Employee 等字段的 raw 与 `_value` 表示存在差异，CLI 只允许在同一个 `reportId` 内做一次候选切换并重新查询；不得新建同名报表，也不得全局忽略 metadata mismatch。
 
 ### dataSetModelMap 结构要点
 

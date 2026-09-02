@@ -167,11 +167,13 @@ For a user-facing list of supported features and matching CLI commands, see [Ope
 
 ```bash
 openyida create-app "CRM"
-openyida create-app --name "CRM" --desc "Customer management" --theme deepBlue
+openyida create-app --name "CRM" --desc "Customer management" --theme-file ./app-theme.css --nav-theme light --logo-source appIcon --layout l_shape
 openyida app-list --size 20
 openyida corp-efficiency
 openyida create-form create APP_XXX "Customer" .cache/openyida/forms/customer-fields.json
 openyida create-form update APP_XXX FORM_XXX .cache/openyida/forms/customer-changes.json
+openyida sample openyida-scaffold form-fields --output .cache/openyida/forms/customer-fields.json
+openyida sample openyida-scaffold canvas-form-drawer --output project/pages/src/customer-entry.canvas.jsx --var APP_TYPE=APP_XXX --var FORM_UUID=FORM_XXX
 openyida get-schema APP_XXX FORM_XXX
 openyida get-schema APP_XXX FORM_XXX --compact --resolve-fields "Customer Name,Status"
 openyida get-schema APP_XXX --all --output-dir .cache/schemas
@@ -200,7 +202,7 @@ openyida configure-process APP_XXX FORM_XXX .cache/openyida/process/process.json
 openyida process preview APP_XXX PROC_INST_XXX --output .cache/openyida/process/process.html
 openyida data query form APP_XXX FORM_XXX --page 1 --size 20
 openyida data query form APP_XXX FORM_XXX --dynamic-order '{"dateField_xxx":"-"}'
-openyida data create form APP_XXX FORM_XXX --data-file .cache/openyida/data-import/record.json
+openyida data create form APP_XXX FORM_XXX --expect-form-name 客户 --expect-form-type receipt --data-file .cache/openyida/data-import/record.json
 openyida get-permission APP_XXX FORM_XXX
 ```
 
@@ -388,7 +390,7 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida app-list [--size N]` | List my Yida apps |
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | Query enterprise efficiency overview and detail reports |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a Yida app |
-| `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue] [--hide-app-nav\|--show-app-nav]` | Update app info |
+| `openyida update-app <appType> [--name "..."] [--theme-file <css>] [--nav-theme light\|dark\|white\|gray] [--logo-source appIcon\|customImage] [--layout side\|top\|l_shape] [--hide-app-nav\|--show-app-nav]` | Update app info |
 | `openyida app-online <appType> [--to-ding-app-center] [--show-app-center]` | Enable a Yida app |
 | `openyida app-offline <appType> [--to-ding-app-center] [--show-app-center]` | Disable a Yida app |
 | `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | Manage app sidebar navigation groups |
@@ -401,7 +403,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida create-form create <appType> "<formTitle>" <fieldsJsonFile> [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a form page |
+| `openyida create-form create <appType> "<formTitle>" <fieldsJsonFile> [--icon auto\|<iconName>] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Create a form page |
+| `openyida create-form icons [--json]` | List available form navigation icons |
 | `openyida create-form validate-fields <fieldsJsonOrFile> [--json]` | Validate form field JSON locally |
 | `openyida create-form update <appType> ... [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | Update a form page |
 | `openyida create-form patch <appType> <formUuid> <patchJsonOrFile> [--open\|--no-open]` | Update a form page |
@@ -422,15 +425,12 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | Compile and publish custom page |
 | `openyida update-form-config <appType> ...` | Update form configuration |
 | `openyida get-form-config <appType> <formUuid> [--json]` | Query form configuration |
-| `openyida form-detail-style apply <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | Manage form detail page style |
-| `openyida form-detail-style remove <appType> <formUuid> [--json]` | Manage form detail page style |
-| `openyida form-detail-style check <appType> <formUuid> [--json]` | Manage form detail page style |
 
 ### Data & Permissions
 
 | Command | Description |
 |---------|-------------|
-| `openyida data <query\|get\|create\|update\|delete> <form\|process\|subform\|tasks\|operation-records\|task> [args]` | Unified data management (form/process/task/subform) |
+| `openyida data <query\|get\|create\|update> <resource> ... \| delete form <appType> <formUuid> --inst-id <id> --expect-form-name <name> --expect-form-type receipt --confirm [--json]` | Unified data management (form/process/task/subform) |
 | `openyida task-center <type> [options]` | Global task center (todo/processed/cc etc.) |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | Query organization basic info, capacity, quotas, and domain settings |
 | `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | Fetch Markdown content from a DingTalk document |
@@ -462,8 +462,8 @@ Run `openyida --help` or `openyida <command> --help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | Create a Yida report |
-| `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | Append chart to existing report |
+| `openyida create-report <appType> "<name>" ... [--json] [--open\|--no-open]` | Create a Yida report |
+| `openyida append-chart <appType> <reportId> ... [--json] [--open\|--no-open]` | Append chart to existing report |
 | `openyida report inspect <appType> <reportId> --json` | Inspect report runtime bindings (read-only) |
 
 ### Connectors

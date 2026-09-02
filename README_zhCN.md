@@ -190,6 +190,8 @@ openyida publish pages/src/employee-upload.oyd.jsx APP_XXX FORM_XXX
 ```bash
 openyida create-form create APP_XXX "客户表" .cache/openyida/forms/customer-fields.json
 openyida create-form update APP_XXX FORM_XXX .cache/openyida/forms/customer-changes.json
+openyida sample openyida-scaffold form-fields --output .cache/openyida/forms/customer-fields.json
+openyida sample openyida-scaffold canvas-form-drawer --output project/pages/src/customer-entry.canvas.jsx --var APP_TYPE=APP_XXX --var FORM_UUID=FORM_XXX
 openyida get-schema APP_XXX FORM_XXX
 ```
 
@@ -270,7 +272,7 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida app-list [--size N]` | 查询我的应用列表 |
 | `openyida corp-efficiency [overview\|details\|detail\|groups\|notify] [options] [--open\|--no-open]` | 查询企业效能概览和明细报表 |
 | `openyida create-app "<name>"\|--name <name> [options] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建宜搭应用 |
-| `openyida update-app <appType> [--name "..."] [--layout slide\|ver] [--theme deepBlue] [--hide-app-nav\|--show-app-nav]` | 更新应用信息 |
+| `openyida update-app <appType> [--name "..."] [--theme-file <css>] [--nav-theme light\|dark\|white\|gray] [--logo-source appIcon\|customImage] [--layout side\|top\|l_shape] [--hide-app-nav\|--show-app-nav]` | 更新应用信息 |
 | `openyida app-online <appType> [--to-ding-app-center] [--show-app-center]` | 启用宜搭应用 |
 | `openyida app-offline <appType> [--to-ding-app-center] [--show-app-center]` | 停用宜搭应用 |
 | `openyida nav-group <list\|create\|rename\|delete\|move\|order\|auto-order\|hide\|show> <appType> ...` | 管理应用左侧导航分组 |
@@ -283,7 +285,8 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida create-form create <appType> "<formTitle>" <fieldsJsonFile> [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建表单页面 |
+| `openyida create-form create <appType> "<formTitle>" <fieldsJsonFile> [--icon auto\|<iconName>] [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 创建表单页面 |
+| `openyida create-form icons [--json]` | 列出可用的表单导航图标 |
 | `openyida create-form validate-fields <fieldsJsonOrFile> [--json]` | 本地校验表单字段 JSON |
 | `openyida create-form update <appType> ... [--locale zh_CN\|en_US\|ja_JP] [--open\|--no-open]` | 更新表单页面 |
 | `openyida create-form patch <appType> <formUuid> <patchJsonOrFile> [--open\|--no-open]` | 更新表单页面 |
@@ -304,15 +307,12 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 | `openyida publish <src> <appType> <formUuid> [--health-check] [--force] [--canvas] [--auto-nav-order] [--open\|--no-open]` | 编译并发布自定义页面 |
 | `openyida update-form-config <appType> ...` | 更新表单配置 |
 | `openyida get-form-config <appType> <formUuid> [--json]` | 查询表单配置 |
-| `openyida form-detail-style apply <appType> <formUuid> [--css file\|--preset clean-card] [--json]` | 管理表单详情页样式 |
-| `openyida form-detail-style remove <appType> <formUuid> [--json]` | 管理表单详情页样式 |
-| `openyida form-detail-style check <appType> <formUuid> [--json]` | 管理表单详情页样式 |
 
 ### 数据 & 权限
 
 | 命令 | 说明 |
 |------|------|
-| `openyida data <query\|get\|create\|update\|delete> <form\|process\|subform\|tasks\|operation-records\|task> [args]` | 统一数据管理（表单/流程/任务/子表单） |
+| `openyida data <query\|get\|create\|update> <resource> ... \| delete form <appType> <formUuid> --inst-id <id> --expect-form-name <name> --expect-form-type receipt --confirm [--json]` | 统一数据管理（表单/流程/任务/子表单） |
 | `openyida task-center <type> [options]` | 全局任务中心（待办/已处理/抄送等） |
 | `openyida basic-info <overview\|commodity\|grant\|capacity\|quota\|abs-path\|dataflow\|i18n\|domain>` | 查询组织基本信息、容量、额度和域名设置 |
 | `openyida read-dingtalk-doc <docUrl> [--output <file>] [--json]` | 获取钉钉文档的 Markdown 内容 |
@@ -344,8 +344,8 @@ openyida integration enable APP_XXX FORM_XXX PROC_CODE
 
 | 命令 | 说明 |
 |------|------|
-| `openyida create-report <appType> "<name>" ... [--open\|--no-open]` | 创建宜搭报表 |
-| `openyida append-chart <appType> <reportId> ... [--open\|--no-open]` | 向已有报表追加图表 |
+| `openyida create-report <appType> "<name>" ... [--json] [--open\|--no-open]` | 创建宜搭报表 |
+| `openyida append-chart <appType> <reportId> ... [--json] [--open\|--no-open]` | 向已有报表追加图表 |
 | `openyida report inspect <appType> <reportId> --json` | 只读检查报表运行时绑定摘要 |
 
 ### 连接器

@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: '마이그레이션 패키지 가져오기, 앱 재구축',
     group_form: '양식 & 페이지',
     cmd_create_form: '양식 페이지 생성',
+    cmd_list_form_icons: '사용 가능한 양식 탐색 아이콘 목록',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: '양식 페이지 업데이트',
     cmd_list_forms: 'List forms/pages in an app',
@@ -45,7 +46,6 @@ module.exports = {
     cmd_publish: '사용자 정의 페이지 컴파일 및 게시',
     cmd_update_form_config: '양식 설정 업데이트',
     cmd_get_form_config: 'Query form configuration',
-    cmd_form_detail_style: 'Manage form detail page style',
     group_data: '데이터 & 권한',
     cmd_data: '통합 데이터 관리 (양식/프로세스/작업/하위양식)',
     cmd_task_center: '글로벌 작업 센터 (할일/처리됨/참조 등)',
@@ -201,7 +201,7 @@ module.exports = {
       '  openyida login\n' +
       '  openyida logout\n' +
       '  openyida create-app "Attendance"\n' +
-      '  openyida create-app "Attendance" "Employee Attendance" "xian-daka" "#00B853" "deepBlue" "dark" "slide"\n' +
+      '  openyida create-app "Attendance" "Employee Attendance" "daka" "#00B853" "deepBlue" "dark" "slide"\n' +
       '  openyida create-page APP_XXX "Game Home"\n' +
       '  openyida create-form create APP_XXX "Employee Info" .cache/openyida/forms/employee-fields.json\n' +
       `  openyida create-form update APP_XXX FORM-XXX '[{"action":"add","field":{"type":"TextField","label":"Notes"}}]'\n` +
@@ -620,9 +620,9 @@ module.exports = {
     available_icons: '\nAvailable icons:',
     icons_list: '  xian-xinwen, xian-zhengfu, xian-yingyong, xian-xueshimao, xian-qiye,\n' +
       '  xian-danju, xian-shichang, xian-jingli, xian-falv, xian-baogao,\n' +
-      '  huoche, xian-shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
+      '  huoche, shenbao, xian-diqiu, xian-qiche, xian-feiji,\n' +
       '  xian-diannao, xian-gongzuozheng, xian-gouwuche, xian-xinyongka,\n' +
-      '  xian-huodong, xian-jiangbei, xian-liucheng, xian-chaxun, xian-daka',
+      '  xian-huodong, xian-jiangbei, xian-liucheng, chaxun, daka',
     available_colors: '\nAvailable colors:',
     colors_list: '  #0089FF #00B853 #FFA200 #FF7357 #5C72FF\n  #85C700 #FFC505 #FF6B7A #8F66FF #14A9FF',
     app_name: '\n  앱 이름: {0}',
@@ -780,6 +780,12 @@ module.exports = {
     patch_must_not_be_empty: 'Patch array must not be empty',
     patch_invalid_shape: 'Patch must be an array, {operations: []}, or a single operation object',
     patch_parse_failed: 'Failed to parse patch JSON: ',
+    action_event_conflict: 'Field "{0}" event {1} is already bound to action "{2}"; silent replacement is blocked. Set replaceExisting=true only after confirming replacement.',
+    action_source_export_missing: 'The action source does not export the requested function "{0}".',
+    action_source_missing: 'Action function "{0}" was not found. Provide source/sourceFile or define it in the action module first.',
+    action_binding_incomplete: 'The form action function, action registry entry, and field event binding are incomplete. The Schema was not saved.',
+    action_readback_failed: 'The form action save was accepted, but readback failed: {0}',
+    action_readback_mismatch: 'The form action save was accepted, but the remote function, action registry entry, or field event binding did not match.',
     rule_file_not_found: 'Rule file not found: ',
     rule_array_empty: 'Rule array must not be empty',
     rules_array_empty: 'The rules array must not be empty',
@@ -1132,7 +1138,8 @@ module.exports = {
     result_copy: '   {0} → {1} ({2}개 파일)',
     remove_failed: '    ❌ 제거 실패: {0} ({1})',
     symlink_fallback_copy: '    ⚠️  Windows 심볼릭 링크 생성 실패(관리자 권한 필요), 디렉토리 복사로 대체: {0}',
-    symlink_failed: '    ❌ 심볼릭 링크 생성 실패: {0} ({1})'
+    symlink_failed: '    ❌ 심볼릭 링크 생성 실패: {0} ({1})',
+    source_destination_overlap: '원본과 대상 디렉터리가 겹쳐 복사를 중지했습니다. 원본: {0}; 대상: {1}'
   },
   check_update: {
     new_version: '\n🎉 새 버전 사용 가능: {0} → {1}',
@@ -1893,6 +1900,15 @@ Object.assign(module.exports.publish || (module.exports.publish = {}), {
 });
 
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  command_unsupported: '지원하지 않는 데이터 명령입니다: {0} {1}. 실제 기능은 openyida commands --json으로 확인하세요.',
+  delete_confirmation_required: '폼 레코드를 삭제하기 전에 대상을 조회하고 요약을 사용자에게 보여 준 뒤 명시적 승인 후에만 --confirm을 추가하세요. 삭제는 실행되지 않았습니다.',
+  delete_preflight_failed: '삭제 전 확인을 위해 폼 레코드 {0}을(를) 읽을 수 없습니다. 삭제는 실행되지 않았습니다.',
+  delete_process_unsupported: '이 버전에서는 프로세스 인스턴스 삭제를 지원하지 않습니다. 실행을 중단하고 기능 누락을 보고하세요. 스크립트나 비공개 API를 사용하지 마세요.',
+  delete_readback_mismatch: '삭제 요청이 수락되었지만 재조회에서 폼 레코드 {0}이(가) 여전히 존재합니다. 결과가 검증되지 않았으므로 삭제를 자동 재시도하지 마세요.',
+  delete_result_unknown: '폼 레코드 {0}의 삭제 결과를 알 수 없습니다. 읽기 전용으로 확인하고 삭제를 자동 재시도하지 마세요.',
+  delete_target_mismatch: '폼 레코드 {0}은(는) 대상 폼 {1}에 속하지 않습니다. 삭제 전에 실행을 중단했습니다.',
+  delete_target_unverified: '폼 레코드 {0}의 ID와 소속을 검증할 수 없습니다. 삭제 전에 실행을 중단했습니다.',
+  field_reference_unknown: '필드 참조 {0}은 대상 폼의 실제 fieldId 또는 컴포넌트 별칭이 아닙니다. 쓰기 전에 실행을 중단했습니다.',
   form_mode_unverified: '폼 {0}의 유형을 확인할 수 없어 데이터 쓰기 전에 생성을 중지했습니다.',
   resource_required: 'data query에 리소스 유형 form이 없습니다. 권장 명령: {0}',
 });
@@ -1946,6 +1962,16 @@ module.exports.connector_test = {
   arguments_required: '--connector-id and --action are required', connector_not_found: 'Connector ID not found: {0}', operations_invalid: 'Connector operations are not valid JSON', action_not_found: 'Action not found: {0}',
   success: '✅ Test succeeded', status_label: 'HTTP status:', headers_label: 'Response headers:', content_label: 'Response body:',
 };
+
+Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: 'Derived association-form query field {0} is read-only and cannot be saved or updated. Write the source association field without the _id suffix.',
+  association_value_invalid: 'The write value for association-form field {0} is invalid. Use an array of objects where every item includes appType, formUuid, formType, instanceId, and title.',
+  instance_target_mismatch: 'Instance {0} does not belong to expected business resource {1}. The operation stopped before mutation.',
+  instance_target_unverified: 'Could not verify the business resource ownership of instance {0}. The operation stopped before mutation.',
+  target_expectation_invalid: '--expect-form-type must be {0}. The operation stopped before mutation.',
+  target_identity_mismatch: 'Target resource {0} does not match the expected name or type. The operation stopped before mutation.',
+  target_identity_unverified: 'Could not read the name and type of target resource {0}. The operation stopped before mutation.',
+});
 
 const connectorSafetyMessages = require('../../lib/core/locales/en');
 module.exports.connector_contract = connectorSafetyMessages.connector_contract;

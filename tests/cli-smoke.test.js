@@ -264,6 +264,8 @@ describe('CLI offline smoke', () => {
       { args: ['app-offline', '--help'], text: 'openyida app-offline' },
       { args: ['sample', '--help'], text: 'Code Templates' },
       { args: ['publish', '--help'], text: 'openyida publish' },
+      { args: ['copy', '--help'], text: 'openyida copy' },
+      { args: ['copy', '-h'], text: 'openyida copy' },
     ];
 
     for (const item of cases) {
@@ -272,6 +274,19 @@ describe('CLI offline smoke', () => {
       expect(result.output).toContain(item.text);
       expect(result.output).not.toContain('读取登录态');
     }
+  });
+
+  test('agent capability auth profile recommendations are accepted by the CLI parser', () => {
+    const profiles = runAny(['auth', 'profiles']);
+    expect(profiles.status).toBe(0);
+    expect(() => JSON.parse(profiles.stdout)).not.toThrow();
+
+    const switchResult = runAny(['auth', 'profile', 'switch', '__missing_profile__', '--json']);
+    expect(switchResult.status).toBe(1);
+    expect(JSON.parse(switchResult.stderr)).toMatchObject({
+      success: false,
+      errorCode: 'AUTH_PROFILE_NOT_FOUND',
+    });
   });
 
   test('CRM Pro command help probes exit successfully without requiring login', () => {
@@ -284,6 +299,8 @@ describe('CLI offline smoke', () => {
       { args: ['report', '--help'], text: 'openyida report inspect' },
       { args: ['create-process', '--help'], text: 'openyida create-process' },
       { args: ['create-report', '--help'], text: 'openyida create-report' },
+      { args: ['append-chart', '--help'], text: 'openyida append-chart' },
+      { args: ['append-chart', '-h'], text: 'openyida append-chart' },
       { args: ['save-share-config', '--help'], text: 'openyida save-share-config' },
       { args: ['verify-short-url', '--help'], text: 'openyida verify-short-url' },
       { args: ['integration-create', '--help'], text: 'openyida integration create' },
@@ -518,8 +535,19 @@ describe('CLI offline smoke', () => {
     ]);
     expect(parsed.summary.core_workflows.full_app_build).toMatchObject({
       mode: 'unified_build',
+      orchestrator_skill_id: 'yida-app',
       default_page_skill_id: 'yida-canvas-custom-page',
       default_ui_guidance_skill_id: 'yida-design',
+      requirement_analysis_skill_id: 'yida-requirement-analysis',
+      requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+      artifact_generation: {
+        mode: 'parallel',
+        tasks: [
+          { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+          { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+        ],
+        join_owner_skill_id: 'yida-app',
+      },
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
@@ -534,7 +562,7 @@ describe('CLI offline smoke', () => {
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      product_design_policy: expect.stringContaining('start in parallel'),
       ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
@@ -681,6 +709,14 @@ describe('CLI offline smoke', () => {
         expect.objectContaining({ name: 'appType', source: 'positional', required: true }),
         expect.objectContaining({ name: 'formTitle', source: 'positional', required: true }),
         expect.objectContaining({ name: 'fieldsJsonFile', source: 'positional', required: true }),
+        expect.objectContaining({
+          name: 'icon',
+          source: 'option',
+          required: false,
+          builder_options: ['--icon'],
+          default: 'auto',
+          value_catalog_command_id: 'create-form.icons',
+        }),
       ],
       canonical: {
         command_id: 'create-form.create',
@@ -704,34 +740,34 @@ describe('CLI offline smoke', () => {
         expect.stringContaining('openyida create-form create APP_XXX'),
       ]),
     });
+    expect(commandById['create-form.icons']).toMatchObject({
+      path: ['create-form', 'icons'],
+      requires_login: false,
+      output: 'json',
+      args: [
+        expect.objectContaining({
+          name: 'json',
+          type: 'boolean',
+          source: 'option',
+          builder_options: ['--json'],
+        }),
+      ],
+      canonical: {
+        command_id: 'create-form.icons',
+        path: ['create-form', 'icons'],
+        argv_template: ['create-form', 'icons', '[--json]'],
+        display: 'openyida create-form icons [--json]',
+      },
+    });
     expect(commandById['generate-page']).toBeUndefined();
     expect(commandById['dws.contact-user-search'].side_effect).toMatchObject({
       kind: 'remote_read',
       mutates_yida: false,
       mutates_local: false,
     });
-    expect(commandById['form-detail-style.check']).toMatchObject({
-      path: ['form-detail-style', 'check'],
-      side_effect: {
-        kind: 'remote_read',
-        mutates_yida: false,
-        mutates_local: false,
-      },
-      permission: {
-        mode: 'allow',
-        effect: 'read',
-      },
-    });
-    expect(commandById['form-detail-style.apply'].side_effect).toMatchObject({
-      kind: 'remote_write',
-      mutates_yida: true,
-      mutates_local: false,
-    });
-    expect(commandById['form-detail-style.remove'].side_effect).toMatchObject({
-      kind: 'remote_write',
-      mutates_yida: true,
-      mutates_local: false,
-    });
+    expect(commandById['form-detail-style.check']).toBeUndefined();
+    expect(commandById['form-detail-style.apply']).toBeUndefined();
+    expect(commandById['form-detail-style.remove']).toBeUndefined();
     expect(commandById['create-form.validate']).toBeUndefined();
     expect(commandById['create-form.validate-fields'].requires_login).toBe(false);
     expect(commandById['create-form.validate-fields'].side_effect).toMatchObject({
@@ -1047,6 +1083,35 @@ describe('CLI offline smoke', () => {
     ]);
   });
 
+  test('commands validate recognizes the manifest-declared create-form icon option', () => {
+    const output = runOk([
+      'commands',
+      'validate',
+      '--json',
+      '--',
+      'create-form',
+      'create',
+      'APP_xxx',
+      '访客登记',
+      '.cache/openyida/visitor/fields.json',
+      '--icon',
+      'name-card',
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toMatchObject({
+      ok: true,
+      command_id: 'create-form.create',
+      params: {
+        appType: 'APP_xxx',
+        formTitle: '访客登记',
+        fieldsJsonFile: '.cache/openyida/visitor/fields.json',
+        icon: 'name-card',
+      },
+      display: 'openyida create-form create APP_xxx "访客登记" .cache/openyida/visitor/fields.json --icon name-card',
+    });
+  });
+
   test('commands build renders canonical create-form argv without executing', () => {
     const manifestEntry = readManifestCommand('create-form.create');
     const output = runOk([
@@ -1073,6 +1138,41 @@ describe('CLI offline smoke', () => {
       canonical: manifestEntry.canonical,
     });
     expect(parsed.argv.slice(0, manifestEntry.path.length)).toEqual(manifestEntry.path);
+  });
+
+  test('commands build recognizes the manifest-declared create-form icon option', () => {
+    const output = runOk([
+      'commands',
+      'build',
+      'create-form.create',
+      '--app-type',
+      'APP_xxx',
+      '--form-title',
+      '访客登记',
+      '--fields-json-file',
+      '.cache/openyida/visitor/fields.json',
+      '--icon',
+      'name-card',
+      '--json',
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toMatchObject({
+      ok: true,
+      command_id: 'create-form.create',
+      argv: [
+        'create-form',
+        'create',
+        'APP_xxx',
+        '访客登记',
+        '.cache/openyida/visitor/fields.json',
+        '--icon',
+        'name-card',
+      ],
+      params: {
+        icon: 'name-card',
+      },
+    });
   });
 
   test('direct create-form hallucinated shape returns clean JSON error before execution', () => {
@@ -1124,6 +1224,19 @@ describe('CLI offline smoke', () => {
       command_manifest_digest_algorithm: 'sha256',
       command_count: manifest.summary.command_count,
       full_capabilities_command: 'openyida agent-capabilities --json',
+      full_app_artifact_route: {
+        orchestrator_skill_id: 'yida-app',
+        requirement_analysis_skill_id: 'yida-requirement-analysis',
+        requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+        artifact_generation: {
+          mode: 'parallel',
+          tasks: [
+            { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+            { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+          ],
+          join_owner_skill_id: 'yida-app',
+        },
+      },
       runtime: {
         tool: null,
         runtime: 'unknown',
@@ -1186,6 +1299,7 @@ describe('CLI offline smoke', () => {
             'get-schema',
             'create-app',
             'create-form.create',
+            'create-form.icons',
             'create-page',
             'publish',
           ]),
@@ -1463,8 +1577,19 @@ describe('CLI offline smoke', () => {
     expect(parsed.commands.read_only_command_ids).toContain('agent-capabilities');
     expect(parsed.commands.core_workflows.full_app_build).toMatchObject({
       mode: 'unified_build',
+      orchestrator_skill_id: 'yida-app',
       default_page_skill_id: 'yida-canvas-custom-page',
       default_ui_guidance_skill_id: 'yida-design',
+      requirement_analysis_skill_id: 'yida-requirement-analysis',
+      requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+      artifact_generation: {
+        mode: 'parallel',
+        tasks: [
+          { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+          { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+        ],
+        join_owner_skill_id: 'yida-app',
+      },
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
@@ -1478,7 +1603,7 @@ describe('CLI offline smoke', () => {
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      product_design_policy: expect.stringContaining('start in parallel'),
       ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
@@ -1500,7 +1625,21 @@ describe('CLI offline smoke', () => {
       mode: 'unified_build',
       completion_contract: expect.stringContaining('create or reuse app'),
     });
-    expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('Markdown table');
+    expect(parsed.recommended.default_full_app_workflow.completion_contract).toContain('one named application entry group');
+    expect(parsed.recommended.default_full_app_workflow.application_entry_policy).toEqual({
+      delivery_unit: 'single_application_entry_group',
+      workbench: { include: 'always', url: '{base_url}/{appType}/workbench' },
+      custom: {
+        include: 'when_entry_mode_standalone_and_is_render_nav_false_readback',
+        url: '{base_url}/{appType}/custom/{formUuid}',
+      },
+      admin: {
+        include: 'follow_agent_capabilities_application_entry_policy',
+        url: '{base_url}/{appType}/admin',
+      },
+      internal_artifacts: 'never_user_visible',
+      business_resources: 'summary_only',
+    });
     expect(parsed.builder_path.bound_context).toMatchObject({
       existing_app_type_policy: 'do_not_call_app_list_by_default',
       skip_app_list_when: expect.arrayContaining([
@@ -1559,11 +1698,19 @@ describe('CLI offline smoke', () => {
       'save-permission',
       'create-app',
       'create-form.create',
+      'create-form.icons',
       'create-page',
       'publish',
     ]));
     const builderCommands = new Map(parsed.builder_path.command_contract.canonical_builder_commands
       .map(entry => [entry.id, entry]));
+    expect(builderCommands.get('create-form.create').args).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'icon', source: 'option', builder_options: ['--icon'] }),
+    ]));
+    expect(builderCommands.get('create-form.icons')).toMatchObject({
+      usage: 'openyida create-form icons [--json]',
+      args: [expect.objectContaining({ name: 'json', source: 'option' })],
+    });
     expect(builderCommands.get('data').examples[0]).toContain('1787932800000');
     expect(builderCommands.get('nav-group').examples).toContain('openyida nav-group move APP_XXX FORM_XXX --to NAV_XXX');
     expect(builderCommands.get('save-permission').examples[0]).toContain('get-permission APP_XXX FORM_XXX');
@@ -1597,7 +1744,8 @@ describe('CLI offline smoke', () => {
     expect(parsed.sideEffects.read_only_preflight).toContain('openyida agent-capabilities --summary-json');
     expect(parsed.sideEffects.read_only_preflight).not.toContain('openyida agent-capabilities --json');
     expect(parsed.sideEffects.completion_contracts.full_app).toContain('creating or reusing the app');
-    expect(parsed.sideEffects.completion_contracts.full_app).toContain('Markdown table');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('one named application entry group');
+    expect(parsed.sideEffects.completion_contracts.full_app).toContain('do not deliver one artifact or link card per resource');
     expect(parsed.sideEffects.full_app_data_contract).toContain('this.dataSourceMap');
     const commandIds = parsed.command_manifest.commands.map(entry => entry.id);
     const commandById = Object.fromEntries(parsed.command_manifest.commands.map(entry => [entry.id, entry]));
@@ -1715,7 +1863,10 @@ describe('CLI offline smoke', () => {
     expect(output).toContain('Code Templates');
     expect(output).toContain('yida-chart');
     expect(output).toContain('yida-canvas-table-form');
+    expect(output).toContain('openyida-scaffold');
     expect(output).toContain('table-form-batch-submit');
+    expect(output).toContain('canvas-form-drawer');
+    expect(output).toContain('form-fields');
     expect(output).not.toContain('yida-custom-page');
     expect(output).not.toContain('yida-canvas-custom-page');
     expect(output).not.toContain('product-homepage');
