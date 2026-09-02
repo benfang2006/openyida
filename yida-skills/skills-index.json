@@ -23,8 +23,8 @@
       "name": "yida-app",
       "path": "skills/yida-app/SKILL.md",
       "display_name": "宜搭完整应用开发",
-      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。先解析资源上下文并消费 yida-design 的 prd.md 与 design.md，再按 PRD 创建或复用应用、表单、流程和页面；表单/流程先于自定义页面；发布后优先按 PRD 导航顺序排序，缺少明确页面清单时自动排序兜底；最终先输出 2-3 句业务交付总结，再给一个主入口链接。",
-      "done_when": "PRD 已写入 prd/<项目名>/prd.md，design.md 已写入 prd/<项目名>/design.md；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；final 先用 2-3 句业务语言总结创建/复用了哪些表单、页面和流程，以及完成了哪些功能，再给主入口链接；不默认输出表格、长列表或资源 ID；没有 publish 证据只能声明源码已修改，尚未发布。",
+      "description": "完整搭建或补齐普通 OpenYida 应用的流程编排技能。先解析资源上下文并生成共享需求简报，再并行调用 yida-prd 与 yida-design 生成 prd.md 和 design.md；由 yida-app join 通过后按 PRD 创建或复用应用、表单、流程和页面；表单/流程先于自定义页面；发布后优先按 PRD 导航顺序排序。",
+      "done_when": "共享需求简报已就绪；yida-prd 与 yida-design 两个 artifact 均结束且 join 通过；PRD 已写入 prd/<项目名>/prd.md，design.md 已写入 prd/<项目名>/design.md；若本轮 Write/Edit 单个页面源码，必须真实执行成功 openyida publish <source> <appType> <displayPageFormUuid> 并返回当前页面 URL；其他完整应用、表单、流程、权限、主题、导航或批量资源场景返回 {base_url}/{appType}/workbench；final 先用 2-3 句业务语言总结创建/复用了哪些表单、页面和流程，再给主入口链接，不默认输出表格、长列表或资源 ID；没有 publish 证据只能声明源码已修改，尚未发布。",
       "category": "yida-skills/app",
       "tags": [
         "宜搭",
@@ -40,16 +40,41 @@
       ]
     },
     {
+      "name": "yida-requirement-analysis",
+      "path": "skills/yida-requirement-analysis/SKILL.md",
+      "display_name": "宜搭需求简报",
+      "description": "完整应用双 artifact 的共享输入 owner。分析用户需求与已确认资源上下文，生成 .cache/openyida/<项目名>/requirement-brief.json；不生成 PRD、视觉设计或页面源码。",
+      "category": "yida-skills/design",
+      "tags": ["需求分析", "共享简报", "完整应用"],
+      "aliases": ["需求简报", "需求分析"],
+      "positive_signals": ["生成需求简报", "完整应用需求分析"],
+      "negative_signals": ["写 PRD", "视觉设计", "页面实现"],
+      "command_ids": [],
+      "done_when": ".cache/openyida/<项目名>/requirement-brief.json 已写入、可解析，且没有会改变资源范围的未决问题。"
+    },
+    {
+      "name": "yida-prd",
+      "path": "skills/yida-prd/SKILL.md",
+      "display_name": "宜搭应用 PRD",
+      "description": "完整应用 Product PRD artifact 的唯一 owner。读取共享需求简报，独立输出 prd/<项目名>/prd.md；负责业务目标、资源蓝图、页面契约、三种顺序与验收，不生成 design.md 或页面源码。",
+      "category": "yida-skills/design",
+      "tags": ["PRD", "产品设计", "资源蓝图", "页面结构"],
+      "aliases": ["应用 PRD", "产品需求文档"],
+      "positive_signals": ["写 PRD", "资源蓝图", "页面结构规划", "导航顺序"],
+      "negative_signals": ["页面美化", "视觉方向", "页面源码"],
+      "command_ids": [],
+      "done_when": "prd/<项目名>/prd.md 已写入，包含资源创建顺序、页面实现交付顺序、导航顺序、页面 handoff 和验收标准。"
+    },
+    {
       "name": "yida-design",
       "path": "skills/yida-design/SKILL.md",
       "display_name": "宜搭应用设计",
-      "description": "当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准，design.md 写主题 token、布局、材质、圆角、密度、组件和状态规则。本技能不写页面源码；页面实现交给 yida-canvas-custom-page。",
+      "description": "完整应用 Visual Design artifact 的唯一 owner，也用于单页 UI 改造、主页面视觉设计、应用主题色或全局换肤。读取共享需求简报，独立输出 prd/<项目名>/design.md；PRD 由 yida-prd 并行生成。本技能不写 PRD 或页面源码。",
       "category": "yida-skills/design",
       "tags": [
         "应用设计",
         "ui_skill",
-        "产品设计",
-        "页面结构",
+        "视觉设计",
         "页面视觉",
         "主题",
         "去 AI 味"
@@ -72,8 +97,6 @@
         "去 AI 味",
         "高级感",
         "品牌化",
-        "页面结构规划",
-        "导航分组",
         "应用主题色",
         "全局换肤"
       ],
@@ -84,7 +107,7 @@
         "数据记录操作"
       ],
       "command_ids": [],
-      "done_when": "输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md；PRD 写清资源创建顺序、页面实现交付顺序、导航顺序和验收标准，design.md 写清所有页面共同遵守的视觉系统；只有走页面生成器或需要稳定交接时才派生 page-spec.json。"
+      "done_when": "输出 prd/<项目名>/design.md，写清所有页面共同遵守的主题 token、视觉 DNA、布局、材质、圆角、密度、组件、状态和响应式规则；不写 prd.md；只有走页面生成器或需要稳定交接时才派生 page-spec.json。"
     },
     {
       "name": "yida-app-permission",
@@ -441,7 +464,7 @@
       "name": "yida-create-app",
       "path": "skills/yida-create-app/SKILL.md",
       "display_name": "创建宜搭应用",
-      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。创建成功后把 appType 交给 yida-design 生成或更新 PRD，再继续表单、流程、页面和发布。",
+      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。若继续完整搭建，将 appType 回填共享需求简报，由 yida-prd 与 yida-design 分别更新 PRD 和视觉 artifact，join 后继续。",
       "category": "yida-skills/app",
       "tags": [
         "创建应用",

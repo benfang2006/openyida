@@ -1,6 +1,6 @@
 # YidaCodeCanvas 组件样式实现指南
 
-本文件是 `YidaCodeCanvas` 组件的样式实现适配指南，不是新的设计系统，也不产出配色、视觉 DNA 或页面风格。设计事实唯一来自 `yida-design` 输出的 `prd.md` 与 `design.md`：PRD 给业务场景和页面边界，`design.md` 给完整主题、token、视觉 DNA、布局、材质、圆角、密度、呼吸感、背景层、组件和状态规则。`YidaCodeCanvas` 组件只负责把这些规则落到 antd token、CSS 变量、Tailwind、图表、控件状态、背景 CSS 和表单 iframe 主题同步。
+本文件是 `YidaCodeCanvas` 组件的样式实现适配指南，不是新的设计系统，也不产出配色、视觉 DNA 或页面风格。业务事实来自 `yida-prd` 输出的 `prd.md`，视觉事实来自 `yida-design` 输出的 `design.md`：PRD 给业务场景和页面边界，`design.md` 给完整主题、token、视觉 DNA、布局、材质、圆角、密度、呼吸感、背景层、组件和状态规则。`YidaCodeCanvas` 组件只负责把这些规则落到 antd token、CSS 变量、Tailwind、图表、控件状态、背景 CSS 和表单 iframe 主题同步。
 
 真实业务页、页面重构和局部美化以当前应用主题色为基准；缺少主题证据时先按业务气质选择平台预置主题或自定义色盘，不固定回到 `podBlue` / #1677ff。独立品牌/活动页、页面级沉浸页、应用导航隐藏后的自绘壳和用户明确要求完全不同风格的页面使用页面级固定主题和差异化色盘。
 

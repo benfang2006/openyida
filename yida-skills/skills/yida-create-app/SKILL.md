@@ -28,14 +28,14 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 ## 严格要求 (MUST DO)
 
 - 创建成功后，将 appType 记录到 `.cache/<项目名>-schema.json`
-- 创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；后续表单、流程、页面和发布都按 PRD 执行业务，按 design.md 执行视觉。
+- 创建成功后，若继续完整搭建，把真实 `appType` 回填 `.cache/openyida/<项目名>/requirement-brief.json`；再由 `yida-prd` 与 `yida-design` 分别更新 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`，由 `yida-app` join 后继续。
 - 创建前确认当前登录的组织（corpId）与目标组织一致
 - **本技能不读写 memory**：appType 等信息输出到 stdout，通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景
 
 用户说"只创建应用壳"、"新建应用并返回 appType"，且 resource context 没有目标 app 时使用此技能。
-创建应用后，先用 `yida-design` 产出或更新 PRD，再继续执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
+创建应用后，若任务只是创建应用壳则返回真实 `appType` 即可；若继续完整搭建，先更新共享需求简报，并行完成 PRD 与视觉 artifact 并 join，再执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
 后续如果需要自定义页面，源码写到 `project/pages/src/<页面名>.canvas.jsx` 并发布。
 
 ---

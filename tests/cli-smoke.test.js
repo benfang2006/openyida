@@ -535,8 +535,19 @@ describe('CLI offline smoke', () => {
     ]);
     expect(parsed.summary.core_workflows.full_app_build).toMatchObject({
       mode: 'unified_build',
+      orchestrator_skill_id: 'yida-app',
       default_page_skill_id: 'yida-canvas-custom-page',
       default_ui_guidance_skill_id: 'yida-design',
+      requirement_analysis_skill_id: 'yida-requirement-analysis',
+      requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+      artifact_generation: {
+        mode: 'parallel',
+        tasks: [
+          { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+          { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+        ],
+        join_owner_skill_id: 'yida-app',
+      },
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'agent-capabilities',
@@ -551,7 +562,7 @@ describe('CLI offline smoke', () => {
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      product_design_policy: expect.stringContaining('start in parallel'),
       ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),
@@ -1141,6 +1152,19 @@ describe('CLI offline smoke', () => {
       command_manifest_digest_algorithm: 'sha256',
       command_count: manifest.summary.command_count,
       full_capabilities_command: 'openyida agent-capabilities --json',
+      full_app_artifact_route: {
+        orchestrator_skill_id: 'yida-app',
+        requirement_analysis_skill_id: 'yida-requirement-analysis',
+        requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+        artifact_generation: {
+          mode: 'parallel',
+          tasks: [
+            { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+            { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+          ],
+          join_owner_skill_id: 'yida-app',
+        },
+      },
       runtime: {
         tool: null,
         runtime: 'unknown',
@@ -1480,8 +1504,19 @@ describe('CLI offline smoke', () => {
     expect(parsed.commands.read_only_command_ids).toContain('agent-capabilities');
     expect(parsed.commands.core_workflows.full_app_build).toMatchObject({
       mode: 'unified_build',
+      orchestrator_skill_id: 'yida-app',
       default_page_skill_id: 'yida-canvas-custom-page',
       default_ui_guidance_skill_id: 'yida-design',
+      requirement_analysis_skill_id: 'yida-requirement-analysis',
+      requirement_brief_path: '.cache/openyida/<project>/requirement-brief.json',
+      artifact_generation: {
+        mode: 'parallel',
+        tasks: [
+          { skill_id: 'yida-prd', output_path: 'prd/<project>/prd.md' },
+          { skill_id: 'yida-design', output_path: 'prd/<project>/design.md' },
+        ],
+        join_owner_skill_id: 'yida-app',
+      },
       ordinary_jsx_skill_id: 'yida-custom-page',
       required_command_ids: expect.arrayContaining([
         'create-app',
@@ -1495,7 +1530,7 @@ describe('CLI offline smoke', () => {
         'yida-data-source-connectors',
         'yida-data-management',
       ]),
-      product_design_policy: expect.stringContaining('resource creation order, page implementation delivery order, navigation order'),
+      product_design_policy: expect.stringContaining('start in parallel'),
       ui_guidance_policy: expect.stringContaining('only design sources of truth'),
       default_nav_order_policy: expect.stringContaining('openyida nav-group order <appType> <items...>'),
       completion_contract: expect.stringContaining('PRD navigation order or lightweight fallback navigation order'),

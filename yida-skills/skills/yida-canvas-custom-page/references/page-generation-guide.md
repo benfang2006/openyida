@@ -1,10 +1,10 @@
 # 自定义页面实现入口
 
-使用 `YidaCodeCanvas` 组件实现的自定义页面消费 `yida-design` 输出的 `prd.md` 与 `design.md`，或单页 PRD 章节 + design spec，把页面场景、区块、主题、交互、数据绑定和素材清单实现成 `.canvas.jsx` / `.canvas.tsx`。
+使用 `YidaCodeCanvas` 组件实现的自定义页面消费 `yida-prd` 输出的 `prd.md` 与 `yida-design` 输出的 `design.md`，或单页 PRD 章节 + design spec，把页面场景、区块、主题、交互、数据绑定和素材清单实现成 `.canvas.jsx` / `.canvas.tsx`。
 
 ## 页面场景到实现入口
 
-用户描述页面目标后，先读取 `yida-design` 的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节和对应 design spec。PRD 用来确认页面场景、区块、数据来源、主操作和移动端要求；design.md 用来确认主题色、页面风格、视觉 DNA、布局配方、材质、圆角、密度、呼吸感、组件和状态规则。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
+用户描述页面目标后，先读取 `yida-prd` 的 `prd/<项目名>/prd.md` 和 `yida-design` 的 `prd/<项目名>/design.md`，或单页 PRD 章节和对应 design spec。PRD 用来确认页面场景、区块、数据来源、主操作和移动端要求；design.md 用来确认主题色、页面风格、视觉 DNA、布局配方、材质、圆角、密度、呼吸感、组件和状态规则。实现时按下表选择页面结构；页面结构、数据桥和样式细节已经明确时，直接手写 `.canvas.jsx`。
 
 结构化实现工具提供可编译运行时结构、数据桥、主题变量和基础 primitives。真实业务页结合 `prd.md` 落地业务化区块顺序、数据和文案，结合 `design.md` 落地信息层级、局部构图和样式节奏。
 

@@ -2,13 +2,13 @@
 name: yida-design
 description: >
   当用户要做完整应用产品设计、单页 UI 改造、主页面视觉设计、应用主题色或全局换肤时使用。
-  本技能基于需求分析和资源上下文，输出 prd/<项目名>/prd.md 与 prd/<项目名>/design.md。
-  prd.md 写业务目标、数据结构、页面功能、资源顺序、导航顺序和验收标准；design.md 写主题 token、布局、材质、圆角、密度、呼吸感、组件和状态规则。
+  完整应用场景读取共享需求简报，独立输出 prd/<项目名>/design.md；PRD 由 yida-prd 并行生成。
+  design.md 写主题 token、布局、材质、圆角、密度、呼吸感、组件和状态规则。
 ---
 
 # yida-design
 
-宜搭应用和页面设计技能。它输出 `prd.md` 和 `design.md`，不写页面源码。
+宜搭应用和页面视觉设计技能。它是 Visual Design artifact 的唯一 owner，只输出 `design.md`，不写 PRD 或页面源码。
 
 ---
 
@@ -18,38 +18,37 @@ description: >
 
 | 用户诉求 | 判定为 | 唯一动作 |
 | --- | --- | --- |
-| 完整应用、多个角色、多页面、导航分组、首页/入口页、官网 + 看板 + 后台 | 完整应用设计 | 读 Step 1-6，输出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md` |
-| 单个自定义页要求好看、高级、品牌化、去 AI 味、页面太丑、不够惊艳 | 单页设计 | 读 [page-design](sub_skill/page-design/SKILL.md)，先确认当前应用主题，再复用 Step 1-6 |
-| 应用主题色、品牌色、全局换肤、`--color-brand1-*`、`style#yida-global-theme`、`customThemeStyle.tokens` | 主题色和 token 设计 | 读 Step 2、6，PRD 输出主题摘要，`design.md` 输出 themeProfile 和 token 契约 |
-| 页面 / 主页面 / 首页 / 工作台 UI 设计 | 完整主页面设计 | 读 Step 1-6，输出 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md` |
+| 完整应用、多个角色、多页面、导航分组、首页/入口页、官网 + 看板 + 后台 | 完整应用视觉设计 | 读取共享需求简报，输出 `prd/<项目名>/design.md`；与 `yida-prd` 并行 |
+| 单个自定义页要求好看、高级、品牌化、去 AI 味、页面太丑、不够惊艳 | 单页设计 | 读 [page-design](sub_skill/page-design/SKILL.md)，确认当前页面和应用主题后输出设计补充 |
+| 应用主题色、品牌色、全局换肤、`--color-brand1-*`、`style#yida-global-theme`、`customThemeStyle.tokens` | 主题色和 token 设计 | 读 Step 2、6，输出 themeProfile 和 token 契约 |
+| 页面 / 主页面 / 首页 / 工作台 UI 设计 | 页面视觉设计 | 读取当前页面上下文，输出或更新 `design.md` |
 
 ---
 
 ## 标准流程
 
-按以下 6 步完成宜搭产品设计，最终产出两份并列文件：`prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`。页面实现阶段必须同时读取两份文件；只有走页面生成器或需要稳定交接时，才从两份文件派生 `page-spec.json`。
+完整应用按以下步骤生成视觉 artifact。页面实现阶段仍必须同时读取并行生成的 `prd.md` 和本技能生成的 `design.md`。
 
 | 步骤 | 名称 | 功能描述 | 产出物 |
 | --- | --- | --- | --- |
-| 1 | [分析需求和资源](workflow/step-1-positioning.md) | 明确应用类型、用户角色、核心任务、业务对象、页面/表单/流程资源和设计范围 | 设计目标 + 角色任务 + 资源蓝图 |
+| 1 | [读取共享需求简报](workflow/step-1-read-brief.md) | 读取业务对象、页面场景、明确范围、品牌和色彩偏好 | 视觉输入摘要 |
 | 2 | [选择主题色和 token](workflow/step-2-theme-system.md) | 确定主色、辅助色、中性色、字体层级、组件基调和宜搭 token 作用域 | `themeProfile` |
-| 3 | [规划页面和导航](workflow/step-3-information-architecture.md) | 规划首页/入口页、平台导航、页面清单、页面场景和表单/流程关系 | `appBlueprint` / 页面结构 |
-| 4 | [页面结构和交互设计](workflow/step-4-wireframe-interaction.md) | 确定布局骨架、内容区块、主操作、联动、交互、PC/移动端差异 | 低保真结构 + 交互路径 |
-| 5 | [UI 视觉和状态设计](workflow/step-5-visual-states.md) | 从业务任务、信息拓扑和视觉 DNA 选择设计风格，换主题色后生成应用级 `design.md` | `design.md` 内容草稿 |
-| 6 | [写入 prd.md 和 design.md](workflow/step-6-handoff.md) | 汇总业务 PRD 与 `design.md` 视觉规则，分别写入 `prd.md` 和 `design.md` | `prd/<项目名>/prd.md` + `prd/<项目名>/design.md` |
+| 3 | [页面结构和交互设计](workflow/step-4-wireframe-interaction.md) | 根据简报中的页面场景确定布局骨架、区块、主操作、状态和响应式规则 | 低保真结构 + 交互路径 |
+| 4 | [UI 视觉和状态设计](workflow/step-5-visual-states.md) | 从业务任务、信息拓扑和视觉 DNA 选择设计风格 | `design.md` 内容草稿 |
+| 5 | [写入 design.md](workflow/step-6-handoff.md) | 写入唯一视觉事实源和稳定 `designRefs` | `prd/<项目名>/design.md` |
 
-> 进入标准流程后，从 Step 1 开始按顺序执行；每步开始前先读取对应步骤文件，每步形成产物后再进入下一步。Step 6 输出前核对 Step 1-5 的产物齐全，确保不跳步、不停在中间步骤。
+> 完整应用必须等共享需求简报 ready 后才 start。本技能 end 只代表 `design.md` 完整；它不代表并行 PRD 已完成。
 
-> 本技能输出 `prd.md` 和 `design.md`，不写 JSX/TSX。`prd.md` 记录业务、资源、页面、数据和验收；`design.md` 记录所有页面必须遵守的视觉系统。
+> 本技能不读取本轮并行生成中的 `prd.md`，避免形成串行依赖或并发覆盖。两个 artifact 的引用一致性由 `yida-app` join 校验。
 
 ---
 
 ## 核心规则
 
 1. **平台能力优先**：数据录入、提交、编辑、审批、权限、字段校验走宜搭表单/流程；自定义页负责展示数据、呈现分析结果、放置业务入口、打开详情页，并串联表单、流程、报表和导航入口。
-2. **需求分析归本技能**：完整应用设计先写清应用基本信息、用户角色、核心任务、业务对象、数据结构、页面与表单/流程资源、业务逻辑、交互状态和验收标准。
-3. **应用资源蓝图先行**：资源蓝图列出必要的 display 页面、表单、流程和报表。普通表单的数据管理页默认作为列表；用户明确要求时才规划自定义列表页。表单写业务语义、类型、必填、默认值、关系和分组；运行 ID 由实现阶段记录。
-4. **顺序分开写清**：PRD 同时写资源创建顺序、页面实现交付顺序和导航顺序。资源创建顺序服务依赖关系，表单/流程在自定义页面之前；页面实现交付顺序服务开发验收；导航顺序服务用户入口展示。
+2. **共享需求简报是视觉输入**：完整应用的用户、目标、对象、页面场景、显式范围、品牌和色彩偏好只从 `requirement-brief.json` 读取。
+3. **业务蓝图归 PRD owner**：表单、流程、报表、页面清单、字段语义和三种顺序由 `yida-prd` 生成；本技能只消费页面场景并设计视觉规则。
+4. **并行产物互不覆盖**：本技能不写 `prd.md`，不等待本轮 PRD，也不把视觉推断写成新的业务范围。
 5. **美感提升保持功能契约**：页面美化、视觉升级和页面重构默认只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；现有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态保持原样。
 6. **默认保留平台应用导航**：普通自定义页、页面内 tab、分段、筛选和快捷入口都不触发 `yida-nav-shell`。只有自定义页要做顶部导航、侧边导航、导航壳、自绘应用级导航，或用户明确隐藏应用导航时，才写 `appBlueprint.hideAppNav: 'y'` 并交给 `yida-nav-shell`。用户只说全屏、无导航或 `isRenderNav=false` 时，只写页面级隐藏配置。
 7. **同应用页面入口归导航**：同应用页面优先放入平台导航或导航分组；自定义页内容区放当前页动作、原生表单新建/查看、外部链接和跨应用资源。
@@ -63,10 +62,10 @@ description: >
 15. **背景与卡片必须有层次对比**：默认业务页背景保持浅色调、清爽但不能与卡片相近或相同。`design.md` 必须写清 `surfaceContrast`：白色/浅色背景配有边框卡片；浅灰背景（如 `#F3F4F6`）配白色无边框卡片；浅彩色背景（如浅蓝、浅暖灰）配白色无边框卡片；渐变背景配玻璃感卡片。禁止浅底白卡无边框、同色背景同色卡片或只有阴影没有色差/边框的层次。
 16. **设计风格先选后定制**：Step 5 必须先从业务任务、信息拓扑和必需视觉 DNA 推演并选择唯一设计风格，再根据 Step 2 主题色换肤。主题色只换 token 和强调色，不改变风格 DNA、布局机制和组件机制；不得按行业或颜色直接套风格。
 17. **应用主题先统领页面主色**：平台导航可见时，页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`；普通表单、流程表单、提交页、formDetail 详情页和自定义页面必须消费同一套主题 token。`design.md` 的色相只转成辅助色、浅背景、图表第二序列和装饰气质。页面级独立主色只用于页面级沉浸页、应用导航隐藏后的自绘壳、独立品牌/活动页或用户明确要求完全不同风格；独立主色必须通过 `style#yida-global-theme` 或 scoped CSS vars 注入。
-18. **design.md 是全局设计契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、普通表单、流程表单、表单入口、formDetail 详情、列表、看板和工作台都必须遵守它；PRD 不再复制或二次抽象 `design.md`，只引用 `design.md` 的章节和规则。
-19. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件形态、空态规则和响应式规则写入 `design.md`；PRD 只写业务目标、资源关系、区块目的、数据来源、主操作、应用主题色/风格摘要和 `designRefs`，摘要必须与 `design.md` 一致。
-20. **实现交接必须结构化但保持薄**：每个 display 页面在 PRD 中输出 `pageSpecHandoff`，只写 `pageStructure`、`scene`、`contentBlocks`、`themeSummary`、`designFile=prd/<项目名>/design.md`、`designRefs`、数据来源和主操作；实现阶段必须读取 `prd.md` 与 `design.md` 后才能写页面。
-21. **设计事实源唯一**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。页面 `scene` 只作为分类标签，不对应参考文件、固定样式文件或实现阶段读取入口。
+18. **design.md 是唯一视觉契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、普通表单、流程表单、表单入口、formDetail 详情、列表、看板和工作台都必须遵守它。
+19. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件形态、空态规则和响应式规则写入 `design.md`。
+20. **稳定引用供 join 使用**：每个页面场景输出稳定 `sceneRecipes` / `designRefs`；`yida-app` 在两个 artifact end 后核对 PRD 的引用，不一致时回到对应 owner 修正。
+21. **业务与视觉双事实源分工**：`prd.md` 写业务目标、资源、页面、数据来源、主操作和 `pageSpecHandoff`；`design.md` 写主题、布局、视觉脚手架、组件、图标、背景和状态规则。
 22. **参考转成可执行选择**：参考 Dribbble / 优秀案例时，落到主色、背景素材、首屏构图、信息密度、动线、区块数量和反默认点。
 23. **页面文案和图标使用专业表达**：渲染文案使用纯文本；图标只使用 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认选择 `lucide-react`，并在 `design.md` 的 `iconSystem` 中写清业务动作、状态、导航和空态到图标组件的映射。emoji 不能改成 CSS 形状、字母占位、Unicode 符号或临时 SVG；如果需要图标，必须映射到上述两类库的具体组件。
 24. **实现交接明确**：设计产物只定义页面结构、视觉系统和验收标准；常规业务图表使用 `yida-rechart`；ECharts 例外只用于用户明确要求复杂 ECharts option 或维护旧图表。
@@ -77,14 +76,12 @@ description: >
 
 | 文档 | 覆盖范围 | 何时阅读 |
 | --- | --- | --- |
-| [Step 1：分析需求和资源](workflow/step-1-positioning.md) | 应用类型、用户角色、核心任务、业务对象、资源蓝图 | 必读 |
+| [Step 1：读取共享需求简报](workflow/step-1-read-brief.md) | 业务对象、页面场景、明确范围、品牌和色彩偏好 | 完整应用必读 |
 | [Step 2：选择主题色和 token](workflow/step-2-theme-system.md) | 主题 token、色彩、字体、组件基调 | 涉及主题或视觉 |
-| [Step 3：规划页面和导航](workflow/step-3-information-architecture.md) | 首页/入口页、导航、页面清单、页面场景 | 应用级或单页设计 |
 | [Step 4：页面结构和交互设计](workflow/step-4-wireframe-interaction.md) | 布局骨架、内容区块、主操作、抽屉、响应式 | 页面设计 |
 | [Step 5：UI 视觉和状态设计](workflow/step-5-visual-states.md) | 设计风格选择、视觉 DNA、主题换肤、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
-| [Step 6：写入 prd.md 和 design.md](workflow/step-6-handoff.md) | `prd.md` + `design.md` 必填内容、三种顺序、实现交接 | 输出前 |
+| [Step 6：写入 design.md](workflow/step-6-handoff.md) | `design.md` 必填内容、稳定引用和完成条件 | 输出前 |
 | [page-design 单页设计](sub_skill/page-design/SKILL.md) | 单页主题证据、页面级设计流程、输出补充字段 | 单个自定义页设计 |
-| [PRD 输出格式](workflow/output-prd.md) | `prd.md` 字段示例 | Step 6 输出前 |
 | [design.md 输出格式](workflow/output-design.md) | `design.md` 字段示例 | Step 6 输出前 |
 | [design.md 生成规则](references/style-design-selection.md) | 从业务推演视觉 DNA，选择设计风格并按主题色换肤，生成应用级 `design.md` | Step 5 |
 | [视觉脚手架配方库](references/visual-scaffold-recipes.md) | 将高质量页面结构转成 `visualScaffold` 槽位，约束页面实现落地 | Step 5 |
