@@ -599,6 +599,32 @@ describe('run() create form', () => {
     mockError.mockRestore();
   });
 
+  test('--resolve-aliases 遇到显示标签或未知字段时在写入前阻断', async () => {
+    utils.requestWithAutoLogin.mockImplementation((fn, session) => fn(session));
+    utils.httpGet.mockResolvedValueOnce(buildAliasSchema());
+
+    const error = await expectCliError(run([
+      'create',
+      'form',
+      'APP_XXX',
+      'FORM-XXX',
+      '--data-json',
+      '{"E2E Text":"value"}',
+      '--resolve-aliases',
+      ...FORM_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_FIELD_REFERENCE_UNKNOWN');
+    expect(error.details).toMatchObject({
+      fieldRef: 'E2E Text',
+      retryable: false,
+      retrySafe: true,
+      sideEffectState: 'none',
+      nextStep: 'openyida get-schema APP_XXX FORM-XXX --field-map-json',
+    });
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
   test('create form 命中流程表时在写入前阻断', async () => {
     formModeService.readFormMode.mockResolvedValue({ mode: 'process', processCode: 'PROC-XXX' });
     const error = await expectCliError(run([

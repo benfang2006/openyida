@@ -1907,6 +1907,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'نتيجة حذف سجل النموذج {0} غير معروفة. نفّذ فحصًا للقراءة فقط ولا تُعد الحذف تلقائيًا.',
   delete_target_mismatch: 'سجل النموذج {0} لا ينتمي إلى النموذج الهدف {1}. توقف التنفيذ قبل الحذف.',
   delete_target_unverified: 'تعذر التحقق من هوية سجل النموذج {0} وملكيته. توقف التنفيذ قبل الحذف.',
+  field_reference_unknown: 'مرجع الحقل {0} ليس fieldId حقيقيًا أو اسمًا مستعارًا للمكوّن في النموذج الهدف. توقف التنفيذ قبل الكتابة.',
   form_mode_unverified: 'تعذر التحقق من نوع النموذج {0}. تم إيقاف الإنشاء قبل كتابة أي بيانات.',
   resource_required: 'يفتقد data query إلى نوع المورد form. الأمر المقترح: {0}',
 });

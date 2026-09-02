@@ -1909,6 +1909,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'Se desconoce el resultado de la eliminación del registro {0}. Realiza solo una consulta de lectura y no repitas automáticamente la eliminación.',
   delete_target_mismatch: 'El registro de formulario {0} no pertenece al formulario de destino {1}. La operación se detuvo antes de eliminar.',
   delete_target_unverified: 'No se pudo verificar la identidad y pertenencia del registro de formulario {0}. La operación se detuvo antes de eliminar.',
+  field_reference_unknown: 'La referencia de campo {0} no es un fieldId real ni un alias de componente del formulario de destino. La operación se detuvo antes de escribir.',
   form_mode_unverified: 'No se pudo verificar el tipo del formulario {0}. La creación se detuvo antes de escribir datos.',
   resource_required: 'Falta el tipo de recurso form en data query. Comando sugerido: {0}',
 });

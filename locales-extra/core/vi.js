@@ -1907,6 +1907,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'Không xác định được kết quả xóa bản ghi {0}. Chỉ kiểm tra bằng thao tác đọc và không tự động thử xóa lại.',
   delete_target_mismatch: 'Bản ghi biểu mẫu {0} không thuộc biểu mẫu đích {1}. Thao tác đã dừng trước khi xóa.',
   delete_target_unverified: 'Không thể xác minh danh tính và biểu mẫu sở hữu của bản ghi {0}. Thao tác đã dừng trước khi xóa.',
+  field_reference_unknown: 'Tham chiếu trường {0} không phải fieldId thực hoặc bí danh thành phần trong biểu mẫu đích. Thao tác đã dừng trước khi ghi.',
   form_mode_unverified: 'Không thể xác minh loại của biểu mẫu {0}. Việc tạo đã dừng trước khi ghi dữ liệu.',
   resource_required: 'data query thiếu loại tài nguyên form. Lệnh đề xuất: {0}',
 });
