@@ -1,6 +1,6 @@
 ---
 name: yida-create-form-page
-description: 表单页面创建与更新，默认加载 yida-form-detail 作为表单视觉引导，并合并 Divider 分割线语义分组；新版主题由运行容器在表单与 formDetail 中加载同一应用级主题 CSS；支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。
+description: 表单页面创建与更新，默认加载 yida-form-detail 作为表单视觉引导，并合并 Divider 分割线语义分组；应用主题由运行容器在表单与 formDetail 中加载同一应用级主题 CSS；支持 19 种业务字段和 Divider、ColumnContainer 等表单展示布局组件，PageSection/GroupContainer 仅少量特殊场景使用；支持联动规则和数据源绑定。
 ---
 
 # 表单页面创建与更新
@@ -76,7 +76,7 @@ description: 表单页面创建与更新，默认加载 yida-form-detail 作为�
 - 全局 `--layout double`：只有用户明确要求“整个表单双列”时才使用；一般更推荐在字段 JSON 内用 `ColumnContainer` 做局部多列。
 - 语义分组：按业务含义分段，不按字段数量平均分。常见分组包括“基本信息”“业务信息”“时间计划”“补充材料”“审批信息”。
 - Divider 样式：默认 `bold-with-thin`；显式样式按 `bold-with-thin` → `double-color-trapezoid` → `left-dot-title` → `solid` / `dashed` / `thick` / `dotted` 优先级选择；门户/强分区场景可统一显式使用 `multi-parallelograms-end`。
-- 新版主题与 formDetail 样式来自应用级自定义主题 CSS，字段 JSON 和表单 Schema JS 只承载表单结构与业务动作。
+- 应用主题与 formDetail 样式来自应用级自定义主题 CSS，字段 JSON 和表单 Schema JS 只承载表单结构与业务动作。
 
 推荐结构：
 

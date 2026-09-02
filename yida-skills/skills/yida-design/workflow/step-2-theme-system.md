@@ -18,14 +18,14 @@
 | 4 | `template-default` | 没有任何主题证据且无法稳定推导业务色彩 | 临时使用 UI 视觉设计阶段所选 style-design 的默认 brand token，并明确标记为兜底 |
 
 1. 先判断业务气质：行业、目标用户、品牌关键词、业务情绪、视觉目标，以及是否需要亲和/专业/活力/稳重/科技/自然感。
-2. 基于 `../references/theme/app-custom-theme-template.css` 生成完整 CSS。新版主题必须完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，同时保留 `--color-brand-1` ~ `--color-brand-4` 和 `--color-group`；不要补造 `--color-brand1-4/7/8`，也不能只声明页面当前直接使用的几个 token。`--color-brand1-6` 必须是字面量颜色，CLI 会校验实际色阶并自动将它保存为 `themeColor`。
+2. 基于 `../references/theme/app-custom-theme-template.css` 生成完整 CSS。应用主题必须完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，同时保留 `--color-brand-1` ~ `--color-brand-4` 和 `--color-group`；不要补造 `--color-brand1-4/7/8`，也不能只声明页面当前直接使用的几个 token。`--color-brand1-6` 必须是字面量颜色，CLI 会校验实际色阶并自动将它保存为 `themeColor`。
 3. 新建应用通过 `create-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存；已有应用使用相同的 `update-app` 参数。运行容器在自定义页面、表单、提交页、formDetail 和表单 iframe 中加载该主题文件。
 5. `podBlue`、`podGreen`、`podOrange` 只是常用浅底候选，不是固定默认。不要因为没有特别说明就自动回到 #1677ff，也不要套用“科技=蓝、宠物=橙、法律=蓝”这类行业刻板配色。
 6. 主题色只作为后续所选设计风格的换肤输入；除用户明确要求深色/夜间/高对比外，不用主题色反向决定风格。
 
 ## 品牌 token 语义
 
-`design.md` 必须写清 `--color-brand1-*` 与 `--color-brand-*` 的语义。`--color-brand1-1/2/3/5/6/9/10` 是新版主题实际生成且必须具备的品牌色阶，由应用自定义主题文件统一提供；`4/7/8` 不在平台契约内，不得由 AI 猜测补齐。`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶，`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，不能删掉、改名或替换为别的变量。
+`design.md` 必须写清 `--color-brand1-*` 与 `--color-brand-*` 的语义。`--color-brand1-1/2/3/5/6/9/10` 是平台主题契约要求的品牌色阶，由应用自定义主题文件统一提供；`4/7/8` 不在平台契约内，不得由 AI 猜测补齐。`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶，`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，不能删掉、改名或替换为别的变量。
 
 | token | 语义 | 典型用途 |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ AI 默认直接使用模板内 coffee 咖啡色色阶和大圆角层级。若 `d
 - 明暗模式：默认 `light`；`design.md` 的 `themeProfile.navTheme` 保持 `light`。
 - `design.md` 的 `themeProfile.colorMode` 是宜搭配色模式，例如 `gradient`，不表示暗黑模式。
 
-新版应用不传 `--theme`。生成应用主题 CSS 后，新建执行 `openyida create-app --name "<应用名>" --theme-file <file.css> --nav-theme light --logo-source appIcon --layout l_shape`，未显式传 `--layout` 时 CLI 也默认使用 L 型导航；已有应用执行 `openyida update-app <appType> --theme-file <file.css> --nav-theme light --logo-source appIcon --layout side`。两条链路都会把系统应用图标同步为 `iconName%%--color-brand1-6 对应 HEX`，外链或上传图片图标保持原值。
+生成应用主题 CSS 后，新建应用执行 `openyida create-app --name "<应用名>" --theme-file <file.css> --nav-theme light --logo-source appIcon --layout l_shape`，不要传 `--theme`；未显式传 `--layout` 时 CLI 默认使用 L 型导航。更新已有应用执行 `openyida update-app <appType> --theme-file <file.css> --nav-theme light --logo-source appIcon --layout side`。两条链路都会把系统应用图标同步为 `iconName%%--color-brand1-6 对应 HEX`，外链或上传图片图标保持原值。
 
 ## 写字体层级
 

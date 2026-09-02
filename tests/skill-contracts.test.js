@@ -821,11 +821,11 @@ describe('OpenYida skill contracts', () => {
     const manifest = readSkill('lib/core/command-manifest.js');
 
     expect(root).toContain('默认完成即停止');
-    expect(appStep4).toContain('use_skill("yida-form-detail", "表单视觉引导与新版应用主题消费")');
+    expect(appStep4).toContain('use_skill("yida-form-detail", "表单视觉引导与应用主题消费")');
     expect(appStep4).toContain('字段结构有 Divider 分组');
-    expect(appStep4).toContain('新版应用主题文件已配置');
+    expect(appStep4).toContain('应用主题文件已配置');
     expect(appStep4).toContain('表单、提交页和 formDetail 已加载 Step 3 保存的应用主题文件');
-    expect(createForm).toContain('新版主题由运行容器在表单与 formDetail 中加载同一应用级主题 CSS');
+    expect(createForm).toContain('应用主题由运行容器在表单与 formDetail 中加载同一应用级主题 CSS');
     expect(createForm).toContain('视觉引导必须和 `Divider` 分割线语义分组合并执行');
     expect(createForm).toContain('字段 JSON 和表单 Schema JS 只承载表单结构与业务动作');
     expect(formDetail).toContain('### 【表单视觉引导】');
@@ -1176,10 +1176,10 @@ describe('OpenYida skill contracts', () => {
     expect(presets).toContain('## 应用主题 key 清单');
     expect(presets).toContain('## 应用主题 token profile');
     expect(presets).toContain('`blue`、`green`、`orange` 也是应用主题 token profile，保留原名，不自动改写成其他主题名');
-    expect(presets).toContain('下方预置只作为 AI 设计色阶时的参考，不再限制新版应用主题');
+    expect(presets).toContain('下方预置只作为 AI 设计色阶时的参考');
     expect(presets).toContain('其他 skill 需要应用主题 key、平台候选主题或 token 变量时，引用本文');
-    expect(appStep2).toContain('新版应用不再由设计产物选择或传递平台 `--theme` key');
-    expect(createApp).toContain('默认推荐传主题文件');
+    expect(appStep2).toContain('不选择或传递平台 `--theme` key');
+    expect(createApp).toContain('默认传入主题文件');
     expect(createApp).toContain('省略 `--theme-file` 不报错');
     expect(createApp).toContain('显式 `--icon` → 行业推断 → 随机系统图标');
     expect(createApp).toContain('只有未显式指定且未命中行业时才随机');
@@ -1205,7 +1205,7 @@ describe('OpenYida skill contracts', () => {
     expect(canvasStyleGuide).toContain('读不到、空串或读取异常时返回传入的 `defaultColor`');
     expect(canvasStyleGuide).toContain('`defaultColor` 必须来自当前项目 `design.md` 的 tokens 或当前应用主题 token profile');
     expect(step2).toContain('`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶');
-    expect(step2).toContain('是新版主题实际生成且必须具备的品牌色阶，由应用自定义主题文件统一提供');
+    expect(step2).toContain('是平台主题契约要求的品牌色阶，由应用自定义主题文件统一提供');
     expect(step2).toContain('`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶');
     expect(step2).toContain('| `--color-brand1-1` | 明亮品牌浅色或浅 hover 色 |');
     expect(step2).toContain('| `--color-brand1-5` | 主色 hover 档 |');
@@ -1444,7 +1444,7 @@ describe('OpenYida skill contracts', () => {
     expect(navGuide).not.toContain('installYidaGlobalThemeIntoFrame');
     expect(navGuide).not.toContain('themeTokens');
     expect(navGuide).not.toContain('onLoad={syncThemeToIframe}');
-    expect(navGuide).toContain('新版主题运行容器在自定义页面、提交页和详情页 iframe 中分别加载同一应用级自定义主题 CSS');
+    expect(navGuide).toContain('主题运行容器在自定义页面、提交页和详情页 iframe 中分别加载同一应用级自定义主题 CSS');
     expect(navGuide).toContain("const FORM_OPEN_DRAWER_WIDTH = '50vw';");
     expect(navGuide).toContain('width={FORM_OPEN_DRAWER_WIDTH}');
     expect(navGuide).toContain('return `/${appType}/submission/${entry.formUuid}?isRenderNav=false`;');
@@ -1470,7 +1470,7 @@ describe('OpenYida skill contracts', () => {
     expect(codingGuide).toContain('FormOpenContainer');
     expect(codingGuide).toContain('formOpenRequest');
     expect(codingGuide).not.toContain('installYidaGlobalThemeIntoFrame');
-    expect(codingGuide).toContain('iframe 由新版主题运行时加载与应用一致的自定义主题 CSS');
+    expect(codingGuide).toContain('iframe 由主题运行时加载与应用一致的自定义主题 CSS');
     expect(codingGuide).toContain("'/submission/' + formUuid + '?isRenderNav=false'");
     expect(codingGuide).toContain("'/formDetail/' + formUuid");
     expect(codingGuide).toContain('&isRenderNav=false');
