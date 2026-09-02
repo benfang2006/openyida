@@ -851,6 +851,64 @@ describe('run() create process', () => {
     expect(error.details.sideEffectState).toBe('none');
     expect(utils.httpPost).not.toHaveBeenCalled();
   });
+
+  test('关联表单值不完整时在启动流程前 fail closed', async () => {
+    formNavigation.fetchFormPageList.mockResolvedValue([{
+      formUuid: 'FORM-XXX', formName: '目标流程', formType: 'process',
+    }]);
+    formModeService.readFormMode.mockResolvedValue({ mode: 'process', processCode: 'PROC-XXX' });
+
+    const error = await expectCliError(run([
+      'create', 'process', 'APP_XXX', 'FORM-XXX', '--process-code', 'PROC-XXX',
+      '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP-SOURCE',
+          formUuid: 'FORM-SOURCE',
+          instanceId: 'FINST-SOURCE',
+        }],
+      }), ...PROCESS_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
+    expect(error.details.sideEffectState).toBe('none');
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ['update', [
+      'update', 'process', 'APP_XXX', '--process-inst-id', 'PROC-INST-1',
+      '--form-uuid', 'FORM-XXX',
+    ]],
+    ['execute', [
+      'execute', 'task', 'APP_XXX', '--task-id', 'TASK-1',
+      '--process-inst-id', 'PROC-INST-1', '--form-uuid', 'FORM-XXX',
+      '--out-result', 'AGREE', '--remark', '同意',
+    ]],
+  ])('%s 流程写入同样执行关联字段契约校验', async (_action, args) => {
+    formNavigation.fetchFormPageList.mockResolvedValue([{
+      formUuid: 'FORM-XXX', formName: '目标流程', formType: 'process',
+    }]);
+    utils.httpGet.mockResolvedValue({
+      success: true,
+      content: { processInstanceId: 'PROC-INST-1', formUuid: 'FORM-XXX' },
+    });
+
+    const error = await expectCliError(run([
+      ...args,
+      '--data-json', JSON.stringify({
+        associationFormField_store: [{
+          appType: 'APP-SOURCE',
+          formUuid: 'FORM-SOURCE',
+          instanceId: 'FINST-SOURCE',
+        }],
+      }),
+      ...PROCESS_EXPECTATIONS,
+    ]));
+
+    expect(error.code).toBe('DATA_ASSOCIATION_FORM_VALUE_INVALID');
+    expect(error.details.sideEffectState).toBe('none');
+    expect(utils.httpPost).not.toHaveBeenCalled();
+  });
 });
 
 describe('run() delete form', () => {
