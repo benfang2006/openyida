@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.9.2-2] - 2026-09-02
+
+### Added
+
+- 完整应用编排新增共享需求简报与双 artifact 并行链路：`yida-requirement-analysis` 写入 `.cache/openyida/<项目名>/requirement-brief.json` 后冻结，`yida-prd` 与 `yida-design` 分别独占 `prd/<项目名>/prd.md` 和 `design.md` 并行产出，由 `yida-app` 在两者完成后 join 校验稳定引用；command manifest 与 agent capabilities 同步暴露该路由。
+- agent capabilities 新增 `application_entry_policy`：完整应用只交付一组应用访问入口，工作台恒定包含，独立业务入口需 `get-form-config` 回读确认 `isRenderNav=false`，开发后台入口在云端托管 agent 环境下省略。
+
+### Fixed
+
+- 导航排序改为幂等且可验证：写入前做差异比对，写入后按 `navUuid` / `parentNavUuid` / `siblingIndex` / `navType` 全量回读，分别返回 `NAV_ORDER_NOT_APPLIED`（可安全重试）、`NAV_ORDER_READBACK_MISMATCH` 和 `NAV_ORDER_RESULT_UNKNOWN`，错误详情只输出首个差异摘要，避免大导航结构下的输出膨胀。
+- 表单数据写入新增 `AssociationFormField` 契约校验：关联表单字段必须提供 `appType` / `formUuid` / `formType` / `instanceId` / `title`，查询派生的 `associationFormField_*_id` 字段拒绝作为写入负载，POST 前返回 `DATA_ASSOCIATION_FORM_VALUE_INVALID` 或 `DATA_ASSOCIATION_FORM_DERIVED_FIELD_READ_ONLY`，不再出现「接口成功、读回为空」。
+- `--resolve-aliases` 遇到未知字段引用时在写入前阻断：显示标签或拼错的 `fieldId` 不再原样提交，改为返回 `DATA_FIELD_REFERENCE_UNKNOWN` 并给出确定性的 `get-schema --field-map-json` 下一步；同时收窄 JSON 解析异常范围，保留业务错误码。
+
 ## [2026.9.2-1] - 2026-09-02
 
 ### Added
