@@ -1,4 +1,4 @@
-# Step 6：写入 design.md
+# 写入 design.md
 
 本步骤只写入 `prd/<项目名>/design.md`。完整应用的 `prd.md` 由并行的 `yida-prd` owner 生成；本技能不得等待、读取或覆盖本轮 PRD。
 

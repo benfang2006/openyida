@@ -1,4 +1,4 @@
-# Step 2：选择主题色和 token
+# 选择主题色和 token
 
 > 这一步选择应用主色、辅助色、字体层级、组件基调和宜搭 token 作用域。
 
@@ -16,14 +16,14 @@
 | 2 | `application-theme` | 已有应用、工作区、历史命令输出中能读到 `theme`、`colour`、`themeProfile` 或 `customThemeStyle.tokens` | 单页美化和已有应用改造默认跟随；页面主按钮、链接、选中态和图表主序列跟随应用主题 |
 | 3 | `platform-preset-match` | 根据业务气质推导出的主题刚好命中平台预置主题 key | 写 `themePresetKey=<key>`，`shouldPassCreateAppTheme=true` |
 | 4 | `business-inferred` | 无明确主题证据，需要根据行业、品牌气质、业务情绪和视觉目标推导 | 设计自定义品牌色盘，写 token 和注入方案，`shouldPassCreateAppTheme=false` |
-| 5 | `template-default` | 没有任何主题证据且无法稳定推导业务色彩 | 临时使用 Step 5 所选 style-design 的默认 brand token，并明确标记为兜底 |
+| 5 | `template-default` | 没有任何主题证据且无法稳定推导业务色彩 | 临时使用 UI 视觉设计阶段所选 style-design 的默认 brand token，并明确标记为兜底 |
 
 1. 先判断业务气质：行业、目标用户、品牌关键词、业务情绪、视觉目标，以及是否需要亲和/专业/活力/稳重/科技/自然感。
 2. 再判断是否命中平台预置主题 key：命中时写 `themePresetKey=<key>`，创建或更新应用时才允许传 `--theme <key>` / `colour=<key>`。
 3. 若设计色不是平台预置主题 key，写 `shouldPassCreateAppTheme=false`，创建应用时不要显式传 `theme/colour`。
 4. 自定义色的 token 和注入方式写入 `design.md`，通过 `style#yida-global-theme` 或 `customThemeStyle.tokens` 注入，至少包含 `--color-brand1-6`、`--color-brand1-9`、`--color-brand1-2`、`--color-brand-1` ~ `--color-brand-4` 和 `--color-group`。
 5. `podBlue`、`podGreen`、`podOrange` 只是常用浅底候选，不是固定默认。不要因为没有特别说明就自动回到 #1677ff，也不要套用“科技=蓝、宠物=橙、法律=蓝”这类行业刻板配色。
-6. 主题色只作为 Step 5 所选设计风格的换肤输入；除用户明确要求深色/夜间/高对比或强品牌独立页外，不用主题色反向决定风格。
+6. 主题色只作为后续所选设计风格的换肤输入；除用户明确要求深色/夜间/高对比或强品牌独立页外，不用主题色反向决定风格。
 
 ## 品牌 token 语义
 
@@ -108,4 +108,4 @@ design.md Theme Profile：
 
 ## 下一步
 
-→ [Step 3：页面结构和交互设计](step-4-wireframe-interaction.md)
+→ [页面结构和交互设计](step-4-wireframe-interaction.md)

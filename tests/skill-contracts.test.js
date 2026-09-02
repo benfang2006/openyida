@@ -449,7 +449,6 @@ describe('OpenYida skill contracts', () => {
     const design = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const requirementAnalysis = readSkill('yida-skills/skills/yida-requirement-analysis/SKILL.md');
     const prd = readSkill('yida-skills/skills/yida-prd/SKILL.md');
-    const step1 = readSkill('yida-skills/skills/yida-design/workflow/step-1-positioning.md');
     const step3 = readSkill('yida-skills/skills/yida-prd/workflow/step-2-information-architecture.md');
     const step5 = readSkill('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
     const output = readSkill('yida-skills/skills/yida-prd/workflow/output-prd.md');
@@ -515,6 +514,12 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('## PRD 输出格式');
     expect(output).not.toContain('## design.md 输出格式');
     expect(outputDesign).toContain('## design.md 输出格式');
+    expect(outputDesign).toContain('## join 稳定引用契约');
+    expect(outputDesign).toContain('sceneRecipes.<sceneKey>');
+    expect(outputDesign).toContain('`sceneKey` 必须直接取自共享 `requirement-brief.json`');
+    expect(outputDesign).toContain('states:');
+    expect(fs.existsSync(path.join(ROOT, 'yida-skills/skills/yida-design/workflow/step-1-positioning.md'))).toBe(false);
+    expect(fs.existsSync(path.join(ROOT, 'yida-skills/skills/yida-design/workflow/step-3-information-architecture.md'))).toBe(false);
     expect(outputDesign).toContain('themeProfile:');
     expect(outputDesign).toContain('yidaThemeRuntime:');
     expect(outputDesign).toContain('globalThemeInjection: <style#yida-global-theme / customThemeStyle.tokens / none>');
@@ -626,11 +631,6 @@ describe('OpenYida skill contracts', () => {
     expect(output).toContain('## 1. 应用基本信息');
     expect(output).toContain('| 应用类型 | <企业管理 / 经营分析 / 流程审批 / 数据采集 / 客户服务 / 库存进销存 / 项目协作 / 资产设备 / 教育培训 / 知识内容 / 监控指挥 / 官网门户 / 活动报名 / 轻量工具> |');
     expect(output).toContain('| 主题色 | <当前应用主题色 / 用户指定品牌色 / 待创建后回填；写清色值或主题 key> |');
-    expect(step1).toContain('| 流程审批类 | 申请表、审批表、待办页、流程详情 | 填写路径、节点状态、处理动作 |');
-    expect(step1).toContain('| 数据采集类 | 移动录入表单、扫码登记、批量导入、提交结果页 | 快速录入、校验反馈、弱网可读 |');
-    expect(step1).toContain('| 客户服务类 | 客户列表、工单池、服务记录、回访表 | 客户上下文、处理优先级、跟进记录 |');
-    expect(step1).toContain('| 库存进销存类 | 商品管理、订单管理、库存预警、出入库明细 | 库存水位、状态流转、明细追踪 |');
-    expect(step1).toContain('| 轻量工具类 | 计算器、查询页、配置工具、导入导出页 | 单任务效率、输入输出清晰、错误提示 |');
     expect(output).toContain('## 2. 应用配置');
     expect(output).toContain('| appType | <已有应用填真实 appType；从零创建时写“待创建后回填”> |');
     expect(output).toContain('| corpId | <目标组织 corpId；未知时写“待登录态确认”> |');
@@ -1115,7 +1115,7 @@ describe('OpenYida skill contracts', () => {
 
   test('custom pages do not build page-level navigation by default', () => {
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
-    const navStep = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const navStep = readSkill('yida-skills/skills/yida-prd/workflow/step-2-information-architecture.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
     const navPatterns = readSkill('yida-skills/skills/yida-design/references/app/navigation-patterns.md');
     const navGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/navigation-and-entry-guide.md');
@@ -1158,7 +1158,7 @@ describe('OpenYida skill contracts', () => {
     const pageUiux = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const step4 = readSkill('yida-skills/skills/yida-design/workflow/step-4-wireframe-interaction.md');
     const step5 = readSkill('yida-skills/skills/yida-design/workflow/step-5-visual-states.md');
-    const step3 = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const step3 = readSkill('yida-skills/skills/yida-prd/workflow/step-2-information-architecture.md');
     const outputPrd = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
     const pageGeneration = readSkill('yida-skills/skills/yida-canvas-custom-page/references/page-generation-guide.md');
     const canvasStyleGuide = readSkill('yida-skills/skills/yida-canvas-custom-page/references/canvas-style-implementation-guide.md');
@@ -1209,16 +1209,12 @@ describe('OpenYida skill contracts', () => {
   test('single page design checks current app theme before page-level decisions', () => {
     const design = readSkill('yida-skills/skills/yida-design/SKILL.md');
     const pageDesign = readSkill('yida-skills/skills/yida-design/sub_skill/page-design/SKILL.md');
-    const step1 = readSkill('yida-skills/skills/yida-design/workflow/step-1-positioning.md');
-    const step3 = readSkill('yida-skills/skills/yida-design/workflow/step-3-information-architecture.md');
+    const step3 = readSkill('yida-skills/skills/yida-prd/workflow/step-2-information-architecture.md');
     const output = readSkill('yida-skills/skills/yida-design/workflow/output-prd.md');
     const blueprint = readSkill('yida-skills/skills/yida-design/references/app/blueprint.md');
 
     expect(design).toContain('[page-design](sub_skill/page-design/SKILL.md)');
     expect(pageDesign).toContain('先确认当前应用主题');
-    expect(step1).toContain('主页面 / 首页');
-    expect(step1).toContain('普通表单');
-    expect(step1).toContain('流程表单');
     expect(step3).toContain('## 列资源清单');
     expect(step3).toContain('`display-page`');
     expect(step3).toContain('`normal-form`');

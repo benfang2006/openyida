@@ -1,4 +1,4 @@
-# Step 1：读取视觉设计输入
+# 读取视觉设计输入
 
 完整应用视觉 artifact 只读取 `.cache/openyida/<项目名>/requirement-brief.json`，不等待或读取本轮并行生成的 `prd.md`。
 

@@ -20,7 +20,7 @@ description: >
 | --- | --- | --- |
 | 完整应用、多个角色、多页面、导航分组、首页/入口页、官网 + 看板 + 后台 | 完整应用视觉设计 | 读取共享需求简报，输出 `prd/<项目名>/design.md`；与 `yida-prd` 并行 |
 | 单个自定义页要求好看、高级、品牌化、去 AI 味、页面太丑、不够惊艳 | 单页设计 | 读 [page-design](sub_skill/page-design/SKILL.md)，确认当前页面和应用主题后输出设计补充 |
-| 应用主题色、品牌色、全局换肤、`--color-brand1-*`、`style#yida-global-theme`、`customThemeStyle.tokens` | 主题色和 token 设计 | 读 Step 2、6，输出 themeProfile 和 token 契约 |
+| 应用主题色、品牌色、全局换肤、`--color-brand1-*`、`style#yida-global-theme`、`customThemeStyle.tokens` | 主题色和 token 设计 | 读 `workflow/step-2-theme-system.md` 和 `workflow/step-6-handoff.md`，输出 themeProfile 和 token 契约 |
 | 页面 / 主页面 / 首页 / 工作台 UI 设计 | 页面视觉设计 | 读取当前页面上下文，输出或更新 `design.md` |
 
 ---
@@ -60,7 +60,7 @@ description: >
 13. **工作台禁低密大卡片套路**：工作台 / 业务首页不能用“标题 + 4 个等宽大 KPI 白卡 + 图标快捷卡 + 大空态白卡”撑首屏。默认改成紧凑状态摘要条、任务/动态列表、最近记录、右侧上下文面板和高频动作；没有真实数据时也展示薄空态行 + 登记入口，不铺大块空白卡片。
 14. **默认圆润高密且有呼吸感**：业务工具页默认使用圆润形状、紧凑信息密度和清晰呼吸节奏。`design.md` 必须写清 `roundedRule`、`densityRule` 和 `breathingRule`：卡片 padding 必须大于 20px（默认 22-28px），卡片与卡片的 gap 必须小于 20px（默认 12-18px），卡片圆角范围 0-32px（业务卡片默认 20-24px），控件 10-14px，状态摘要 64-88px，动作条 40-56px，列表行 44-56px，空态 88-120px 内；页面边距、卡片 gap 和卡片 padding 要形成可扫读的分组节奏。呼吸感来自对齐、分组、层级和节奏，不来自额外 margin、超宽空 KPI 框或空白卡撑页面。
 15. **背景与卡片必须有层次对比**：默认业务页背景保持浅色调、清爽但不能与卡片相近或相同。`design.md` 必须写清 `surfaceContrast`：白色/浅色背景配有边框卡片；浅灰背景（如 `#F3F4F6`）配白色无边框卡片；浅彩色背景（如浅蓝、浅暖灰）配白色无边框卡片；渐变背景配玻璃感卡片。禁止浅底白卡无边框、同色背景同色卡片或只有阴影没有色差/边框的层次。
-16. **设计风格先选后定制**：Step 5 必须先从业务任务、信息拓扑和必需视觉 DNA 推演并选择唯一设计风格，再根据 Step 2 主题色换肤。主题色只换 token 和强调色，不改变风格 DNA、布局机制和组件机制；不得按行业或颜色直接套风格。
+16. **设计风格先选后定制**：进入 UI 视觉和状态设计时，必须先从业务任务、信息拓扑和必需视觉 DNA 推演并选择唯一设计风格，再根据主题系统换肤。主题色只换 token 和强调色，不改变风格 DNA、布局机制和组件机制；不得按行业或颜色直接套风格。
 17. **应用主题先统领页面主色**：平台导航可见时，页面主按钮、链接、选中态、重点标签和图表主序列都跟随应用主题 `--color-brand1-*`；普通表单、流程表单、提交页、formDetail 详情页和自定义页面必须消费同一套主题 token。`design.md` 的色相只转成辅助色、浅背景、图表第二序列和装饰气质。页面级独立主色只用于页面级沉浸页、应用导航隐藏后的自绘壳、独立品牌/活动页或用户明确要求完全不同风格；独立主色必须通过 `style#yida-global-theme` 或 scoped CSS vars 注入。
 18. **design.md 是唯一视觉契约**：完整应用只产出一份应用级 `design.md`，所有 display 页面、普通表单、流程表单、表单入口、formDetail 详情、列表、看板和工作台都必须遵守它。
 19. **视觉设计规范只写 design.md**：`themeProfile`、tokens、`visualScaffold`、`backgroundLayer`、`surfaceMaterial`、`surfaceContrast`、`colorRoles`、`depthRule`、`roundedRule`、`densityRule`、`breathingRule`、组件形态、空态规则和响应式规则写入 `design.md`。
@@ -76,17 +76,17 @@ description: >
 
 | 文档 | 覆盖范围 | 何时阅读 |
 | --- | --- | --- |
-| [Step 1：读取共享需求简报](workflow/step-1-read-brief.md) | 业务对象、页面场景、明确范围、品牌和色彩偏好 | 完整应用必读 |
-| [Step 2：选择主题色和 token](workflow/step-2-theme-system.md) | 主题 token、色彩、字体、组件基调 | 涉及主题或视觉 |
-| [Step 4：页面结构和交互设计](workflow/step-4-wireframe-interaction.md) | 布局骨架、内容区块、主操作、抽屉、响应式 | 页面设计 |
-| [Step 5：UI 视觉和状态设计](workflow/step-5-visual-states.md) | 设计风格选择、视觉 DNA、主题换肤、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
-| [Step 6：写入 design.md](workflow/step-6-handoff.md) | `design.md` 必填内容、稳定引用和完成条件 | 输出前 |
+| [读取共享需求简报](workflow/step-1-read-brief.md) | 业务对象、页面场景、明确范围、品牌和色彩偏好 | 完整应用必读 |
+| [选择主题色和 token](workflow/step-2-theme-system.md) | 主题 token、色彩、字体、组件基调 | 涉及主题或视觉 |
+| [页面结构和交互设计](workflow/step-4-wireframe-interaction.md) | 布局骨架、内容区块、主操作、抽屉、响应式 | 页面设计 |
+| [UI 视觉和状态设计](workflow/step-5-visual-states.md) | 设计风格选择、视觉 DNA、主题换肤、素材图标、空/载/错态、去 AI 味 | 输出前自检 |
+| [写入 design.md](workflow/step-6-handoff.md) | `design.md` 必填内容、稳定引用和完成条件 | 输出前 |
 | [page-design 单页设计](sub_skill/page-design/SKILL.md) | 单页主题证据、页面级设计流程、输出补充字段 | 单个自定义页设计 |
-| [design.md 输出格式](workflow/output-design.md) | `design.md` 字段示例 | Step 6 输出前 |
-| [design.md 生成规则](references/style-design-selection.md) | 从业务推演视觉 DNA，选择设计风格并按主题色换肤，生成应用级 `design.md` | Step 5 |
-| [视觉脚手架配方库](references/visual-scaffold-recipes.md) | 将高质量页面结构转成 `visualScaffold` 槽位，约束页面实现落地 | Step 5 |
-| [页面质量门禁](references/page-quality-gates.md) | 区块数量、源码槽位、低密大卡片、主题一致性和 `pageSpecHandoff` 检查 | Step 4-6 输出前 |
-| [style-design 风格注册表](references/style-designs/registry.md) | 内置视觉 DNA 风格、选择评分、风险扣分、风格消费规则 | Step 5 |
+| [design.md 输出格式](workflow/output-design.md) | `design.md` 字段示例 | 写入前 |
+| [design.md 生成规则](references/style-design-selection.md) | 从业务推演视觉 DNA，选择设计风格并按主题色换肤，生成应用级 `design.md` | UI 视觉设计 |
+| [视觉脚手架配方库](references/visual-scaffold-recipes.md) | 将高质量页面结构转成 `visualScaffold` 槽位，约束页面实现落地 | UI 视觉设计 |
+| [页面质量门禁](references/page-quality-gates.md) | 区块数量、源码槽位、低密大卡片、主题一致性和 `pageSpecHandoff` 检查 | 页面结构、视觉与交接阶段 |
+| [style-design 风格注册表](references/style-designs/registry.md) | 内置视觉 DNA 风格、选择评分、风险扣分、风格消费规则 | UI 视觉设计 |
 | [应用结构参考](references/app/blueprint.md) | 应用角色、导航、页面清单、页面/表单/流程资源蓝图 | 完整应用或主页面 |
 | [应用主题与 token 参考](references/theme/theme-token-presets.md) | 平台主题 key、候选主题、token profile | 需要主题 key 或 token |
 | [yida-canvas-custom-page 样式实现指南](../yida-canvas-custom-page/references/canvas-style-implementation-guide.md) | 将 `design.md` 的 token、背景、圆角、密度和组件规则落到页面源码、antd、CSS、图表和控件状态 | 实现阶段 |
