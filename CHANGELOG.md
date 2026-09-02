@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 海外版宜搭暂不适用当前 OAuth token 登录与创建应用链路；如需在海外版宜搭创建应用，请使用 `2026.7.14-2` 以前的版本，例如 `npm install -g openyida@2026.7.13`。
 
+## [2026.9.2-1] - 2026-09-02
+
+### Added
+
+- `create-form create` 新增 `--icon auto|<name>`：表单创建并保存 Schema 后，按标题与字段语义从宜搭表单导航图标集中自动选图标，也可显式指定；新增 `create-form icons --json` 查询全部可选图标。
+
+### Changed
+
+- 表单导航图标更新对齐 yida-next 的 `Nav.update` 请求契约，并在写入后回读校验；命令参数同步注册到 command manifest 与 agent capabilities，确保云端 yida-agent 可发现和调用。
+
 ## [2026.9.2] - 2026-09-02
 
 ### Added

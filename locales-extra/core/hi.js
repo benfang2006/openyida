@@ -30,6 +30,7 @@ module.exports = {
     cmd_import: 'माइग्रेशन पैकेज आयात करें, ऐप पुनर्निर्माण',
     group_form: 'फॉर्म & पेज',
     cmd_create_form: 'फॉर्म पेज बनाएं',
+    cmd_list_form_icons: 'उपलब्ध फ़ॉर्म नेविगेशन आइकन सूचीबद्ध करें',
     cmd_validate_form: 'Validate form field JSON locally',
     cmd_update_form: 'फॉर्म पेज अपडेट करें',
     cmd_list_forms: 'List forms/pages in an app',
