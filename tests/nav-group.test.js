@@ -241,6 +241,14 @@ describe('navigation order mutation contract', () => {
         retrySafe: true,
         sideEffectState: 'none',
         readbackVerified: true,
+        orderDiff: {
+          beforeCount: 5,
+          expectedCount: 5,
+          observedCount: 5,
+          firstPlannedChange: {
+            index: 1,
+          },
+        },
       },
     });
   });
@@ -265,6 +273,17 @@ describe('navigation order mutation contract', () => {
         sideEffectState: 'unknown',
         readbackVerified: false,
         status: 'SEMANTIC_FAILURE',
+        orderDiff: {
+          beforeCount: 5,
+          expectedCount: 5,
+          observedCount: 5,
+          firstPlannedChange: {
+            index: 1,
+          },
+          firstReadbackMismatch: {
+            index: 2,
+          },
+        },
       },
     });
   });
@@ -288,7 +307,63 @@ describe('navigation order mutation contract', () => {
         sideEffectState: 'unknown',
         readbackVerified: false,
         nextStep: 'openyida nav-group list APP_XXX --flat',
+        orderDiff: {
+          beforeCount: 5,
+          expectedCount: 5,
+          observedCount: null,
+          firstPlannedChange: {
+            index: 1,
+          },
+        },
       },
     });
+  });
+
+  test('keeps large navigation error details focused on the first difference', async () => {
+    const large = [mixed[0]].concat(Array.from({ length: 60 }, (_, index) => ({
+      id: index + 10,
+      navUuid: `FORM-${index}`,
+      formUuid: `FORM-${index}`,
+      parentNavUuid: ROOT_NAV_UUID,
+      navType: 'PAGE',
+      formType: 'receipt',
+      title: { zh_CN: `表单 ${index}` },
+      listOrder: index + 1,
+    })));
+    const ordered = reorderRootNodes(large, ['FORM-59']);
+    const postNavAction = jest.fn().mockRejectedValue(new Error('timeout'));
+    const fetchNavigationList = jest.fn().mockRejectedValue(new Error('readback unavailable'));
+
+    let error;
+    try {
+      await applyNavigationOrder(
+        'APP_LARGE',
+        'order',
+        large,
+        ordered,
+        {},
+        { postNavAction, fetchNavigationList }
+      );
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toMatchObject({
+      code: 'NAV_ORDER_RESULT_UNKNOWN',
+      details: {
+        orderDiff: {
+          beforeCount: 61,
+          expectedCount: 61,
+          observedCount: null,
+          firstPlannedChange: {
+            index: 1,
+          },
+        },
+      },
+    });
+    expect(error.details).not.toHaveProperty('beforeOrder');
+    expect(error.details).not.toHaveProperty('expectedOrder');
+    expect(error.details).not.toHaveProperty('observedOrder');
+    expect(JSON.stringify(error.details)).not.toContain('FORM-30');
   });
 });
