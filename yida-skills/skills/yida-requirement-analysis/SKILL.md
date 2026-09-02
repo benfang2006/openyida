@@ -40,6 +40,7 @@ description: 分析完整应用的用户需求与现有资源，生成供 PRD �
 3. 真实 `appType`、`formUuid`、`fieldId` 等 ID 只有已有证据时才可放入 `resourceContext`；不得猜测。
 4. 会改变资源范围、权限或业务对象的未知项写入 `openQuestions`，不能静默假设。
 5. 文件成功写入并通过 JSON 解析后，才允许启动两个 artifact owner。
+6. 简报进入 ready 后即冻结。后续创建出的 `appType`、`formUuid`、`fieldId` 等真实资源 ID 写入 schema 或当前任务资源上下文，不回写简报；只有用户需求或已确认资源范围发生实质变化时，才重新生成简报并重跑两个 artifact owner。
 
 ## 完成条件
 

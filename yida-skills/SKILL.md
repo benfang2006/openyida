@@ -90,7 +90,7 @@ description: >
 | 按 taskUuid 读取钉钉听记 | `yida-tingji`，将听记任务 ID 原样传入命令 |
 | 用户给 taskUuid 并要求转 PRD | 先用 `yida-tingji` 读取听记内容，再把已有内容交给 `yida-flash-note-to-prd` 生成 PRD |
 | 已有会议纪要/闪记内容转 PRD | `yida-flash-note-to-prd`，只处理已有内容，不负责按 taskUuid 拉取听记 |
-| 只创建应用壳并拿 appType | `yida-create-app`；若随后继续完整搭建，把真实 `appType` 回填共享需求简报，由 `yida-prd` 和 `yida-design` 分别更新 `prd.md` 与 `design.md`，join 后再继续 |
+| 只创建应用壳并拿 appType | `yida-create-app`；若随后继续完整搭建，已 join 的共享需求简报、`prd.md` 与 `design.md` 保持冻结，真实 `appType` 只写入 schema 或当前任务资源上下文 |
 | 启用/上线或停用/下线已有应用 | `yida-app-lifecycle`；只有用户明确要求时执行，`app-offline` 执行前需再次确认目标应用 |
 | 创建自定义展示页资源 | `yida-create-page`，之后交给 `yida-canvas-custom-page` 编写页面源码，再交给 `yida-publish-page` 发布 |
 | 开发表单字段结构 / 增删改字段 | 先加载 `yida-form-detail` 做表单视觉引导并合并 Divider 分割线，再用 `yida-create-form-page` 落地字段结构 |

@@ -471,10 +471,12 @@ describe('OpenYida skill contracts', () => {
 
     expect(appStep2).toContain('一个共享需求简报和两个独立 artifact owner');
     expect(appStep2).toContain('`yida-app` 是 join owner');
-    expect(root).toContain('把真实 `appType` 回填共享需求简报，由 `yida-prd` 和 `yida-design` 分别更新 `prd.md` 与 `design.md`');
+    expect(root).toContain('已 join 的共享需求简报、`prd.md` 与 `design.md` 保持冻结');
     expect(root).toContain('`yida-create-page`，之后交给 `yida-canvas-custom-page` 编写页面源码，再交给 `yida-publish-page` 发布');
-    expect(createApp).toContain('把真实 `appType` 回填 `.cache/openyida/<项目名>/requirement-brief.json`');
-    expect(createApp).toContain('并行完成 PRD 与视觉 artifact 并 join');
+    expect(createApp).toContain('不得回写 `.cache/openyida/<项目名>/requirement-brief.json`');
+    expect(createApp).toContain('不得仅因拿到真实 `appType` 重跑 `yida-prd`、`yida-design` 或 join');
+    expect(requirementAnalysis).toContain('简报进入 ready 后即冻结');
+    expect(appStep2).toContain('需求简报进入 ready 后即作为本轮 artifact 的冻结输入');
     expect(appStep2).toContain('`prd/<项目名>/prd.md`');
     expect(appStep2).toContain('`prd/<项目名>/design.md`');
     expect(skill).not.toContain('用户说“按默认方案”“不要追问”“直接创建”“尽快搭建”等');
@@ -715,7 +717,7 @@ describe('OpenYida skill contracts', () => {
     expect(byName.get('yida-app').description).toContain('并行调用 yida-prd 与 yida-design');
     expect(byName.get('yida-app').description).toContain('表单/流程先于自定义页面');
     expect(byName.get('yida-app').description).toContain('发布后优先按 PRD 导航顺序排序');
-    expect(byName.get('yida-create-app').description).toContain('yida-prd 与 yida-design 分别更新 PRD 和视觉 artifact');
+    expect(byName.get('yida-create-app').description).toContain('不回写已冻结的共享需求简报');
     expect(byName.get('yida-app').done_when).toContain('PRD 已写入 prd/<项目名>/prd.md');
     expect(byName.get('yida-app').done_when).toContain('design.md 已写入 prd/<项目名>/design.md');
   });

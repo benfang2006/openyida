@@ -464,7 +464,7 @@
       "name": "yida-create-app",
       "path": "skills/yida-create-app/SKILL.md",
       "display_name": "创建宜搭应用",
-      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。若继续完整搭建，将 appType 回填共享需求简报，由 yida-prd 与 yida-design 分别更新 PRD 和视觉 artifact，join 后继续。",
+      "description": "仅在没有目标 app 且允许创建时创建宜搭应用并返回 appType。完整搭建已完成 artifact join 时，将真实 appType 写入 schema 或任务资源上下文，不回写已冻结的共享需求简报。",
       "category": "yida-skills/app",
       "tags": [
         "创建应用",
