@@ -54,7 +54,7 @@ openyida create-app --name <appName> [--desc <description>] [--theme-file <app-t
 | `description` | 否 | 同 appName | 应用描述 |
 | `icon` | 否 | 见下文 | 显式指定优先；否则优先使用命中的行业图标，仅未命中行业时从平台系统图标中随机选择 |
 | `iconColor` | 否 | 见下文 | 传主题文件时统一跟随 `--color-brand1-6` 的 HEX 值；未传主题文件时保留兼容默认值 |
-| `themeFile` | 否，推荐 | — | 基于 `yida-design/references/theme/app-custom-theme-template.css` 生成的 CSS；必须完整声明 `--color-brand1-1` 至 `--color-brand1-10`，其中 `--color-brand1-6` 必须为字面量，CLI 自动以它保存 `themeColor` |
+| `themeFile` | 否，推荐 | — | 基于 `yida-design/references/theme/app-custom-theme-template.css` 生成的 CSS；必须完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，不要补造 `4/7/8`；其中 `--color-brand1-6` 必须为字面量，CLI 自动以它保存 `themeColor` |
 | `navTheme` | 否 | `themeFile` 场景默认 `light` | 导航风格：`light` / `dark` / `white` / `gray` |
 | `logoSource` | 否 | `themeFile` 场景默认 `appIcon` | 新建应用只支持应用图标；`customImage` 需要已有 `homepageLogo`，只在已有应用更新时使用 |
 | `layoutDirection` | 否 | `l_shape` | 新建应用默认使用 L 型导航；可显式改为 `side`（侧边）/ `top`（顶部）/ `l_shape`（L 型） |
@@ -85,7 +85,7 @@ CLI 始终按“显式 `--icon` → 行业推断 → 随机系统图标”的顺
 openyida create-app --name "<应用名>" --desc "<描述>" --theme-file <app-theme.css> --nav-theme light --logo-source appIcon --layout l_shape
 ```
 
-CLI 会先校验主题文件完整声明 `--color-brand1-1` 至 `--color-brand1-10`。创建成功后在同一流程中上传 CSS，并联合保存从 `--color-brand1-6` 提取的 `themeColor`、`customThemeStyle`、`navTheme`、`logoSource` 和 `layoutDirection`。创建或更新主题时，系统应用图标会同步保存为 `iconName%%主题色HEX`；外链或上传图片图标保持原值。运行容器会在自定义页面、表单、提交页和 formDetail 中加载同一应用主题文件。
+CLI 会先校验主题文件完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，并允许不存在 `--color-brand1-4/7/8`。创建成功后在同一流程中上传 CSS，并联合保存从 `--color-brand1-6` 提取的 `themeColor`、`customThemeStyle`、`navTheme`、`logoSource` 和 `layoutDirection`。创建或更新主题时，系统应用图标会同步保存为 `iconName%%主题色HEX`；外链或上传图片图标保持原值。运行容器会在自定义页面、表单、提交页和 formDetail 中加载同一应用主题文件。
 
 完整应用主题 key、颜色倾向和 token 变量统一维护在 `yida-design/references/theme/theme-token-presets.md`，本技能不重复维护完整清单。
 

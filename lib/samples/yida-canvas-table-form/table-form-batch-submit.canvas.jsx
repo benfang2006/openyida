@@ -398,7 +398,7 @@ function YidaComp(props) {
     >
       <style>{`
         .canvas-table-page {
-          min-height: 100%;
+          min-height: 100vh;
           box-sizing: border-box;
           padding: 28px;
           background: var(--pod-page-bg-color, var(--color-white, #fff));

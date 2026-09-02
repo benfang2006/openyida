@@ -22,7 +22,7 @@
 
 ## 主题 key
 
-新版应用不再由设计产物选择或传递平台 `--theme` key。`design.md` 必须基于 `app-custom-theme-template.css` 给出应用 CSS、`navTheme`、`logoSource` 和新版 `layoutDirection`；CSS 完整声明 `--color-brand1-1` 至 `--color-brand1-10`，主色写入 `--color-brand1-6`，创建阶段通过 `create-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存。运行容器负责让页面、表单和详情页加载同一应用主题文件。
+新版应用不再由设计产物选择或传递平台 `--theme` key。`design.md` 必须基于 `app-custom-theme-template.css` 给出应用 CSS、`navTheme`、`logoSource` 和新版 `layoutDirection`；CSS 完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，保留 `--color-brand-1` 至 `--color-brand-4` 和 `--color-group`，不得补造 `--color-brand1-4/7/8`。模板默认使用 coffee 咖啡色与大圆角；只有设计结论明确变化时才成套调整。主色写入 `--color-brand1-6`，创建阶段通过 `create-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存。运行容器负责让页面、表单和详情页加载同一应用主题文件。
 
 ## 产出
 

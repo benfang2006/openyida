@@ -64,11 +64,8 @@ tokens:
   --color-brand1-1: <明亮品牌浅色或浅 hover 色>
   --color-brand1-2: <浅背景>
   --color-brand1-3: <透明/浅边界>
-  --color-brand1-4: <浅品牌实色或强边界>
   --color-brand1-5: <主色 hover 档>
   --color-brand1-6: <主色>
-  --color-brand1-7: <主色 active 档>
-  --color-brand1-8: <次深品牌色>
   --color-brand1-9: <深主色>
   --color-brand1-10: <深色或透明强调档>
   --color-brand-1: <移动端品牌色 1>
@@ -202,11 +199,8 @@ inferred_modules:
 | `--color-brand1-1`  | <明亮品牌浅色或浅 hover 色> | 列表 hover、菜单 hover、轻量背景，不直接当深色文字 |
 | `--color-brand1-2`  | <品牌浅底>                  | 弱强调背景、浅底提示、选中底色、标签浅底           |
 | `--color-brand1-3`  | <透明/浅边界>               | 选中边框、禁用/弱化品牌态、浅描边                  |
-| `--color-brand1-4`  | <浅品牌实色或强边界>        | focus 边框、浅品牌实色块、较强描边                 |
 | `--color-brand1-5`  | <主色 hover 档>             | 主按钮 hover、链接 hover、可点击强调 hover         |
 | `--color-brand1-6`  | <主色>                      | 主按钮、链接、选中态、重点标签、图表主序列         |
-| `--color-brand1-7`  | <主色 active 档>            | 按下态、active、pressed                            |
-| `--color-brand1-8`  | <次深品牌色>                | 深色 hover、深色选中态、主色与深主色之间的过渡     |
 | `--color-brand1-9`  | <深主色>                    | 强调文字、深底按钮、深色强调块                     |
 | `--color-brand1-10` | <深色或透明强调档>          | 深色 hover、强强调背景、深色主题补充               |
 | `--color-brand-1`   | <移动端品牌浅/透明档 1>     | 移动端壳层、移动端表单、旧版移动组件浅品牌态       |
@@ -215,7 +209,7 @@ inferred_modules:
 | `--color-brand-4`   | <移动端深品牌档 4>          | 移动端 active、深色强调、移动壳层深色态            |
 | `--color-group`     | <色组>                      | 图表、分类、状态序列                               |
 
-`--color-brand1-1` 至 `--color-brand1-10` 必须完整输出，是页面和 PC 端主要消费的品牌色阶；`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，必须保留，不能删掉、改名或替换成其他 token。
+平台实际生成的 `--color-brand1-1/2/3/5/6/9/10` 必须完整输出，是页面和 PC 端主要消费的品牌色阶；不要补造 `--color-brand1-4/7/8`。`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，必须保留，不能删掉、改名或替换成其他 token。
 
 ## 8. 字体规则
 
@@ -308,7 +302,7 @@ inferred_modules:
 
 | 项目         | 规则                                                                                                                                                                         |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 自定义色盘   | 颜色可任意设计，必须完整输出 `--color-brand1-1` 至 `--color-brand1-10`；其中 `--color-brand1-6` 写字面量颜色，CLI 自动保存为 `themeColor`                                    |
+| 自定义色盘   | 颜色可任意设计，必须完整输出平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，不得补造 `4/7/8`；其中 `--color-brand1-6` 写字面量颜色，CLI 自动保存为 `themeColor`                                    |
 | 应用级换肤   | 从 `app-custom-theme-template.css` 生成 CSS，使用 `--theme-file` 上传为 `customThemeStyle.cssUrl`                                                                             |
 | 联合保存     | `--theme-file`、`--nav-theme`、`--logo-source`、`--layout` 在一次创建或更新流程中保存，避免主题色、导航和 CSS 文件短暂不一致                                                   |
 | 表单运行态   | 运行容器将同一应用主题文件分别加载到普通表单、流程表单、提交页和 formDetail 详情页                                                                                           |
@@ -353,7 +347,7 @@ inferred_modules:
 
 ## 22. Agent 使用提示
 
-提供一段简洁提示词，明确告诉 AI 如何使用该 design.md。必须说明选中 style-design 只是设计风格来源，最终事实源是当前项目 `design.md`；视觉 DNA 在内容替换后也要保留；实现新版自定义色盘时必须读取 `yida-design/references/theme/app-custom-theme-template.css`，生成应用 CSS 并通过 `update-app` 联合保存。
+提供一段简洁提示词，明确告诉 AI 如何使用该 design.md。必须说明选中 style-design 只是设计风格来源，最终事实源是当前项目 `design.md`；视觉 DNA 在内容替换后也要保留；实现新版自定义色盘时必须读取 `yida-design/references/theme/app-custom-theme-template.css`，默认沿用其中 coffee 咖啡色、大圆角和平台实际色阶；只有 `design.md` 明确选择其他主题时才成套替换品牌相关值，并通过 `update-app` 联合保存。
 
 ## 23. 交付自检清单
 

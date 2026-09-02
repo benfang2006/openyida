@@ -278,7 +278,7 @@ function YidaComp(props) {
     >
       <style>{`
         .oys-page {
-          min-height: 100%;
+          min-height: 100vh;
           box-sizing: border-box;
           padding: 24px;
           background: var(--pod-page-bg-color, var(--color-white, #fff));

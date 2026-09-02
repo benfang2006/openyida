@@ -4,7 +4,7 @@
 
 所有页面都以当前应用主题为唯一主题来源。缺少主题证据时先按业务气质选择平台预置主题或生成应用自定义主题文件，不固定回到 `podBlue` / #1677ff。运行容器在各页面上下文加载同一应用主题文件；需要不同主题时更新应用主题配置，页面差异通过布局、材质、密度、素材和辅助视觉表达。
 
-页面表面也必须跟随应用主题：根画布消费 `--pod-page-bg-color`，卡片和面板消费 `--pod-card-bg-color`、`--pod-card-border`、`--pod-card-border-radius`、`--pod-card-padding`。fallback 只用于兼容旧运行态，不能把默认页面重新固定成某一种品牌色、绿色渐变或纯白卡片；页面只通过 `var(...)` 读取这些变量，不在根节点、`style` 标签、父窗口或 iframe 中声明或同步它们。
+页面表面也必须跟随应用主题：`YidaCodeCanvas` 下生成页面的根画布使用 `min-height: 100vh` 并消费 `--pod-page-bg-color`，卡片和面板消费 `--pod-card-bg-color`、`--pod-card-border`、`--pod-card-border-radius`、`--pod-card-padding`。fallback 只用于兼容旧运行态，不能把默认页面重新固定成某一种品牌色、绿色渐变或纯白卡片；页面只通过 `var(...)` 读取这些变量，不在根节点、`style` 标签、父窗口或 iframe 中声明或同步它们。
 
 ## 应用主题与页面风格冲突处理
 

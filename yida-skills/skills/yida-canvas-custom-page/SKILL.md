@@ -108,7 +108,7 @@ function setNavigationTitle(title) {
 2. **组件增强可降级**：门户、成员、部门、上传组件都做 feature detect 和 fallback；组件缺失时页面仍展示自绘基线。
 3. **值先归一化**：成员、部门、文件的原始返回值保留到 `raw` 用于检查，业务 payload 使用统一结构。
 4. **UI 改造保持功能契约**：页面美感提升、页面重构和局部美化只调整颜色、布局、密度、间距、视觉层级、素材和图标表达；已有数据源、字段映射、按钮动作、筛选逻辑、提交 URL、权限和业务状态按原有实现保留。
-5. **主题实现消费设计结果**：`themeProfile`、`themeColorSource` 来自 `yida-design` 的 `design.md`，业务场景和页面边界来自 `prd.md` 或派生 `page-spec.json`；运行容器在自定义页面与 `FormOpenContainer` 子 iframe 中加载同一应用主题文件。页面根画布使用 `var(--pod-page-bg-color, var(--color-white, #fff))`，卡片/面板使用 `--pod-card-bg-color`、`--pod-card-border`、`--pod-card-border-radius`、`--pod-card-padding`，品牌色使用 `--color-brand1-*` 与 `--color-group`。独立品牌页和活动页通过布局、材质、素材、构图与辅助视觉实现差异。
+5. **主题实现消费设计结果**：`themeProfile`、`themeColorSource` 来自 `yida-design` 的 `design.md`，业务场景和页面边界来自 `prd.md` 或派生 `page-spec.json`；运行容器在自定义页面与 `FormOpenContainer` 子 iframe 中加载同一应用主题文件。`YidaCodeCanvas` 下生成页面的根画布必须使用 `min-height: 100vh`，背景使用 `var(--pod-page-bg-color, var(--color-white, #fff))`；卡片/面板使用 `--pod-card-bg-color`、`--pod-card-border`、`--pod-card-border-radius`、`--pod-card-padding`，品牌色使用 `--color-brand1-*` 与 `--color-group`。独立品牌页和活动页通过布局、材质、素材、构图与辅助视觉实现差异。
 6. **先验证再扩展业务**：原生组件、上传、组织搜索、弹层类能力先做 smoke 页面，确认 PC/移动端都可用后再进入复杂业务页面。
 7. **生成骨架占位符必须可直发**：可编译页面骨架同时支持生成器替换变量和原样发布。JSON 占位符用 `parseTemplateJson(raw, fallback)`，展示文案占位符用 `withFallback` / `applyPageFallbacks` 兜底，未替换时页面继续可运行，并显示业务化 fallback 文案。
 8. **light 页面使用清爽业务色**：业务列表、协同表、数据管理页、工作台和门户默认使用 light 模式；主操作、选中态、筛选焦点和批量操作使用品牌色，边框用浅色品牌混合。用户明确要求暗色大屏/夜间模式/高对比风格时使用深色主视觉。

@@ -18,25 +18,22 @@
 | 5 | `template-default` | 没有任何主题证据且无法稳定推导业务色彩 | 临时使用 Step 5 所选 style-design 的默认 brand token，并明确标记为兜底 |
 
 1. 先判断业务气质：行业、目标用户、品牌关键词、业务情绪、视觉目标，以及是否需要亲和/专业/活力/稳重/科技/自然感。
-2. 基于 `../references/theme/app-custom-theme-template.css` 生成完整 CSS。新版主题必须完整声明 `--color-brand1-1` 至 `--color-brand1-10`，同时保留 `--color-brand-1` ~ `--color-brand-4` 和 `--color-group`；不能只声明页面当前直接使用的几个 token。`--color-brand1-6` 必须是字面量颜色，CLI 会校验完整色阶并自动将它保存为 `themeColor`。
+2. 基于 `../references/theme/app-custom-theme-template.css` 生成完整 CSS。新版主题必须完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`，同时保留 `--color-brand-1` ~ `--color-brand-4` 和 `--color-group`；不要补造 `--color-brand1-4/7/8`，也不能只声明页面当前直接使用的几个 token。`--color-brand1-6` 必须是字面量颜色，CLI 会校验实际色阶并自动将它保存为 `themeColor`。
 3. 新建应用通过 `create-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存；已有应用使用相同的 `update-app` 参数。运行容器在自定义页面、表单、提交页、formDetail 和表单 iframe 中加载该主题文件。
 5. `podBlue`、`podGreen`、`podOrange` 只是常用浅底候选，不是固定默认。不要因为没有特别说明就自动回到 #1677ff，也不要套用“科技=蓝、宠物=橙、法律=蓝”这类行业刻板配色。
 6. 主题色只作为 Step 5 所选设计风格的换肤输入；除用户明确要求深色/夜间/高对比外，不用主题色反向决定风格。
 
 ## 品牌 token 语义
 
-`design.md` 必须写清 `--color-brand1-*` 与 `--color-brand-*` 的语义。`--color-brand1-1` 至 `--color-brand1-10` 是新版主题必须具备的完整品牌色阶，由应用自定义主题文件统一提供。`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶，`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，不能删掉、改名或替换为别的变量。
+`design.md` 必须写清 `--color-brand1-*` 与 `--color-brand-*` 的语义。`--color-brand1-1/2/3/5/6/9/10` 是新版主题实际生成且必须具备的品牌色阶，由应用自定义主题文件统一提供；`4/7/8` 不在平台契约内，不得由 AI 猜测补齐。`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶，`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶，不能删掉、改名或替换为别的变量。
 
 | token | 语义 | 典型用途 |
 | --- | --- | --- |
 | `--color-brand1-1` | 明亮品牌浅色或浅 hover 色 | 列表 hover、菜单 hover、轻量背景，不直接当深色文字 |
 | `--color-brand1-2` | 品牌浅底 | 标签浅底、提示块、选中底、弱强调背景 |
 | `--color-brand1-3` | 品牌透明/浅边界 | 选中边框、禁用/弱化品牌态、浅描边 |
-| `--color-brand1-4` | 浅品牌实色或强边界 | focus 边框、浅品牌实色块、较强描边 |
 | `--color-brand1-5` | 主色 hover 档 | 主按钮 hover、链接 hover、可点击强调 hover |
 | `--color-brand1-6` | 主品牌色 | 主按钮、链接、选中态、重点标签、图表主序列 |
-| `--color-brand1-7` | 主色 active 档 | 按下态、active、pressed |
-| `--color-brand1-8` | 次深品牌色 | 深色 hover、深色选中态、主色与深主色之间的过渡 |
 | `--color-brand1-9` | 深主色 | 深色强调、深底按钮、强调标题、深色场景锚点 |
 | `--color-brand1-10` | 深色或透明强调档 | 深色 hover、强强调背景、深色主题补充 |
 | `--color-brand-1` | 移动端品牌浅/透明档 1 | 移动端壳层、移动端表单、旧版移动组件浅品牌态 |
@@ -45,7 +42,9 @@
 | `--color-brand-4` | 移动端深品牌档 4 | 移动端 active、深色强调、移动壳层深色态 |
 | `--color-group` | 图表和分类色组 | 多系列图表、排行、状态分组；第一色通常跟随主色 |
 
-自定义色盘生成时，先确定 `--color-brand1-6` 主色，再推导浅底、hover、active、深色和移动端桥接色阶。移动端 `--color-brand-1` ~ `--color-brand-4` 必须保留，不能只输出 `--color-brand1-*`。
+自定义色盘生成时，先确定 `--color-brand1-6` 主色，再推导平台实际消费的浅底、hover、深色和移动端桥接色阶。移动端 `--color-brand-1` ~ `--color-brand-4` 必须保留，不能只输出 `--color-brand1-*`。
+
+AI 默认直接使用模板内 coffee 咖啡色色阶和大圆角层级。若 `design.md` 选择其他主色，必须成套替换品牌色阶、基础品牌色阶、`--color-group`，以及按钮、表单、选中态、导航和日期组件中的品牌相关直接色值；成功、警告、错误、通知等语义色保持独立。除非 `roundedRule` 明确改变，不得拆散模板的页面/卡片/抽屉 20px、组件 8-12px、按钮胶囊形圆角层级。
 
 ## 处理应用主题和页面风格
 

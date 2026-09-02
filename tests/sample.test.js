@@ -48,11 +48,14 @@ describe('sample templates', () => {
     expect(chartSource).toContain('sample/seed 聚合数据');
     expect(chartSource).not.toMatch(/\.(?:reduce|groupBy)\(/);
     expect(chartSource).not.toContain('data-theme-scope');
+    expect(chartSource).toContain('min-height: 100vh');
+    expect(chartSource).toContain('var(--pod-page-bg-color, ${THEME.canvas})');
 
     expect(JSON.parse(tableResult.importedModules)).toEqual(['antd', 'dayjs', 'react']);
     expect(tableSource).toContain('writeBridge.verified');
     expect(tableSource).toContain('Promise.all');
     expect(tableSource).toContain('readThemeColor');
+    expect(tableSource).toContain('min-height: 100vh');
     expect(tableSource).toContain('background: var(--pod-page-bg-color, var(--color-white, #fff))');
     expect(tableSource).toContain('background: var(--pod-card-bg-color, var(--color-white, #fff))');
     expect(tableSource).not.toContain('linear-gradient(145deg, #F0F9F7');
@@ -84,6 +87,7 @@ describe('sample templates', () => {
     expect(JSON.parse(pageResult.importedModules)).toEqual(['antd', 'lucide-react', 'react']);
     expect(pageSource).toContain('function FormOpenContainer');
     expect(pageSource).toContain('readThemeColor');
+    expect(pageSource).toContain('min-height: 100vh');
     expect(pageSource).toContain('background: var(--pod-page-bg-color, var(--color-white, #fff))');
     expect(pageSource).toContain('background: var(--pod-card-bg-color, var(--color-white, #fff))');
     expect(pageSource).toContain('border: var(--pod-card-border, none)');

@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const {
   REQUIRED_BRAND_SCALE_TOKENS,
   validateThemeCssContent,
@@ -27,19 +29,30 @@ ${buildBrandScale({ '--color-brand1-6': '#1677FF' })}
     `)).not.toThrow();
   });
 
-  test('requires the complete --color-brand1-1 through --color-brand1-10 scale', () => {
+  test('accepts the shipped coffee theme template and ignores commented font placeholders', () => {
+    const templatePath = path.join(
+      __dirname,
+      '../yida-skills/skills/yida-design/references/theme/app-custom-theme-template.css'
+    );
+    const css = fs.readFileSync(templatePath, 'utf8');
+
+    expect(() => validateThemeCssContent(css)).not.toThrow();
+    expect(extractThemeColor(css)).toBe('rgba(155, 136, 121, 1)');
+  });
+
+  test('requires the complete platform --color-brand1 scale', () => {
     expect(() => validateThemeCssContent(`
       :root {
-        ${buildBrandScale().replace('    --color-brand1-4: rgb(4, 5, 6);', '')}
+        ${buildBrandScale().replace('    --color-brand1-5: rgb(4, 5, 6);', '')}
       }
-    `)).toThrow('缺少: --color-brand1-4');
+    `)).toThrow('缺少: --color-brand1-5');
 
     expect(() => validateThemeCssContent(`
-      /* --color-brand1-4: #123456; */
+      /* --color-brand1-5: #123456; */
       :root {
-        ${buildBrandScale().replace('    --color-brand1-4: rgb(4, 5, 6);', '')}
+        ${buildBrandScale().replace('    --color-brand1-5: rgb(4, 5, 6);', '')}
       }
-    `)).toThrow('缺少: --color-brand1-4');
+    `)).toThrow('缺少: --color-brand1-5');
   });
 
   test('extracts the app theme color from --color-brand1-6', () => {
@@ -69,6 +82,10 @@ ${buildBrandScale({ '--color-brand1-6': '#1677FF' })}
   });
 
   test('rejects CSS constructs rejected by the custom theme endpoint', () => {
+    expect(() => validateThemeCssContent(`
+      /* @import "https://example.com/base.css"; .x { background: url(文字模板资源); } */
+      :root { ${buildBrandScale()} }
+    `)).not.toThrow();
     expect(() => validateThemeCssContent('@import "https://example.com/base.css";')).toThrow('@import');
     expect(() => validateThemeCssContent('.x { background: url(javascript:alert(1)); }')).toThrow('危险资源协议');
     expect(() => validateThemeCssContent('.x { background: url(//evil.example.com/theme.png); }')).toThrow('不安全');

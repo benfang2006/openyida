@@ -398,7 +398,8 @@ describe('OpenYida skill contracts', () => {
     expect(canvasTable).toContain('window.__OPENYIDA_YIDA_API__');
     expect(canvasTable).toContain('未验证不得伪装闭环');
     expect(canvasTable).toContain('Promise.all');
-    expect(canvasTable).toContain('根画布使用 `var(--pod-page-bg-color, var(--color-white, #fff))`');
+    expect(canvasTable).toContain('根画布使用 `min-height: 100vh`');
+    expect(canvasTable).toContain('背景使用 `var(--pod-page-bg-color, var(--color-white, #fff))`');
     expect(canvasTable).toContain('不得固定绿色渐变或纯白卡片');
     expect(nativeChart).toContain('# 宜搭 ECharts 高级报表技能');
     expect(nativeTable).toContain('saveFormData');
@@ -568,9 +569,9 @@ describe('OpenYida skill contracts', () => {
     expect(pageDesign).toContain('交给 `yida-canvas-custom-page` 实现');
     expect(outputDesign).toContain('cliApply: openyida update-app <appType> --theme-file <file.css> --nav-theme light --logo-source appIcon --layout side');
     expect(outputDesign).toContain('--color-brand1-1: <明亮品牌浅色或浅 hover 色>');
-    expect(outputDesign).toContain('--color-brand1-4: <浅品牌实色或强边界>');
-    expect(outputDesign).toContain('--color-brand1-8: <次深品牌色>');
+    expect(outputDesign).toContain('--color-brand1-5: <主色 hover 档>');
     expect(outputDesign).toContain('--color-brand1-10: <深色或透明强调档>');
+    expect(outputDesign).toContain('不要补造 `--color-brand1-4/7/8`');
     expect(outputDesign).toContain('--color-brand-1: <移动端品牌色 1>');
     expect(outputDesign).toContain('--color-brand-4: <移动端品牌色 4>');
     expect(outputDesign).toContain('backgroundLayer:');
@@ -1106,6 +1107,20 @@ describe('OpenYida skill contracts', () => {
         '--color-brand-4': 'rgba(177, 102, 0, 1)',
         '--color-group': 'rgba(253, 145, 0, 1),rgba(224, 90, 45, 1),rgba(252, 125, 41, 1),rgba(212, 160, 23, 1),rgba(47, 140, 130, 1),rgba(184, 154, 125, 1)',
       },
+      coffee: {
+        '--color-brand1-1': 'rgba(155, 136, 121, 0.8)',
+        '--color-brand1-2': 'rgba(243, 240, 239, 1)',
+        '--color-brand1-3': 'rgba(155, 136, 121, 0.2)',
+        '--color-brand1-5': 'rgba(52, 50, 44, 1)',
+        '--color-brand1-6': 'rgba(155, 136, 121, 1)',
+        '--color-brand1-9': 'rgba(58, 55, 49, 1)',
+        '--color-brand1-10': 'rgba(155, 136, 121, 0.32)',
+        '--color-brand-1': 'rgba(155, 136, 121, 0.32)',
+        '--color-brand-2': 'rgba(155, 136, 121, 0.8)',
+        '--color-brand-3': 'rgba(155, 136, 121, 1)',
+        '--color-brand-4': 'rgba(58, 55, 49, 1)',
+        '--color-group': 'rgba(155, 136, 121, 1),rgba(210, 200, 171, 1),rgba(180, 158, 134, 1),rgba(230, 209, 190, 1),rgba(136, 122, 111, 1),rgba(58, 55, 49, 1)',
+      },
     };
 
     expect(presets).toContain('主题选择先根据行业、品牌、业务情绪和视觉目标做创意判断');
@@ -1125,7 +1140,7 @@ describe('OpenYida skill contracts', () => {
     expect(createApp).toContain('所有新建应用未显式传 `--layout` 时默认使用 `layoutDirection=l_shape`');
     expect(createApp).toContain('系统应用图标会同步保存为 `iconName%%主题色HEX`');
     expect(createApp).toContain('`--color-brand1-6` 转换后的 HEX');
-    expect(createApp).toContain('必须完整声明 `--color-brand1-1` 至 `--color-brand1-10`');
+    expect(createApp).toContain('必须完整声明平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`');
     expect(createApp).toContain('禁止把行业词直接映射成固定颜色');
     expect(createApp).toContain('主题颜色不受平台预置 key 限制');
     expect(createApp).not.toContain('| `deepBlue` | 深蓝 |');
@@ -1143,15 +1158,23 @@ describe('OpenYida skill contracts', () => {
     expect(canvasStyleGuide).toContain('读不到、空串或读取异常时返回传入的 `defaultColor`');
     expect(canvasStyleGuide).toContain('`defaultColor` 必须来自当前项目 `design.md` 的 tokens 或当前应用主题 token profile');
     expect(step2).toContain('`--color-brand1-*` 是页面和 PC 端主要消费的品牌色阶');
-    expect(step2).toContain('是新版主题必须具备的完整品牌色阶，由应用自定义主题文件统一提供');
+    expect(step2).toContain('是新版主题实际生成且必须具备的品牌色阶，由应用自定义主题文件统一提供');
     expect(step2).toContain('`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶');
     expect(step2).toContain('| `--color-brand1-1` | 明亮品牌浅色或浅 hover 色 |');
-    expect(step2).toContain('| `--color-brand1-4` | 浅品牌实色或强边界 |');
-    expect(step2).toContain('| `--color-brand1-8` | 次深品牌色 |');
+    expect(step2).toContain('| `--color-brand1-5` | 主色 hover 档 |');
+    expect(step2).toContain('`4/7/8` 不在平台契约内，不得由 AI 猜测补齐');
     expect(step2).toContain('| `--color-brand-4` | 移动端深品牌档 4 |');
-    for (let index = 1; index <= 10; index++) {
+    for (const index of [1, 2, 3, 5, 6, 9, 10]) {
       expect(customThemeTemplate).toMatch(new RegExp(`--color-brand1-${index}\\s*:`));
     }
+    for (const index of [4, 7, 8]) {
+      expect(customThemeTemplate).not.toMatch(new RegExp(`--color-brand1-${index}\\s*:`));
+    }
+    expect(customThemeTemplate).toContain('默认呈现大圆角与 coffee 咖啡色主题');
+    expect(customThemeTemplate).toContain('不要补造 4、7、8');
+    expect(customThemeTemplate).toContain('--pod-default-border-radius: 20px;');
+    expect(customThemeTemplate).toContain('--pod-page-border-radius: 20px;');
+    expect(customThemeTemplate).toContain('--color-brand1-5: rgba(52, 50, 44, 1);');
     expect(presets).toContain('## 平台 token 语义');
     expect(presets).toContain('`--color-brand-*` 是移动端和部分原生表单/壳层桥接仍会消费的品牌色阶');
     expect(presets).toContain('## blue');
@@ -1475,8 +1498,10 @@ describe('OpenYida skill contracts', () => {
     expect(pageUiux).not.toContain('Canvas 设计系统');
     expect(canvasStyleGuide).toContain('| `--color-brand1-6` | 主色 |');
     expect(canvasStyleGuide).toContain('| `--color-brand-1` ~ `--color-brand-4` | 移动端品牌色阶 |');
-    expect(canvas).toContain('页面根画布使用 `var(--pod-page-bg-color, var(--color-white, #fff))`');
-    expect(canvasStyleGuide).toContain('根画布消费 `--pod-page-bg-color`');
+    expect(canvas).toContain('根画布必须使用 `min-height: 100vh`');
+    expect(canvas).toContain('背景使用 `var(--pod-page-bg-color, var(--color-white, #fff))`');
+    expect(canvasStyleGuide).toContain('根画布使用 `min-height: 100vh` 并消费 `--pod-page-bg-color`');
+    expect(canvasStyleGuide).toContain('min-height: 100vh;');
     expect(canvasStyleGuide).toContain('background: var(--pod-page-bg-color, var(--color-white, #fff));');
     expect(canvasStyleGuide).toContain('background: var(--pod-card-bg-color, var(--color-white, #fff));');
     expect(canvasStyleGuide).toContain('border: var(--pod-card-border, none);');
