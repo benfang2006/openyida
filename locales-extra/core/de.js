@@ -1907,6 +1907,7 @@ Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
   delete_result_unknown: 'Das Löschergebnis für den Formulareintrag {0} ist unbekannt. Prüfen Sie das Ziel nur lesend und wiederholen Sie die Löschung nicht automatisch.',
   delete_target_mismatch: 'Der Formulareintrag {0} gehört nicht zum Zielformular {1}. Der Vorgang wurde vor dem Löschen beendet.',
   delete_target_unverified: 'Identität und Zuordnung des Formulareintrags {0} konnten nicht verifiziert werden. Der Vorgang wurde vor dem Löschen beendet.',
+  field_reference_unknown: 'Die Feldreferenz {0} ist keine gültige fieldId oder kein Komponentenalias im Zielformular. Der Vorgang wurde vor dem Schreiben beendet.',
   form_mode_unverified: 'Der Typ des Formulars {0} konnte nicht verifiziert werden. Die Erstellung wurde vor jedem Datenschreibvorgang beendet.',
   resource_required: 'Bei data query fehlt der Ressourcentyp form. Empfohlener Befehl: {0}',
 });
