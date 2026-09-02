@@ -1829,6 +1829,8 @@ Object.assign(module.exports.create_process || (module.exports.create_process = 
   login_required: '未取得有效宜搭登入狀態，請先執行 openyida login。',
 });
 Object.assign(module.exports.query_data || (module.exports.query_data = {}), {
+  association_derived_field_read_only: '關聯表單查詢衍生欄位 {0} 是唯讀欄位，不能用於儲存或更新。請寫入不帶 _id 後綴的原始關聯表單欄位。',
+  association_value_invalid: '關聯表單欄位 {0} 的寫入值無效。必須使用物件陣列，每項完整包含 appType、formUuid、formType、instanceId 和 title。',
   instance_target_mismatch: '實例 {0} 不屬於預期業務資源 {1}，已在寫入前停止。',
   instance_target_unverified: '無法核驗實例 {0} 的業務資源歸屬，已在寫入前停止。',
   target_expectation_invalid: '--expect-form-type 必須為 {0}，已在寫入前停止。',
