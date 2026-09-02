@@ -2,7 +2,18 @@
 
 > 本文件定义完整应用的 `prd/<项目名>/design.md` 输出格式。`design.md` 是应用级 UI 视觉设计系统，结构以本文件为准，并参考 `references/style-designs/_design-md-template.md` 的字段完整度：先记录设计风格选择依据和主题换肤结果，再写可复用视觉 DNA、token、布局、组件、状态和自检，最后在“实现适配”里写清宜搭运行时主题契约。PRD 只写主题色和风格摘要，完整 UI 设计以本文件为准。
 
-最终 `design.md` 的依据分四层：结构依据本文件和 `_design-md-template.md`；视觉 DNA、布局机制、组件机制和换肤规则依据选中的设计风格文件；业务内容、页面区块、数据来源和操作路径依据当前 PRD；主题 token 依据 Step 2 的主题色来源和所选风格的 `theme_adaptation`。
+最终 `design.md` 的依据分四层：结构依据本文件和 `_design-md-template.md`；视觉 DNA、布局机制、组件机制和换肤规则依据选中的设计风格文件；业务内容、页面区块、数据来源和操作路径依据当前 PRD；主题 token 依据主题系统中的主题色来源和所选风格的 `theme_adaptation`。
+
+## join 稳定引用契约
+
+`yida-prd` 与 `yida-design` 必须使用同一组可定位锚点，`designRefs` 只允许以下形式：
+
+- `themeProfile`
+- `sceneRecipes.<sceneKey>`
+- `components.<componentName>`
+- `states.<stateName>`
+
+`sceneKey` 必须直接取自共享 `requirement-brief.json` 的对应 `pageScenes`：对象项使用其 `key`，字符串项原样使用；不得由两个 artifact owner 各自改写、翻译或重新生成。`componentName` 和 `stateName` 必须与本文件 frontmatter 中的实际 key 完全一致。join 只校验这些稳定锚点，不使用标题文本或自然语言近似匹配。
 
 ## design.md 输出格式
 
@@ -155,6 +166,15 @@ components:
     maxHeight: <默认 88-120>
   metric-strip:
     height: <默认 64-88>
+sceneRecipes:
+  <sceneKey>:
+    layoutRecipe: <该页面场景的布局配方>
+    componentRefs: [components.<componentName>]
+    stateRefs: [states.loading, states.empty, states.error]
+states:
+  loading: <加载反馈和骨架规则>
+  empty: <空态说明、主操作和高度规则>
+  error: <错误反馈、恢复动作和信息边界>
 inferred_modules:
   quick_actions:
     required_for: [工作台, 仪表盘, 管理后台, 运营首页]
@@ -331,7 +351,7 @@ inferred_modules:
 
 ## 20. 禁止项
 
-列出硬性负向约束，覆盖会抹掉每个 DNA 的错误做法。必须包含：不得按行业或颜色直接套风格；不得为了还原风格凭空创造 PRD 未要求的模块；自定义主题名或任意色值不得传给 `create-app --theme`。同时写明新版主题由运行容器在各页面上下文加载同一应用主题文件。
+列出硬性负向约束，覆盖会抹掉每个 DNA 的错误做法。必须包含：不得按行业或颜色直接套风格；不得为了还原风格凭空创造 PRD 未要求的模块；自定义主题名或任意色值不得传给 `create-app --theme`。同时写明应用主题由运行容器在各页面上下文加载同一主题文件。
 
 ## 21. 错误 vs 正确
 

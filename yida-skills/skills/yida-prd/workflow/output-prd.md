@@ -1,6 +1,4 @@
-# 输出：prd.md（兼容入口，owner 已迁移）
-
-> 完整应用的 PRD artifact 由 `yida-prd/workflow/output-prd.md` 负责。本文件只保留旧引用兼容，不得由 `yida-design` 工作流加载或写入 `prd.md`。
+# 输出：prd.md
 
 > 本文件定义完整应用的 `prd/<项目名>/prd.md` 输出格式。`prd.md` 记录业务语义、产品设计、页面结构、资源创建顺序、页面实现交付顺序和导航顺序。PRD 不写 UI 视觉设计规范，只写应用主题色和风格摘要，并引用 `design.md` 章节。
 
@@ -60,6 +58,7 @@
 
 - 页面类型：<display-page / form-page / process-form / report / detail-entry>
 - 页面定位：<主入口页面 / 核心业务页 / 详情页 / 报表页 / 配置页；说明为什么需要这个页面>
+- 入口模式：<`platform-shell` / `standalone`；信息不足时必须写 `platform-shell`>
 - 页面目标：<这个页面帮助用户完成什么判断或操作>
 - 页面关系：<从哪里进入、下一步去列表 / 看板 / 表单提交 / 详情 / 报表中的哪一个>
 - 设计文件：<display-page 填 `prd/<项目名>/design.md`；普通表单 / 流程表单写“跟随应用主题文件和表单视觉引导”>
@@ -82,12 +81,16 @@
 - pageSpecHandoff：
   - pageStructure：<workbench / dashboard-overview / business-list / detail-profile / split-pane-detail / portal-shell-home / official-homepage / data-screen>
   - scene：<workbench / dashboard / list / detail / landing / screen>
+  - entryMode：<platform-shell / standalone>
   - contentBlocks：<推荐列出 8-10 个业务区块以上；KPI/快捷入口/列表/图表子项不分别计数>
   - themeSummary：<应用主题色 / 风格关键词 / 主题交付方式摘要；必须与 design.md 一致，不写 token 和视觉规则>
   - designFile：<prd/<项目名>/design.md>
   - designRefs：<themeProfile / sceneRecipes.<scene> / components.<name> / states.<name>>
+  - 引用规则以 [yida-design 的 join 稳定引用契约](../../yida-design/workflow/output-design.md#join-稳定引用契约) 为准；`sceneRecipes.<sceneKey>` 中的 `sceneKey` 必须逐字取自共享 `requirement-brief.json` 的对应 `pageScenes`（对象项使用其 `key`，字符串项原样使用），不得改写、翻译或重新生成。
   - dataBinding：<form / report / connector / static-empty；真实资源 ID 由实现阶段回填>
   - primaryAction：<主操作和打开方式>
+
+`entryMode=standalone` 只用于页面自身已经具备完整导航壳，或不依赖宜搭工作台导航即可完成主要业务闭环的员工自助/轻量业务入口。页面只有 tab、筛选、分段、卡片切换、普通看板，或仍依赖平台导航进入核心表单/流程时必须使用 `platform-shell`。不得根据访问者角色猜测；证据不足时默认 `platform-shell`。
 
 ## 5. 应用主题与风格摘要
 

@@ -625,7 +625,7 @@ export function closeYidaForm() {
 }
 ```
 
-`renderJsx` 中根据 `formOpenRequest` 渲染右侧抽屉和 `<iframe src={state.formOpenRequest.iframeUrl}>`；PC 抽屉宽度使用 `state.formOpenRequest.drawerWidth || '50vw'`，提交页和详情页默认一致。iframe 由新版主题运行时加载与应用一致的自定义主题 CSS。关闭抽屉时清空 `formOpenRequest` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法，也不要为提交和详情各写一套 drawer 状态。
+`renderJsx` 中根据 `formOpenRequest` 渲染右侧抽屉和 `<iframe src={state.formOpenRequest.iframeUrl}>`；PC 抽屉宽度使用 `state.formOpenRequest.drawerWidth || '50vw'`，提交页和详情页默认一致。iframe 由主题运行时加载与应用一致的自定义主题 CSS。关闭抽屉时清空 `formOpenRequest` 并重新查询列表。不要假设平台提供 `openDrawer` 内置方法，也不要为提交和详情各写一套 drawer 状态。
 
 > `viewUuid` 可选，从宜搭「数据管理」→「报表视图」页面的 URL 中获取，不传则使用默认视图。
 

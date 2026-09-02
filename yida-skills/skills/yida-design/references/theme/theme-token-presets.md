@@ -6,7 +6,7 @@
 
 `deepBlue`、`deepPurple`、`purple`、`yellow`、`magenta`、`red`、`greyBlue`、`coffee`、`black` 等属于平台支持主题；仅在用户明确指定、品牌匹配或业务确实需要时使用。普通业务页默认使用浅底主题，`black` 不作为默认主题。
 
-注意：下方预置只作为 AI 设计色阶时的参考，不再限制新版应用主题。复制 [app-custom-theme-template.css](app-custom-theme-template.css) 生成应用主题文件时，必须完整保留平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`、`--color-brand-1` 至 `--color-brand-4` 和 `--color-group`，不要补造 `--color-brand1-4/7/8`。模板默认采用 coffee 咖啡色与大圆角；AI 只有在 `design.md` 明确选择其他主题时，才成套替换品牌色阶、基础色阶、图表色组和组件品牌态。将主色字面量写入 `--color-brand1-6` 后，通过 `create-app/update-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存。主题由服务端加载该文件，页面和表单只消费其中的变量。
+注意：下方预置只作为 AI 设计色阶时的参考。复制 [app-custom-theme-template.css](app-custom-theme-template.css) 生成应用主题文件时，必须完整保留平台实际生成的 `--color-brand1-1/2/3/5/6/9/10`、`--color-brand-1` 至 `--color-brand-4` 和 `--color-group`，不要补造 `--color-brand1-4/7/8`。模板默认采用 coffee 咖啡色与大圆角；AI 只有在 `design.md` 明确选择其他主题时，才成套替换品牌色阶、基础色阶、图表色组和组件品牌态。将主色字面量写入 `--color-brand1-6` 后，通过 `create-app/update-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存。主题由服务端加载该文件，页面和表单只消费其中的变量。
 
 ## 应用主题 key 清单
 

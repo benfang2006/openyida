@@ -11,7 +11,7 @@
 
 ## 操作
 
-1. 表单开发先执行 `use_skill("yida-form-detail", "表单视觉引导与新版应用主题消费")`，明确填写路径、字段密度和 Divider 分组。
+1. 表单开发先执行 `use_skill("yida-form-detail", "表单视觉引导与应用主题消费")`，明确填写路径、字段密度和 Divider 分组。
 2. 执行 `use_skill("yida-create-form-page", "创建或更新核心表单字段结构")`，创建或更新普通表单字段结构。
 3. 已有目标表单时，使用 update/patch/rule/bind-datasource。
 4. 缺少支撑 MVP 的核心普通表单且允许创建时，创建普通表单。
@@ -80,7 +80,7 @@
 - [ ] 字段结构有 Divider 分组；
 - [ ] 表单/流程资源在自定义页面之前创建或确认；
 - [ ] 必要 `fieldId` 已写入 `.cache/<项目名>-schema.json`；
-- [ ] 新版应用主题文件已配置，表单与 formDetail 直接消费同一 CSS；
+- [ ] 应用主题文件已配置，表单与 formDetail 直接消费同一 CSS；
 - [ ] 表单、提交页和 formDetail 已加载 Step 3 保存的应用主题文件。
 
 ## 下一步

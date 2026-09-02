@@ -28,14 +28,14 @@ description: 创建宜搭应用并返回 appType；仅当没有目标 app 且用
 ## 严格要求 (MUST DO)
 
 - 创建成功后，将 appType 记录到 `.cache/<项目名>-schema.json`
-- 创建成功后，把真实 `appType` 交给 `yida-design` 生成或更新 `prd/<项目名>/prd.md` 与 `prd/<项目名>/design.md`；后续表单、流程、页面和发布都按 PRD 执行业务，按 design.md 执行视觉。
+- 若完整搭建已完成 artifact join，创建成功后不得回写 `.cache/openyida/<项目名>/requirement-brief.json`，也不得仅因拿到真实 `appType` 重跑 `yida-prd`、`yida-design` 或 join；真实 `appType` 只写入 schema 或当前任务资源上下文。
 - 创建前确认当前登录的组织（corpId）与目标组织一致
 - **本技能不读写 memory**：appType 等信息输出到 stdout，通过 `.cache/<项目名>-schema.json` 持久化，不依赖跨会话的 memory 状态
 
 ## 适用场景
 
 用户说"只创建应用壳"、"新建应用并返回 appType"，且 resource context 没有目标 app 时使用此技能。
-创建应用后，先用 `yida-design` 产出或更新 PRD，再继续执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
+创建应用后，若任务只是创建应用壳则返回真实 `appType` 即可；若继续完整搭建，把真实 `appType` 写入 `.cache/<项目名>-schema.json` 或当前任务资源上下文，然后直接按已经 join 的 PRD 与视觉 artifact 执行：创建/更新表单（`yida-create-form-page`）→ 创建或复用页面（`yida-create-page` / existing page）→ 发布页面（`yida-publish-page`）。
 后续如果需要自定义页面，源码写到 `project/pages/src/<页面名>.canvas.jsx` 并发布。
 
 ---
@@ -71,7 +71,7 @@ openyida create-app --name <appName> [--desc <description>] [--theme-file <app-t
 | 咨询、审计、会计、投顾、企业服务 | `podBlue` | `xian-qiye #5C72FF podBlue` | `official-homepage` 或工作台，按用户目标选择 |
 | 普通内部管理、CRM、OA、项目管理 | `podBlue`，业务强调增长/活力时可选 `podOrange` | 可使用默认或用户指定参数 | `product-homepage --scene workbench` |
 
-CLI 内部的 `colour` 仅用于 `registerApp` 创建阶段兼容，不作为新版主题设计结果。完整应用、带 PRD/design.md 的应用和用户要求新版主题时，默认推荐传主题文件；只有用户明确只要兼容空壳、暂不配置主题或需要保留旧创建方式时才省略。省略 `--theme-file` 不报错，也不会上传或伪造主题配置。
+CLI 内部的 `colour` 仅用于 `registerApp` 创建阶段兼容，不作为应用主题设计结果。创建完整应用、使用 PRD/design.md 或用户要求配置主题时，默认传入主题文件；只有用户明确只创建空壳或暂不配置主题时才省略。省略 `--theme-file` 不报错，也不会上传或伪造主题配置。
 
 CLI 始终按“显式 `--icon` → 行业推断 → 随机系统图标”的顺序选择图标，只有未显式指定且未命中行业时才随机，与是否传主题文件无关。所有新建应用未显式传 `--layout` 时默认使用 `layoutDirection=l_shape`。传入主题文件时，CLI 还会在创建前校验 CSS，并将图标颜色统一为 `--color-brand1-6` 转换后的 HEX；未显式指定主题导航配置时使用 `navTheme=light`、`logoSource=appIcon`。
 
@@ -112,7 +112,7 @@ CLI 会先校验主题文件完整声明平台实际生成的 `--color-brand1-1/
 | 火车 | `huoche` | | 查询 | `chaxun` |
 | 申报 | `shenbao` | | 打卡 | `daka` |
 
-**图标背景色**：新版主题固定跟随 CSS 的 `--color-brand1-6`；下面这些颜色仅用于未传主题文件的兼容创建：`#0089FF` `#00B853` `#FFA200` `#FF7357` `#5C72FF` `#85C700` `#FFC505` `#FF6B7A` `#8F66FF` `#14A9FF`
+**图标背景色**：传入主题文件时固定跟随 CSS 的 `--color-brand1-6`；下面这些颜色仅用于未传主题文件的空壳创建：`#0089FF` `#00B853` `#FFA200` `#FF7357` `#5C72FF` `#85C700` `#FFC505` `#FF6B7A` `#8F66FF` `#14A9FF`
 
 ## 创建后交付约定
 

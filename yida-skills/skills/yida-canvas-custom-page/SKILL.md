@@ -9,7 +9,7 @@ description: 宜搭自定义页面开发规范，使用 `YidaCodeCanvas` 组件�
 
 本技能是宜搭自定义页面开发的默认实现：用户写标准 React18 函数组件源码，OpenYida 本地编译为 `runtimeCode` + `importedModules`，运行时由 `YidaCodeCanvas` 组件加载前端资源并执行 `YidaComp`。
 
-UI 和产品设计输入来自 `yida-design` 输出的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec。本技能负责把 PRD 的页面场景、区块、交互、数据绑定和功能契约，以及 design.md 的主题色、视觉 DNA、布局、材质、圆角、密度、呼吸感、组件和状态规则落到 `.canvas.jsx` / `.canvas.tsx`、antd token、CSS 变量、数据桥、表单入口和发布验收。
+产品与视觉输入来自 `yida-prd` 输出的 `prd/<项目名>/prd.md` 和 `yida-design` 输出的 `prd/<项目名>/design.md`，或单页 PRD 章节 + design spec。本技能负责把 PRD 的页面场景、区块、交互、数据绑定和功能契约，以及 design.md 的主题色、视觉 DNA、布局、材质、圆角、密度、呼吸感、组件和状态规则落到 `.canvas.jsx` / `.canvas.tsx`、antd token、CSS 变量、数据桥、表单入口和发布验收。
 
 本技能适合：
 
@@ -113,15 +113,15 @@ function setNavigationTitle(title) {
 7. **生成骨架占位符必须可直发**：可编译页面骨架同时支持生成器替换变量和原样发布。JSON 占位符用 `parseTemplateJson(raw, fallback)`，展示文案占位符用 `withFallback` / `applyPageFallbacks` 兜底，未替换时页面继续可运行，并显示业务化 fallback 文案。
 8. **light 页面使用清爽业务色**：业务列表、协同表、数据管理页、工作台和门户默认使用 light 模式；主操作、选中态、筛选焦点和批量操作使用品牌色，边框用浅色品牌混合。用户明确要求暗色大屏/夜间模式/高对比风格时使用深色主视觉。
 9. **门户运行态组件要补必需 props 和局部降级**：`QuickAccessCard` / `RecentlyUsedCard` 传 `theme="row-white"` 等必需 props；所有门户/字段/上传增强组件外层加局部 ErrorBoundary，单个组件不兼容时只降级该块，整页保持可用。
-10. **新版主题走应用主题文件**：使用 `yida-design/references/theme/app-custom-theme-template.css` 生成 CSS，并通过 `create-app/update-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存；CLI 从 `--color-brand1-6` 自动提取 `themeColor`。运行容器在页面和表单 iframe 中加载同一文件，确保主题变量一致。
+10. **应用主题使用统一主题文件**：使用 `yida-design/references/theme/app-custom-theme-template.css` 生成 CSS，并通过 `create-app/update-app --theme-file/--nav-theme/--logo-source/--layout` 联合保存；CLI 从 `--color-brand1-6` 自动提取 `themeColor`。运行容器在页面和表单 iframe 中加载同一文件，确保主题变量一致。
 11. **真实交付使用真实数据源**：完整应用或真实交付页只要需要列表、看板、详情记录，并且本轮已经创建/解析业务表单，就在 `page-spec.json` 写入 `dataBinding.mode=form`、真实 `appType/formUuid` 和字段映射，让页面从表单读取。完整应用默认在页面实现前通过 `yida-data-management` 写入 1-3 条业务化 demo records；页面读取这些真实表单记录，不使用前端 seedRows 冒充。真实数据暂未接入或 seed records 写入失败时展示空态、表单入口、刷新/登记按钮。
-12. **PRD + design.md 进入实现输入**：完整应用和真实交付页在写页面前，先消费 `yida-design` 的 `prd/<项目名>/prd.md` 和 `prd/<项目名>/design.md`。PRD 提供产品定位、页面场景、页面区块、数据来源、`functionContract`、素材/图标策略、原生表单入口、页面实现交付顺序、业务化自检、应用主题色和风格摘要；design.md 提供完整 UI 设计，包括 `themeProfile`、tokens、视觉 DNA、`visualScaffold`、材质、组件、圆角、密度、呼吸感和状态规则。两者是唯一设计事实源；`page-spec.json` 只能作为派生 handoff，不得覆盖或改写 PRD/design.md，也不得复制完整 UI 设计规则。
+12. **PRD + design.md 进入实现输入**：完整应用和真实交付页在写页面前，先消费 `yida-prd` 的 `prd/<项目名>/prd.md` 和 `yida-design` 的 `prd/<项目名>/design.md`。PRD 提供产品定位、页面场景、页面区块、数据来源、`functionContract`、素材/图标策略、原生表单入口、页面实现交付顺序、业务化自检、应用主题色和风格摘要；design.md 提供完整 UI 设计，包括 `themeProfile`、tokens、视觉 DNA、`visualScaffold`、材质、组件、圆角、密度、呼吸感和状态规则。两者是唯一设计事实源；`page-spec.json` 只能作为派生 handoff，不得覆盖或改写 PRD/design.md，也不得复制完整 UI 设计规则。
 13. **页面实现二选一**：结构化实现路径先从 `prd.md + design.md` 派生 `page-spec.json`，写入 `sourceOfTruth.prdFile/designFile/designRefs/conflictPolicy`，生成可编译骨架后读取 CLI 摘要或 `.openyida-page.json` 判断业务化程度和 dataBinding。业务或视觉事实源缺失时先回写 `prd.md` / `design.md` 并重生成 spec；只有 className、布局比例、字段映射、响应式、状态渲染或编译错误等实现偏差才对生成源码做小范围 Edit/patch。手写路径直接 Write 最终 `.canvas.jsx` 并快检/发布。
 14. **实现骨架消费业务 spec**：品牌名、行业词、导航、指标、卡片标题、图片 alt、CTA、色彩 profile 和 section 说明来自当前业务 spec。若 CLI 报业务内容不足，补齐/改写 spec 或 patch 源码后重新生成/编译。
 15. **页面产物使用纯文本业务文案**：`.canvas.jsx` 源码、`page-spec.json` 中会渲染到页面的文案、JS 注释、数据常量和产物文件路径都使用无 emoji 文本。页面生成、`compileCanvasLocal` 或 `publish` 报 emoji 错误时，先改 spec/源码/路径，再重新校验发布。若 emoji 原本承担图标含义，必须按 `design.md.iconSystem` 改成 `lucide-react` 或 `@ant-design/icons` 的具体组件，默认 `lucide-react`；不得用 CSS 绘制图形、单字母、首字母、标点符号、Unicode 符号或临时 SVG 冒充图标。
 16. **JSX 文案只能是文本或字符串**：JSX 文案只能写成纯文本 `所有级别` 或带引号字符串 `{'所有级别'}`；筛选项、按钮、状态、空态和表格列名等中文业务文案都按此规则书写。花括号里只能放真实 JS 变量/表达式，不能把中文文案写成 `{所有级别}`、`{处理中}`；Unicode escape 被工具解码后也必须保留字符串引号。
 17. **应用级导航归平台承载**：默认不要在自定义页面中创建侧边导航、顶部应用导航、门户导航壳或同级模块菜单；同应用页面入口优先写入 `appBlueprint.navigation` 或平台导航分组，由应用导航内切换。自定义页内容区只放当前页动作、表单新建/查看、外部链接、跨应用资源。只有用户显式要求“在自定义页面中实现自己的顶部导航 / 侧边导航 / 导航壳 / 自绘应用级导航 / 隐藏应用导航”时，才执行 `use_skill("yida-nav-shell")`，生成页面内导航壳，并在发布后执行 `openyida update-app <appType> --hide-app-nav`；只要求页面隐藏导航、无导航全屏或 `isRenderNav=false` 时，走页面级配置，不自动配置 `hideAppNav`。其他自定义页默认不配置 `hideAppNav`。
-18. **表单打开入口统一容器**：自定义页内「新建 / 提交表单 / 查看详情」保留原生表单能力，并统一封装为 `FormOpenContainer`。按钮事件只能调用 `openForm({ type: "submission" | "detail", ... })`。查看详情必须先从 `searchFormDatas` 返回行解析真实实例 ID，顺序固定为 `row.formInstId || row.formInstanceId || row.instanceId || row.id`，并优先使用 `row.formInstId`；缺少实例 ID 时禁用详情按钮或提示，不得打开空 `formInstId` 的详情页。PC 端主操作使用右侧抽屉 + iframe 承载页面级隐藏导航的提交页或详情页，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；详情页 URL 固定追加 `formInstId`、`navConfig.layout=1180` 和 `isRenderNav=false`；新版主题运行容器在自定义页面和 iframe 中分别加载同一应用主题文件；关闭后回到当前列表/工作台并刷新数据。移动端可直接进入提交页/详情页或新页打开。
+18. **表单打开入口统一容器**：自定义页内「新建 / 提交表单 / 查看详情」保留原生表单能力，并统一封装为 `FormOpenContainer`。按钮事件只能调用 `openForm({ type: "submission" | "detail", ... })`。查看详情必须先从 `searchFormDatas` 返回行解析真实实例 ID，顺序固定为 `row.formInstId || row.formInstanceId || row.instanceId || row.id`，并优先使用 `row.formInstId`；缺少实例 ID 时禁用详情按钮或提示，不得打开空 `formInstId` 的详情页。PC 端主操作使用右侧抽屉 + iframe 承载页面级隐藏导航的提交页或详情页，抽屉默认半屏 `50vw`，提交页和详情页使用同一宽度规则；详情页 URL 固定追加 `formInstId`、`navConfig.layout=1180` 和 `isRenderNav=false`；主题运行容器在自定义页面和 iframe 中分别加载同一应用主题文件；关闭后回到当前列表/工作台并刷新数据。移动端可直接进入提交页/详情页或新页打开。
 19. **图标资源固定为可加载库**：页面图标只使用 `lucide-react` 或 `@ant-design/icons`，默认使用 `lucide-react` named import。只有页面已经采用 Ant Design 图标语言、或 antd 组件语境需要 Outlined 图标时，才使用 `@ant-design/icons`。快捷入口、按钮、状态、导航和空态图标在写源码前先建立 `actionIconMap` / `statusIconMap`，按业务语义映射到具体组件，例如 `Plus`、`Upload`、`Download`、`Eye`、`Building2`、`AlertCircle`、`Check`。图标外层可以用 CSS 控制尺寸、颜色、圆角、背景和 hover，但图标本体必须来自上述两类组件，不能用 CSS 形状、字母或 emoji 替代。
 
 ## 数据真实性边界
@@ -142,7 +142,7 @@ openyida agent-capabilities --summary-json
 # 2. 如需新页面，先创建空白自定义页拿 formUuid
 openyida create-page <appType> "<页面名>"
 
-# 3. 按 yida-design 的 prd.md + design.md 生成或编写 .canvas.jsx 源码；结构化实现路径再读取派生 page-spec.json
+# 3. 按 yida-prd 的 prd.md + yida-design 的 design.md 生成或编写 .canvas.jsx 源码；结构化实现路径再读取派生 page-spec.json
 # 结构化实现路径：先从 prd.md + design.md 派生 page-spec.json，生成可编译骨架后基于 manifest/摘要做小范围 patch。
 # 手写路径：已明确最终页面结构、数据桥和样式细节时，直接 Write 最终 .canvas.jsx。
 
